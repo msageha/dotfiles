@@ -7,6 +7,13 @@ function setup() {
     source "${SCRIPT_PATH}"
 }
 
+# GUI ツールを省く環境 (skip_gui_tools=true) ではフォントは導入されない
+# (run_once_after_91_common.sh.tmpl のガードと同条件)。導入済みを前提とする
+# テストは、install スクリプトと同じ chezmoi の skip_gui_tools 値でスキップする。
+function gui_tools_skipped() {
+    [ "$(chezmoi execute-template '{{ dig "skip_gui_tools" false . }}' 2>/dev/null)" = "true" ]
+}
+
 @test "[common] fonts - validate" {
     [ -e "${SCRIPT_PATH}" ]
     run validation
@@ -20,6 +27,9 @@ function setup() {
 }
 
 @test "[common] fonts - install Source Code Pro fonts" {
+    if gui_tools_skipped; then
+        skip "skip_gui_tools=true: fonts are not installed"
+    fi
     setup_fonts_dir
 
     expected=14
@@ -28,6 +38,9 @@ function setup() {
 }
 
 @test "[common] fonts - install Source Han Pro fonts" {
+    if gui_tools_skipped; then
+        skip "skip_gui_tools=true: fonts are not installed"
+    fi
     setup_fonts_dir
 
     expected=14
