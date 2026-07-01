@@ -1,6 +1,10 @@
 # dotfiles
 
-macOS / Ubuntu 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理。
+macOS / Ubuntu / Debian 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理する。
+機微な設定（一部の SSH ホスト定義・業務用 Git 設定・IME 辞書など）は
+[age](https://age-encryption.org/) で暗号化してリポジトリに載せているため、公開しても安全な構成になっている。
+
+`.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
 
 ## Setup
 
@@ -16,7 +20,7 @@ macOS / Ubuntu 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmo
 xcode-select --install
 ```
 
-#### Ubuntu
+#### Ubuntu / Debian
 
 最小構成では `curl` / `git` ともに未インストールのことがあるため、先に導入する。
 
@@ -25,135 +29,169 @@ sudo apt update
 sudo apt install -y curl git
 ```
 
+### 暗号化された設定の復号鍵 (age)
+
+一部の設定ファイルは age で暗号化され、`encrypted_*.age` としてリポジトリに含まれている。
+
+| 暗号化ファイル                                       | 展開先                           | 内容                                                             |
+| ---------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `home/dot_ssh/encrypted_config.local.age`            | `~/.ssh/config.local`            | 非公開の SSH ホスト定義（`~/.ssh/config` から `Include` される） |
+| `home/encrypted_dot_gitconfig.technoface.gitlab.age` | `~/.gitconfig.technoface.gitlab` | 業務用 Git 設定                                                  |
+| `home/encrypted_dot_gitconfig.sakanaai.github.age`   | `~/.gitconfig.sakanaai.github`   | 業務用 Git 設定                                                  |
+| `settings/common/encrypted_google.ime.txt.age`       | （手動インポート用）             | Google 日本語入力のユーザー辞書                                  |
+| `settings/macos/btt/encrypted_licence.txt.age`       | （実行時に復号）                 | BetterTouchTool ライセンス                                       |
+
+復号には age 秘密鍵が必要。**公開鍵 (recipient) は `home/.chezmoi.toml.tmpl` に記載してリポジトリに載せているが、秘密鍵はリポジトリに含めない。**
+
+新しいマシンでこれらを展開するには、`chezmoi apply` の前に秘密鍵を配置する。
+
+鍵を配置するマシン (新マシン) 側で実行:
+
+```bash
+mkdir -p ~/.config/chezmoi
+# パスワードマネージャ等から取得する例:
+# op document get "chezmoi age key" --out-file ~/.config/chezmoi/key.txt
+chmod 600 ~/.config/chezmoi/key.txt
+```
+
+鍵を持つ既存マシンから scp で転送する場合は、既存マシン側で実行:
+
+```bash
+ssh <NEW_HOST> 'mkdir -p ~/.config/chezmoi'
+scp ~/.config/chezmoi/key.txt <NEW_HOST>:~/.config/chezmoi/key.txt
+ssh <NEW_HOST> 'chmod 600 ~/.config/chezmoi/key.txt'
+```
+
+秘密鍵が無い環境（コンテナ・鍵未配置の初回など）でも `chezmoi apply` は失敗しない。`.chezmoiignore` が鍵の有無を判定し、復号できない暗号化ファイルを自動でスキップする（該当設定が展開されないだけ）。
+
 ### 実行
+
+公開リポジトリなので HTTPS なら認証不要でどのマシンからでも clone できる。初回セットアップにはこちらを推奨。
 
 ```bash
 sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
+SSH URL (`git@github.com:msageha/dotfiles.git`) も利用できるが、その場合はそのマシンに GitHub 登録済みの SSH 鍵が既に必要（未設定の初回マシンでは clone に失敗する）。`autoCommit` / `autoPush` で push し返すオーナー環境では、鍵を配置してから remote を SSH に切り替えると push が楽になる。
+
+```bash
+git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfiles.git
+```
+
 ### 初回セットアップ時に要求される項目
 
-`chezmoi init --apply` の実行時に以下の項目が対話的に聞かれる（`~/.config/chezmoi/chezmoi.toml` に保存され、2 回目以降はスキップされる）。
-
-#### 共通
-
-| プロンプト            | データキー           | 説明                                                                                                                                         |
-| --------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Gemini API Key`      | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Gemini CLI 等で使用                                                           |
-| `Google Maps API Key` | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。Claude Code / Gemini CLI の maps-grounding-lite MCP に使用 |
+`chezmoi init --apply` の実行時に以下が対話的に聞かれる（`~/.config/chezmoi/chezmoi.toml` に保存され、2 回目以降はスキップされる）。設定を変更したい場合は `chezmoi init` を再実行するか、`~/.config/chezmoi/chezmoi.toml` を直接編集する。
 
 #### macOS のみ
 
-| プロンプト      | データキー      | 説明                                            |
-| --------------- | --------------- | ----------------------------------------------- |
-| `Computer name` | `computer_name` | macOS のコンピュータ名。空欄で `MacBook-<user>` |
+| プロンプト      | データキー      | 説明                   |
+| --------------- | --------------- | ---------------------- |
+| `computer_name` | `computer_name` | macOS のコンピュータ名 |
 
-#### Ubuntu のみ
+#### Linux (Ubuntu / Debian) のみ
 
-| プロンプト                           | データキー     | 説明                                               |
-| ------------------------------------ | -------------- | -------------------------------------------------- |
-| `Skip apt package installation?`     | `skip_apt`     | `true` で apt パッケージのインストールをスキップ   |
-| `Skip apt GUI package installation?` | `skip_apt_gui` | `true` で GUI 系パッケージのインストールをスキップ |
+| プロンプト                        | データキー       | 説明                                                                                                             |
+| --------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `Skip CLI tool installation ...?` | `skip_cli_tools` | `true` で CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）と後述のコーディングエージェント設定をスキップ |
+| `Skip GUI tool installation?`     | `skip_gui_tools` | `true` で GUI 系パッケージのインストールをスキップ                                                               |
 
-設定を変更したい場合は `chezmoi init` を再実行するか、`~/.config/chezmoi/chezmoi.toml` を直接編集する。
+#### API キー
 
-### Ubuntu VM
+以下はコーディングエージェント設定を管理する環境（macOS、または Linux で `skip_cli_tools=false`）でのみ聞かれる。
+空欄でも可（未設定として展開される）。
 
-1. SSH 鍵をコピー
+| プロンプト              | データキー           | 説明                                                                                                             |
+| ----------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `Gemini API Key`        | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Gemini CLI / nano-banana MCP 等で使用             |
+| `Google Maps API Key`   | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
+| `Fugu (Sakana) API Key` | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
+| `OpenRouter API Key`    | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
 
-```bash
-scp -r $HOME/.ssh/ <VM_HOST>:$HOME
-```
-
-2. セットアップ実行
-
-```bash
-sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --one-shot git@github.com:msageha/dotfiles.git
-```
+API キーはローカルの `~/.config/chezmoi/chezmoi.toml` にのみ保存され、リポジトリには入らない（テンプレートは `dig` で参照し、未設定時は空文字で展開される）。
 
 ### Docker
 
-```bash
-make build_image
-docker container run -it msageha/ubuntu:latest
-```
-
-GPU イメージのビルド:
+開発環境イメージをローカルでビルドできる（ベース OS / ツール構成別の 7 バリアント）。イメージ名は既定で `msageha/dotfiles:<tag>`（`DOCKER_REPOSITORY` で上書き可）。
 
 ```bash
-make build_gpu_image
+make build-ubuntu                    # 標準構成 (Ubuntu + CLI)
+docker container run -it msageha/dotfiles:ubuntu
 ```
+
+| ターゲット                   | タグ              | 構成                             |
+| ---------------------------- | ----------------- | -------------------------------- |
+| `make build-ubuntu-min`      | `ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く) |
+| `make build-ubuntu`          | `ubuntu`          | Ubuntu / CLI                     |
+| `make build-debian-min`      | `debian-min`      | Debian / 最小                    |
+| `make build-debian`          | `debian`          | Debian / CLI                     |
+| `make build-debian-slim-min` | `debian-slim-min` | Debian slim / 最小               |
+| `make build-alpine`          | `alpine`          | Alpine / 最小                    |
+| `make build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
+| `make build`                 | 上記まとめ        | 全バリアントを一括ビルド         |
+
+マルチアーキ (amd64/arm64) ビルドと registry への push は `make build-multi-platform` / `make push`。CI では `cloudbuild.yaml` が Artifact Registry へ push する。
+
+ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。
 
 ### 外付けキーボードのキーリマップ (macOS, 任意)
 
-外付けキーボード向けのキーリマップは自動適用されない。必要な場合のみ手動で以下を実行する。
-
-```bash
-~/.local/share/chezmoi/install/macos/setup-external-keyboard.sh
-```
-
-`hidutil` でキーを再割り当てし、ログイン時に再適用する LaunchAgent (`~/Library/LaunchAgents/com.apple.KeyRemapping.plist`) を登録する。リマップ内容は次のとおり。
+設定から、変更するキーの組み合わせを以下のように入れ替える。
 
 - Caps Lock → Control
 - Option (Alt) → Command
 - Command → Option
 
-接続中のすべての HID キーボード (内蔵含む) に適用される点に注意。無効化する場合は次を実行する。
+## 暗号化された設定の編集
+
+age 秘密鍵を配置済みの環境で、暗号化ファイルを編集・再暗号化する。
+
+`home/` 配下（chezmoi 管理対象）のファイルは chezmoi が透過的に復号/再暗号化する。
 
 ```bash
-launchctl unload "$HOME/Library/LaunchAgents/com.apple.KeyRemapping.plist" && rm "$HOME/Library/LaunchAgents/com.apple.KeyRemapping.plist"
+chezmoi edit ~/.ssh/config.local      # 復号して編集 → 保存時に再暗号化
+chezmoi decrypt <source>/encrypted_foo.age   # 標準出力へ復号
+```
+
+`settings/` 配下（chezmoi 管理外）は Make ターゲットを使う。
+
+```bash
+make decrypt_google_ime   # encrypted_google.ime.txt.age → settings/common/google.ime.txt (平文, gitignore 済み)
+make encrypt_google_ime   # 平文を編集後に再暗号化
 ```
 
 ## Structure
 
 ```
 .
-├── home/                        # chezmoi 管理対象の dotfiles
-│   ├── .chezmoi.toml.tmpl       # chezmoi 初期設定テンプレート
-│   ├── .chezmoiscripts/         # chezmoi ライフサイクルスクリプト
-│   ├── dot_alias.tmpl           # シェルエイリアス
-│   ├── dot_bash_profile         # Bash 設定
-│   ├── dot_zprofile             # Zsh 設定
-│   ├── dot_gitconfig.tmpl       # Git 設定
-│   ├── dot_tmux.conf            # Tmux 設定
-│   ├── dot_vimrc                # Vim 設定
-│   ├── dot_ssh/config           # SSH 設定
-│   ├── dot_claude/              # Claude Code 設定
-│   │   ├── CLAUDE.md            # グローバル指示ファイル
-│   │   ├── settings.json.tmpl   # パーミッション・フック設定
-│   │   └── skills/              # カスタムスキル (commit, gh-*, gws-*, pdf)
-│   ├── dot_codex/               # OpenAI Codex 設定
-│   ├── dot_gemini/              # Gemini CLI 設定
-│   ├── modify_dot_claude.json.tmpl  # .claude.json の mcpServers を管理する modify スクリプト
-│   └── dot_config/
-│       ├── fish/                # Fish shell 設定 + カスタム関数
-│       ├── ghostty/             # Ghostty ターミナル設定
-│       ├── fastfetch/           # Fastfetch 設定
-│       └── starship.toml        # Starship プロンプト設定
-├── install/                     # インストールスクリプト
-│   ├── common/                  # 共通 (mise, rust, fonts, fisher, etc.)
-│   ├── macos/                   # macOS (brew, xcode, system settings)
-│   └── ubuntu/                  # Ubuntu (apt, Docker)
-├── tests/                       # BATS テスト
-│   ├── files/                   # dotfile 存在チェック
-│   └── install/                 # インストール検証
-├── .github/workflows/           # CI/CD
-│   ├── ci.yml                   # pre-commit, bats test, chezmoi dry-run/apply
-│   └── claude.yaml              # Claude Code 連携
-├── docker/                      # Docker イメージ定義
-│   └── Dockerfile.debian        # Ubuntu 開発環境イメージ
-├── Makefile                     # ビルド/テスト自動化
-└── .pre-commit-config.yaml      # Lint/Format 設定
+├── home/                          # chezmoi 管理対象の dotfiles (source root)
+│   ├── .chezmoi.toml.tmpl         # 初期設定テンプレート (プロンプト・age recipient)
+│   ├── .chezmoiignore             # 鍵の有無で暗号化ファイルの適用を制御
+│   ├── .chezmoiscripts/           # chezmoi ライフサイクルスクリプト
+│   ├── dot_alias.tmpl             # シェルエイリアス
+│   ├── dot_gitconfig.tmpl         # Git 設定 (業務用は暗号化した include を条件付きで参照)
+│   ├── dot_gitconfig.github       # 個人 GitHub 用 Git 設定
+│   ├── dot_ssh/
+│   │   ├── config.tmpl            # 公開可の SSH 設定 (~/.ssh/config.local を Include)
+│   │   └── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
+│   ├── encrypted_dot_gitconfig.*.age    # 業務用 Git 設定 (age 暗号化)
+│   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules)
+│   ├── dot_codex/                 # OpenAI Codex 設定
+│   ├── dot_gemini/                # Gemini CLI 設定
+│   ├── modify_private_dot_claude.json.tmpl  # ~/.claude.json の mcpServers を管理
+│   └── dot_config/                # fish / ghostty / mise / starship 等
+├── install/                       # インストールスクリプト
+│   ├── common/                    # 共通 (mise, rust, fonts, fisher, age 等)
+│   ├── macos/                     # macOS (brew, xcode, system/app settings)
+│   ├── debian/ ubuntu/ alpine/    # Linux 系
+│   └── windows/                   # PowerShell
+├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
+│   ├── common/                    # ghostty / vscode / IME 辞書(暗号化)
+│   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
+├── tests/                         # BATS テスト (files / install)
+├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
+├── .github/workflows/             # CI (pre-commit, bats, chezmoi dry-run) / Claude 連携
+├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
+├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
+├── .pre-commit-config.yaml        # Lint/Format 設定
+└── _typos.toml                    # typos 設定 (*.age を除外)
 ```
-
-## Make Targets
-
-| Target                 | Description                    |
-| ---------------------- | ------------------------------ |
-| `make test`            | BATS テスト実行                |
-| `make pre-commit`      | Lint/Format チェック           |
-| `make dry_run`         | chezmoi apply のドライラン     |
-| `make apply`           | chezmoi apply 実行             |
-| `make build_image`     | Docker イメージビルド          |
-| `make build_gpu_image` | GPU 対応 Docker イメージビルド |
-| `make push_image`      | Docker イメージ push           |
