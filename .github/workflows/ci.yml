@@ -70,5 +70,10 @@ jobs:
           fi
       - name: Run bats tests
         run: |
+          # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
+          # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
+          # 途中で中断しうる。source 中だけ -e を外し、最後まで環境を読み込ませる。
+          set +e
           source ~/.bash_profile
+          set -e
           make test
