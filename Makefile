@@ -18,7 +18,8 @@ define build_variant
 endef
 
 # 1 バリアントを amd64/arm64 マルチアーキでビルドし registry に push する共通レシピ。
-# 引数は build_variant と同じ ($(1)=タグ suffix, $(2)=ベースイメージ, $(3)=skip_cli_tools)。
+# 引数は build_variant と同じ ($(1)=タグ suffix, $(2)=ベースイメージ, $(3)=skip_cli_tools,
+# $(4)=Dockerfile (省略時は docker/Dockerfile.debian))。
 # GUI ツールはどのバリアントでもインストールしないため SKIP_GUI_TOOLS=true 固定。
 # マルチアーキ manifest list はローカル docker に
 # load できないため --push 一択 (事前に docker login 済みであること)。
@@ -26,7 +27,7 @@ endef
 define build_variant_multi
 	GITHUB_TOKEN="$$(gh auth token -h github.com)" && \
 	export GITHUB_TOKEN && \
-	docker buildx build -f docker/Dockerfile.debian \
+	docker buildx build -f $(if $(4),$(4),docker/Dockerfile.debian) \
 		--builder mybuilder \
 		--secret id=github_token,env=GITHUB_TOKEN \
 		--build-arg "BASE_IMAGE=$(2)" \
@@ -65,18 +66,9 @@ build-ubuntu-gpu:
 	$(call build_variant,ubuntu-gpu,nvidia/cuda:13.3.0-base-ubuntu26.04,false)
 
 # Alpine は musl 環境のため最小構成 (skip_cli_tools=true) でビルドする。
-# 専用の docker/Dockerfile.alpine を使う。
 .PHONY: build-alpine
 build-alpine:
 	$(call build_variant,alpine,alpine:latest,true,docker/Dockerfile.alpine)
-
-# 全 7 バリアントをまとめてビルドする。
-.PHONY: build
-build: build-ubuntu-min \
-	build-ubuntu \
-	build-debian-min build-debian \
-	build-debian-slim-min \
-	build-ubuntu-gpu
 
 # buildx ビルダー (mybuilder) を用意して有効化する。
 .PHONY: buildx-setup
@@ -87,10 +79,11 @@ buildx-setup:
 		docker buildx use mybuilder; \
 	fi
 
-# GPU と GUI フル構成 (ubuntu-full) を除く 5 バリアントを amd64/arm64 マルチアーキで
-# ビルドし registry に push する。
+# GPU (amd64 のみ) と GUI フル構成 (ubuntu-full) を除く 6 バリアントを
+# amd64/arm64 マルチアーキでビルドし registry に push する。
 .PHONY: build-multi-platform
 build-multi-platform: buildx-setup
+	$(call build_variant_multi,alpine,alpine:latest,true,docker/Dockerfile.alpine)
 	$(call build_variant_multi,ubuntu-min,ubuntu:26.04,true)
 	$(call build_variant_multi,ubuntu,ubuntu:26.04,false)
 	$(call build_variant_multi,debian-min,debian:trixie,true)
@@ -100,7 +93,7 @@ build-multi-platform: buildx-setup
 # ビルド済みの全タグを push する。
 .PHONY: push
 push:
-	for tag in ubuntu-min ubuntu debian-min debian debian-slim-min ubuntu-gpu alpine; do \
+	for tag in alpine ubuntu-min ubuntu debian-min debian debian-slim-min ubuntu-gpu; do \
 		docker push $(DOCKER_REPOSITORY):$$tag; \
 	done
 

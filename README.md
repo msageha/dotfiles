@@ -127,7 +127,6 @@ docker container run -it msageha/dotfiles:ubuntu
 | `make build-debian-slim-min` | `debian-slim-min` | Debian slim / 最小               |
 | `make build-alpine`          | `alpine`          | Alpine / 最小                    |
 | `make build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
-| `make build`                 | 上記まとめ        | 全バリアントを一括ビルド         |
 
 マルチアーキ (amd64/arm64) ビルドと registry への push は `make build-multi-platform` / `make push`。CI では `cloudbuild.yaml` が Artifact Registry へ push する。
 
