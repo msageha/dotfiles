@@ -1,0 +1,132 @@
+" --------------------------------------------
+" Basic Vim Settings
+" --------------------------------------------
+" 互換モードを無効にして、Vimをより便利にする
+set nocompatible
+
+" OSクリップボードをデフォルトで使用
+set clipboard=unnamed
+
+" コマンドライン補完を強化
+set wildmenu
+
+" 挿入モードでカーソルキーを使用可能に
+" esckeys は nocompatible 時にデフォルトで有効、Vim 9.0+ では削除済みのため設定不要
+
+" 挿入モードでのバックスペースを許可
+set backspace=indent,eol,start
+
+" 高速なターミナル接続のために最適化
+set ttyfast
+
+" 検索/置換時にgフラグをデフォルトで使用
+set gdefault
+
+" BOMなしのUTF-8を使用
+set encoding=utf-8 nobomb
+
+" mapleaderをカンマに設定
+let mapleader=","
+
+" ファイルの末尾に空の改行を追加しない
+set nofixendofline
+
+" 自動インデントを有効にする
+set autoindent
+set smartindent
+
+" 挿入モードでのペーストを快適に
+set pastetoggle=<F2>
+
+" ファイルのエンコーディングを自動検出
+set fileencodings=utf-8,iso-2022-jp,sjis,euc-jp
+
+" --------------------------------------------
+" Backup and Undo Settings
+" --------------------------------------------
+" バックアップとundo履歴を集中管理
+" silent !mkdir -p ~/.local/state/vim/backups
+" set backupdir=~/.local/state/vim/backups
+" silent !mkdir -p ~/.local/state/vim/swaps
+" set directory=~/.local/state/vim/swaps
+" silent !mkdir -p ~/.local/state/vim/undo
+" set undodir=~/.local/state/vim/undo
+" set viminfo+=n~/.local/state/vim/viminfo
+
+" 特定のディレクトリでファイルを編集する際にバックアップを作成しない
+set backupskip=/tmp/*,/private/tmp/*
+
+" --------------------------------------------
+" Modeline and Security Settings
+" --------------------------------------------
+" ファイル内のmodelineを尊重
+set modeline
+set modelines=4
+
+" ディレクトリごとの.vimrcファイルを有効にし、安全でないコマンドを無効に
+set exrc
+set secure
+
+" --------------------------------------------
+" Display Settings
+" --------------------------------------------
+" 行番号を表示
+set number
+
+" 現在の行をハイライト
+set cursorline
+
+" タブ幅を2スペースに設定
+set tabstop=2
+
+" 「見えない」文字を表示
+set lcs=tab:▸\ ,trail:·,eol:¬,nbsp:_
+set list
+
+" 検索結果をハイライト
+set hlsearch
+
+" 検索時のケースを無視（大文字を含む場合は区別）
+set ignorecase
+set smartcase
+
+" パターンを入力している途中で動的にハイライト
+set incsearch
+
+" ステータスラインを常に表示
+set laststatus=2
+
+" すべてのモードでマウスを有効に
+set mouse=a
+
+" エラーベルを無効に
+set noerrorbells
+
+" 移動中にカーソルを行の先頭にリセットしない
+set nostartofline
+
+" カーソル位置を表示
+set ruler
+
+" Vim起動時のイントロメッセージを非表示
+set shortmess=atI
+
+" 現在のモードを表示
+set showmode
+
+" ウィンドウのタイトルバーにファイル名を表示
+set title
+
+" コマンド入力中に部分コマンドを表示
+set showcmd
+
+" 水平ウィンドウボーダーから3行前でスクロールを開始
+set scrolloff=3
+
+" --------------------------------------------
+" Color Scheme
+" --------------------------------------------
+" Draculaカラースキームを使用
+packadd! dracula
+syntax enable
+colorscheme dracula

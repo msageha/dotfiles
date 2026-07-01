@@ -1,0 +1,9 @@
+[files]
+# age 暗号化ファイルは base64 暗号文なので typos の誤検出対象外にする。
+extend-exclude = ["*.age"]
+
+[default.extend-words]
+# PNG file format (typos treats "PN" as a typo for "ON")
+PN = "PN"
+# BetterTouchTool's own misspelled key name
+Fom = "Fom"

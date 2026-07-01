@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+{{ if eq .chezmoi.os "darwin" -}}
+export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | quote }}
+
+{{   include "../install/macos/xcode_select.sh" }}
+{{   include "../install/macos/brew.sh" }}
+export COMPUTER_NAME={{ .computer_name | quote }}
+
+# GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
+if [ -z "${CI:-}" ]; then
+{{   include "../install/macos/system_settings.sh" }}
+{{   include "../install/macos/app_settings.sh" }}
+  # Software Update は更新がある場合のみ適用する。--list は sudo 不要なので、
+  # 更新が無ければ sudo (--install) を呼ばずにスキップし、不要な認証を避ける。
+  if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
+    echo "Software Update が見つかりました。インストールします..."
+    sudo softwareupdate --install --all
+  else
+    echo "利用可能な Software Update はありません。スキップします。"
+  fi
+fi
+{{ end -}}

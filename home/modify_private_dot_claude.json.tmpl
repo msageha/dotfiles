@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+"""Modify script for .claude.json
+
+Manages user-level mcpServers via chezmoi while preserving
+all other runtime state (counters, caches, project settings, etc.).
+"""
+import json
+import sys
+
+# MCP servers managed by chezmoi
+MANAGED_MCP_SERVERS = {
+    "codex": {
+        "type": "stdio",
+        "command": "codex",
+        "args": ["mcp-server"],
+        "env": {}
+    },
+    "context7": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp@latest"],
+        "env": {}
+    },
+    "chrome-devtools": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "chrome-devtools-mcp@latest"],
+        "env": {}
+    },
+    "antigravity": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "ask-antigravity-mcp"],
+        "env": {}
+    },
+    "playwright": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@latest"],
+        "env": {}
+    },
+    "youtube": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": [
+            "--from",
+            "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+            "mcp-youtube-transcript"
+        ],
+        "env": {}
+    },
+    "dart": {
+        "type": "stdio",
+        "command": "dart",
+        "args": ["mcp-server"],
+        "env": {}
+    },
+    "figma": {
+        "type": "http",
+        "url": "https://mcp.figma.com/mcp"
+    },
+    "drawio": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@drawio/mcp"]
+    },
+    "xcode": {
+        "type": "stdio",
+        "command": "xcrun",
+        "args": ["mcpbridge"],
+        "env": {}
+    },
+    "maps-grounding-lite": {
+        "type": "http",
+        "url": "https://mapstools.googleapis.com/mcp",
+        "headers": {
+            "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
+        }
+    },
+    "nano-banana": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["nanobanana-mcp-server@latest"],
+        "env": {
+            "GEMINI_API_KEY": "{{ dig "apiKeys" "gemini" "" . }}"
+        }
+    }
+}
+
+current = sys.stdin.read()
+
+if not current.strip():
+    data = {"mcpServers": MANAGED_MCP_SERVERS}
+else:
+    data = json.loads(current)
+
+if "mcpServers" not in data:
+    data["mcpServers"] = {}
+
+for name, config in MANAGED_MCP_SERVERS.items():
+    data["mcpServers"][name] = config
+
+sys.stdout.write(json.dumps(data, indent=2, ensure_ascii=False))

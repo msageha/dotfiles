@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+
+BLUE="\033[0;34m"
+NC="\033[0m" # No Color (リセット)
+
+function update() {
+    printf "%b\n" "${BLUE}Updating APK package index...${NC}"
+    sudo apk update
+}
+
+apk_base=(
+    # base / infra
+    ca-certificates
+    curl
+    wget
+    unzip
+    # NOTE: alpine は skip_cli_tools=true の最小構成でのみビルドする。この構成で導入する
+    # mise 管理ツール (direnv/fzf/ghq/peco/starship) はすべてプリビルドのバイナリで、
+    # C/C++ のコンパイルは発生しない。build-base + pkgconf は ~210MB を占めるだけの
+    # 無駄になるため入れない (ソースビルドが必要になったら個別に apk add すること)。
+    # glibc リンクのバイナリ (mise 管理ツール等) を musl 上で動かす互換レイヤ
+    gcompat
+
+    # shells / vcs
+    fish
+    zsh
+    git
+)
+
+function install_base() {
+    printf "%b\n" "${BLUE}Installing base APK packages...${NC}"
+    sudo apk add "${apk_base[@]}"
+}
+
+function upgrade() {
+    printf "%b\n" "${BLUE}Upgrading APK packages...${NC}"
+    sudo apk upgrade
+}
+
+function clean() {
+    printf "%b\n" "${BLUE}Cleaning up APK cache...${NC}"
+    sudo rm -rf /var/cache/apk/*
+}
+
+function main() {
+    update
+    install_base
+    upgrade
+    clean
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi

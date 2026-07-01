@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.os "darwin" -}}
+alias chrome='open -a "Google Chrome"'
+{{ end -}}
+alias claude-fable5='claude --append-system-prompt-file ~/.claude/CLAUDE-FABLE-5.md'
+alias claude-fusion='claude --settings ~/.claude/settings.fusion.json --dangerously-skip-permissions'

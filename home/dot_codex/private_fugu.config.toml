@@ -1,0 +1,7 @@
+model = "fugu-ultra"
+model_reasoning_effort = "high"
+model_provider = "sakana"
+model_catalog_json = "~/.codex/fugu.json"
+
+[features]
+image_generation = false

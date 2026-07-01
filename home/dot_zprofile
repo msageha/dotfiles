@@ -1,0 +1,106 @@
+# --- エイリアスの読み込み ---
+if [ -f "$HOME/.alias" ]; then
+    source "$HOME/.alias"
+fi
+
+# --- ヒストリーファイルの設定 ---
+export HISTFILE="$HOME/.local/state/zsh_history"
+export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
+export SQL_HISTORY="$HOME/.local/state/sql_history"
+export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
+export PSQL_HISTFILE="$HOME/.local/state/psql_history"
+export PYTHON_HISTORY="$HOME/.local/state/python_history"
+
+# --- Goの設定 ---
+export GOPATH="$HOME/Works"
+if [ -d "$HOME/Works/bin" ]; then
+    export PATH="$HOME/Works/bin:$PATH"
+fi
+
+# --- Homebrewの設定 ---
+if command -v brew &>/dev/null; then
+    eval "$(brew shellenv)"
+fi
+
+# --- zsh補完システムの初期化 ---
+# completions.sh が生成した _<cmd> 形式の補完を compinit より前に fpath へ追加する
+fpath=("$HOME/.config/zsh/completions" $fpath)
+autoload -Uz compinit && compinit
+
+# --- miseの初期化 ---
+if command -v mise &>/dev/null; then
+    eval "$(mise activate zsh)"
+fi
+
+# --- flutterのパス追加 ---
+if command -v mise &>/dev/null && mise where flutter &>/dev/null; then
+    export FLUTTER_ROOT="$(mise where flutter)"
+fi
+if [ -d "$HOME/.pub-cache/bin" ]; then
+    export PATH="$HOME/.pub-cache/bin:$PATH"
+fi
+
+# --- ローカルバイナリのパス追加 ---
+# (uvでインストールしたツール用)
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# -- Rustの設定 ---
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+if command -v rustup &>/dev/null && command -v xcrun &>/dev/null; then
+    export SDKROOT="$(xcrun --show-sdk-path)"
+fi
+
+# --- JDKの設定 ---
+if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
+    export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+    export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include" # Cプリプロセッサ用フラグ
+fi
+
+# --- Google Cloud SDKのPython設定 ---
+export CLOUDSDK_PYTHON="$(command -v python3)"
+
+# --- Docker環境設定 --- (Docker内で動作している場合に設定)
+if [ -e /.dockerenv ] && [ -z "$DOCKER_MACHINE_NAME" ]; then
+    export DOCKER_MACHINE_NAME="docker"
+fi
+
+# --- MySQLクライアントのパス追加 ---
+if [ -d "/opt/homebrew/opt/mysql-client/bin/" ]; then
+    export MYSQL_CLIENT_PATH="/opt/homebrew/opt/mysql-client"
+    export PATH="$MYSQL_CLIENT_PATH/bin:$PATH"
+fi
+
+# --- mysqlclient用のコンパイラフラグ設定（macOSのみ） ---
+if [[ "$(uname)" == "Darwin" ]]; then
+    [[ "$PKG_CONFIG_PATH" != */opt/homebrew/lib/pkgconfig* ]] && export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH"
+    [[ "$LDFLAGS" != *-L/opt/homebrew/lib* ]] && export LDFLAGS="-L/opt/homebrew/lib $LDFLAGS"
+    [[ "$CPPFLAGS" != *-I/opt/homebrew/include* ]] && export CPPFLAGS="-I/opt/homebrew/include $CPPFLAGS"
+fi
+
+# --- orbstackの設定 ---
+if [ -d "$HOME/.orbstack/shell" ]; then
+    source "$HOME/.orbstack/shell/init.zsh"
+fi
+
+# --- Starshipの設定 ---
+if command -v starship &>/dev/null; then
+    eval "$(starship init zsh)"
+fi
+
+# --- Xcodeの設定 ---
+# DEVELOPER_DIR は xcrun / ビルドツールが参照する。usr/bin を prepend すると
+# Homebrew の git / python3 を Xcode 同梱版が上書きしてしまうため、末尾に追加して
+# Homebrew を優先しつつ simctl 等の Xcode 専用ツールも引けるようにする。
+if xcode-select -p &>/dev/null; then
+    export DEVELOPER_DIR="$(xcode-select -p)"
+    export PATH="$PATH:$DEVELOPER_DIR/usr/bin"
+fi
+
+# --- direnvのフック設定 ---
+if command -v direnv &>/dev/null; then
+    eval "$(direnv hook zsh)"
+fi

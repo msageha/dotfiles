@@ -1,0 +1,92 @@
+[ghq]
+    root = ~/Works/src                    # GHQのルートディレクトリを指定
+    shallow = true
+
+[user]
+    name = Mizuki Sango                   # Gitで使用するユーザー名
+    email = msageha+git@gmail.com         # Gitで使用するメールアドレス
+
+[init]
+    defaultBranch = main                  # 新規リポジトリのデフォルトブランチ名を設定
+    templatedir = ~/.git-templates/git-secrets
+
+[secrets]
+    providers = git secrets --aws-provider
+    patterns = (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
+    patterns = (\"|')?(AWS|aws|Aws)?_?(SECRET|secret|Secret)?_?(ACCESS|access|Access)?_?(KEY|key|Key)(\"|')?\\s*(:|=>|=)\\s*(\"|')?[A-Za-z0-9/\\+=]{40}(\"|')?
+    patterns = (\"|')?(AWS|aws|Aws)?_?(ACCOUNT|account|Account)_?(ID|id|Id)?(\"|')?\\s*(:|=>|=)\\s*(\"|')?[0-9]{4}\\-?[0-9]{4}\\-?[0-9]{4}(\"|')?
+    allowed = AKIAIOSFODNN7EXAMPLE
+    allowed = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+[core]
+    editor = vim                          # デフォルトエディタをVimに設定
+    excludesFile = ~/.gitignore           # グローバルな.gitignoreファイルの指定
+
+[filter "lfs"]
+    smudge = git-lfs smudge -- %f         # LFSファイルの読み込み時の処理
+    process = git-lfs filter-process      # LFSファイルのフィルタ処理
+    required = true                       # LFSを必須に設定
+    clean = git-lfs clean -- %f           # LFSファイルの保存時の処理
+
+[grep]
+    lineNumber = true                     # grep結果に行番号を表示
+
+[pull]
+    rebase = false                        # pull時のrebaseを無効に設定
+
+[color]
+    ui = auto                             # 色の自動設定
+
+[alias]
+    co = checkout                         # checkoutコマンドのエイリアス
+    br = branch                           # branchコマンドのエイリアス
+    ci = commit                           # commitコマンドのエイリアス
+    st = status                           # statusコマンドのエイリアス
+    lg = log --oneline --graph --decorate # 簡潔なログ表示
+    lga = log --oneline --graph --decorate --all # 全ブランチのログ表示
+    ls = ls-files                         # トラッキングしているファイルを表示
+    cp = cherry-pick                      # cherry-pickコマンドのエイリアス
+    rb = rebase                           # rebaseコマンドのエイリアス
+    rbi = rebase -i                       # インタラクティブなrebaseコマンドのエイリアス
+    rbc = rebase --continue               # rebaseの続行コマンドのエイリアス
+
+[diff]
+    tool = vimdiff                        # 差分表示ツールにVimdiffを指定
+
+[merge]
+    tool = vimdiff                        # マージツールにVimdiffを指定
+    conflictstyle = diff3                 # コンフリクト表示スタイルを設定
+
+[push]
+    default = current                     # プッシュのデフォルト設定
+
+[credential]
+{{- if eq .chezmoi.os "darwin" }}
+    helper = osxkeychain
+{{- else }}
+    helper = cache --timeout=3600
+{{- end }}
+
+[color "branch"]
+    current = yellow bold
+    remote = green
+    tracked = cyan
+
+[safe]
+    directory = ~/.local/share/chezmoi
+
+[includeIf "gitdir:~/Works/src/github.com/"]
+    path = ~/.gitconfig.github
+
+{{- if eq .chezmoi.os "darwin" }}
+{{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
+{{ if (stat $ageKey) }}
+[includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
+    path = ~/.gitconfig.technoface.gitlab # Technoface GitLab専用の設定
+
+[includeIf "hasconfig:remote.*.url:*github.com/SakanaAIBusiness/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
+[includeIf "hasconfig:remote.*.url:*github.com/SakanaAI/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
+{{ end }}
+{{- end }}

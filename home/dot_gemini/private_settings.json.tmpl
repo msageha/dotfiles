@@ -1,0 +1,28 @@
+{
+  "model": {
+    "name": "gemini-3.1-pro-preview"
+  },
+  "tools": {
+    "sandbox": false
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  },
+  "general": {
+    "vimMode": true,
+    "previewFeatures": true,
+    "defaultApprovalMode": "default"
+  },
+  "mcpServers": {
+    "maps-grounding-lite-mcp": {
+      "url": "https://mapstools.googleapis.com/mcp",
+      "type": "http",
+      "headers": {
+        "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
+      },
+      "trust": true
+    }
+  }
+}

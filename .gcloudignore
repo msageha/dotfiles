@@ -1,0 +1,17 @@
+*
+
+!docker
+!docker/Dockerfile.debian
+!.dockerignore
+
+!.chezmoiroot
+
+!home
+!home/**
+
+!install
+!install/**
+
+!settings
+!settings/common
+!settings/common/**

@@ -1,0 +1,74 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Install hadolint
+        env:
+          HADOLINT_VERSION: v2.14.0
+        run: |
+          curl -fsSL --retry 3 --retry-delay 2 \
+            -o /tmp/hadolint \
+            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64"
+          sudo install -m 0755 /tmp/hadolint /usr/local/bin/hadolint
+      - name: Run pre-commit
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+  chezmoi:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Pre-configure chezmoi
+        run: |
+          mkdir -p $HOME/.config/chezmoi
+          cat <<EOF > $HOME/.config/chezmoi/chezmoi.toml
+          [data]
+          computer_name = "ci-${{ matrix.os }}"
+          skip_cli_tools = false
+          skip_gui_tools = true
+
+          [data.github]
+          user = "msageha"
+
+          [data.apiKeys]
+          gemini = ""
+          googleMaps = ""
+          fugu = ""
+          openRouter = ""
+          EOF
+      - name: Initialize chezmoi
+        run: chezmoi init --source=${{ github.workspace }}
+      - name: Test chezmoi apply (dry-run)
+        run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
+      - name: Apply chezmoi
+        run: chezmoi apply --source=${{ github.workspace }} --verbose
+      - name: Install bats
+        run: |
+          if command -v brew &>/dev/null; then
+            brew install bats-core
+          else
+            sudo apt-get update && sudo apt-get install -y bats
+          fi
+      - name: Run bats tests
+        run: |
+          source ~/.bash_profile
+          make test

@@ -1,0 +1,5 @@
+[".vim/pack/themes/start/dracula"]
+type = "git-repo"
+url = "https://github.com/dracula/vim"
+refreshPeriod = "720h"
+clone.args = ["--depth", "1", "-b", "master"]

@@ -1,0 +1,79 @@
+*
+
+# --- Git / CI 設定 ---
+!.gitignore
+!.gitattributes
+!.pre-commit-config.yaml
+!_typos.toml
+!.github
+!.github/**
+
+# --- Docker / Cloud Build ---
+!docker
+!docker/Dockerfile.alpine
+!docker/Dockerfile.debian
+!.dockerignore
+!.gcloudignore
+!cloudbuild.yaml
+!Makefile
+
+# --- ドキュメント ---
+!README.md
+!CLAUDE.md
+
+# --- chezmoi 本体 ---
+!.chezmoiroot
+!home
+!home/**
+
+# --- インストールスクリプト ---
+!install
+!install/**
+
+# --- ユーティリティスクリプト ---
+!bin
+!bin/**
+
+# --- アプリケーション設定 ---
+!settings
+!settings/**
+settings/common/google.ime.txt
+
+# --- テスト ---
+!tests
+!tests/**
+
+# === ホワイトリスト内から再除外: 機密・不要ファイル ===
+
+# OS メタデータ
+**/.DS_Store
+**/Thumbs.db
+
+# エディタ一時ファイル
+**/*.swp
+**/*.swo
+**/*.tmp
+**/.*~
+**/*~
+
+# 環境変数・シークレット
+**/.env
+**/*.env
+**/.env.*
+**/secrets/
+**/*_token
+**/*_password
+
+# 秘密鍵・証明書
+**/*.pem
+**/*.key
+**/id_rsa
+**/id_ed25519
+**/*.p12
+**/*.pfx
+
+# ログ・キャッシュ
+**/*.log
+**/__pycache__/
+**/.cache/
+**/node_modules/

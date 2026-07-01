@@ -1,0 +1,57 @@
+{{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
+# age 秘密鍵が無い環境では暗号化ファイルをignoreに設定
+{{ if not (stat $ageKey) }}
+.gitconfig.*
+!.gitconfig.github
+.ssh/*
+!.ssh/config
+{{ end }}
+
+# .claude / .codex / .gemini (コーディングエージェント設定) は skip_cli_tools=true のとき管理対象外にする。
+# macOS、または skip_cli_tools=false のときは従来どおり管理する。
+{{- $skipCodingAgent := false }}
+{{- if hasKey . "skip_cli_tools" }}
+{{ $skipCodingAgent = .skip_cli_tools }}
+{{- end }}
+
+# Ignore everything under .claude/ by default
+.claude/*
+{{ if not $skipCodingAgent }}
+# Manage only these files
+!.claude/CLAUDE.md
+!.claude/CLAUDE-FABLE-5.md
+!.claude/settings.json
+!.claude/settings.fusion.json
+!.claude/statusline-command.sh
+!.claude/agents
+!.claude/skills
+!.claude/rules
+{{ end }}
+# .claude.json (Claude MCP 設定) も skip_coding_agent=true のとき除外する
+{{ if $skipCodingAgent }}
+.claude.json
+{{ end }}
+# Ignore everything under .codex/ by default
+.codex/*
+{{ if not $skipCodingAgent }}
+!.codex/config.toml
+!.codex/fugu.config.toml
+!.codex/fusion.config.toml
+!.codex/pareto-code.config.toml
+!.codex/fugu.json
+!.codex/fusion.json
+!.codex/owl-alpha.json
+!.codex/pareto-code.json
+!.codex/.env
+!.codex/rules
+{{ end }}
+# Ignore everything under .gemini/ by default
+.gemini/*
+{{ if not $skipCodingAgent }}
+!.gemini/settings.json
+!.gemini/.env
+!.gemini/antigravity-cli
+!.gemini/antigravity-cli/settings.json
+!.gemini/config
+!.gemini/config/mcp_config.json
+{{ end }}

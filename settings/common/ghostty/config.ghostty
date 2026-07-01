@@ -1,0 +1,54 @@
+# Theme
+theme = "dracula"
+
+# Font
+font-family = "SauceCodePro Nerd Font"
+font-family = "Source Han Code JP"
+font-size = 18
+font-feature = "-calt"
+font-feature = "-dlig"
+font-feature = "-liga"
+
+# Window
+macos-titlebar-style = "transparent"
+window-padding-balance = true
+window-padding-x = 0
+window-padding-y = 0
+window-theme = "ghostty"
+
+background-opacity = 0.98
+background-blur-radius = 0
+
+# Terminal
+term = "xterm-256color"
+scrollback-limit = 2000
+
+# Window Size
+window-inherit-font-size = true
+# maximize = true
+window-height = 30
+window-width = 999
+quick-terminal-screen = main
+quick-terminal-size = 75%
+quick-terminal-position = top
+
+
+# macOS Specific
+macos-option-as-alt = false
+macos-hidden = always
+
+# Quick Terminal (Hotkey Window equivalent)
+# iTerm2 Hotkey Window: transparency 30%, blur on (radius 2)
+# keybind = global:alt+space=toggle_quick_terminal
+# quick-terminal-animation-duration = 0
+
+command = /opt/homebrew/bin/fish
+shell-integration = fish
+clipboard-trim-trailing-spaces = true
+shell-integration-features = no-cursor
+
+unfocused-split-opacity = 0.30
+
+# Mouse and Cursor
+mouse-shift-capture = true
+cursor-style = block

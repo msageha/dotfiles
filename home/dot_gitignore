@@ -1,0 +1,162 @@
+**/*-key.json
+
+.claude
+CLAUDE.md
+
+.maestro/*
+.playwright-mcp/
+
+# -------------------------------
+# Security & Credentials
+# -------------------------------
+# SSH keys and actual config
+.ssh/config
+.ssh/*.key
+.ssh/*.pem
+.ssh/known_hosts
+.ssh/authorized_keys
+
+# Environment variables and secrets
+.env
+*.env
+.env.*
+.envrc
+secrets/
+credentials/
+
+# Git credentials and tokens
+.gitconfig.local
+.gitconfig.personal
+**/github_token*
+**/gitlab_token*
+**/bitbucket_token*
+**/*_token
+**/*_password
+
+# -------------------------------
+# Python-related
+# -------------------------------
+*.pyc
+venv/
+.ipynb_checkpoints
+Untitled.ipynb
+log_tensorboard/
+*.db
+mlflow/*
+
+# -------------------------------
+# Build artifacts
+# -------------------------------
+**/build/
+**/*.egg-info/
+
+.tool-versions
+
+# -------------------------------
+# Modeling-related files
+# -------------------------------
+log/
+logs/
+checkpoint/
+*.gz
+
+# -------------------------------
+# Node.js-related
+# -------------------------------
+node_modules/
+
+# -------------------------------
+# OS-specific files
+# -------------------------------
+.DS_Store
+Desktop.ini
+._*
+Thumbs.db
+
+# -------------------------------
+# Cloud Storage
+# -------------------------------
+.Spotlight-V100
+.Trashes
+
+# -------------------------------
+# IDE/editor settings
+# -------------------------------
+.idea/
+.vscode/
+*.code-workspace
+
+# -------------------------------
+# DBeaver-related
+# -------------------------------
+Scripts
+.project
+.dbeaver/
+
+# -------------------------------
+# Caching and temporary files
+# -------------------------------
+.cache/
+
+# -------------------------------
+# Flutter/Dart/Pub-related files
+# -------------------------------
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+.packages
+.pub-preload-cache/
+.pub-cache/
+.pub/
+flutter_*.png
+linked_*.ds
+unlinked.ds
+unlinked_spec.ds
+
+# -------------------------------
+# Android-related files
+# -------------------------------
+**/android/**/gradle-wrapper.jar
+.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+
+# -------------------------------
+# iOS/XCode-related files
+# -------------------------------
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme

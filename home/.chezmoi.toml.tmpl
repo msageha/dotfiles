@@ -1,0 +1,56 @@
+{{/* age 暗号化。単一共有鍵。$ageRecipient が空の間は暗号化機能は無効 (scaffold 状態) */ -}}
+{{- $ageRecipient := "age100fze4m9k88fyzpg2z5l2hfmk9f299mzl63sjz3s9gk0s8hkt94smeccd0" }}
+{{- if $ageRecipient }}
+encryption = "age"
+[age]
+    identity = {{ (joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt") | quote }}
+    recipient = {{ $ageRecipient | quote }}
+{{ end }}
+[git]
+autoCommit = true
+autoPush = true
+
+[data]
+{{- if eq .chezmoi.os "darwin" }}
+# mac OS specific configuration
+{{-   $current := output "sh" "-c" "name=$(scutil --get ComputerName 2>/dev/null || true); echo \"current computer_name: $name\" >&2; printf '%s' \"$name\"" | trim }}
+{{-   $model := output "sh" "-c" "system_profiler SPHardwareDataType | awk -F': ' '/Model Name/ { print $2 }'" | trim }}
+{{-   $computerName := "" }}
+{{-   if eq $model "MacBook Pro" }}
+{{-     $computerName = promptStringOnce . "computer_name" "e.g.: MacBookPro***-<user>" }}
+{{-   else if eq $model "MacBook Air" }}
+{{-     $computerName = promptStringOnce . "computer_name" "e.g.: MacBookAir***-<user>" }}
+{{-   else }}
+{{-     $computerName = promptStringOnce . "computer_name" "e.g.: Mac***-<user>" }}
+{{-   end }}
+computer_name = {{ $computerName | quote }}
+{{- end }}
+
+{{ $skipCliTools := false -}}
+{{- if eq .chezmoi.os "linux" }}
+# Ubuntu specific configuration
+{{-   $skipCliTools = promptBoolOnce . "skip_cli_tools" "Skip CLI tool installation (CLI utilities, chezmoi, docker, gh)? (default: no)" false }}
+skip_cli_tools = {{ $skipCliTools }}
+{{-   $skipGuiTools := true }}
+{{-   if not $skipCliTools }}
+{{-     $skipGuiTools = promptBoolOnce . "skip_gui_tools" "Skip GUI tool installation? (default: no)" false }}
+{{-   end }}
+skip_gui_tools = {{ $skipGuiTools }}
+{{- end }}
+
+{{- $apiKeys := dict }}
+{{- if hasKey . "apiKeys" }}
+{{-   $apiKeys = .apiKeys }}
+{{- end }}
+
+{{- if not $skipCliTools }}
+[data.apiKeys]
+{{- $geminiApiKey := promptStringOnce $apiKeys "gemini" "Gemini API Key" "" }}
+gemini = {{ $geminiApiKey | quote }}
+{{- $googleMapsApiKey := promptStringOnce $apiKeys "googleMaps" "Google Maps API Key" "" }}
+googleMaps = {{ $googleMapsApiKey | quote }}
+{{- $fuguApiKey := promptStringOnce $apiKeys "fugu" "Fugu (Sakana) API Key" "" }}
+fugu = {{ $fuguApiKey | quote }}
+{{- $openRouterApiKey := promptStringOnce $apiKeys "openRouter" "OpenRouter API Key" "" }}
+openRouter = {{ $openRouterApiKey | quote }}
+{{- end }}

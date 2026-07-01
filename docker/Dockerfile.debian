@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.7
+ARG BASE_IMAGE=ubuntu:26.04
+FROM ${BASE_IMAGE}
+
+ENV DOCKER_MACHINE_NAME="msageha-docker"
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NOWARNINGS=yes
+ARG USERNAME=mzk
+ENV USER=${USERNAME}
+ENV TZ=Asia/Tokyo
+ENV HOME=/home/${USERNAME}
+# chezmoi のツール導入レベルを制御するビルド引数。
+# SKIP_CLI_TOOLS=false で最小構成
+ARG SKIP_CLI_TOOLS=true
+ARG SKIP_GUI_TOOLS=true
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN \
+  apt-get update && \
+  apt-get install -y --no-install-recommends ca-certificates locales tzdata sudo curl && \
+  apt-get autoremove -y && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* && \
+  echo "ja_JP.UTF-8 UTF-8" >> /etc/locale.gen && \
+  locale-gen && \
+  update-locale LANG=ja_JP.UTF-8 LANGUAGE=ja_JP:ja && \
+  echo "${TZ}" > /etc/timezone && \
+  rm /etc/localtime && \
+  ln -s /usr/share/zoneinfo/${TZ} /etc/localtime && \
+  dpkg-reconfigure -f noninteractive tzdata && \
+  groupadd ${USERNAME} && \
+  useradd -g ${USERNAME} -G sudo -m -s /bin/bash ${USERNAME} && \
+  echo "${USERNAME}:${USERNAME}" | chpasswd && \
+  echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# ロケールは上の RUN で生成済み。生成より前に LANG/LC_ALL を設定すると
+# 未生成ロケールを指した状態になり Ubuntu の locale-gen が何も生成しないため、
+# ここ (生成後) で初めて環境変数として設定する。
+ENV LANG=ja_JP.UTF-8
+ENV LANGUAGE=ja_JP:ja
+ENV LC_ALL=ja_JP.UTF-8
+
+WORKDIR $HOME
+
+COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
+
+USER ${USERNAME}
+
+RUN --mount=type=secret,id=github_token,mode=0444,required=false \
+  if [[ -f /run/secrets/github_token ]]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin && \
+  export PATH="$HOME/.local/bin:$PATH" && \
+  mkdir -p $HOME/.config/chezmoi && \
+  printf '%s\n' \
+  '[data]' \
+  'computer_name = "msageha-docker"' \
+  "skip_cli_tools = ${SKIP_CLI_TOOLS}" \
+  "skip_gui_tools = ${SKIP_GUI_TOOLS}" \
+  > $HOME/.config/chezmoi/chezmoi.toml && \
+  chezmoi apply --source=$HOME/dotfiles && \
+  rm -rf $HOME/dotfiles && \
+  rm -rf "$HOME/.rustup/toolchains/"*/share/doc \
+  "$HOME/.cargo/registry" \
+  "$HOME/.cache" && \
+  rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip
+
+CMD ["/usr/bin/fish"]

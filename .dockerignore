@@ -1,0 +1,18 @@
+*
+
+# chezmoi ソースルート指定ファイル
+!.chezmoiroot
+
+# chezmoi dotfiles ソース (home/ 以下すべて)
+!home
+!home/**
+
+# インストールスクリプト (chezmoi テンプレートが include で参照)
+!install
+!install/**
+
+# 共通設定ファイル
+!settings
+!settings/common
+!settings/common/**
+settings/common/google.ime.txt

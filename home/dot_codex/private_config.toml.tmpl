@@ -1,0 +1,32 @@
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[model_providers.sakana]
+name = "Sakana API"
+base_url = "https://api.torafugu.app/v1"
+env_key = "SAKANA_API_KEY"
+wire_api = "responses"
+stream_idle_timeout_ms = 600000
+
+[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
+env_key = "OPENROUTER_API_KEY"
+wire_api = "responses"
+stream_idle_timeout_ms = 600000
+
+[notice]
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.2-codex"
+"gpt-5.2-codex" = "gpt-5.3-codex"
+
+[projects."{{ .chezmoi.homeDir }}/Works/src"]
+trust_level = "trusted"
+
+[projects."{{ .chezmoi.homeDir }}/.local/share/chezmoi"]
+trust_level = "trusted"

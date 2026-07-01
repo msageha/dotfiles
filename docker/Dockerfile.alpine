@@ -1,0 +1,81 @@
+# syntax=docker/dockerfile:1.7
+ARG BASE_IMAGE=alpine:latest
+FROM ${BASE_IMAGE}
+
+ENV DOCKER_MACHINE_NAME="msageha-docker"
+ARG USERNAME=mzk
+ENV USER=${USERNAME}
+ENV TZ=Asia/Tokyo
+ARG GID=1009
+ARG UID=1009
+ENV HOME=/home/${USERNAME}
+# chezmoi のツール導入レベルを制御するビルド引数。
+# SKIP_CLI_TOOLS=true で最小構成 (CLI ツール群を省く)。
+ARG SKIP_CLI_TOOLS=true
+ARG SKIP_GUI_TOOLS=true
+
+# busybox ash で pipefail を有効化。
+# ここでは chezmoi とそのスクリプト実行に必要な最小限だけ導入する。
+# CLI ツール群・shell (fish/zsh)・git 等は debian と同様 chezmoi apply 時に
+# run_once_before_02_alpine 経由で install/alpine/apk.sh が導入する。
+# bash: chezmoi スクリプトの #!/bin/bash 用 / shadow: groupadd・useradd・chpasswd 用。
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+RUN \
+  apk add --no-cache \
+  bash \
+  ca-certificates \
+  curl \
+  sudo \
+  tzdata && \
+  # tzdata は残す: musl は ENV TZ=Asia/Tokyo を解決する際 /usr/share/zoneinfo を参照する。
+  # 消すと TZ がフォールバックして UTC になるため (/etc/localtime のコピーだけでは不足)。
+  # shadow (useradd/groupadd/chpasswd) はビルド時のみ必要。virtual package にまとめ、
+  # ユーザー作成後に削除してランタイムイメージから外す。
+  apk add --no-cache --virtual .build-deps shadow && \
+  cp "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
+  echo "${TZ}" > /etc/timezone && \
+  groupadd --gid "${GID}" "${USERNAME}" && \
+  useradd --gid "${GID}" --uid "${UID}" -G wheel -m -s /bin/bash "${USERNAME}" && \
+  echo "${USERNAME}:${USERNAME}" | chpasswd && \
+  echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+  apk del .build-deps
+
+# musl libc は glibc 互換の locale-gen を持たず ja_JP.UTF-8 ロケールは生成できない。
+# ただし musl は文字コードを UTF-8 として扱うため、LANG/LC_ALL を設定すれば UTF-8 の
+# 入出力は機能する (メッセージ・照合順序の日本語ローカライズは glibc 環境ほどではない)。
+ENV LANG=ja_JP.UTF-8
+ENV LANGUAGE=ja_JP:ja
+ENV LC_ALL=ja_JP.UTF-8
+
+WORKDIR $HOME
+
+COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
+
+USER ${USERNAME}
+
+# secret は BuildKit 既定で root 所有 0400 のため、非 root ユーザーが読めるよう mode=0444 を指定する
+# (GitHub のレート制限回避用トークン。未指定だと cat が権限拒否され匿名枠で 403 になる)。
+RUN --mount=type=secret,id=github_token,mode=0444,required=false \
+  if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" && \
+  export PATH="$HOME/.local/bin:$PATH" && \
+  mkdir -p "$HOME/.config/chezmoi" && \
+  printf '%s\n' \
+  '[data]' \
+  'computer_name = "msageha-docker"' \
+  "skip_cli_tools = ${SKIP_CLI_TOOLS}" \
+  "skip_gui_tools = ${SKIP_GUI_TOOLS}" \
+  > "$HOME/.config/chezmoi/chezmoi.toml" && \
+  chezmoi apply --source="$HOME/dotfiles" && \
+  rm -rf "$HOME/dotfiles" && \
+  rm -rf "$HOME/.cache" && \
+  # chezmoi は provisioning 専用でランタイム不要。~42MB あるため apply 後に削除する
+  # (再適用が必要なら curl get.chezmoi.io で都度入れ直す)。
+  rm -f "$HOME/.local/bin/chezmoi" && \
+  # mise.run が入れるバイナリは strip されておらず ~83MB ある。binutils を一時導入して
+  # strip し (~70MB に縮む)、binutils はランタイムに残さず削除する。
+  sudo apk add --no-cache --virtual .strip-deps binutils && \
+  strip "$HOME/.local/bin/mise" && \
+  sudo apk del .strip-deps
+
+CMD ["/usr/bin/fish"]

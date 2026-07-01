@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
+  "skipDangerousModePermissionPrompt": true,
+  "model": "claude-opus-4-8[1m]",
+  "includeGitInstructions": false,
+  "language": "japanese",
+  "statusLine": {
+    "type": "command",
+    "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh"
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowedDomains": ["*", "127.0.0.1", "localhost"],
+      "allowAllUnixSockets": true,
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        ".",
+        "~/Desktop",
+        "~/Downloads",
+        "~/Works",
+        "~/.local/share/chezmoi",
+        "~/.config",
+        "~/.cache",
+        "~/.local/share/uv",
+        "/tmp",
+        "/private/tmp"
+      ]
+    }
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(flutter *)",
+      "Bash(dart *)",
+      "Bash(python *)",
+      "Bash(pip *)",
+      "Bash(uv *)",
+      "Bash(go *)",
+      "Bash(cargo *)",
+      "Bash(make *)",
+      "Bash(docker *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(gh *)",
+      "Bash(chezmoi *)",
+      "Bash(brew *)",
+      "Bash(mise *)",
+      "Bash(direnv *)",
+      "Bash(gcloud *)",
+      "Bash(terraform *)",
+      "Bash(ghq *)",
+      "Bash(fzf *)",
+      "Bash(tmux *)",
+      "Bash(fish *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(ls *)",
+      "Bash(which *)",
+      "Bash(cat *)",
+      "Bash(bat *)",
+      "Bash(eza *)",
+      "Bash(fd *)",
+      "Bash(rg *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(ln *)",
+      "Bash(touch *)",
+      "Bash(mktemp *)",
+      "Bash(mktemp)",
+      "Bash(tree *)",
+      "Bash(pwd)",
+      "Bash(wc *)",
+      "Bash(sort *)",
+      "Bash(diff *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(xargs *)",
+      "Bash(tee *)",
+      "Bash(tar *)",
+      "Bash(unzip *)",
+      "Bash(jq *)",
+      "Bash(yq *)",
+      "Bash(env *)",
+      "Bash(printenv *)",
+      "Bash(export *)",
+      "Bash(date *)",
+      "Bash(uname *)",
+      "Bash(open *)",
+      "Bash(pbcopy *)",
+      "Bash(pbpaste *)",
+      "Bash(shellcheck *)",
+      "Bash(tokei *)",
+      "Bash(magick *)",
+      "Bash(maestro *)",
+      "Bash(python3 *)",
+      "Bash(pip3 *)",
+      "Bash(uvx *)",
+      "Bash(marp *)",
+      "Bash(xcrun *)",
+      "Bash(gofmt *)",
+      "Bash(strings *)",
+      "Bash(sqlite3 *)",
+      "Bash(ps *)",
+      "Bash(printf *)",
+      "Bash(lsof *)",
+      "Bash(time *)",
+      "Bash(test *)",
+      "Bash(bash *)",
+      "Bash(pdftoppm *)",
+      "Bash(sips *)",
+      "Bash(pgrep *)",
+      "Bash(sleep *)",
+      "Bash(cd *)",
+      "Bash(kill *)",
+      "Bash(codex *)",
+      "Bash(osascript *)",
+      "Bash(claude *)",
+      "Bash(defaults *)",
+      "Bash(cliclick *)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(bun:*)",
+      "Bash(bunx:*)",
+      "Bash(deno:*)",
+      "Bash(tsc:*)",
+      "Bash(tsx:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(biome:*)",
+      "Bash(vitest:*)",
+      "Bash(jest:*)",
+      "Bash(playwright:*)",
+      "Bash(ruff:*)",
+      "Bash(black:*)",
+      "Bash(mypy:*)",
+      "Bash(pyright:*)",
+      "Bash(pytest:*)",
+      "Bash(poetry:*)",
+      "Bash(rye:*)",
+      "Bash(ruby:*)",
+      "Bash(gem:*)",
+      "Bash(bundle:*)",
+      "Bash(rake:*)",
+      "Bash(rustup:*)",
+      "Bash(rustc:*)",
+      "Bash(rustfmt:*)",
+      "Bash(clippy:*)",
+      "Bash(swift:*)",
+      "Bash(swiftformat:*)",
+      "Bash(swiftlint:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(just:*)",
+      "Bash(task:*)",
+      "Bash(pre-commit:*)",
+      "Bash(kubectl:*)",
+      "Bash(helm:*)",
+      "Bash(aws:*)",
+      "Bash(az:*)",
+      "Bash(zsh:*)",
+      "Bash(sh:*)",
+      "Write(.claude/verify.sh)",
+      "Write(.env.template)",
+      "WebSearch",
+      "WebFetch",
+      "mcp__context7__*",
+      "mcp__github__*",
+      "mcp__codex__*",
+      "mcp__gemini-cli__*",
+      "mcp__chrome-devtools__*",
+      "mcp__playwright__*",
+      "mcp__dart__*",
+      "mcp__drawio__*",
+      "mcp__figma__*",
+      "mcp__maps-grounding-lite__*",
+      "mcp__nano-banana__*",
+      "mcp__youtube__*",
+      "mcp__xcode__*"
+    ],
+    "deny": [],
+    "ask": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(secrets/**)"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command'); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(])[[:space:]]*(sudo[[:space:]]+)?(rm[[:space:]]+-[[:alpha:]]*r[[:alpha:]]*[[:space:]]+(/|~|\\*|\\.([[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]].*--force([^-]|$)|chmod[[:space:]]+(-r[[:space:]]+)?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+table)' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> ~/.claude/command-audit.log",
+            "async": true,
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -n \"$TMUX_PANE\" ]; then ROLE=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@role}' 2>/dev/null); if [ \"$ROLE\" = \"planner\" ] || [ \"$ROLE\" = \"worker\" ]; then exit 0; fi; fi; osascript -e 'display notification \"Claude Code が入力待ちです\" with title \"Claude Code\" sound name \"Glass\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -x .claude/verify.sh ]; then bash .claude/verify.sh; fi",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

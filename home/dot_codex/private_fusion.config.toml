@@ -1,0 +1,7 @@
+model = "openrouter/fusion"
+model_reasoning_effort = "high"
+model_provider = "openrouter"
+model_catalog_json = "~/.codex/fusion.json"
+
+[features]
+image_generation = false

@@ -1,0 +1,47 @@
+{{ if eq .chezmoi.os "darwin" -}}
+[plugins]
+flutter = "https://github.com/mise-plugins/mise-flutter.git"
+{{ end -}}
+
+[tools]
+{{ if eq .chezmoi.os "darwin" -}}
+awscli = "2.35.11"
+{{ end -}}
+direnv = "2.37.1"
+{{ if eq .chezmoi.os "darwin" -}}
+flutter = "3.44.4-stable"
+{{ end -}}
+fzf = "0.73.1"
+{{ if eq .chezmoi.os "darwin" -}}
+gcloud = "574.0.0"
+{{ end -}}
+ghq = "1.10.1"
+{{/* 重い言語ランタイムは linux で skip_cli_tools=true のとき省く (最小構成・イメージ軽量化)。
+     mac は skip_cli_tools 未定義 → dig 既定 false で従来どおり常にインストールする。 */ -}}
+{{ if not (dig "skip_cli_tools" false .) -}}
+go = "1.26.4"
+java = "temurin-26.0.1+8"
+{{ end -}}
+{{ if eq .chezmoi.os "darwin" -}}
+kubectl = "1.36.2"
+{{ end -}}
+{{ if not (dig "skip_cli_tools" false .) -}}
+node = "26.4.0"
+pnpm = "11.9.0"
+{{ end -}}
+peco = "0.6.0"
+{{ if eq .chezmoi.os "darwin" -}}
+ruby = "4.0.5"
+{{ end -}}
+starship = "1.26.0"
+{{ if eq .chezmoi.os "darwin" -}}
+stern = "1.34.0"
+terraform = "1.15.7"
+terragrunt = "1.0.8"
+{{ end -}}
+{{ if not (dig "skip_cli_tools" false .) -}}
+uv = "0.11.25"
+{{ end -}}
+{{ if eq .chezmoi.os "darwin" -}}
+aws-vault = "7.12.4"
+{{ end -}}

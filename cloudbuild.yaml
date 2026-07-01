@@ -1,0 +1,184 @@
+steps:
+  # QEMU セットアップ (arm64 クロスビルド用)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - run
+      - --privileged
+      - tonistiigi/binfmt
+      - --install
+      - arm64
+    id: setup-qemu
+  # Artifact Registry 認証: アクセストークン取得
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud auth print-access-token > /workspace/.ar_token
+    id: get-token
+    waitFor:
+      - setup-qemu
+  # Artifact Registry 認証: Docker ログイン
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        cat /workspace/.ar_token | docker login -u oauth2accesstoken --password-stdin https://${_REGION}-docker.pkg.dev
+        rm -f /workspace/.ar_token
+    id: docker-login
+    waitFor:
+      - get-token
+  # buildx ビルダーの作成
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - create
+      - --name=multiarch
+      - --driver=docker-container
+      - --driver-opt=network=cloudbuild
+      - --use
+    id: setup-buildx
+    waitFor:
+      - docker-login
+  # 以下のビルドはベースイメージ別 / 役割別のマトリクス (Makefile と同一)。
+  # 役割: -min=CLI ツールも省く最小構成 / 無印=CLI のみ (GUI 省略) / -full=CLI+GUI
+  # buildx の multi-platform + --push は manifest list を直接生成・push するため
+  # arch ごとの個別ビルド + imagetools 合成は不要。
+  #
+  # ubuntu:26.04 / 最小構成 (amd64 + arm64)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=ubuntu:26.04
+      - --build-arg=SKIP_CLI_TOOLS=true
+      - --build-arg=SKIP_GUI_TOOLS=true
+      - --tag=${_IMAGE_NAME}:ubuntu-min
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-ubuntu-min
+    waitFor:
+      - setup-buildx
+  # ubuntu:26.04 / CLI 構成 (amd64 + arm64) — 標準イメージ。latest も別名付与。
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=ubuntu:26.04
+      - --build-arg=SKIP_CLI_TOOLS=false
+      - --build-arg=SKIP_GUI_TOOLS=true
+      - --tag=${_IMAGE_NAME}:ubuntu
+      - --tag=${_IMAGE_NAME}:latest
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-ubuntu
+    waitFor:
+      - setup-buildx
+  # ubuntu:26.04 / CLI+GUI 構成 (amd64 + arm64)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=ubuntu:26.04
+      - --build-arg=SKIP_CLI_TOOLS=false
+      - --build-arg=SKIP_GUI_TOOLS=false
+      - --tag=${_IMAGE_NAME}:ubuntu-full
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-ubuntu-full
+    waitFor:
+      - setup-buildx
+  # debian:trixie / 最小構成 (amd64 + arm64)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=debian:trixie
+      - --build-arg=SKIP_CLI_TOOLS=true
+      - --build-arg=SKIP_GUI_TOOLS=true
+      - --tag=${_IMAGE_NAME}:debian-min
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-debian-min
+    waitFor:
+      - setup-buildx
+  # debian:trixie / CLI 構成 (amd64 + arm64)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=debian:trixie
+      - --build-arg=SKIP_CLI_TOOLS=false
+      - --build-arg=SKIP_GUI_TOOLS=true
+      - --tag=${_IMAGE_NAME}:debian
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-debian
+    waitFor:
+      - setup-buildx
+  # debian:trixie-slim / 最小構成 (amd64 + arm64)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64,linux/arm64
+      - --build-arg=BASE_IMAGE=debian:trixie-slim
+      - --build-arg=SKIP_CLI_TOOLS=true
+      - --build-arg=SKIP_GUI_TOOLS=true
+      - --tag=${_IMAGE_NAME}:debian-slim-min
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-debian-slim-min
+    waitFor:
+      - setup-buildx
+  # GPU イメージ (amd64 のみ。nvidia/cuda の arm64 ベースが無いため)
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - buildx
+      - build
+      - --builder=multiarch
+      - --platform=linux/amd64
+      - --build-arg=BASE_IMAGE=${_GPU_BASE_IMAGE}
+      - --build-arg=SKIP_CLI_TOOLS=false
+      - --build-arg=SKIP_GUI_TOOLS=false
+      - --tag=${_IMAGE_NAME}:ubuntu-gpu
+      - --provenance=false
+      - --push
+      - --file=docker/Dockerfile.debian
+      - .
+    id: build-ubuntu-gpu
+    waitFor:
+      - setup-buildx
+timeout: 10800s
+options:
+  machineType: "E2_HIGHCPU_32"
+  dynamicSubstitutions: true
+  diskSizeGb: 200
+substitutions:
+  _REGION: "asia-northeast1"
+  _IMAGE_NAME: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/docker/mzk/dotfiles"
+  _GPU_BASE_IMAGE: "nvidia/cuda:13.3.0-base-ubuntu26.04"

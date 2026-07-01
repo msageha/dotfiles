@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+{{ if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
+export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
+{{     include "../install/debian/apt.sh" }}
+{{     if eq .chezmoi.osRelease.id "ubuntu" -}}
+{{       include "../install/ubuntu/fastfetch.sh" }}
+{{     end -}}
+{{     include "../install/debian/coding_agent.sh" }}
+{{     if eq .chezmoi.osRelease.id "ubuntu" -}}
+{{       if not .skip_gui_tools -}}
+{{         include "../install/ubuntu/apt_gui.sh" }}
+{{         include "../install/ubuntu/system_settings.sh" }}
+{{       end -}}
+{{     end -}}
+curl -fsSL https://mise.run | sh
+export PATH="$HOME/.local/bin:$PATH"
+{{   end -}}
+{{ end -}}

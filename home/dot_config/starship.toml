@@ -1,0 +1,241 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+add_newline = false
+palette = "dracula"
+scan_timeout = 50
+command_timeout = 500
+
+# $env_var\
+format = """
+$hostname\
+$os\
+$username\
+$directory\
+[](bg:graphite fg:slate)\
+$git_branch\
+$git_status\
+[](bg:graphite2 fg:graphite)\
+$c\
+$cpp\
+$dart\
+$rust\
+$golang\
+$nodejs\
+$php\
+$java\
+$kotlin\
+$haskell\
+$python\
+${env_var.VIRTUAL_ENV}\
+$swift\
+$terraform\
+[](bg:sky fg:graphite2)\
+$direnv\
+[](fg:sky)\
+$status\
+"""
+
+right_format = "$time"
+
+[hostname]
+ssh_only = true
+format = "[$hostname](bg:amber fg:on_amber bold)[](bg:rose fg:amber)"
+
+# [container]
+# disabled = false
+# format = '[](bg:#585858 fg:#d0d0d0)[$container](bg:#585858 fg:#d0d0d0)'
+
+[os]
+disabled = false
+style = "bg:rose fg:on_rose"
+
+[os.symbols]
+Windows = ""
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+AOSC = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
+
+[username]
+show_always = true
+style_user = "bg:rose fg:on_rose bold"
+style_root = "bg:rose fg:on_rose bold"
+format = '[ $user]($style)[](bg:slate fg:rose)'
+
+# cwd
+[directory]
+truncation_length = 2
+truncation_symbol = "…/"
+use_os_path_sep = true
+style = "bg:slate fg:on_slate bold"
+format = "[$path]($style)"
+
+substitutions = [
+  { from = "Desktop", to = " " },
+  { from = "Documents", to = "󰈙 " },
+  { from = "Downloads", to = " " },
+  { from = "Music", to = "󰝚 " },
+  { from = "Pictures", to = " " },
+  { from = "Works", to = " " },
+  { from = "bitbucket.org", to = " " },
+  { from = "github.com", to = " " },
+  { from = "gitlab[^/]*", to = " ", regex = true },
+  { from = "Dropbox", to = " " },
+]
+
+[git_branch]
+symbol = ""
+format = "[$symbol $branch ](bg:graphite fg:on_graphite bold)"
+
+[git_status]
+format = "[$all_status$ahead_behind](bg:graphite fg:attention_graphite)"
+
+[c]
+symbol = "󰙱 "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[cpp]
+symbol = "󰙲 "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[dart]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[golang]
+symbol = "󰟓 "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[haskell]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[java]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[kotlin]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[nodejs]
+symbol = "󰎙 "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[php]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[python]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2"
+version_format = "${major}.${minor}"
+format = '[$symbol]($style)[$version]($style italic)'
+
+[env_var.VIRTUAL_ENV]
+variable = "VIRTUAL_ENV"
+symbol = "󰑓"
+style = "bg:graphite2 fg:on_graphite2"
+format = "[ $symbol ]($style)"
+
+[rust]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[swift]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[terraform]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 bold italic"
+version_format = "${major}.${minor}"
+format = '[$symbol$version]($style)'
+
+[direnv]
+disabled = false
+symbol = "󰑓 "
+style = "bg:sky fg:on_sky bold"
+allowed_msg = "󰗠 "
+not_allowed_msg = "󰀨 "
+loaded_msg = " "
+unloaded_msg = " "
+format = '[$symbol$env]($style)'
+
+# [docker_context]
+# symbol = "󰡨 "
+# style = "bg:sky fg:on_sky bold"
+# format = '[$symbol$context]($style)'
+
+# last_pipe_status
+[status]
+disabled = false
+style = "bg:burgundy fg:on_burgundy bold"
+format = "[ $status ]($style)[](fg:burgundy bg:surface0)"
+
+# time (right side)
+[time]
+disabled = false
+style = "fg:on_slate"
+format = "[󰥔 $time]($style)"
+time_format = "%H:%M:%S"
+
+
+[palettes.dracula]
+# Dracula Theme (https://draculatheme.com)
+rose = "#ff79c6"           # Dracula pink
+on_rose = "#282a36"        # Dracula background
+slate = "#6272a4"          # Dracula comment
+on_slate = "#f8f8f2"       # Dracula foreground
+graphite = "#44475a"       # Dracula current_line
+on_graphite = "#f8f8f2"    # Dracula foreground
+attention_graphite = "#f1fa8c" # Dracula yellow
+
+graphite2 = "#282a36"      # Dracula background
+on_graphite2 = "#f8f8f2"   # Dracula foreground
+
+amber = "#ffb86c"          # Dracula orange
+on_amber = "#282a36"       # Dracula background
+
+sky = "#8be9fd"            # Dracula cyan
+on_sky = "#282a36"         # Dracula background
+burgundy = "#ff5555"       # Dracula red
+on_burgundy = "#f8f8f2"    # Dracula foreground
+
+surface0 = "#282a36"       # Dracula background

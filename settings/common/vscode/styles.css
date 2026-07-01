@@ -1,0 +1,9 @@
+.monaco-panel-view,
+.label-name {
+    font-family: "SourceHanCodeJP-Regular", monospace !important;
+    font-size: 18px !important;
+    line-height: 1.5;
+}
+.label-name:hover {
+    text-decoration: underline; /* 下線を引く */
+}
