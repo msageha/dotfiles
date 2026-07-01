@@ -60,7 +60,7 @@ jobs:
       - name: Test chezmoi apply (dry-run)
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
-        run: chezmoi apply --source=${{ github.workspace }} --verbose
+        run: chezmoi apply --source=${{ github.workspace }}
       - name: Install bats
         run: |
           if command -v brew &>/dev/null; then
