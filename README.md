@@ -92,8 +92,8 @@ git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfi
 
 | プロンプト                        | データキー       | 説明                                                                                                             |
 | --------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `Skip CLI tool installation ...?` | `skip_cli_tools` | `true` で CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）と後述のコーディングエージェント設定をスキップ |
-| `Skip GUI tool installation?`     | `skip_gui_tools` | `true` で GUI 系パッケージのインストールをスキップ                                                               |
+| `Skip CLI tool installation ...?` | `skip_cli_tools` | CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）とコーディングエージェント設定をスキップするかどうか（デフォルト `true`） |
+| `Skip GUI tool installation?`     | `skip_gui_tools` | GUI 系パッケージのインストールをスキップするかどうか（デフォルト `true`）                                                               |
 
 #### API キー
 

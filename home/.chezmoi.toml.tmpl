@@ -29,11 +29,11 @@ computer_name = {{ $computerName | quote }}
 {{ $skipCliTools := false -}}
 {{- if eq .chezmoi.os "linux" }}
 # Ubuntu specific configuration
-{{-   $skipCliTools = promptBoolOnce . "skip_cli_tools" "Skip CLI tool installation (CLI utilities, chezmoi, docker, gh)? (default: no)" false }}
+{{-   $skipCliTools = promptBoolOnce . "skip_cli_tools" "Skip CLI tool installation? (default: yes)" true }}
 skip_cli_tools = {{ $skipCliTools }}
 {{-   $skipGuiTools := true }}
 {{-   if not $skipCliTools }}
-{{-     $skipGuiTools = promptBoolOnce . "skip_gui_tools" "Skip GUI tool installation? (default: no)" false }}
+{{-     $skipGuiTools = promptBoolOnce . "skip_gui_tools" "Skip GUI tool installation? (default: yes)" true }}
 {{-   end }}
 skip_gui_tools = {{ $skipGuiTools }}
 {{- end }}
