@@ -4,6 +4,9 @@
 # This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
+# 欠損した Include は黙って無視される。
+Include ~/.ssh/config.local
+
 {{ end -}}
 Host github.com
   HostName github.com
@@ -13,8 +16,3 @@ Host github.com
   TCPKeepAlive yes
   IdentitiesOnly yes
   StrictHostKeyChecking accept-new
-
-{{ if eq .chezmoi.os "darwin" -}}
-# OpenSSH は欠損した Include を黙って無視する。
-Include ~/.ssh/config.local
-{{ end -}}

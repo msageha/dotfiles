@@ -1,6 +1,12 @@
 function fzf_ssh -d "List ssh"
+    set -l configs
+    for f in $HOME/.ssh/config $HOME/.ssh/config.local
+        test -f $f; and set -a configs $f
+    end
+    test -z "$configs"; and return
+
     set -l host (\
-        grep -iE '^[[:space:]]*Host[[:space:]]+' $HOME/.ssh/config \
+        grep -hiE '^[[:space:]]*Host[[:space:]]+' $configs \
         | grep -v '[*?]' \
         | grep -v "git" \
         | awk '{ for (i=2; i<=NF; i++) print $i }' \
