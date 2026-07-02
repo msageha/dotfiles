@@ -16,8 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Makefile の build-multi-platform と同じバリアント。
-        # GPU (amd64 のみ) と GUI フル構成は multi-arch 対象外のため含めない。
+        # Makefile の build-multi-platform と同じバリアントに加え、GPU (amd64 のみ) を含める。
+        # GPU は arm64 を持たないため下の exclude で arm64 の組み合わせを除外する。
+        # GUI フル構成 (ubuntu-full) は multi-arch 対象外のため含めない。
         variant:
           - tag: ubuntu-min
             base: ubuntu:26.04
@@ -43,11 +44,26 @@ jobs:
             base: alpine:latest
             skip_cli_tools: "true"
             file: docker/Dockerfile.alpine
+          - tag: ubuntu-gpu
+            base: nvidia/cuda:13.3.0-base-ubuntu26.04
+            skip_cli_tools: "false"
+            file: docker/Dockerfile.debian
         platform:
           - os: linux/amd64
             runner: ubuntu-latest
           - os: linux/arm64
-            runner: ubuntu-24.04-arm
+            runner: ubuntu-26.04-arm
+        # GPU (ubuntu-gpu) は amd64 のみ。arm64 の組み合わせを除外する。
+        # マトリクス値がオブジェクトのため、exclude では該当エントリを完全一致で指定する。
+        exclude:
+          - variant:
+              tag: ubuntu-gpu
+              base: nvidia/cuda:13.3.0-base-ubuntu26.04
+              skip_cli_tools: "false"
+              file: docker/Dockerfile.debian
+            platform:
+              os: linux/arm64
+              runner: ubuntu-26.04-arm
     steps:
       - name: Prepare platform pair
         run: |
@@ -108,6 +124,7 @@ jobs:
           - debian
           - debian-slim-min
           - alpine
+          - ubuntu-gpu
     steps:
       - name: Download digests
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
