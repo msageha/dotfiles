@@ -17,6 +17,17 @@ if [ -d "$HOME/Works/bin" ]; then
     export PATH="$HOME/Works/bin:$PATH"
 fi
 
+# --- PATH: ツール置き場を先に通す ---
+# brew/mise/direnv/starship などの activate は PATH が揃っている前提のため、
+# それらより前に静的なバイナリ置き場を PATH へ追加しておく。
+# (uvでインストールしたツールや mise 本体は ~/.local/bin にある)
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
 # --- Homebrewの設定 ---
 if command -v brew &>/dev/null; then
     eval "$(brew shellenv)"
@@ -40,16 +51,7 @@ if [ -d "$HOME/.pub-cache/bin" ]; then
     export PATH="$HOME/.pub-cache/bin:$PATH"
 fi
 
-# --- ローカルバイナリのパス追加 ---
-# (uvでインストールしたツール用)
-if [ -d "$HOME/.local/bin" ]; then
-    export PATH="$HOME/.local/bin:$PATH"
-fi
-
-# -- Rustの設定 ---
-if [ -d "$HOME/.cargo/bin" ]; then
-    export PATH="$HOME/.cargo/bin:$PATH"
-fi
+# -- Rustの設定 --- (~/.cargo/bin は先頭の PATH セクションで追加済み)
 if command -v rustup &>/dev/null && command -v xcrun &>/dev/null; then
     export SDKROOT="$(xcrun --show-sdk-path)"
 fi
