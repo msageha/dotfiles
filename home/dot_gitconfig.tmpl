@@ -75,6 +75,9 @@
 [safe]
     directory = ~/.local/share/chezmoi
 
+[includeIf "gitdir:~/.local/share/chezmoi/"]
+    path = ~/.gitconfig.github
+
 [includeIf "gitdir:~/Works/src/github.com/"]
     path = ~/.gitconfig.github
 
