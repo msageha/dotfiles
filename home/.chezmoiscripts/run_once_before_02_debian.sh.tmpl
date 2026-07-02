@@ -7,7 +7,9 @@ export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
 {{     if eq .chezmoi.osRelease.id "ubuntu" -}}
 {{       include "../install/ubuntu/fastfetch.sh" }}
 {{     end -}}
-{{     include "../install/debian/coding_agent.sh" }}
+{{     if not .skip_cli_tools -}}
+{{       include "../install/debian/coding_agent.sh" }}
+{{     end -}}
 {{     if eq .chezmoi.osRelease.id "ubuntu" -}}
 {{       if not .skip_gui_tools -}}
 {{         include "../install/ubuntu/apt_gui.sh" }}
