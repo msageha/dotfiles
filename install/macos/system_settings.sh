@@ -118,6 +118,8 @@ function hot_corners_settings() {
     printf "%b\n" "${BLUE}ホットコーナーの設定を行っています...${NC}"
     defaults write com.apple.dock wvous-tr-corner -int 5  # 右上で、スクリーンセイバー開始
     defaults write com.apple.dock wvous-br-corner -int 13  # 右下で、ロック画面
+    defaults write com.apple.dock wvous-tl-corner -int 5  # 左上で、スクリーンセイバー開始
+    defaults write com.apple.dock wvous-bl-corner -int 13  # 左下で、ロック画面
 }
 
 # 8. スクリーンセーバーの設定
