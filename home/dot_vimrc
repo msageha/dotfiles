@@ -26,7 +26,10 @@ set gdefault
 set encoding=utf-8 nobomb
 
 " mapleaderをカンマに設定
-let mapleader=","
+" (+eval が無い vim-tiny 等では if ごと未評価のブロックとしてスキップされ、E319 を出さない)
+if has('eval')
+  let mapleader=","
+endif
 
 " ファイルの末尾に空の改行を追加しない
 set nofixendofline
@@ -127,6 +130,9 @@ set scrolloff=3
 " Color Scheme
 " --------------------------------------------
 " Draculaカラースキームを使用
-packadd! dracula
-syntax enable
-colorscheme dracula
+" (+syntax が無い vim-tiny 等では if ごと未評価のブロックとしてスキップされ、E319 を出さない)
+if has('syntax')
+  packadd! dracula
+  syntax enable
+  colorscheme dracula
+endif
