@@ -9,7 +9,7 @@ function fzf_ssh -d "List ssh"
         grep -hiE '^[[:space:]]*Host[[:space:]]+' $configs \
         | grep -v '[*?]' \
         | grep -v "git" \
-        | awk '{ for (i=2; i<=NF; i++) print $i }' \
+        | awk '{ print $2 }' \
         | fzf --select-1
     )
     if test -n "$host"
