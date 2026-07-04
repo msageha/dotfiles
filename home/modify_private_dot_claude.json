@@ -1,0 +1,20 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.claude.json を .chezmoitemplates/claude.json の内容に置き換える。
+  ただしマシンローカルな状態 (ログイン情報・プロジェクトごとの trust/許可・各種識別子)
+  は既存ファイルの値を温存する。
+*/ -}}
+{{- $desired := includeTemplate "claude.json" . | fromJson -}}
+{{- $stdin := "" -}}
+{{- if hasKey .chezmoi "stdin" -}}
+{{-   $stdin = trim .chezmoi.stdin -}}
+{{- end -}}
+{{- if $stdin -}}
+{{-   $current := fromJson $stdin -}}
+{{-   range $key := list "oauthAccount" "projects" "userID" "machineID" -}}
+{{-     if hasKey $current $key -}}
+{{-       $_ := set $desired $key (get $current $key) -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{- $desired | toPrettyJson }}

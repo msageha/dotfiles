@@ -1,0 +1,116 @@
+{
+  "hasCompletedOnboarding": true,
+  "theme": "dark",
+  "deepLinkTerminal": "Ghostty",
+  "showExpandedTodos": true,
+  "showSpinnerTree": true,
+  "hasSeenTasksHint": true,
+  "hasOpenedAgentsView": true,
+  "officialMarketplaceAutoInstallAttempted": false,
+  "officialMarketplaceAutoInstalled": false,
+  "mcpServers": {
+    "codex": {
+      "type": "stdio",
+      "command": "codex",
+      "args": [
+        "mcp-server"
+      ],
+      "env": {}
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {}
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "antigravity": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "ask-antigravity-mcp"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "env": {}
+    },
+    "youtube": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ],
+      "env": {}
+    },
+    "dart": {
+      "type": "stdio",
+      "command": "dart",
+      "args": [
+        "mcp-server"
+      ],
+      "env": {}
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
+    },
+    "drawio": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@drawio/mcp"
+      ]
+    },
+    "xcode": {
+      "type": "stdio",
+      "command": "xcrun",
+      "args": [
+        "mcpbridge"
+      ],
+      "env": {}
+    },
+    "maps-grounding-lite": {
+      "type": "http",
+      "url": "https://mapstools.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
+      }
+    },
+    "nano-banana": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "nanobanana-mcp-server@latest"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "{{ dig "apiKeys" "gemini" "" . }}"
+      }
+    },
+    "pycharm": {
+      "type": "sse",
+      "url": "http://127.0.0.1:64342/sse"
+    }
+  }
+}
