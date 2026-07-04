@@ -1,3 +1,4 @@
+{{ if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 set -e
 {{ if eq .chezmoi.os "darwin" -}}
@@ -20,4 +21,5 @@ if [ -z "${CI:-}" ]; then
     echo "利用可能な Software Update はありません。スキップします。"
   fi
 fi
+{{ end -}}
 {{ end -}}

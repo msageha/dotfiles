@@ -7,11 +7,34 @@
 !.ssh/config
 {{ end }}
 
-# .claude / .codex / .gemini (コーディングエージェント設定) は skip_cli_tools=true のとき管理対象外にする。
-# macOS、または skip_cli_tools=false のときは従来どおり管理する。
+# Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
+# git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける。
+{{ if eq .chezmoi.os "windows" }}
+.alias
+.bash_profile
+.zprofile
+.tmux.conf
+.vimrc
+# .vim は .chezmoiexternal.toml の external (dracula テーマ) の展開先。
+# external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
+.vim
+.vim/**
+.config/fastfetch
+.config/fish
+.config/gh
+.config/htop
+.config/mise
+{{ end }}
+
+# .claude / .codex / .gemini (コーディングエージェント設定) は Linux で skip_cli_tools=true、
+# Windows で skip_windows_extras=true のとき管理対象外にする。
+# macOS、またはそれぞれ false のときは従来どおり管理する。
 {{- $skipCodingAgent := false }}
 {{- if hasKey . "skip_cli_tools" }}
 {{ $skipCodingAgent = .skip_cli_tools }}
+{{- end }}
+{{- if hasKey . "skip_windows_extras" }}
+{{ $skipCodingAgent = .skip_windows_extras }}
 {{- end }}
 
 # Ignore everything under .claude/ by default

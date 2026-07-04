@@ -1,3 +1,4 @@
+{{ if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 set -e
 
@@ -71,3 +72,4 @@ fi
 
 # fish の設定ファイルのキャッシュを削除する
 rm -f "$HOME/.cache/fish/config.fish"
+{{ end -}}

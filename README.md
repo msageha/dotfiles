@@ -1,6 +1,6 @@
 # dotfiles
 
-macOS / Ubuntu / Debian 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理する。
+macOS / Ubuntu / Debian / Windows 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理する。
 機微な設定（一部の SSH ホスト定義・業務用 Git 設定・IME 辞書など）は
 [age](https://age-encryption.org/) で暗号化してリポジトリに載せているため、公開しても安全な構成になっている。
 
@@ -28,6 +28,16 @@ xcode-select --install
 sudo apt update
 sudo apt install -y curl git
 ```
+
+#### Windows
+
+`git` が必要。Windows 向けスクリプトは既定搭載の Windows PowerShell 5.1 で動作するため、pwsh (PowerShell 7) の別途インストールは不要。`git` が無ければ winget で導入する。
+
+```powershell
+winget install --id Git.Git --exact --source winget
+```
+
+導入後は新しい PowerShell を開き直してから Setup に進む。
 
 ### 暗号化された設定の復号鍵 (age)
 
@@ -72,6 +82,16 @@ ssh <NEW_HOST> 'chmod 600 ~/.config/chezmoi/key.txt'
 sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
+Windows (Windows PowerShell 5.1) の場合:
+
+```powershell
+iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$HOME\.local\bin'"
+$env:Path = "$HOME\.local\bin;$env:Path"
+chezmoi init --apply --depth=1 https://github.com/msageha/dotfiles.git
+```
+
+Windows PowerShell は既定の実行ポリシーが `Restricted` のことが多く、その場合はスクリプトの実行がブロックされる。`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を試す。
+
 SSH URL (`git@github.com:msageha/dotfiles.git`) も利用できるが、その場合はそのマシンに GitHub 登録済みの SSH 鍵が既に必要（未設定の初回マシンでは clone に失敗する）。`autoCommit` / `autoPush` で push し返すオーナー環境では、鍵を配置してから remote を SSH に切り替えると push が楽になる。
 
 ```bash
@@ -108,9 +128,15 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 | `Skip CLI tool installation ...?` | `skip_cli_tools` | CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）とコーディングエージェント設定をスキップするかどうか（デフォルト `true`） |
 | `Skip GUI tool installation?`     | `skip_gui_tools` | GUI 系パッケージのインストールをスキップするかどうか（デフォルト `true`）                                                         |
 
+#### Windows のみ
+
+| プロンプト                                              | データキー            | 説明                                                                                                                                                                                                                       |
+| ------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェントの API キーも聞かれる |
+
 #### API キー
 
-以下はコーディングエージェント設定を管理する環境（macOS、または Linux で `skip_cli_tools=false`）でのみ聞かれる。
+以下はコーディングエージェント設定を管理する環境（macOS、Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）でのみ聞かれる。
 空欄でも可（未設定として展開される）。
 
 | プロンプト              | データキー           | 説明                                                                                                             |
@@ -195,7 +221,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   ├── common/                    # 共通 (mise, rust, fonts, fisher, age 等)
 │   ├── macos/                     # macOS (brew, xcode, system/app settings)
 │   ├── debian/ ubuntu/ alpine/    # Linux 系
-│   └── windows/                   # PowerShell
+│   └── windows/                   # Windows (コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)
 ├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
 │   ├── common/                    # ghostty / vscode / IME 辞書(暗号化)
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)

@@ -10,6 +10,15 @@ encryption = "age"
 autoCommit = true
 autoPush = true
 
+{{ if eq .chezmoi.os "windows" -}}
+# chezmoi の既定は pwsh 優先 (無ければ powershell にフォールバック) のため、
+# pwsh の有無で .ps1 スクリプトの実行ホストが変わらないよう、標準搭載の
+# Windows PowerShell 5.1 に固定する (スクリプトは 5.1 互換で書かれている)
+[interpreters.ps1]
+command = "powershell"
+args = ["-NoLogo"]
+
+{{ end -}}
 [data]
 {{- if eq .chezmoi.os "darwin" }}
 # mac OS specific configuration
@@ -38,12 +47,19 @@ skip_cli_tools = {{ $skipCliTools }}
 skip_gui_tools = {{ $skipGuiTools }}
 {{- end }}
 
+{{ $skipWindowsExtras := false -}}
+{{- if eq .chezmoi.os "windows" }}
+# Windows specific configuration
+{{-   $skipWindowsExtras = promptBoolOnce . "skip_windows_extras" "Skip coding agent / GUI apps / system settings setup? (default: yes)" true }}
+skip_windows_extras = {{ $skipWindowsExtras }}
+{{- end }}
+
 {{- $apiKeys := dict }}
 {{- if hasKey . "apiKeys" }}
 {{-   $apiKeys = .apiKeys }}
 {{- end }}
 
-{{- if not $skipCliTools }}
+{{- if and (not $skipCliTools) (not $skipWindowsExtras) }}
 [data.apiKeys]
 {{- $geminiApiKey := promptStringOnce $apiKeys "gemini" "Gemini API Key" "" }}
 gemini = {{ $geminiApiKey | quote }}

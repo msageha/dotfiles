@@ -1,0 +1,10 @@
+{{ if eq .chezmoi.os "windows" -}}
+$env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir }}'
+
+{{   include "../install/windows/setup_powershell.ps1" }}
+{{ if not .skip_windows_extras -}}
+{{   include "../install/windows/system_settings.ps1" }}
+{{   include "../install/windows/apps.ps1" }}
+{{   include "../install/windows/coding_agent.ps1" }}
+{{ end -}}
+{{ end -}}

@@ -77,3 +77,42 @@ jobs:
           source ~/.bash_profile
           set -e
           make test
+  chezmoi-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Install chezmoi
+        shell: powershell
+        run: |
+          $chezmoiBin = Join-Path $HOME '.local\bin'
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin'"
+          Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
+      - name: Pre-configure chezmoi
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path (Join-Path $HOME '.config\chezmoi') | Out-Null
+          @'
+          [data]
+          # false にするとコーディングエージェント CLI のインストールも CI で実行される
+          # (Linux の skip_cli_tools=false 相当)
+          skip_windows_extras = true
+
+          [data.github]
+          user = "msageha"
+
+          [data.apiKeys]
+          gemini = ""
+          googleMaps = ""
+          fugu = ""
+          openRouter = ""
+          '@ | Set-Content -Path (Join-Path $HOME '.config\chezmoi\chezmoi.toml') -Encoding utf8
+      - name: Initialize chezmoi
+        shell: powershell
+        run: chezmoi init --source=${{ github.workspace }}
+      - name: Test chezmoi apply (dry-run)
+        shell: powershell
+        run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
+      - name: Apply chezmoi
+        shell: powershell
+        run: chezmoi apply --source=${{ github.workspace }}
