@@ -39,6 +39,8 @@ winget install --id Git.Git --exact --source winget
 
 導入後は新しい PowerShell を開き直してから Setup に進む。
 
+winget 自体は前提条件ではない。winget が無い環境 (Windows Server 2022 / Windows Sandbox など Microsoft Store 非搭載の環境) では、セットアップスクリプトが Microsoft 公式手順 (PSGallery の `Microsoft.WinGet.Client` モジュールの `Repair-WinGetPackageManager`) で winget を自動導入する (`install/windows/winget.ps1`)。ただし Windows Server 2019 以前は winget 非対応。その場合や、上記の `git` 導入時点で winget が無い場合は、[Git for Windows](https://gitforwindows.org/) のインストーラーで `git` を導入する。
+
 ### 暗号化された設定の復号鍵 (age)
 
 一部の設定ファイルは age で暗号化され、`encrypted_*.age` としてリポジトリに含まれている。
@@ -221,7 +223,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   ├── common/                    # 共通 (mise, rust, fonts, fisher, age 等)
 │   ├── macos/                     # macOS (brew, xcode, system/app settings)
 │   ├── debian/ ubuntu/ alpine/    # Linux 系
-│   └── windows/                   # Windows (コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)
+│   └── windows/                   # Windows (winget ブートストラップ・コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)
 ├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
 │   ├── common/                    # ghostty / vscode / IME 辞書(暗号化)
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)

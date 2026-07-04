@@ -4,6 +4,7 @@
 {{- "\ufeff" -}}
 $env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir }}'
 
+{{   include "../install/windows/winget.ps1" }}
 {{   include "../install/windows/setup_powershell.ps1" }}
 {{ if not .skip_windows_extras -}}
 {{   include "../install/windows/system_settings.ps1" }}
