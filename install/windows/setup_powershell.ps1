@@ -4,9 +4,11 @@
 # 自動実行される。chezmoi の config (.chezmoi.toml.tmpl の [interpreters.ps1]) で実行ホストを
 # Windows 標準搭載の Windows PowerShell 5.1 に固定しているため、5.1 互換の
 # 構文のみを使うこと (pwsh 専用の演算子・cmdlet は使わない)。
-# 手動実行時も Windows PowerShell / pwsh のどちらからでも起動できる:
-#   powershell -File install/windows/setup_powershell.ps1
+# 手動実行する場合は pwsh を使う:
 #   pwsh -File install/windows/setup_powershell.ps1
+# (このファイルは BOM 無し UTF-8 のため、Windows PowerShell 5.1 で直接実行すると
+#  日本語コメントが ANSI として解釈され構文が壊れる。chezmoi 経由の実行では
+#  .chezmoiscripts テンプレートが先頭に BOM を付与するため 5.1 でも問題ない)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5.1 の Invoke-WebRequest / Expand-Archive はプログレスバー描画で

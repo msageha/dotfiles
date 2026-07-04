@@ -1,4 +1,7 @@
 {{ if eq .chezmoi.os "windows" -}}
+{{- /* Windows PowerShell 5.1 は BOM 無しの .ps1 を ANSI として読み、日本語コメントが
+       UTF-8 のまま化けて構文を破壊する。先頭に BOM を出力して UTF-8 として読ませる */ -}}
+{{- "\ufeff" -}}
 $env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir }}'
 
 {{   include "../install/windows/setup_powershell.ps1" }}
