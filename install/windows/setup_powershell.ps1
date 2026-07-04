@@ -53,6 +53,10 @@ function Install-Starship {
     Write-Step 'Installing Starship via winget...'
     winget install --id Starship.Starship --exact --source winget `
         --accept-package-agreements --accept-source-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "Starship のインストールが終了コード $LASTEXITCODE で失敗しました。プロファイルの starship 初期化は次回のセットアップで有効になります。"
+        return
+    }
     Update-SessionPath
 }
 

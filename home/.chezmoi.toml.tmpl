@@ -13,10 +13,12 @@ autoPush = true
 {{ if eq .chezmoi.os "windows" -}}
 # chezmoi の既定は pwsh 優先 (無ければ powershell にフォールバック) のため、
 # pwsh の有無で .ps1 スクリプトの実行ホストが変わらないよう、標準搭載の
-# Windows PowerShell 5.1 に固定する (スクリプトは 5.1 互換で書かれている)
+# Windows PowerShell 5.1 に固定する (スクリプトは 5.1 互換で書かれている)。
+# -NoProfile: プロファイル (starship 初期化等) をスクリプト実行のたびに読ませない。
+# -ExecutionPolicy Bypass: 既定が Restricted のマシンでも apply が失敗しないようにする。
 [interpreters.ps1]
 command = "powershell"
-args = ["-NoLogo"]
+args = ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
 
 {{ end -}}
 [data]

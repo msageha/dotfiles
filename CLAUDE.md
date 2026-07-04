@@ -1,6 +1,6 @@
 # dotfiles (chezmoi source)
 
-macOS / Ubuntu 向け dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ。
+macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ。
 このリポジトリ自体が chezmoi の source ディレクトリ。
 
 ## 最重要: source を編集する

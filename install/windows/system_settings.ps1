@@ -138,8 +138,9 @@ function Set-StartMenuSettings {
 
 function Restart-Explorer {
     Write-Step 'エクスプローラーを再起動しています...'
+    # explorer はシェルとして登録されているため kill 後に自動で再起動する。
+    # 明示的に Start-Process すると余計なファイルウィンドウが開くため行わない。
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-    Start-Process explorer.exe
 }
 
 function Main {

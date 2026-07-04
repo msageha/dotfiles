@@ -16,10 +16,13 @@
   "model": "claude-opus-4-8[1m]",
   "includeGitInstructions": false,
   "language": "japanese",
+{{- /* statusline-command.sh は bash 前提のため、ネイティブ Windows では statusLine を設定しない */}}
+{{- if ne .chezmoi.os "windows" }}
   "statusLine": {
     "type": "command",
     "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh"
   },
+{{- end }}
   "sandbox": {
     "enabled": false,
     "autoAllowBashIfSandboxed": true,

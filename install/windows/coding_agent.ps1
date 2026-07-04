@@ -19,11 +19,15 @@ function Invoke-RemoteInstaller([string]$Url) {
 
 function Install-AntigravityCli {
     Write-Step 'Installing antigravity-cli...'
-    if (-not (Get-Command antigravity -ErrorAction SilentlyContinue)) {
+    # update に使う agy を probe する (antigravity を probe すると、agy だけ無い環境で
+    # $ErrorActionPreference='Stop' により後続のインストールごと中断してしまう)
+    if (-not (Get-Command agy -ErrorAction SilentlyContinue)) {
         Invoke-RemoteInstaller 'https://antigravity.google/cli/install.ps1'
     }
     else {
+        # 5.1 はネイティブコマンドの失敗を throw しないため終了コードを明示的に確認する
         agy update
+        if ($LASTEXITCODE -ne 0) { throw "agy update failed: exit code $LASTEXITCODE" }
     }
 }
 
@@ -34,6 +38,7 @@ function Install-ClaudeCode {
     }
     else {
         claude update
+        if ($LASTEXITCODE -ne 0) { throw "claude update failed: exit code $LASTEXITCODE" }
     }
 }
 
@@ -44,6 +49,7 @@ function Install-Codex {
     }
     else {
         codex update
+        if ($LASTEXITCODE -ne 0) { throw "codex update failed: exit code $LASTEXITCODE" }
     }
 }
 

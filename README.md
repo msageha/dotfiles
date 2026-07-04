@@ -90,7 +90,7 @@ $env:Path = "$HOME\.local\bin;$env:Path"
 chezmoi init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
-Windows PowerShell は既定の実行ポリシーが `Restricted` のことが多く、その場合はスクリプトの実行がブロックされる。`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を試す。
+chezmoi が実行するセットアップスクリプトは `-ExecutionPolicy Bypass` 付きで起動されるため、実行ポリシーが既定の `Restricted` のままでも動作する。`install/windows/*.ps1` を手動で実行したい場合のみ `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` が必要になることがある。
 
 SSH URL (`git@github.com:msageha/dotfiles.git`) も利用できるが、その場合はそのマシンに GitHub 登録済みの SSH 鍵が既に必要（未設定の初回マシンでは clone に失敗する）。`autoCommit` / `autoPush` で push し返すオーナー環境では、鍵を配置してから remote を SSH に切り替えると push が楽になる。
 
@@ -215,7 +215,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules)
 │   ├── dot_codex/                 # OpenAI Codex 設定
 │   ├── dot_gemini/                # Gemini CLI 設定
-│   ├── modify_private_dot_claude.json.tmpl  # ~/.claude.json の mcpServers を管理
+│   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   └── dot_config/                # fish / ghostty / mise / starship 等
 ├── install/                       # インストールスクリプト
 │   ├── common/                    # 共通 (mise, rust, fonts, fisher, age 等)

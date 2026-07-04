@@ -43,6 +43,11 @@ function Install-GuiApps {
         Write-Step "Installing $id via winget ($source)..."
         winget install --id $id --exact --source $source `
             --accept-package-agreements --accept-source-agreements
+        # GUI アプリは best-effort とし、1 つの失敗 (msstore の未サインイン等) で
+        # apply 全体を止めない。ただし黙って流さず警告は出す
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "$id のインストールが終了コード $LASTEXITCODE で失敗しました。続行します。"
+        }
     }
 }
 
@@ -81,6 +86,10 @@ function Set-PowerToysSettings {
             version = '1.0'
         }
     } | ConvertTo-Json -Depth 10 -Compress
+
+    # Windows PowerShell 5.1 はネイティブ exe への引数内の " をエスケープせず渡すため、
+    # そのままだと子プロセス側で引用符が剥がれて JSON として不正になる
+    $config = $config -replace '"', '\"'
 
     try {
         & $dscExe set --resource 'settings' --module App --input $config

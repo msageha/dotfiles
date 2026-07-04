@@ -6,7 +6,8 @@ NC="\033[0m" # No Color (リセット)
 
 function install_antigravity_cli() {
     printf "%b\n" "${BLUE}Installing antigravity-cli...${NC}"
-    if ! command -v antigravity &>/dev/null; then
+    # update に使う agy を probe する (antigravity を probe すると agy だけ無い環境で失敗する)
+    if ! command -v agy &>/dev/null; then
         curl -fsSL https://antigravity.google/cli/install.sh | bash
     else
         agy update
