@@ -39,7 +39,7 @@ winget install --id Git.Git --exact --source winget
 
 導入後は新しい PowerShell を開き直してから Setup に進む。
 
-winget 自体は前提条件ではない。winget が無い環境 (Windows Server 2022 / Windows Sandbox など Microsoft Store 非搭載の環境) では、セットアップスクリプトが Microsoft 公式手順 (PSGallery の `Microsoft.WinGet.Client` モジュールの `Repair-WinGetPackageManager`) で winget を自動導入する (`install/windows/winget.ps1`)。ただし Windows Server 2019 以前は winget 非対応。その場合や、上記の `git` 導入時点で winget が無い場合は、[Git for Windows](https://gitforwindows.org/) のインストーラーで `git` を導入する。
+winget 自体は前提条件ではない。winget が無い環境 (Windows Server 2022 / Windows Sandbox など Microsoft Store 非搭載の環境) では、セットアップスクリプトが GitHub リリースの App Installer パッケージ (依存 + ライセンス XML 込み) から winget を自動導入する (`install/windows/winget.ps1`)。ただし Windows Server 2019 以前は winget 非対応。その場合や、上記の `git` 導入時点で winget が無い場合は、[Git for Windows](https://gitforwindows.org/) のインストーラーで `git` を導入する。
 
 ### 暗号化された設定の復号鍵 (age)
 
