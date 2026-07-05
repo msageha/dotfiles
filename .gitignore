@@ -20,6 +20,7 @@
 # --- ドキュメント ---
 !README.md
 !CLAUDE.md
+!AGENTS.md
 
 # --- chezmoi 本体 ---
 !.chezmoiroot
