@@ -9,8 +9,15 @@ function install_rust() {
         printf "%b\n" "${BLUE}Installing Rust via rustup...${NC}"
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
         export PATH="$HOME/.cargo/bin:$PATH"
+    elif command -v rustup &>/dev/null; then
+        # rust_tools はバージョン非固定のため、rustc が古いまま放置されると
+        # 新しいクレートの MSRV に追いつけずビルドが失敗する。毎回 stable を
+        # 最新化してデフォルトに固定し直すことで再発を防ぐ。
+        printf "%b\n" "${BLUE}Updating Rust to the latest stable via rustup...${NC}"
+        rustup toolchain install stable
+        rustup default stable
     else
-        printf "%b\n" "${BLUE}Rust is already installed.${NC}"
+        printf "%b\n" "${BLUE}Rust is already installed (not managed by rustup).${NC}"
     fi
 }
 
