@@ -66,6 +66,7 @@
 !.codex/owl-alpha.json
 !.codex/pareto-code.json
 !.codex/.env
+!.codex/agents
 !.codex/rules
 {{ end }}
 # Ignore everything under .gemini/ by default
