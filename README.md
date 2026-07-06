@@ -216,11 +216,11 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   ├── encrypted_dot_gitconfig.*.age    # 業務用 Git 設定 (age 暗号化)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules)
 │   ├── dot_codex/                 # OpenAI Codex 設定
-│   ├── dot_gemini/                # Gemini CLI 設定
+│   ├── dot_gemini/                # Gemini CLI / Antigravity 設定
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   └── dot_config/                # fish / ghostty / mise / starship 等
 ├── install/                       # インストールスクリプト
-│   ├── common/                    # 共通 (mise, fonts, fisher, age 等)
+│   ├── common/                    # 共通 (mise, fonts, fisher, completions 等)
 │   ├── macos/                     # macOS (brew, xcode, system/app settings)
 │   ├── debian/ ubuntu/ alpine/    # Linux 系
 │   └── windows/                   # Windows (winget ブートストラップ・コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)
@@ -229,7 +229,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
 ├── tests/                         # BATS テスト (files / install)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
-├── .github/workflows/             # CI (prek, bats, chezmoi dry-run) / Claude 連携
+├── .github/workflows/             # CI (prek, bats, chezmoi dry-run)
 ├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
 ├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)

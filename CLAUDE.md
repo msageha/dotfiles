@@ -26,12 +26,11 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 ## ディレクトリ構成
 
 - `home/` — chezmoi source (展開対象の dotfiles 本体)
-- `home/dot_claude/` — Claude Code のユーザースコープ設定 (`settings.json.tmpl`, `rules/`, `skills/`, `CLAUDE.md`)
-- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `ubuntu/`)
-- `settings/` — アプリ設定 (`vscode/`, `jetbrains/`, `macos/`, `common/`)
-- `bin/` — 補助スクリプト
+- `home/dot_claude/` — Claude Code のユーザースコープ設定 (`settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
+- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)
+- `settings/` — アプリ設定 (`common/`, `macos/`)
 - `tests/` — bats テスト (`tests/files`, `tests/install`)
-- `docker/Dockerfile.debian` / `cloudbuild.yaml` — Ubuntu 検証用イメージのビルド
+- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) / `cloudbuild.yaml` — Ubuntu / Debian / Alpine 検証用イメージのビルド
 
 ## コマンド (Makefile)
 
@@ -39,7 +38,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `make dry_run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
 - `make pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
 - `make test` — `bats -r tests/`
-- `make build_image` — Ubuntu 検証用 Docker イメージのビルド
+- `make build-ubuntu` など `build-*` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)
 
 ## 検証
 
