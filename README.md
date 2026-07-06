@@ -229,9 +229,9 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
 ├── tests/                         # BATS テスト (files / install)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
-├── .github/workflows/             # CI (pre-commit, bats, chezmoi dry-run) / Claude 連携
+├── .github/workflows/             # CI (prek, bats, chezmoi dry-run) / Claude 連携
 ├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
 ├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
-├── .pre-commit-config.yaml        # Lint/Format 設定
+├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
 └── _typos.toml                    # typos 設定 (*.age を除外)
 ```

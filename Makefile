@@ -103,7 +103,7 @@ test:
 
 .PHONY: pre-commit
 pre-commit:
-	uvx pre-commit run --all-files
+	prek run --all-files
 
 .PHONY: dry_run
 dry_run:

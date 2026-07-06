@@ -37,7 +37,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 
 - `make apply` — `chezmoi apply --verbose` (実際に適用)
 - `make dry_run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
-- `make pre-commit` — `uvx pre-commit run --all-files` (lint / format / shellcheck / hadolint / typos など)
+- `make pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
 - `make test` — `bats -r tests/`
 - `make build_image` — Ubuntu 検証用 Docker イメージのビルド
 
