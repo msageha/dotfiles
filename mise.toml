@@ -1,0 +1,11 @@
+[tools]
+prek = "0.4.8"
+hadolint = "2.14.0"
+actionlint = "1.7.12"
+bats = "1.13.0"
+
+[hooks]
+postinstall = "prek install"
+
+[settings]
+lockfile = true
