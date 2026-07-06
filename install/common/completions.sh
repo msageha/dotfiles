@@ -45,10 +45,6 @@ function fish_completions() {
         gen_completion gh gh completion -s fish > "$comp_dir/gh.fish" &
         pids+=($!); names+=("gh")
     fi
-    if command -v rustup &>/dev/null; then
-        gen_completion rustup rustup completions fish > "$comp_dir/rustup.fish" &
-        pids+=($!); names+=("rustup")
-    fi
     if command -v ruff &>/dev/null; then
         gen_completion ruff ruff generate-shell-completion fish > "$comp_dir/ruff.fish" &
         pids+=($!); names+=("ruff")
@@ -141,10 +137,6 @@ function zsh_completions() {
         gen_completion gh gh completion -s zsh > "$comp_dir/_gh" &
         pids+=($!); names+=("gh")
     fi
-    if command -v rustup &>/dev/null; then
-        gen_completion rustup rustup completions zsh > "$comp_dir/_rustup" &
-        pids+=($!); names+=("rustup")
-    fi
     if command -v ruff &>/dev/null; then
         gen_completion ruff ruff generate-shell-completion zsh > "$comp_dir/_ruff" &
         pids+=($!); names+=("ruff")
@@ -236,10 +228,6 @@ function bash_completions() {
     if command -v gh &>/dev/null; then
         gen_completion gh gh completion -s bash > "$comp_dir/gh" &
         pids+=($!); names+=("gh")
-    fi
-    if command -v rustup &>/dev/null; then
-        gen_completion rustup rustup completions bash > "$comp_dir/rustup" &
-        pids+=($!); names+=("rustup")
     fi
     if command -v ruff &>/dev/null; then
         gen_completion ruff ruff generate-shell-completion bash > "$comp_dir/ruff" &

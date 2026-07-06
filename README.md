@@ -220,7 +220,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   └── dot_config/                # fish / ghostty / mise / starship 等
 ├── install/                       # インストールスクリプト
-│   ├── common/                    # 共通 (mise, rust, fonts, fisher, age 等)
+│   ├── common/                    # 共通 (mise, fonts, fisher, age 等)
 │   ├── macos/                     # macOS (brew, xcode, system/app settings)
 │   ├── debian/ ubuntu/ alpine/    # Linux 系
 │   └── windows/                   # Windows (winget ブートストラップ・コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)

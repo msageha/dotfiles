@@ -50,14 +50,6 @@ if test -d $HOME/Works/bin
     fish_add_path $HOME/Works/bin
 end
 
-# -- Rustの設定 ---
-if test -d $HOME/.cargo/bin
-    fish_add_path $HOME/.cargo/bin
-end
-if type -q rustup; and type -q xcrun
-    set -x SDKROOT (xcrun --show-sdk-path)
-end
-
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin

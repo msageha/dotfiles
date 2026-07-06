@@ -21,7 +21,8 @@ function setup() {
     local tools=()
     while IFS= read -r tool; do
         tools+=("$tool")
-    done < <(sed -n '/^\[tools\]/,/^\[/p' "$config" | sed -n 's/^\([A-Za-z0-9_.-]*\) *=.*/\1/p')
+    # クォート付きキー ("ubi:owner/repo" 等の backend 指定) も拾う
+    done < <(sed -n '/^\[tools\]/,/^\[/p' "$config" | sed -n 's|^"\{0,1\}\([A-Za-z0-9_.:/-]\{1,\}\)"\{0,1\} *=.*|\1|p')
     [ "${#tools[@]}" -gt 0 ] || skip "no tools configured in $config"
 
     local installed

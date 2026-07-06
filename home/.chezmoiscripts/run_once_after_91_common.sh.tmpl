@@ -14,7 +14,7 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 export CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
 
 # 各 install スクリプトは色変数や main などの名前が重複するため subshell で隔離する。
-# ファイル間で必要な環境変数 (mise / cargo の PATH) は親で明示的に引き継ぐ。
+# ファイル間で必要な環境変数 (mise の PATH) は親で明示的に引き継ぐ。
 (
 {{   include "../install/common/setup_shell.sh" }}
 )
@@ -31,21 +31,9 @@ export CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
 {{   include "../install/common/mise.sh" }}
 )
 eval "$(mise activate bash --shims)"
-{{ if not (dig "skip_cli_tools" false .) -}}
-(
-{{   include "../install/common/uv.sh" }}
-)
-{{ end -}}
 (
 {{   include "../install/common/fisher.sh" }}
 )
-{{ if not (dig "skip_cli_tools" false .) -}}
-(
-{{   include "../install/common/rust.sh" }}
-)
-# rust (cargo) で導入したツールを後続の completions から参照できるようにする
-export PATH="$HOME/.cargo/bin:$PATH"
-{{ end -}}
 (
 {{   include "../install/common/completions.sh" }}
 )

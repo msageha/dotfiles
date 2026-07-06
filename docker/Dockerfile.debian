@@ -59,9 +59,7 @@ RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   > $HOME/.config/chezmoi/chezmoi.toml && \
   chezmoi apply --source=$HOME/dotfiles && \
   rm -rf $HOME/dotfiles && \
-  rm -rf "$HOME/.rustup/toolchains/"*/share/doc \
-  "$HOME/.cargo/registry" \
-  "$HOME/.cache" && \
+  rm -rf "$HOME/.cache" && \
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip
 
 CMD ["/usr/bin/fish"]
