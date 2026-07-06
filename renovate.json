@@ -1,0 +1,544 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^\\.github/workflows/docker-image-cd\\.yml$"
+      ],
+      "matchStrings": [
+        "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^install/common/fonts\\.sh$"
+      ],
+      "matchStrings": [
+        "NERD_FONTS_VERSION=\"(?<currentValue>v[\\d.]+)\"\\n"
+      ],
+      "depNameTemplate": "ryanoasis/nerd-fonts",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^install/windows/setup_powershell\\.ps1$"
+      ],
+      "matchStrings": [
+        "\\$NerdFontsVersion = '(?<currentValue>v[\\d.]+)'\\n"
+      ],
+      "depNameTemplate": "ryanoasis/nerd-fonts",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "awscli = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "aws/aws-cli",
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "aws-vault = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "ByteNess/aws-vault",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "direnv = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "direnv/direnv",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "flutter = \"(?<currentValue>\\d[^\"]*)\"\\n"
+      ],
+      "depNameTemplate": "flutter",
+      "datasourceTemplate": "flutter-version"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "fzf = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "junegunn/fzf",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "ghq = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "x-motemen/ghq",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "go = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "golang/go",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^go(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "java = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "java-jdk",
+      "datasourceTemplate": "java-version"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "kubectl = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "node = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "nodejs",
+      "datasourceTemplate": "node-version"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "pnpm = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "pnpm",
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "peco = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "peco/peco",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "ruby = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "ruby-version",
+      "datasourceTemplate": "ruby-version",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "starship = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "starship/starship",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "stern = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "stern/stern",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "terraform = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "hashicorp/terraform",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "terragrunt = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "gruntwork-io/terragrunt",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "bat = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "sharkdp/bat",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "bats = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "bats-core/bats-core",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "duf = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "muesli/duf",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "dust = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "bootandy/dust",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "eza = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "eza-community/eza",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "fastfetch = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "fastfetch-cli/fastfetch",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "fd = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "sharkdp/fd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "gh = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "cli/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "git-lfs = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "git-lfs/git-lfs",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "hadolint = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "hadolint/hadolint",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "hexyl = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "sharkdp/hexyl",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "jq = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "jqlang/jq",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^(jq-)?v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "prek = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "j178/prek",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "ripgrep = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "BurntSushi/ripgrep",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "ruff = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "astral-sh/ruff",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "shellcheck = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "koalaman/shellcheck",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "tmux = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "tmux/tmux-builds",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "ty = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "astral-sh/ty",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "uv = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "websocat = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "vi/websocat",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "yq = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "mikefarah/yq",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\S+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "zoxide = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "ajeetdsouza/zoxide",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "\"ubi:boyter/scc\" = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "boyter/scc",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "\"ubi:dalance/procs\" = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "dalance/procs",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "\"go:github\\.com/cloudflare/cloudflare-go/cmd/flarectl\" = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "cloudflare/cloudflare-go",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    }
+  ]
+}

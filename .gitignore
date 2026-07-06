@@ -9,6 +9,7 @@
 !.github/**
 !mise.toml
 !mise.lock
+!renovate.json
 
 # --- Docker / Cloud Build ---
 !docker
