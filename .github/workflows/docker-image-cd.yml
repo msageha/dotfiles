@@ -92,7 +92,7 @@ jobs:
           provenance: false
           # GitHub のレート制限回避のため token を BuildKit secret で渡す (任意)。
           secrets: |
-            github_token=${{ secrets.GITHUB_TOKEN }}
+            github_token=${{ github.token }}
           cache-from: type=gha,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
@@ -142,6 +142,7 @@ jobs:
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
+          # shellcheck disable=SC2046
           docker buildx imagetools create -t "${IMAGE}:${{ matrix.tag }}" \
             $(printf "${IMAGE}@sha256:%s " *)
       - name: Inspect image

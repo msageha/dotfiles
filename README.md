@@ -199,6 +199,23 @@ make decrypt_google_ime   # encrypted_google.ime.txt.age → settings/common/goo
 make encrypt_google_ime   # 平文を編集後に再暗号化
 ```
 
+## 開発
+
+このリポジトリ自体の lint/format/テストに使うツール (`prek` / `hadolint` / `actionlint` / `bats`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
+
+```bash
+mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
+mise install  # ツールを導入し、git hook (pre-commit) を自動登録する
+```
+
+```bash
+make pre-commit   # prek run --all-files
+make test         # bats -r tests/
+make dry_run      # chezmoi apply --dry-run --verbose --force
+```
+
+依存関係 (GitHub Actions・mise.toml のツール・ベースイメージ等) の更新は [Renovate](https://docs.renovatebot.com/) (`renovate.json`) が自動 PR を作成する。
+
 ## Structure
 
 ```
@@ -229,9 +246,11 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
 ├── tests/                         # BATS テスト (files / install)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
-├── .github/workflows/             # CI (prek, bats, chezmoi dry-run)
+├── .github/workflows/             # CI (prek, bats, chezmoi dry-run, secret scan)
 ├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
 ├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
+├── mise.toml / mise.lock          # 開発ツール (prek/hadolint/actionlint/bats) のバージョン管理
+├── renovate.json                  # 依存関係の自動更新設定
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
 └── _typos.toml                    # typos 設定 (*.age を除外)
 ```
