@@ -9,6 +9,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  # mise の ubi/aqua backend をはじめ各ステップが GitHub API を叩くため、
+  # 無認証だと runner の共有 IP で rate limit (60 req/h) に当たる。
+  # 全ジョブ・全ステップで Actions のエフェメラルトークンを使い認証付きにする
+  GITHUB_TOKEN: ${{ github.token }}
 jobs:
   prek:
     runs-on: ubuntu-latest
@@ -60,10 +65,6 @@ jobs:
       - name: Test chezmoi apply (dry-run)
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
-        env:
-          # mise の ubi/aqua backend が GitHub API を叩くため、無認証だと
-          # runner の共有 IP で rate limit (60 req/h) に当たる
-          GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
       - name: Install bats
         run: |
