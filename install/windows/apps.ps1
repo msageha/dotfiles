@@ -51,6 +51,30 @@ function Install-GuiApps {
     }
 }
 
+function Uninstall-OneDrive {
+    # プリインストールされている OneDrive は使わないため削除する
+    if ($env:CI) {
+        return
+    }
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Warn 'winget が見つかりません。OneDrive のアンインストールをスキップします。'
+        return
+    }
+    # プリインストール版は ARP エントリで検出したいため --source は指定しない
+    winget list --id Microsoft.OneDrive --exact --accept-source-agreements *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Step 'OneDrive はインストールされていないため、スキップします。'
+        return
+    }
+    Write-Step 'OneDrive をアンインストールしています...'
+    # 実行中だとアンインストーラが失敗することがあるため先に停止する
+    Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue
+    winget uninstall --id Microsoft.OneDrive --exact --accept-source-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "OneDrive のアンインストールが終了コード $LASTEXITCODE で失敗しました。続行します。"
+    }
+}
+
 function Set-PowerToysSettings {
     # PowerToys の設定は %LOCALAPPDATA%\Microsoft\PowerToys\ 配下の JSON で管理されており、
     # バージョン間でスキーマが変わりうる上、PowerToys が一度も実行されていないとファイル自体が
@@ -211,6 +235,7 @@ function Set-DefaultInputMethod {
 }
 
 function Main {
+    Uninstall-OneDrive
     Install-GuiApps
     Set-PowerToysSettings
     Open-DefaultAppsSettings

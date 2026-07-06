@@ -20,6 +20,16 @@ function Set-ExplorerSettings {
     New-ItemProperty -Path $advanced -Name 'LaunchTo' -Value 1 -PropertyType DWord -Force | Out-Null      # 起動時にクイックアクセスではなく PC を表示
 }
 
+function Set-ContextMenuSettings {
+    Write-Step '右クリックメニューを従来表示 (Windows 10 形式) に設定しています...'
+    # この CLSID の InprocServer32 を空の既定値で登録すると Windows 11 が簡略メニューを
+    # ロードできなくなり、常に従来のフルメニューが表示される。Windows 10 では参照されない
+    # キーのため無害。反映は Main 末尾の Restart-Explorer で行われる。
+    $key = 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32'
+    New-Item -Path $key -Force | Out-Null
+    Set-ItemProperty -Path $key -Name '(Default)' -Value ''
+}
+
 function Set-WallpaperSettings {
     Write-Step '壁紙の設定を行っています...'
     $picturesDir = Join-Path $env:USERPROFILE 'Pictures'
@@ -87,6 +97,13 @@ function Set-PowerSettings {
     powercfg /change standby-timeout-dc 15
 }
 
+function Set-ClipboardSettings {
+    Write-Step 'クリップボード履歴を有効化しています...'
+    $clipboard = 'HKCU:\Software\Microsoft\Clipboard'
+    New-Item -Path $clipboard -Force -ErrorAction SilentlyContinue | Out-Null
+    New-ItemProperty -Path $clipboard -Name 'EnableClipboardHistory' -Value 1 -PropertyType DWord -Force | Out-Null # Win+V の履歴を有効化
+}
+
 function Set-KeyboardSettings {
     Write-Step 'キーボードの設定を行っています...'
     $keyboard = 'HKCU:\Control Panel\Keyboard'
@@ -124,6 +141,48 @@ function Enable-DeveloperMode {
     }
 }
 
+function Disable-BitLockerProtection {
+    # Get-BitLockerVolume は管理者権限が必要なため、未昇格でも読み取れるシェルプロパティで
+    # 先にシステムドライブの状態を判定し、無効化が必要なときだけ UAC 昇格する
+    # (Enable-DeveloperMode と同様、毎回ダイアログが出るのを避けるため)。
+    try {
+        $shell = New-Object -ComObject Shell.Application
+        $protection = $shell.NameSpace("$env:SystemDrive\").Self.ExtendedProperty('System.Volume.BitLockerProtection')
+    }
+    catch {
+        Write-Warn "BitLocker の状態を取得できませんでした。スキップします: $($_.Exception.Message)"
+        return
+    }
+    # System.Volume.BitLockerProtection: 1=有効 3=暗号化中 5=一時停止 6=ロック中 / 2=無効 4=復号中 / 0 or null=非対応
+    if ($null -eq $protection -or $protection -in @(0, 2, 4)) {
+        Write-Step 'BitLocker は既に無効のため、スキップします。'
+        return
+    }
+
+    # Disable-BitLocker は復号をバックグラウンドで開始して即座に戻るため、-Wait しても apply は長時間ブロックされない
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if ($isAdmin) {
+        if (-not (Get-Command Disable-BitLocker -ErrorAction SilentlyContinue)) {
+            Write-Warn 'Disable-BitLocker が見つかりません (Home エディション等)。設定アプリの「デバイスの暗号化」から手動で無効化してください。'
+            return
+        }
+        Write-Step 'BitLocker を無効化しています...'
+        Get-BitLockerVolume | Where-Object { $_.VolumeStatus -ne 'FullyDecrypted' } | Disable-BitLocker | Out-Null
+        Write-Step 'BitLocker の無効化を開始しました (復号はバックグラウンドで継続されます)。'
+        return
+    }
+
+    Write-Step 'BitLocker の無効化には管理者権限が必要なため、UAC 昇格して実行します...'
+    try {
+        $command = 'Get-BitLockerVolume | Where-Object { $_.VolumeStatus -ne ''FullyDecrypted'' } | Disable-BitLocker | Out-Null'
+        Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-Command', $command) -Verb RunAs -Wait
+        Write-Step 'BitLocker の無効化を開始しました (復号はバックグラウンドで継続されます)。'
+    }
+    catch {
+        Write-Warn "BitLocker の無効化に失敗しました (UAC がキャンセルされた可能性があります): $($_.Exception.Message)"
+    }
+}
+
 function Set-StartMenuSettings {
     Write-Step 'スタートメニューの設定を行っています...'
     $search = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
@@ -150,11 +209,14 @@ function Main {
         return
     }
     Set-ExplorerSettings
+    Set-ContextMenuSettings
     Set-WallpaperSettings
     Set-TaskbarSettings
     Set-PowerSettings
+    Set-ClipboardSettings
     Set-KeyboardSettings
     Enable-DeveloperMode
+    Disable-BitLockerProtection
     Set-StartMenuSettings
     Restart-Explorer
 }
