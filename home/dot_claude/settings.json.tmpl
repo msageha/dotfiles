@@ -251,7 +251,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -n \"$TMUX_PANE\" ]; then ROLE=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@role}' 2>/dev/null); if [ \"$ROLE\" = \"planner\" ] || [ \"$ROLE\" = \"worker\" ]; then exit 0; fi; fi; osascript -e 'display notification \"Claude Code が入力待ちです\" with title \"Claude Code\" sound name \"Glass\"'"
+            "command": "if [ -n \"$TMUX_PANE\" ]; then ROLE=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@role}' 2>/dev/null); if [ \"$ROLE\" = \"planner\" ] || [ \"$ROLE\" = \"worker\" ]; then exit 0; fi; fi; osascript -e 'display notification \"Claude Code が入力待ちです\" with title \"Claude Code\"'"
           }
         ]
       }
