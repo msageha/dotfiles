@@ -6,6 +6,7 @@ flutter = "https://github.com/mise-plugins/mise-flutter.git"
 [tools]
 {{ if eq .chezmoi.os "darwin" -}}
 awscli = "2.35.11"
+aws-vault = "7.12.4"
 {{ end -}}
 direnv = "2.37.1"
 {{ if eq .chezmoi.os "darwin" -}}
@@ -41,7 +42,4 @@ terragrunt = "1.0.8"
 {{ end -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 uv = "0.11.25"
-{{ end -}}
-{{ if eq .chezmoi.os "darwin" -}}
-aws-vault = "7.12.4"
 {{ end -}}
