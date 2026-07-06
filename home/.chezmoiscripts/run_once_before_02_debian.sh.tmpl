@@ -5,9 +5,6 @@ set -e
 {{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
 export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
 {{     include "../install/debian/apt.sh" }}
-{{     if eq .chezmoi.osRelease.id "ubuntu" -}}
-{{       include "../install/ubuntu/fastfetch.sh" }}
-{{     end -}}
 {{     if not .skip_cli_tools -}}
 {{       include "../install/debian/coding_agent.sh" }}
 {{     end -}}

@@ -32,7 +32,6 @@ apt_base=(
     fish
     zsh
     git
-    git-lfs
 )
 
 # software-properties-common (add-apt-repository を提供) は Ubuntu の PPA 追加
@@ -48,13 +47,11 @@ apt_tools=(
     graphviz
     htop
     imagemagick
-    jq
     mupdf-tools
     pigz
     pv
     rename
     rlwrap
-    shellcheck
     tree
     vbindiff
 )
@@ -67,21 +64,6 @@ function install_base() {
 function install_tools() {
     printf "%b\n" "${BLUE}Installing APT tool packages...${NC}"
     sudo apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
-}
-
-function install_gh() {
-    printf "%b\n" "${BLUE}Installing GitHub CLI...${NC}"
-    if ! command -v gh &>/dev/null; then
-        sudo mkdir -p /etc/apt/keyrings
-        sudo chmod 755 /etc/apt/keyrings
-        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
-        sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-        sudo apt update -yq
-        sudo apt install -yq "${apt_install_opts[@]}" gh
-    else
-        printf "%b\n" "${BLUE}GitHub CLI is already installed.${NC}"
-    fi
 }
 
 function install_chezmoi() {
@@ -131,14 +113,13 @@ function main() {
 
     update
     install_base
-    # apt_tools と chezmoi/docker/gh は base に対する追加分。SKIP_CLI_TOOLS=true でまとめてスキップする。
+    # apt_tools と chezmoi/docker は base に対する追加分。SKIP_CLI_TOOLS=true でまとめてスキップする。
     if [ "$SKIP_CLI_TOOLS" = "true" ]; then
-        printf "%b\n" "${BLUE}Skipping apt tools and chezmoi/docker/gh (SKIP_CLI_TOOLS=true).${NC}"
+        printf "%b\n" "${BLUE}Skipping apt tools and chezmoi/docker (SKIP_CLI_TOOLS=true).${NC}"
     else
         install_tools
         install_chezmoi
         install_docker
-        install_gh
     fi
     upgrade
     clean

@@ -41,21 +41,31 @@ terraform = "1.15.7"
 terragrunt = "1.0.8"
 {{ end -}}
 {{/* CLI ユーティリティ群。最小構成 (skip_cli_tools=true) では省く。
-     procs / scc は mise レジストリ未登録のため ubi backend で GitHub releases から取得する。 */ -}}
+     procs / scc / flarectl は mise レジストリ未登録のため ubi/go backend で GitHub releases (またはソース) から取得する。 */ -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 bat = "0.26.1"
+bats = "1.13.0"
 duf = "0.9.1"
 dust = "1.2.4"
 eza = "0.23.4"
+fastfetch = "2.65.2"
 fd = "10.4.2"
+gh = "2.95.0"
+git-lfs = "3.7.1"
+hadolint = "2.14.0"
 hexyl = "0.17.0"
+jq = "1.8.2"
 prek = "0.4.8"
 ripgrep = "15.1.0"
 ruff = "0.15.20"
+shellcheck = "0.11.0"
+tmux = "3.7b"
 ty = "0.0.56"
 uv = "0.11.25"
 websocat = "1.14.1"
+yq = "4.53.3"
 zoxide = "0.10.0"
 "ubi:boyter/scc" = "3.7.0"
 "ubi:dalance/procs" = "0.14.12"
+"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.117.0"
 {{ end -}}

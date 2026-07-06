@@ -28,24 +28,19 @@ function update() {
 formulae=(
     antigravity-cli
     mise
-    bats-core
     chezmoi
     dockutil
     exiv2
-    fastfetch
     fish
-    gh
     git
-    git-lfs
     git-secrets
     gnupg
     googleworkspace-cli
     graphviz
-    hadolint
     htop
     httpie
     imagemagick
-    jq
+    mole
     mupdf
     mysql-client
     p7zip
@@ -55,11 +50,9 @@ formulae=(
     rename
     rlwrap
     satococoa/tap/wtp
-    shellcheck
     tree
     vbindiff
     wget
-    yq
 
     # CTF tools
     # aircrack-ng bfg binutils binwalk cifer dex2jar dns2tcp fcrackzip foremost hydra john knock netpbm nmap pngcheck socat sqlmap tcpflow tcpreplay ucspi-tcp xpdf x

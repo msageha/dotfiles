@@ -27,7 +27,7 @@ function setup() {
     [ "$status" -eq 1 ]
 }
 
-@test "[debian] apt - SKIP_CLI_TOOLS=true skips tools and chezmoi/docker/gh" {
+@test "[debian] apt - SKIP_CLI_TOOLS=true skips tools and chezmoi/docker" {
     # base のみ実行し、追加ツール群はスキップする (sudo/curl はスタブで無害化)。
     run env SKIP_CLI_TOOLS=true bash -c 'sudo() { :; }; curl() { :; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 0 ]
