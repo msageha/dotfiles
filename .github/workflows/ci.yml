@@ -20,16 +20,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Install hadolint
-        env:
-          HADOLINT_VERSION: v2.14.0
-        run: |
-          curl -fsSL --retry 3 --retry-delay 2 \
-            -o /tmp/hadolint \
-            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64"
-          sudo install -m 0755 /tmp/hadolint /usr/local/bin/hadolint
+      - name: Install mise
+        run: curl https://mise.run | sh
       - name: Run prek
-        uses: j178/prek-action@e98a699c41eb69ab013a45817a0406469a748f8d # v2.0.5
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          mise install
+          mise exec -- prek run --all-files
   chezmoi:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -40,12 +37,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install chezmoi
         run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
-          mkdir -p $HOME/.config/chezmoi
-          cat <<EOF > $HOME/.config/chezmoi/chezmoi.toml
+          mkdir -p "$HOME/.config/chezmoi"
+          cat <<EOF > "$HOME/.config/chezmoi/chezmoi.toml"
           [data]
           computer_name = "ci-${{ matrix.os }}"
           skip_cli_tools = false
@@ -79,6 +76,7 @@ jobs:
           # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
           # 途中で中断しうる。source 中だけ -e を外し、最後まで環境を読み込ませる。
           set +e
+          # shellcheck disable=SC1090
           source ~/.bash_profile
           set -e
           make test

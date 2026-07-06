@@ -142,6 +142,7 @@ jobs:
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
+          # shellcheck disable=SC2046
           docker buildx imagetools create -t "${IMAGE}:${{ matrix.tag }}" \
             $(printf "${IMAGE}@sha256:%s " *)
       - name: Inspect image
