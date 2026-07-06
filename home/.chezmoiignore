@@ -57,6 +57,7 @@
 # Ignore everything under .codex/ by default
 .codex/*
 {{ if not $skipCodingAgent }}
+!.codex/AGENTS.md
 !.codex/config.toml
 !.codex/fugu.config.toml
 !.codex/fusion.config.toml
@@ -77,5 +78,6 @@
 !.gemini/antigravity-cli
 !.gemini/antigravity-cli/settings.json
 !.gemini/config
+!.gemini/config/AGENTS.md
 !.gemini/config/mcp_config.json
 {{ end }}
