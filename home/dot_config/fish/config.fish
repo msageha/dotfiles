@@ -97,6 +97,17 @@ set -g fish_cursor_insert block
 set -g fish_cursor_replace_one underscore
 set -g fish_cursor_visual block
 
+# --- GitHub トークンの動的注入 ---
+# GitHub MCP server (Claude Code の github plugin) が参照する。gh の OAuth トークンを
+# 都度取得することで PAT をファイルに置かない。gh 未導入・未ログイン時は設定しない。
+# トークンは回転しうるためキャッシュに書かず、毎回評価する。
+if not set -q GITHUB_PERSONAL_ACCESS_TOKEN; and type -q gh
+    set -l gh_token (gh auth token 2>/dev/null)
+    if test -n "$gh_token"
+        set -gx GITHUB_PERSONAL_ACCESS_TOKEN $gh_token
+    end
+end
+
 
 # --- FISH_CONFIG_CACHEの設定 ---
 set -l FISH_CONFIG_CACHE $HOME/.cache/fish/config.fish

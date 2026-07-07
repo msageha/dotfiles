@@ -98,3 +98,14 @@ fi
 if command -v direnv &>/dev/null; then
     eval "$(direnv hook zsh)"
 fi
+
+# --- GitHub トークンの動的注入 ---
+# GitHub MCP server (Claude Code の github plugin) が参照する。gh の OAuth トークンを
+# 都度取得することで PAT をファイルに置かない。gh 未導入・未ログイン時は設定しない。
+if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && command -v gh &>/dev/null; then
+    _gh_token="$(gh auth token 2>/dev/null)"
+    if [ -n "$_gh_token" ]; then
+        export GITHUB_PERSONAL_ACCESS_TOKEN="$_gh_token"
+    fi
+    unset _gh_token
+fi
