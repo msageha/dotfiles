@@ -9,6 +9,11 @@ sandbox_mode = "workspace-write"
 max_threads = 6
 max_depth = 1
 
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@latest"]
+startup_timeout_ms = 20_000
+
 [model_providers.sakana]
 name = "Sakana API"
 base_url = "https://api.torafugu.app/v1"
