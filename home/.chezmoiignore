@@ -42,7 +42,6 @@
 {{ if not $skipCodingAgent }}
 # Manage only these files
 !.claude/CLAUDE.md
-!.claude/CLAUDE-FABLE-5.md
 !.claude/settings.json
 !.claude/settings.fusion.json
 !.claude/statusline-command.sh

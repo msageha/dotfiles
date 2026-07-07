@@ -1,0 +1,14 @@
+# 過去に配布していたが廃止したファイルを適用先から削除する。
+# - .claude/commands/*.md は .claude/skills/ へ移行済みの legacy slash command
+# - CLAUDE-FABLE-5.md は廃止した claude-fable5 alias 用のシステムプロンプト
+.claude/CLAUDE-FABLE-5.md
+.claude/commands/commit.md
+.claude/commands/create-verify.md
+.claude/commands/deps.md
+.claude/commands/diagram.md
+.claude/commands/explain.md
+.claude/commands/pr.md
+.claude/commands/refactor.md
+.claude/commands/review.md
+.claude/commands/security.md
+.claude/commands/test.md
