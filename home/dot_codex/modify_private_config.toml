@@ -9,6 +9,7 @@ model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
+project_doc_fallback_filenames = ["CLAUDE.md"]
 
 [agents]
 max_threads = 6
@@ -17,6 +18,16 @@ max_depth = 1
 [mcp_servers.context7]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]
+startup_timeout_ms = 20_000
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest"]
+startup_timeout_ms = 20_000
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
 startup_timeout_ms = 20_000
 
 [model_providers.sakana]
@@ -46,6 +57,22 @@ trust_level = "trusted"
 [projects.%q]
 trust_level = "trusted"
 ` (printf "%s/Works/src" .chezmoi.homeDir) (printf "%s/.local/share/chezmoi" .chezmoi.homeDir) | fromToml -}}
+{{- if lookPath "dart" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[mcp_servers.dart]
+command = "dart"
+args = ["mcp-server"]
+startup_timeout_ms = 20_000
+`) -}}
+{{- end -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[mcp_servers.xcode]
+command = "xcrun"
+args = ["mcpbridge"]
+startup_timeout_ms = 20_000
+`) -}}
+{{- end -}}
 {{- $current := dict -}}
 {{- $stdin := "" -}}
 {{- if hasKey .chezmoi "stdin" -}}
