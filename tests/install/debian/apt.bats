@@ -34,3 +34,11 @@ function setup() {
     [[ "$output" == *"Skipping apt tools"* ]]
     [[ "$output" != *"Installing APT tool packages"* ]]
 }
+
+@test "[debian] apt - CI skips apt upgrade" {
+    # GitHub runner 上の apt upgrade は snap refresh を誘発し、外部 download に長時間依存する。
+    run env CI=true bash -c 'source '"${SCRIPT_PATH}"'; upgrade'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Skipping APT upgrade in CI."* ]]
+    [[ "$output" != *"Upgrading APT packages"* ]]
+}

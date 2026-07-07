@@ -93,6 +93,11 @@ function install_docker() {
 }
 
 function upgrade() {
+    if [ -n "${CI:-}" ]; then
+        printf "%b\n" "${BLUE}Skipping APT upgrade in CI.${NC}"
+        return
+    fi
+
     printf "%b\n" "${BLUE}Upgrading APT packages...${NC}"
     sudo apt -yq upgrade
 }
