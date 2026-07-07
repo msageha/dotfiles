@@ -143,7 +143,7 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 
 | プロンプト              | データキー           | 説明                                                                                                             |
 | ----------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `Gemini API Key`        | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Gemini CLI / nano-banana MCP 等で使用             |
+| `Gemini API Key`        | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用        |
 | `Google Maps API Key`   | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
 | `Fugu (Sakana) API Key` | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
 | `OpenRouter API Key`    | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
@@ -233,7 +233,7 @@ make dry_run      # chezmoi apply --dry-run --verbose --force
 │   ├── encrypted_dot_gitconfig.*.age    # 業務用 Git 設定 (age 暗号化)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules)
 │   ├── dot_codex/                 # OpenAI Codex 設定
-│   ├── dot_gemini/                # Gemini CLI / Antigravity 設定
+│   ├── dot_gemini/                # Antigravity (Gemini) 設定
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   └── dot_config/                # fish / ghostty / mise / starship 等
 ├── install/                       # インストールスクリプト
