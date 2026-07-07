@@ -42,6 +42,9 @@
 {{ if not $skipCodingAgent }}
 # Manage only these files
 !.claude/CLAUDE.md
+# CLAUDE-FABLE-5.md は廃止済み。ignore された target には .chezmoiremove が効かないため、
+# 全マシンで削除が済むまで whitelist に残して remove を発火させる (掃除用の暫定エントリ)
+!.claude/CLAUDE-FABLE-5.md
 !.claude/settings.json
 !.claude/settings.fusion.json
 !.claude/statusline-command.sh
