@@ -6,6 +6,7 @@ export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | quote }}
 
 {{   include "../install/macos/xcode_select.sh" }}
 {{   include "../install/macos/brew.sh" }}
+{{   include "../install/common/plugins.sh" }}
 export COMPUTER_NAME={{ .computer_name | quote }}
 
 # GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
