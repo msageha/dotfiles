@@ -11,7 +11,7 @@
 {{- end -}}
 {{- if $stdin -}}
 {{-   $current := fromJson $stdin -}}
-{{-   range $key := list "oauthAccount" "projects" "userID" "machineID" -}}
+{{-   range $key := list "oauthAccount" "projects" "userID" "machineID" "officialMarketplaceAutoInstallAttempted" "officialMarketplaceAutoInstalled" -}}
 {{-     if hasKey $current $key -}}
 {{-       $_ := set $desired $key (get $current $key) -}}
 {{-     end -}}

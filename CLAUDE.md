@@ -18,7 +18,8 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `private_*` → パーミッション 600 で展開
 - `modify_private_dot_claude.json` → `~/.claude.json` を `.chezmoitemplates/claude.json` の内容へ
   置き換える chezmoi:modify-template (`.tmpl` を付けると二重テンプレート処理になるので付けない)。
-  マシンローカルな状態 (`oauthAccount` / `projects` / `userID` / `machineID`) のみ既存値を温存し、
+  マシンローカルな状態 (`oauthAccount` / `projects` / `userID` / `machineID` /
+  `officialMarketplaceAutoInstallAttempted` / `officialMarketplaceAutoInstalled`) のみ既存値を温存し、
   Claude Code が実行時に書き込むその他のランタイム状態 (カウンタ・キャッシュ等) は
   apply のたびにリセットされる。
   chezmoi 内部で実行されるため外部 interpreter 不要で Windows でも動く
