@@ -1,7 +1,9 @@
 # 過去に配布していたが廃止したファイルを適用先から削除する。
 # - .claude/commands/*.md は .claude/skills/ へ移行済みの legacy slash command
 # - CLAUDE-FABLE-5.md は廃止した claude-fable5 alias 用のシステムプロンプト
+# - owl-alpha.json はどの codex profile からも参照されない model catalog
 .claude/CLAUDE-FABLE-5.md
+.codex/owl-alpha.json
 .claude/commands/commit.md
 .claude/commands/create-verify.md
 .claude/commands/deps.md
