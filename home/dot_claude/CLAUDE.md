@@ -32,17 +32,21 @@
 
 ## MCP servers (autonomous use)
 
-以下は環境で利用可能な MCP サーバー。明示指示が無くても、タスク文脈に合致すれば自律的に呼び出してよい。
+接続済みの全 MCP サーバー (`~/.claude.json` + plugin 由来。plugin 内部専用のものは除く) の用途ガイド。
+ツール定義は自動でモデルに公開されるため、ここでは「いつ使うか」だけを定める。
+明示指示が無くても、タスク文脈に合致すれば自律的に呼び出してよい。
 
 - **codex**: アーキテクチャ相談、設計パターン、複雑なコード生成のレビュー。
+- **antigravity**: Gemini (Antigravity) へのセカンドオピニオン・情報調査・検索。
 - **context7**: ライブラリ・フレームワーク・SDK・CLI の最新ドキュメント参照。学習データが古い可能性があるため、ライブラリ仕様を扱う際は積極的に参照する。
 - **chrome-devtools**: ブラウザデバッグ、パフォーマンス分析。
-- **github**: パブリックリポジトリの調査。プライベートリポジトリは `gh` CLI を使う。
-- **gemini-cli**: 情報調査・検索。
+- **github** (plugin 由来): github リポジトリの調査など。認証はシェル初期化時に `gh auth token` から `GITHUB_PERSONAL_ACCESS_TOKEN` へ動的注入される (gh 未ログイン環境では接続不可)。
 - **playwright**: E2E テストとブラウザ自動化。フロントエンドの検証機構として推奨。
 - **dart**: Dart/Flutter 開発全般 (作成・解析・整形・テスト・実行中アプリのデバッグ)。シェル直叩きより MCP を優先する。
 - **drawio**: フローチャート、アーキテクチャ図、視覚的ドキュメントの生成。
 - **figma**: Figma URL/デザインからのコード生成、Code Connect 管理、FigJam 作成。
+- **xcode**: Xcode プロジェクトのビルド・テスト・デバッグ (macOS のみ)。
+- **pycharm**: JetBrains IDE 連携。IDE 起動中のみ接続できる。
 - **maps-grounding-lite**: 場所検索、経路計算。
 - **nano-banana**: テキストプロンプトからの画像生成・編集。
 - **youtube**: YouTube 動画のトランスクリプト取得。
