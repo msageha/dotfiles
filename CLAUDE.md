@@ -43,6 +43,6 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 ## 検証
 
 変更後は `make pre-commit` → `make test` → `make dry_run` が通ることを確認する。
-`.claude/` はローカル設定領域のためリポジトリ管理対象外。各環境で `.claude/verify.sh`
-(実行可能ファイル) を用意すると Stop hook から自動実行され、上記を順に走らせる
-(ツールが PATH に無ければ該当ステップは warn してスキップ)。
+このリポジトリの検証は上記の Make ターゲットで完結しており、`.claude/verify.sh` は用意しない
+(lint / format / テストは pre-commit と bats が包含する)。
+`.claude/` はローカル設定領域のためリポジトリ管理対象外。
