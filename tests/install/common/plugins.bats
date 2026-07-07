@@ -9,7 +9,6 @@ function setup() {
     plugin_names=(
         cloudflare
         github
-        semgrep
         agent-sdk-dev
         plugin-dev
         claude-md-management
@@ -23,7 +22,6 @@ function setup() {
     [ -e "${SCRIPT_PATH}" ]
     declare -F cloudflare >/dev/null
     declare -F github >/dev/null
-    declare -F semgrep >/dev/null
     declare -F agent_sdk_dev >/dev/null
     declare -F plugin_dev >/dev/null
     declare -F claude_md_management >/dev/null

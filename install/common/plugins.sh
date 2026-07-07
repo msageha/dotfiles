@@ -23,11 +23,6 @@ function github() {
     install_plugin github@claude-plugins-official
 }
 
-function semgrep() {
-    printf "%b\n" "${BLUE}Installing Semgrep...${NC}"
-    install_plugin semgrep@claude-plugins-official
-}
-
 function agent_sdk_dev() {
     printf "%b\n" "${BLUE}Installing agent-sdk-dev...${NC}"
     install_plugin agent-sdk-dev@claude-plugins-official
@@ -81,7 +76,6 @@ function main() {
 
     cloudflare
     github
-    semgrep
     agent_sdk_dev
     plugin_dev
     claude_md_management
