@@ -49,7 +49,9 @@ apt_tools=(
     imagemagick
     mupdf-tools
     pigz
+    poppler-utils
     pv
+    qpdf
     rename
     rlwrap
     tree

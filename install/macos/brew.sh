@@ -46,7 +46,9 @@ formulae=(
     p7zip
     pigz
     pkgconf
+    poppler
     pv
+    qpdf
     rename
     rlwrap
     satococoa/tap/wtp
