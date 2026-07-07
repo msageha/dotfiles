@@ -49,6 +49,12 @@
 !.claude/skills
 !.claude/rules
 {{ end }}
+# gws-* skills は gws CLI (Homebrew の googleworkspace-cli) 前提のため macOS 以外では展開しない。
+# ディレクトリ単体のパターンだけでは中身に効かないことがあるため /** も併記する
+{{ if ne .chezmoi.os "darwin" }}
+.claude/skills/gws-*
+.claude/skills/gws-*/**
+{{ end }}
 # .claude.json (Claude MCP 設定) も skip_coding_agent=true のとき除外する
 {{ if $skipCodingAgent }}
 .claude.json
