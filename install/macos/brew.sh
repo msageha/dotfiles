@@ -63,7 +63,6 @@ formulae=(
 # Cask (GUI アプリ) — CI ではインストールしない
 casks=(
     1password
-    1password-cli
     android-studio
     bettertouchtool
     chatgpt

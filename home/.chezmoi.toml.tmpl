@@ -56,19 +56,12 @@ skip_gui_tools = {{ $skipGuiTools }}
 skip_windows_extras = {{ $skipWindowsExtras }}
 {{- end }}
 
-{{- $apiKeys := dict }}
-{{- if hasKey . "apiKeys" }}
-{{-   $apiKeys = .apiKeys }}
-{{- end }}
-
 {{- if and (not $skipCliTools) (not $skipWindowsExtras) }}
 [data.apiKeys]
-{{- $geminiApiKey := promptStringOnce $apiKeys "gemini" "Gemini API Key" "" }}
-gemini = {{ $geminiApiKey | quote }}
-{{- $googleMapsApiKey := promptStringOnce $apiKeys "googleMaps" "Google Maps API Key" "" }}
-googleMaps = {{ $googleMapsApiKey | quote }}
-{{- $fuguApiKey := promptStringOnce $apiKeys "fugu" "Fugu (Sakana) API Key" "" }}
-fugu = {{ $fuguApiKey | quote }}
-{{- $openRouterApiKey := promptStringOnce $apiKeys "openRouter" "OpenRouter API Key" "" }}
-openRouter = {{ $openRouterApiKey | quote }}
+# API keys are injected by fnox. Missing env values intentionally expand to
+# empty strings so the first bootstrap run can install fnox/1Password.
+gemini = {{ env "GEMINI_API_KEY" | quote }}
+googleMaps = {{ env "GOOGLE_MAP_API_KEY" | quote }}
+fugu = {{ env "FUGU_API_KEY" | quote }}
+openRouter = {{ env "OPENROUTER_API_KEY" | quote }}
 {{- end }}

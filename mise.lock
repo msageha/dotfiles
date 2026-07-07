@@ -46,6 +46,52 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 url_api = "https://api.github.com/repos/rhysd/actionlint/releases/assets/384924919"
 provenance = "github-attestations"
 
+[[tools.age]]
+version = "1.3.1"
+backend = "aqua:FiloSottile/age"
+
+[tools.age."platforms.linux-arm64"]
+checksum = "sha256:c6878a324421b69e3e20b00ba17c04bc5c6dab0030cfe55bf8f68fa8d9e9093a"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752668"
+provenance = "github-attestations"
+
+[tools.age."platforms.linux-arm64-musl"]
+checksum = "sha256:c6878a324421b69e3e20b00ba17c04bc5c6dab0030cfe55bf8f68fa8d9e9093a"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752668"
+provenance = "github-attestations"
+
+[tools.age."platforms.linux-x64"]
+checksum = "sha256:bdc69c09cbdd6cf8b1f333d372a1f58247b3a33146406333e30c0f26e8f51377"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752671"
+provenance = "github-attestations"
+
+[tools.age."platforms.linux-x64-musl"]
+checksum = "sha256:bdc69c09cbdd6cf8b1f333d372a1f58247b3a33146406333e30c0f26e8f51377"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752671"
+provenance = "github-attestations"
+
+[tools.age."platforms.macos-arm64"]
+checksum = "sha256:01120ea2cbf0463d4c6bd767f99f3271bbed1cdc8a9aa718a76ba1fe4f01998b"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752669"
+provenance = "github-attestations"
+
+[tools.age."platforms.macos-x64"]
+checksum = "sha256:2b233301ad21ab7b1eabd9ae1198a164005fa4928fcdd745d47c39f8593209d7"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/343881260"
+provenance = "github-attestations"
+
+[tools.age."platforms.windows-x64"]
+checksum = "sha256:c56e8ce22f7e80cb85ad946cc82d198767b056366201d3e1a2b93d865be38154"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-windows-amd64.zip"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/333752673"
+provenance = "github-attestations"
+
 [[tools.bats]]
 version = "1.13.0"
 backend = "aqua:bats-core/bats-core"
@@ -67,6 +113,52 @@ url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.13.0.tar.gz"
 
 [tools.bats."platforms.macos-x64"]
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.13.0.tar.gz"
+
+[[tools.fnox]]
+version = "1.29.0"
+backend = "github:jdx/fnox"
+
+[tools.fnox."platforms.linux-arm64"]
+checksum = "sha256:af64a7680b10af0dc7d328c86fa54fea3919a3213581159313e45513825a2d87"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662177"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.linux-arm64-musl"]
+checksum = "sha256:c0900a7ec9d573aaa03574b567e5ed9ed75f63073a7b99c357fe3cf686b853d3"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662175"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.linux-x64"]
+checksum = "sha256:ee16f23ff70c491f66dfa62246d404cb310c357ddd2d34e1eee5a118e4943377"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662196"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.linux-x64-musl"]
+checksum = "sha256:1303dc2b91bd9a6d8ceff0df601609f080485384b462511ef5c64bfec75d9f15"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662197"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.macos-arm64"]
+checksum = "sha256:71dc67c54670d41c239669d2cdbea78b6ebbbc6c174beca7743b93330661e07a"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662176"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.macos-x64"]
+checksum = "sha256:9cb2e04564469c0f01d8a591c3f2c4a3877c4769d29e50d10216090947e0e1ae"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662179"
+provenance = "github-attestations"
+
+[tools.fnox."platforms.windows-x64"]
+checksum = "sha256:5e8fdb35bff77ca841041e09eb596774d2cd1c2fe685be8d919e69fbcf5b7a87"
+url = "https://github.com/jdx/fnox/releases/download/v1.29.0/fnox-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/fnox/releases/assets/463662193"
+provenance = "github-attestations"
 
 [[tools.hadolint]]
 version = "2.14.0"
@@ -106,6 +198,31 @@ url_api = "https://api.github.com/repos/hadolint/hadolint/releases/assets/295944
 checksum = "sha256:8e0ee174f88edb14f207a68430c7a53c2883ed509cdbde9a3a26fffa140fa5e4"
 url = "https://github.com/hadolint/hadolint/releases/download/v2.14.0/hadolint-windows-x86_64.exe"
 url_api = "https://api.github.com/repos/hadolint/hadolint/releases/assets/295944079"
+
+[[tools.op]]
+version = "2.34.1"
+backend = "vfox:op"
+
+[tools.op."platforms.linux-arm64"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_arm64_v2.34.1.zip"
+
+[tools.op."platforms.linux-arm64-musl"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_arm64_v2.34.1.zip"
+
+[tools.op."platforms.linux-x64"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_amd64_v2.34.1.zip"
+
+[tools.op."platforms.linux-x64-musl"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_amd64_v2.34.1.zip"
+
+[tools.op."platforms.macos-arm64"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_darwin_arm64_v2.34.1.zip"
+
+[tools.op."platforms.macos-x64"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_darwin_amd64_v2.34.1.zip"
+
+[tools.op."platforms.windows-x64"]
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_windows_amd64_v2.34.1.zip"
 
 [[tools.prek]]
 version = "0.4.8"

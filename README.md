@@ -55,26 +55,40 @@ winget 自体は前提条件ではない。winget が無い環境 (Windows Serve
 
 復号には age 秘密鍵が必要。**公開鍵 (recipient) は `home/.chezmoi.toml.tmpl` に記載してリポジトリに載せているが、秘密鍵はリポジトリに含めない。**
 
-新しいマシンでこれらを展開するには、`chezmoi apply` の前に秘密鍵を配置する。
+新しいマシンでこれらを展開するには、`chezmoi apply` の起動前に秘密鍵を配置する。
+ただし初回 macOS セットアップでは 1Password / `op` / `fnox` がまだ無いことがあるため、初回 apply は鍵なしで実行し、その後にこれらのツールをインストールする必要がある。
+`.chezmoiignore` が鍵の有無を判定し、chezmoi 管理対象の復号できない暗号化ファイルをスキップする。
+秘密鍵が無い環境（コンテナ・鍵未配置の初回など）でも `chezmoi apply` は失敗しない。該当設定が展開されないだけで、他の設定は通常通り展開される。
 
-鍵を配置するマシン (新マシン) 側で実行:
+1Password 導入・認証後、鍵を配置するマシン (新マシン) 側で実行:
 
 ```bash
 mkdir -p ~/.config/chezmoi
-# パスワードマネージャ等から取得する例:
-# op document get "chezmoi age key" --out-file ~/.config/chezmoi/key.txt
-chmod 600 ~/.config/chezmoi/key.txt
+op read --out-file ~/.config/chezmoi/key.txt --file-mode 0600 'op://Private/age-identity/password'
 ```
 
-鍵を持つ既存マシンから scp で転送する場合は、既存マシン側で実行:
+その後、`fnox` が API key を環境変数として注入した状態で `chezmoi apply --init` を再実行する。
+`--init` は `home/.chezmoi.toml.tmpl` から `~/.config/chezmoi/chezmoi.toml` を再生成し、`fnox` が注入した API key を `data.apiKeys` に反映するために必要。
 
 ```bash
-ssh <NEW_HOST> 'mkdir -p ~/.config/chezmoi'
-scp ~/.config/chezmoi/key.txt <NEW_HOST>:~/.config/chezmoi/key.txt
-ssh <NEW_HOST> 'chmod 600 ~/.config/chezmoi/key.txt'
+fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --init
 ```
 
-秘密鍵が無い環境（コンテナ・鍵未配置の初回など）でも `chezmoi apply` は失敗しない。`.chezmoiignore` が鍵の有無を判定し、復号できない暗号化ファイルを自動でスキップする（該当設定が展開されないだけ）。
+なお、一度上記の手順を実行した後は、secrets に変更がない限り、通常の `chezmoi apply` を実行するだけで良い。
+
+#### API キー
+
+API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secrets を復号して環境変数に注入し、`home/.chezmoi.toml.tmpl` がそれを `data.apiKeys` に反映する。未注入の環境変数は空文字で展開されるため、鍵未配置の初回 bootstrap では空のまま進み、1Password 認証後に上記の手順を再実行することで実値に更新される。
+`data.apiKeys` が生成されるのは、コーディングエージェント設定を管理する環境（macOS、Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）のみ。
+
+| 環境変数             | データキー           | 説明                                                                                                             |
+| -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`     | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用        |
+| `GOOGLE_MAP_API_KEY` | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
+| `FUGU_API_KEY`       | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
+| `OPENROUTER_API_KEY` | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
+
+API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
 
 ### 実行
 
@@ -132,23 +146,9 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 
 #### Windows のみ
 
-| プロンプト                                              | データキー            | 説明                                                                                                                                                                                                                       |
-| ------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェントの API キーも聞かれる |
-
-#### API キー
-
-以下はコーディングエージェント設定を管理する環境（macOS、Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）でのみ聞かれる。
-空欄でも可（未設定として展開される）。
-
-| プロンプト              | データキー           | 説明                                                                                                             |
-| ----------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `Gemini API Key`        | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用        |
-| `Google Maps API Key`   | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
-| `Fugu (Sakana) API Key` | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
-| `OpenRouter API Key`    | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
-
-API キーはローカルの `~/.config/chezmoi/chezmoi.toml` にのみ保存され、リポジトリには入らない（テンプレートは `dig` で参照し、未設定時は空文字で展開される）。
+| プロンプト                                              | データキー            | 説明                                                                                                                                                                                                                  |
+| ------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェント設定も展開される |
 
 ### Docker
 

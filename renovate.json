@@ -7,6 +7,21 @@
   "lockFileMaintenance": {
     "enabled": true
   },
+  "customDatasources": {
+    "onepassword-cli": {
+      "defaultRegistryUrlTemplate": "https://app-updates.agilebits.com/product_history/CLI2",
+      "format": "html"
+    }
+  },
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "custom.onepassword-cli"
+      ],
+      "extractVersion": "op_[^/]+_v(?<version>\\d+\\.\\d+\\.\\d+)\\.zip$",
+      "versioning": "semver"
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -17,6 +32,18 @@
         "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^mise\\.toml$",
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "op = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "1password-cli",
+      "datasourceTemplate": "custom.onepassword-cli"
     },
     {
       "customType": "regex",
@@ -243,6 +270,19 @@
     {
       "customType": "regex",
       "fileMatch": [
+        "^mise\\.toml$",
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "age = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "FiloSottile/age",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
         "^home/dot_config/mise/config\\.toml\\.tmpl$"
       ],
       "matchStrings": [
@@ -321,6 +361,19 @@
         "fd = \"(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "sharkdp/fd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^mise\\.toml$",
+        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      ],
+      "matchStrings": [
+        "fnox = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "jdx/fnox",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)"
     },
