@@ -1,10 +1,15 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.codex/config.toml の既存値を base として、下の desired TOML に書いた key だけ上書きする。
+  Codex CLI が追加する projects や tui などのローカル状態は温存する。
+*/ -}}
+{{- $desired := printf `
 model = "gpt-5.5"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
-sandbox_mode = "workspace-write"
+sandbox_mode = "danger-full-access"
 
-# Subagents (custom agents live in ~/.codex/agents/*.toml)
 [agents]
 max_threads = 6
 max_depth = 1
@@ -35,8 +40,18 @@ stream_idle_timeout_ms = 600000
 "gpt-5.1-codex-max" = "gpt-5.2-codex"
 "gpt-5.2-codex" = "gpt-5.3-codex"
 
-[projects."{{ .chezmoi.homeDir }}/Works/src"]
+[projects.%q]
 trust_level = "trusted"
 
-[projects."{{ .chezmoi.homeDir }}/.local/share/chezmoi"]
+[projects.%q]
 trust_level = "trusted"
+` (printf "%s/Works/src" .chezmoi.homeDir) (printf "%s/.local/share/chezmoi" .chezmoi.homeDir) | fromToml -}}
+{{- $current := dict -}}
+{{- $stdin := "" -}}
+{{- if hasKey .chezmoi "stdin" -}}
+{{-   $stdin = trim .chezmoi.stdin -}}
+{{- end -}}
+{{- if $stdin -}}
+{{-   $current = fromToml $stdin -}}
+{{- end -}}
+{{- mergeOverwrite $current $desired | toToml -}}
