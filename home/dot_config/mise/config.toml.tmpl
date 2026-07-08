@@ -3,6 +3,10 @@
 flutter = "https://github.com/mise-plugins/mise-flutter.git"
 {{ end -}}
 
+[settings.status]
+show_env = true
+show_tools = false
+
 [tools]
 {{ if eq .chezmoi.os "darwin" -}}
 awscli = "2.35.11"

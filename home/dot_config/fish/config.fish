@@ -23,11 +23,28 @@ alias fgc=fzf_gcloud_config
 alias fga=fzf_gcloud_auth
 alias gssh=fzf_gcloud_ssh
 alias fssh=fzf_ssh
-alias fenv=fzf_load_env
 
-# --- miseの初期化 ---
-if type -q mise
-    mise activate fish | source
+# --- ローカルバイナリのパス追加 ---
+# (uvでインストールしたツールや mise 本体用)
+if test -d $HOME/.local/bin
+    fish_add_path $HOME/.local/bin
+end
+
+# --- Homebrewの設定 ---
+set -l brew_bin (command -v brew 2>/dev/null)
+if test -z "$brew_bin"; and test -x /opt/homebrew/bin/brew
+    set brew_bin /opt/homebrew/bin/brew
+else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
+    set brew_bin /usr/local/bin/brew
+end
+if test -n "$brew_bin"
+    "$brew_bin" shellenv fish | source
+end
+
+# --- Goの設定 ---
+set -x GOPATH "$HOME/Works"
+if test -d $HOME/Works/bin
+    fish_add_path $HOME/Works/bin
 end
 
 # --- flutterのパス追加 ---
@@ -36,18 +53,6 @@ if type -q mise; and mise where flutter &>/dev/null
 end
 if test -d $HOME/.pub-cache/bin
     fish_add_path $HOME/.pub-cache/bin
-end
-
-# --- ローカルバイナリのパス追加 ---
-# (uvでインストールしたツール用)
-if test -d $HOME/.local/bin
-    fish_add_path $HOME/.local/bin
-end
-
-# --- Goの設定 ---
-set -x GOPATH "$HOME/Works"
-if test -d $HOME/Works/bin
-    fish_add_path $HOME/Works/bin
 end
 
 # --- JDKの設定 ---
@@ -64,21 +69,21 @@ if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
     set -x DOCKER_MACHINE_NAME "docker"
 end
 
-# # --- MySQLクライアントのパス追加 ---
-# if test -d /opt/homebrew/opt/mysql-client/bin/
-#     set -x MYSQL_CLIENT_PATH /opt/homebrew/opt/mysql-client
-#     fish_add_path $MYSQL_CLIENT_PATH/bin
-# end
+# --- MySQLクライアントのパス追加 ---
+if test -d /opt/homebrew/opt/mysql-client/bin/
+    set -x MYSQL_CLIENT_PATH /opt/homebrew/opt/mysql-client
+    fish_add_path $MYSQL_CLIENT_PATH/bin
+end
 
-# # --- mysqlclient用のコンパイラフラグ設定 ---
-# if test (uname) = "Darwin"
-#     string match -q "*/opt/homebrew/lib/pkgconfig*" -- "$PKG_CONFIG_PATH"
-#     or set -x PKG_CONFIG_PATH "/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH"
-#     string match -q "*-L/opt/homebrew/lib*" -- "$LDFLAGS"
-#     or set -x LDFLAGS "-L/opt/homebrew/lib $LDFLAGS"
-#     string match -q "*-I/opt/homebrew/include*" -- "$CPPFLAGS"
-#     or set -x CPPFLAGS "-I/opt/homebrew/include $CPPFLAGS"
-# end
+# --- mysqlclient用のコンパイラフラグ設定 ---
+if test (uname) = "Darwin"
+    contains -- /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
+    or set -gx PKG_CONFIG_PATH /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
+    string match -q "*-L/opt/homebrew/lib*" -- "$LDFLAGS"
+    or set -x LDFLAGS "-L/opt/homebrew/lib $LDFLAGS"
+    string match -q "*-I/opt/homebrew/include*" -- "$CPPFLAGS"
+    or set -x CPPFLAGS "-I/opt/homebrew/include $CPPFLAGS"
+end
 
 # --- orbstackの設定 ---
 if test -d $HOME/.orbstack/shell
@@ -88,6 +93,90 @@ end
 # --- Starshipの設定 ---
 if type -q starship
     starship init fish | source
+end
+
+# --- Xcodeの設定 ---
+# usr/bin は末尾に追加して Homebrew の git/python3 を優先しつつ simctl 等も引けるようにする
+if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
+    set -gx DEVELOPER_DIR (xcode-select -p)
+    fish_add_path -a $DEVELOPER_DIR/usr/bin
+end
+
+# --- direnvのフック設定 ---
+set -l direnv_bin (command -v direnv 2>/dev/null)
+if test -z "$direnv_bin"; and type -q mise
+    set direnv_bin (mise which direnv 2>/dev/null)
+end
+if test -n "$direnv_bin"
+    "$direnv_bin" hook fish | source
+end
+
+# --- miseの初期化 ---
+if type -q mise
+    mise activate fish | source
+end
+
+# --- fnoxの初期化 ---
+if status is-interactive; and type -q fnox
+    fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
+
+    function __fnox_find_1password_config
+        set -l dir $PWD
+        while test "$dir" != /
+            set -l fnox_profile default
+            if set -q FNOX_PROFILE
+                set fnox_profile $FNOX_PROFILE
+            end
+            for fnox_config in $dir/fnox.toml $dir/fnox.local.toml $dir/fnox.$fnox_profile.toml
+                if test -f "$fnox_config"; and grep -Eq 'type[[:space:]]*=[[:space:]]*["'\'']1password["'\'']' "$fnox_config"
+                    printf '%s\n' "$fnox_config"
+                    return 0
+                end
+            end
+            set dir (dirname "$dir")
+        end
+        return 1
+    end
+
+    function __fnox_preauth_1password
+        type -q op; or return 0
+
+        set -l config_path (__fnox_find_1password_config)
+        or return 0
+
+        op whoami >/dev/null 2>&1; and return 0
+        if set -q __FNOX_1PASSWORD_PREAUTH_FAILED_FOR; and test "$__FNOX_1PASSWORD_PREAUTH_FAILED_FOR" = "$config_path"
+            return 1
+        end
+
+        if op signin >/dev/null 2>&1
+            set -e __FNOX_1PASSWORD_PREAUTH_FAILED_FOR
+            return 0
+        end
+        set -gx __FNOX_1PASSWORD_PREAUTH_FAILED_FOR "$config_path"
+        return 1
+    end
+
+    functions -e __fnox_env_eval
+    functions -e __fnox_cd_hook
+
+    function __fnox_env_eval --on-event fish_prompt
+        if test "$FNOX_SHELL" = fish
+            if __fnox_preauth_1password
+                eval (command fnox hook-env -s fish | string collect)
+            else
+                eval (FNOX_PROMPT_AUTH=false command fnox hook-env -s fish | string collect)
+            end
+        end
+    end
+
+    function __fnox_cd_hook --on-variable PWD
+        if test "$FNOX_SHELL" = fish
+            __fnox_env_eval
+        end
+    end
+
+    __fnox_env_eval
 end
 
 # --- カーソルスタイルの設定 ---
@@ -108,58 +197,12 @@ if not set -q GITHUB_PERSONAL_ACCESS_TOKEN; and type -q gh
     end
 end
 
-
-# --- FISH_CONFIG_CACHEの設定 ---
-set -l FISH_CONFIG_CACHE $HOME/.cache/fish/config.fish
-
-# キャッシュファイルのチェックと更新
-if test -f $FISH_CONFIG_CACHE
-    set -l cache_mtime 0
-    if test (uname) = "Darwin"
-        set cache_mtime (stat -f %m $FISH_CONFIG_CACHE)
-    else if test (uname) = "Linux"
-        set cache_mtime (stat -c %Y $FISH_CONFIG_CACHE)
-    end
-    set -l current_time (date +%s)
-    set -l one_week_ago (math $current_time - 604800) # 1週間(604800秒)
-
-    if test $cache_mtime -ge $one_week_ago
-        source $FISH_CONFIG_CACHE
-        return
-    end
-end
-
-# 親ディレクトリを作成し、ファイルを再作成
-mkdir -p (dirname $FISH_CONFIG_CACHE)
-rm -f $FISH_CONFIG_CACHE
-touch $FISH_CONFIG_CACHE
-
-# --- Homebrewの設定 ---
-if type -q brew
-    brew shellenv fish | source
-end
-
-# --- Xcodeの設定 ---
-# usr/bin は末尾に追加 (-a) して Homebrew の git/python3 を優先する。
-# xcode-select -p が成功する (developer dir が存在する) ときだけキャッシュに書く。
-if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
-    echo "fish_add_path -a (xcode-select -p)/usr/bin" >> $FISH_CONFIG_CACHE
-end
-
-# --- direnvのフック設定 ---
-if type -q direnv
-    direnv hook fish >> $FISH_CONFIG_CACHE
-end
-
 # --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
 if type -q fzf
-    fzf --fish >> $FISH_CONFIG_CACHE
+    fzf --fish | source
 end
 
 # --- zoxideの初期化 (z / zi コマンド) ---
 if type -q zoxide
-    zoxide init fish >> $FISH_CONFIG_CACHE
+    zoxide init fish | source
 end
-
-# キャッシュファイルを読み込み
-source $FISH_CONFIG_CACHE

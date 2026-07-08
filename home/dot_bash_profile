@@ -20,19 +20,21 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # --- Homebrewの設定 ---
-if command -v brew &>/dev/null; then
-    eval "$(brew shellenv)"
+_brew_bin="$(command -v brew || true)"
+if [ -z "$_brew_bin" ] && [ -x /opt/homebrew/bin/brew ]; then
+    _brew_bin="/opt/homebrew/bin/brew"
+elif [ -z "$_brew_bin" ] && [ -x /usr/local/bin/brew ]; then
+    _brew_bin="/usr/local/bin/brew"
 fi
+if [ -n "$_brew_bin" ]; then
+    eval "$("$_brew_bin" shellenv)"
+fi
+unset _brew_bin
 
 # --- Goの設定 ---
 export GOPATH="$HOME/Works"
 if [ -d "$HOME/Works/bin" ]; then
     export PATH="$HOME/Works/bin:$PATH"
-fi
-
-# --- miseの初期化 ---
-if command -v mise &>/dev/null; then
-    eval "$(mise activate bash)"
 fi
 
 # --- flutterのパス追加 ---
@@ -88,17 +90,109 @@ if xcode-select -p &>/dev/null; then
 fi
 
 # --- direnvのフック設定 ---
-if command -v direnv &>/dev/null; then
-    eval "$(direnv hook bash)"
+_direnv_bin="$(command -v direnv || true)"
+if [ -z "$_direnv_bin" ] && command -v mise &>/dev/null; then
+    _direnv_bin="$(mise which direnv 2>/dev/null || true)"
+fi
+if [ -n "$_direnv_bin" ]; then
+    eval "$("$_direnv_bin" hook bash)"
+fi
+unset _direnv_bin
+
+# --- miseの初期化 ---
+if command -v mise &>/dev/null; then
+    eval "$(mise activate bash)"
+fi
+
+# --- fnoxの初期化 ---
+if command -v fnox &>/dev/null; then
+    eval "$(fnox activate bash)"
+    _fnox_find_1password_config() {
+        local dir="$PWD"
+        while [ "$dir" != "/" ]; do
+            for _fnox_config in "$dir"/fnox.toml "$dir"/fnox.local.toml "$dir"/fnox."${FNOX_PROFILE:-default}".toml; do
+                [ -f "$_fnox_config" ] || continue
+                if grep -Eq 'type[[:space:]]*=[[:space:]]*["'\'']1password["'\'']' "$_fnox_config"; then
+                    printf '%s\n' "$_fnox_config"
+                    return 0
+                fi
+            done
+            dir="${dir%/*}"
+            [ -n "$dir" ] || dir="/"
+        done
+        return 1
+    }
+
+    _fnox_preauth_1password() {
+        command -v op &>/dev/null || return 0
+
+        local config_path
+        config_path="$(_fnox_find_1password_config)" || return 0
+
+        op whoami >/dev/null 2>&1 && return 0
+        [ "${__FNOX_1PASSWORD_PREAUTH_FAILED_FOR:-}" = "$config_path" ] && return 1
+
+        if op signin >/dev/null 2>&1; then
+            unset __FNOX_1PASSWORD_PREAUTH_FAILED_FOR
+            return 0
+        fi
+        export __FNOX_1PASSWORD_PREAUTH_FAILED_FOR="$config_path"
+        return 1
+    }
+
+    _fnox_hook() {
+        local previous_exit_status=$?
+        trap -- '' SIGINT
+        if _fnox_preauth_1password; then
+            eval "$(command fnox hook-env -s bash)"
+        else
+            eval "$(FNOX_PROMPT_AUTH=false command fnox hook-env -s bash)"
+        fi
+        trap - SIGINT
+        return $previous_exit_status
+    }
+fi
+
+# --- GitHub トークンの動的注入 ---
+# GitHub MCP server (Claude Code の github plugin) が参照する。gh の OAuth トークンを
+# 都度取得することで PAT をファイルに置かない。gh 未導入・未ログイン時は設定しない。
+if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && command -v gh &>/dev/null; then
+    _gh_token="$(gh auth token 2>/dev/null)"
+    if [ -n "$_gh_token" ]; then
+        export GITHUB_PERSONAL_ACCESS_TOKEN="$_gh_token"
+    fi
+    unset _gh_token
 fi
 
 # --- 補完の読み込み ---
 # completions.sh が生成した静的ファイル (kubectl/ngrok/uv 含む) を source する
 _bash_completions_dir="$HOME/.local/share/bash-completion/completions"
 if [ -d "$_bash_completions_dir" ]; then
+    _bash_supports_usage_completion=false
+    if ((BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 2))); then
+        _bash_supports_usage_completion=true
+    fi
+
+    if $_bash_supports_usage_completion && [ -r "$_bash_completions_dir/mise" ]; then
+        source "$_bash_completions_dir/mise"
+    fi
     for _comp in "$_bash_completions_dir"/*; do
+        [ "$_comp" = "$_bash_completions_dir/mise" ] && continue
+        if ! $_bash_supports_usage_completion; then
+            case "${_comp##*/}" in
+                fnox)
+                    continue
+                    ;;
+            esac
+        fi
+        IFS= read -r _comp_first_line < "$_comp" || _comp_first_line=
+        case "$_comp_first_line" in
+            "#compdef"*)
+                continue
+                ;;
+        esac
         [ -r "$_comp" ] && source "$_comp"
     done
-    unset _comp
+    unset _bash_supports_usage_completion _comp _comp_first_line
 fi
 unset _bash_completions_dir

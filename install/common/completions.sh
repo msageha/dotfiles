@@ -25,6 +25,10 @@ function fish_completions() {
         gen_completion mise mise completion fish > "$comp_dir/mise.fish" &
         pids+=($!); names+=("mise")
     fi
+    if command -v fnox &>/dev/null; then
+        gen_completion fnox fnox completion fish > "$comp_dir/fnox.fish" &
+        pids+=($!); names+=("fnox")
+    fi
     if command -v uv &>/dev/null; then
         gen_completion uv uv generate-shell-completion fish > "$comp_dir/uv.fish" &
         pids+=($!); names+=("uv")
@@ -117,6 +121,10 @@ function zsh_completions() {
         gen_completion mise mise completion zsh > "$comp_dir/_mise" &
         pids+=($!); names+=("mise")
     fi
+    if command -v fnox &>/dev/null; then
+        gen_completion fnox fnox completion zsh > "$comp_dir/_fnox" &
+        pids+=($!); names+=("fnox")
+    fi
     if command -v uv &>/dev/null; then
         gen_completion uv uv generate-shell-completion zsh > "$comp_dir/_uv" &
         pids+=($!); names+=("uv")
@@ -206,8 +214,12 @@ function bash_completions() {
     local names=()
 
     if command -v mise &>/dev/null; then
-        gen_completion mise mise completion bash > "$comp_dir/mise" &
+        gen_completion mise mise completion bash --include-bash-completion-lib > "$comp_dir/mise" &
         pids+=($!); names+=("mise")
+    fi
+    if command -v fnox &>/dev/null; then
+        gen_completion fnox fnox completion bash > "$comp_dir/fnox" &
+        pids+=($!); names+=("fnox")
     fi
     if command -v uv &>/dev/null; then
         gen_completion uv uv generate-shell-completion bash > "$comp_dir/uv" &
