@@ -32,19 +32,23 @@ repos:
     rev: 57e1618d78fd469a92c1e584e8c9313024656623 # frozen: v2.14.0
     hooks:
       - id: hadolint
-        args: [--ignore, DL3008, --ignore, DL3015, --ignore, DL3018, --ignore, DL3004]
-  - repo: https://github.com/google/yamlfmt
-    rev: 21ca5323a9c87ee37a434e0ca908efc0a89daa07 # frozen: v0.21.0
+        args: [
+          --ignore,
+          DL3008,
+          --ignore,
+          DL3015,
+          --ignore,
+          DL3018,
+          --ignore,
+          DL3004,
+        ]
+  - repo: local
     hooks:
-      - id: yamlfmt
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 83dc2ce5ca115d3390b9b5561d2898366faf0742 # frozen: 0.7.22
-    hooks:
-      - id: mdformat
-        exclude: ^home/dot_claude/
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-tables
+      - id: dprint-fmt
+        name: Format json/yaml/markdown/toml with dprint
+        language: system
+        entry: mise exec -- dprint fmt --allow-no-files
+        types_or: [json, yaml, markdown, toml]
   - repo: https://github.com/crate-ci/typos
     rev: 37bb98842b0d8c4ffebdb75301a13db0267cef89 # frozen: v1.47.2
     hooks:

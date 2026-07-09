@@ -201,7 +201,7 @@ make encrypt_google_ime   # 平文を編集後に再暗号化
 
 ## 開発
 
-このリポジトリ自体の lint/format/テストに使うツール (`prek` / `hadolint` / `actionlint` / `bats`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
+このリポジトリ自体の lint/format/テストに使うツール (`prek` / `hadolint` / `actionlint` / `bats` / `dprint`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
 
 ```bash
 mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
@@ -249,8 +249,9 @@ make dry_run      # chezmoi apply --dry-run --verbose --force
 ├── .github/workflows/             # CI (prek, bats, chezmoi dry-run, secret scan)
 ├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
 ├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
-├── mise.toml / mise.lock          # 開発ツール (prek/hadolint/actionlint/bats) のバージョン管理
+├── mise.toml / mise.lock          # 開発ツール (prek/hadolint/actionlint/bats/dprint) のバージョン管理
 ├── renovate.json                  # 依存関係の自動更新設定
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
+├── dprint.json                    # json/yaml/markdown/toml のフォーマット設定 (dprint)
 └── _typos.toml                    # typos 設定 (*.age を除外)
 ```

@@ -216,26 +216,25 @@ style = "fg:on_slate"
 format = "[󰥔 $time]($style)"
 time_format = "%H:%M:%S"
 
-
 [palettes.dracula]
 # Dracula Theme (https://draculatheme.com)
-rose = "#ff79c6"           # Dracula pink
-on_rose = "#282a36"        # Dracula background
-slate = "#6272a4"          # Dracula comment
-on_slate = "#f8f8f2"       # Dracula foreground
-graphite = "#44475a"       # Dracula current_line
-on_graphite = "#f8f8f2"    # Dracula foreground
+rose = "#ff79c6" # Dracula pink
+on_rose = "#282a36" # Dracula background
+slate = "#6272a4" # Dracula comment
+on_slate = "#f8f8f2" # Dracula foreground
+graphite = "#44475a" # Dracula current_line
+on_graphite = "#f8f8f2" # Dracula foreground
 attention_graphite = "#f1fa8c" # Dracula yellow
 
-graphite2 = "#282a36"      # Dracula background
-on_graphite2 = "#f8f8f2"   # Dracula foreground
+graphite2 = "#282a36" # Dracula background
+on_graphite2 = "#f8f8f2" # Dracula foreground
 
-amber = "#ffb86c"          # Dracula orange
-on_amber = "#282a36"       # Dracula background
+amber = "#ffb86c" # Dracula orange
+on_amber = "#282a36" # Dracula background
 
-sky = "#8be9fd"            # Dracula cyan
-on_sky = "#282a36"         # Dracula background
-burgundy = "#ff5555"       # Dracula red
-on_burgundy = "#f8f8f2"    # Dracula foreground
+sky = "#8be9fd" # Dracula cyan
+on_sky = "#282a36" # Dracula background
+burgundy = "#ff5555" # Dracula red
+on_burgundy = "#f8f8f2" # Dracula foreground
 
-surface0 = "#282a36"       # Dracula background
+surface0 = "#282a36" # Dracula background

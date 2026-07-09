@@ -10,6 +10,7 @@
 !fnox.toml
 !mise.toml
 !mise.lock
+!dprint.json
 !renovate.json
 
 # --- Docker / Cloud Build ---

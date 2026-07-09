@@ -1,0 +1,71 @@
+name: mise lock
+on:
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 00:00 UTC
+  pull_request:
+    branches:
+      - main
+    paths:
+      - mise.toml
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  mise-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
+      - name: Install mise
+        run: curl https://mise.run | sh
+      - name: Run mise lock
+        env:
+          # mise の GitHub API アクセス (リリース取得・SLSA 検証) を認証付きにして
+          # ランナー共有 IP の無認証 rate limit (60 req/h) を回避する
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          mise lock
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- mise.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Renovate 等が mise.toml を変更した既存 PR には、同じブランチに直接 commit して追従させる。
+      # fork からの PR は GITHUB_TOKEN で push できないためスキップする。
+      - name: Push mise.lock update to the pull request branch
+        if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mise.lock
+          git commit -m "chore: update mise.lock"
+          git push origin "HEAD:$HEAD_REF"
+      # schedule / workflow_dispatch では新規に PR を作る。
+      # GITHUB_TOKEN で作成した PR の pull_request トリガーは承認待ち状態になるため、
+      # write 権限者が Actions タブから "Approve and run workflows" が必要になる。
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B chore/mise-lock
+          git add mise.lock
+          git commit -m "chore: update mise.lock"
+          git push --force origin chore/mise-lock
+
+          if ! gh pr view chore/mise-lock >/dev/null 2>&1; then
+            gh pr create --title "chore: update mise.lock" --base main --head chore/mise-lock \
+              --body "mise lock の自動実行による mise.lock の更新です。差分を確認してください。"
+          fi
