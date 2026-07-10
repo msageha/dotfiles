@@ -24,6 +24,16 @@ function update() {
     printf "%b\n" "${BLUE}Running brew update...${NC}"
     brew update
 }
+
+function install_grok_build() {
+    printf "%b\n" "${BLUE}Installing Grok Build...${NC}"
+    if ! command -v grok &>/dev/null; then
+        curl -fsSL https://x.ai/cli/install.sh | bash
+    else
+        grok update
+    fi
+}
+
 # Formula tools — テスト/開発に必要なため CI でも導入する
 formulae=(
     antigravity-cli
@@ -109,6 +119,8 @@ function install() {
     fi
     printf "%b\n" "${BLUE}Installing cask packages...${NC}"
     brew install --cask "${casks[@]}"
+
+    install_grok_build
 }
 
 # brew upgrade の対象から除外するパッケージ。
