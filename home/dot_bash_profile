@@ -153,6 +153,16 @@ if command -v fnox &>/dev/null; then
     }
 fi
 
+# --- AWS CLI / aws-sso-cli の補完初期化 ---
+# aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、後述の
+# completions.sh 生成ファイル群のループには乗せず、この場で直接 source する。
+if command -v aws_completer &>/dev/null; then
+    complete -C aws_completer aws
+fi
+if command -v aws-sso &>/dev/null; then
+    eval "$(aws-sso setup completions --source --shell bash)"
+fi
+
 # --- GitHub トークンの動的注入 ---
 # GitHub MCP server (Claude Code の github plugin) が参照する。gh の OAuth トークンを
 # 都度取得することで PAT をファイルに置かない。gh 未導入・未ログイン時は設定しない。

@@ -42,6 +42,18 @@ fi
 fpath=("$HOME/.config/zsh/completions" $fpath)
 autoload -Uz compinit && compinit
 
+# --- AWS CLI / aws-sso-cli の補完初期化 ---
+# aws_completer は bash 形式の `complete -C` を前提とするため bashcompinit が必要。
+# aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fpath autoload
+# (ファイル名一致が必須) ではなくこの場で直接 source する。
+if command -v aws_completer &>/dev/null; then
+    autoload -Uz bashcompinit && bashcompinit
+    complete -C aws_completer aws
+fi
+if command -v aws-sso &>/dev/null; then
+    eval "$(aws-sso setup completions --source --shell zsh)"
+fi
+
 # --- flutterのパス追加 ---
 if command -v mise &>/dev/null && mise where flutter &>/dev/null; then
     export FLUTTER_ROOT="$(mise where flutter)"

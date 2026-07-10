@@ -116,6 +116,16 @@ if type -q mise
     mise activate fish | source
 end
 
+# --- AWS CLI / aws-sso-cliの補完初期化 ---
+# aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fish の
+# completions/*.fish 自動ロード (コマンド名一致が必須) には乗せず直接 source する。
+if type -q aws_completer
+    complete --command aws --no-files --arguments '(begin; set --local --export COMP_SHELL fish; set --local --export COMP_LINE (commandline); aws_completer | string trim --right; end)'
+end
+if type -q aws-sso
+    aws-sso setup completions --source --shell fish | source
+end
+
 # --- fnoxの初期化 ---
 if status is-interactive; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
