@@ -13,11 +13,13 @@ export COMPUTER_NAME={{ .computer_name | quote }}
 if [ -z "${CI:-}" ]; then
 {{   include "../install/macos/system_settings.sh" }}
 {{   include "../install/macos/app_settings.sh" }}
-  # Software Update は更新がある場合のみ適用する。--list は sudo 不要なので、
-  # 更新が無ければ sudo (--install) を呼ばずにスキップし、不要な認証を避ける。
+  # Software Update は更新がある場合のみ適用する。--list は認証不要なので、
+  # 更新が無ければ --install を呼ばずにスキップし、不要な認証を避ける。
+  # --install の認可は Unix root ではなく Volume Owner (Secure Token) 側の
+  # Authorization Services 認証なので sudo は不要 (Apple Silicon)。
   if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
     echo "Software Update が見つかりました。インストールします..."
-    sudo softwareupdate --install --all
+    softwareupdate --install --all
   else
     echo "利用可能な Software Update はありません。スキップします。"
   fi
