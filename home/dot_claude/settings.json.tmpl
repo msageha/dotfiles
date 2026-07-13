@@ -18,12 +18,24 @@
     "skill-creator@claude-plugins-official": true,
     "sonatype-guide@claude-plugins-official": true
   },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
+  },
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
   "model": "claude-opus-4-8[1m]",
   "includeGitInstructions": false,
   "language": "japanese",
+  "env": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  "skipWebFetchPreflight": true,
 {{- /* statusline-command.sh は bash 前提のため、ネイティブ Windows では statusLine を設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
   "statusLine": {

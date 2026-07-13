@@ -5,3 +5,9 @@ model_catalog_json = "~/.codex/pareto-code.json"
 
 [features]
 image_generation = false
+
+[analytics]
+enabled = false
+
+[otel]
+metrics_exporter = "none"

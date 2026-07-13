@@ -2,6 +2,8 @@
 {{- /*
   ~/.codex/config.toml の既存値を base として、下の desired TOML に書いた key だけ上書きする。
   Codex CLI が追加する projects や tui などのローカル状態は温存する。
+  analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
+  otel のログ・トレース exporter はデフォルト none のため設定不要。
 */ -}}
 {{- $desired := printf `
 model = "gpt-5.5"
@@ -14,6 +16,12 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 [agents]
 max_threads = 6
 max_depth = 1
+
+[analytics]
+enabled = false
+
+[otel]
+metrics_exporter = "none"
 
 [mcp_servers.context7]
 command = "npx"
