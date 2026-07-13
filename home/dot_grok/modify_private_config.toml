@@ -1,0 +1,55 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $desired := fromToml `
+[cli]
+auto_update = false
+
+[features]
+support_permission = false
+telemetry = false
+feedback = false
+
+[subagents]
+enabled = true
+
+[compat.claude]
+rules = true
+agents = true
+mcps = false
+skills = false
+hooks = false
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@latest"]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+` -}}
+{{- if lookPath "dart" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[mcp_servers.dart]
+command = "dart"
+args = ["mcp-server"]
+`) -}}
+{{- end -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[mcp_servers.xcode]
+command = "xcrun"
+args = ["mcpbridge"]
+`) -}}
+{{- end -}}
+{{- $current := dict -}}
+{{- $stdin := "" -}}
+{{- if hasKey .chezmoi "stdin" -}}
+{{-   $stdin = trim .chezmoi.stdin -}}
+{{- end -}}
+{{- if $stdin -}}
+{{-   $current = fromToml $stdin -}}
+{{- end -}}
+{{- mergeOverwrite $current $desired | toToml -}}

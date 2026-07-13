@@ -25,15 +25,6 @@ function update() {
     brew update
 }
 
-function install_grok_build() {
-    printf "%b\n" "${BLUE}Installing Grok Build...${NC}"
-    if ! command -v grok &>/dev/null; then
-        curl -fsSL https://x.ai/cli/install.sh | bash
-    else
-        grok update
-    fi
-}
-
 # Formula tools — テスト/開発に必要なため CI でも導入する
 formulae=(
     antigravity-cli
@@ -90,6 +81,7 @@ casks=(
     google-chrome
     google-drive
     google-japanese-ime
+    grok-build
     insomnia
     mole-app
     ngrok
@@ -119,8 +111,6 @@ function install() {
     fi
     printf "%b\n" "${BLUE}Installing cask packages...${NC}"
     brew install --cask "${casks[@]}"
-
-    install_grok_build
 }
 
 # brew upgrade の対象から除外するパッケージ。

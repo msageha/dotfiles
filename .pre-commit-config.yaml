@@ -10,7 +10,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-toml
-        exclude: ^home/dot_codex/modify_private_config\.toml$
+        exclude: ^home/(dot_codex|dot_grok)/modify_private_config\.toml$
       - id: check-added-large-files
         args: [--maxkb=1000]
       - id: check-case-conflict
