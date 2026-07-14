@@ -4,11 +4,27 @@
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
     "maps-grounding-lite-mcp": {
       "serverUrl": "https://mapstools.googleapis.com/mcp",
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
-    }
+    }{{ if lookPath "dart" }},
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server"]
+    }{{ end }}{{ if eq .chezmoi.os "darwin" }},
+    "xcode": {
+      "command": "xcrun",
+      "args": ["mcpbridge"]
+    }{{ end }}
   }
 }

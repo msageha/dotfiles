@@ -89,6 +89,10 @@
 !.gemini/config
 !.gemini/config/AGENTS.md
 !.gemini/config/mcp_config.json
+!.gemini/config/agents
+!.gemini/config/agents/**
+!.gemini/config/skills
+!.gemini/config/skills/**
 {{ end }}
 # Ignore everything under .grok/ by default (auth・sessions・logs 等のランタイム状態を除外)
 .grok/*
