@@ -8,6 +8,9 @@ support_permission = false
 telemetry = false
 feedback = false
 
+[telemetry]
+trace_upload = false
+
 [subagents]
 enabled = true
 
