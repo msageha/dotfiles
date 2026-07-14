@@ -126,6 +126,9 @@ if type -q aws-sso
     aws-sso setup completions --source --shell fish | source
 end
 
+# --- 1Password CLI のデフォルトアカウント ---
+set -gx OP_ACCOUNT my.1password.com
+
 # --- fnoxの初期化 ---
 if status is-interactive; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source

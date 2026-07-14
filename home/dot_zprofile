@@ -123,6 +123,9 @@ if command -v mise &>/dev/null; then
     eval "$(mise activate zsh)"
 fi
 
+# --- 1Password CLI のデフォルトアカウント ---
+export OP_ACCOUNT=my.1password.com
+
 # --- fnoxの初期化 ---
 if command -v fnox &>/dev/null; then
     eval "$(fnox activate zsh)"
