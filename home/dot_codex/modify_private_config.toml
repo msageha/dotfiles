@@ -6,12 +6,17 @@
   otel のログ・トレース exporter はデフォルト none のため設定不要。
 */ -}}
 {{- $desired := printf `
-model = "gpt-5.5"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
+model_reasoning_summary = "concise"
 personality = "pragmatic"
-approval_policy = "never"
-sandbox_mode = "danger-full-access"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+sandbox_mode = "workspace-write"
 project_doc_fallback_filenames = ["CLAUDE.md"]
+
+[sandbox_workspace_write]
+network_access = true
 
 [agents]
 max_threads = 6
