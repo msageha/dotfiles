@@ -1,7 +1,8 @@
 name = "test_runner"
 description = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
-sandbox_mode = "workspace-write"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
 developer_instructions = """
 You run verification and summarize results.
 

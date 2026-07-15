@@ -33,16 +33,6 @@ command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]
 startup_timeout_ms = 20_000
 
-[mcp_servers.chrome-devtools]
-command = "npx"
-args = ["-y", "chrome-devtools-mcp@latest"]
-startup_timeout_ms = 20_000
-
-[mcp_servers.playwright]
-command = "npx"
-args = ["-y", "@playwright/mcp@latest"]
-startup_timeout_ms = 20_000
-
 [model_providers.sakana]
 name = "Sakana API"
 base_url = "https://api.torafugu.app/v1"
@@ -93,5 +83,11 @@ startup_timeout_ms = 20_000
 {{- end -}}
 {{- if $stdin -}}
 {{-   $current = fromToml $stdin -}}
+{{- end -}}
+{{- /* playwright / chrome-devtools は browser_debugger サブエージェント (agents/browser-debugger.toml)
+      専属に移した。main config に残る既存エントリはツール定義で context を浪費するため削除する */ -}}
+{{- if hasKey $current "mcp_servers" -}}
+{{-   $_ := unset (get $current "mcp_servers") "playwright" -}}
+{{-   $_ := unset (get $current "mcp_servers") "chrome-devtools" -}}
 {{- end -}}
 {{- mergeOverwrite $current $desired | toToml -}}
