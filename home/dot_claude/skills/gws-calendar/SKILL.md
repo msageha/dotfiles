@@ -1,6 +1,6 @@
 ---
 name: gws-calendar
-description: "Google Calendar: Manage calendars and events using gws CLI."
+description: "Google Calendar: List/query calendars, update/delete/move events, manage calendar lists, and check free/busy using gws CLI — for creating an event or a quick cross-calendar agenda, use gws-calendar-insert or gws-calendar-agenda instead."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [action description]
 ---

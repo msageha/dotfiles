@@ -1,6 +1,6 @@
 ---
 name: playwright
-description: "Use for browser automation, E2E testing, and web application testing via Playwright. Covers CLI-first automation, test generation, debugging, and CI/CD patterns for TypeScript and JavaScript projects."
+description: "Playwright: browser automation, E2E testing, and web application testing. Covers CLI-first automation, test generation, debugging, and CI/CD patterns for TypeScript and JavaScript projects."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [URL, scenario description, or test file path]
 ---

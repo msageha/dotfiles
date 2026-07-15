@@ -1,6 +1,6 @@
 ---
 name: deps
-description: Analyze the project's dependencies — list direct/transitive deps, flag outdated packages, and surface known vulnerabilities — then report prioritized actions. Use when the user wants a dependency audit or update review.
+description: "Dependency audit: list direct/transitive deps, flag outdated packages, and surface known vulnerabilities, then report prioritized actions. Use when the user wants a dependency audit or update review."
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

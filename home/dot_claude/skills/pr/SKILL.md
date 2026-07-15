@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Analyze the current branch's changes and create a Pull Request (GitHub) or Merge Request (GitLab). Use when the user wants to open a PR/MR."
+description: "Pull Request / Merge Request: analyze the current branch's changes and create a PR (GitHub) or MR (GitLab). Use when the user wants to open a PR/MR."
 disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob
 argument-hint: [base-branch or title hint]

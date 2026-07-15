@@ -1,6 +1,6 @@
 ---
 name: security
-description: Detect security vulnerabilities (injection, auth/authz, data protection, dependency, infra) in code and report them with CWE and severity. Use when the user wants a security review or vulnerability scan of a file, directory, or the whole project.
+description: "Security review: detect vulnerabilities (injection, auth/authz, data protection, dependency, infra) in code and report them with CWE and severity. Use when the user wants a security review or vulnerability scan of a file, directory, or the whole project."
 allowed-tools: Read, Grep, Glob, Bash(git log:*, git diff:*)
 argument-hint: [file-or-directory]
 ---

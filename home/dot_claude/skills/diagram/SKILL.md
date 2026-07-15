@@ -1,6 +1,6 @@
 ---
 name: diagram
-description: Analyze code and generate architecture/structure diagrams in Mermaid (flowchart, class, sequence, ER, state, or C4). Use when the user wants to visualize code structure, flow, or relationships.
+description: "Diagram: analyze code and generate architecture/structure diagrams in Mermaid (flowchart, class, sequence, ER, state, or C4). Use when the user wants to visualize code structure, flow, or relationships."
 allowed-tools: Read, Grep, Glob
 argument-hint: [file-or-directory]
 ---

@@ -1,6 +1,6 @@
 ---
 name: gws-docs
-description: "Google Docs: Read and write documents using gws CLI."
+description: "Google Docs: Get document contents, create new documents, or apply rich batchUpdate formatting using gws CLI — for simply appending plain text, use gws-docs-write instead."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [document ID or action description]
 ---

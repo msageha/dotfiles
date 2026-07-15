@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Analyze staged and unstaged changes, then create a well-structured git commit with an appropriate message. Use when the user wants to commit their work.
+description: "Git commit: analyze staged and unstaged changes and create a well-structured commit message. Use when the user wants to commit their work."
 disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob
 argument-hint: [optional commit message hint]

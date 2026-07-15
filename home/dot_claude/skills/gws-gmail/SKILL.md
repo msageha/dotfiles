@@ -1,6 +1,6 @@
 ---
 name: gws-gmail
-description: "Gmail: Send, read, and manage email using gws CLI."
+description: "Gmail: Read/search messages and threads, manage drafts/labels/settings, or send messages needing HTML/attachments/CC/BCC, using gws CLI — for a plain-text send or an unread inbox summary, use gws-gmail-send or gws-gmail-triage instead."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [action description or search query]
 ---

@@ -1,6 +1,6 @@
 ---
 name: test
-description: Detect the project's test runner, execute the suite (or a matching subset), and on failure analyze the root cause and fix it. Use when the user wants to run tests or get a failing test suite green.
+description: "Test runner: detect the project's test runner, execute the suite (or a matching subset), and on failure analyze the root cause and fix it. Use when the user wants to run tests or get a failing test suite green."
 allowed-tools: Read, Grep, Glob, Bash, Edit
 argument-hint: [test-pattern-or-file]
 ---

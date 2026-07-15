@@ -1,6 +1,6 @@
 ---
 name: gws-sheets
-description: "Google Sheets: Read and write spreadsheets using gws CLI."
+description: "Google Sheets: Create spreadsheets, apply batch formatting/structural updates, or update/clear existing values using gws CLI — for simply reading a range or appending a row, use gws-sheets-read or gws-sheets-append instead."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [spreadsheet ID or action description]
 ---

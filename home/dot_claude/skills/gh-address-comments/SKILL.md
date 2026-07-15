@@ -1,6 +1,6 @@
 ---
 name: "gh-address-comments"
-description: "Fetch and address review comments on the open GitHub PR for the current branch. Use when the user asks to handle, fix, or respond to PR review comments."
+description: "GitHub PR review comments: fetch and address comments on the open PR for the current branch. Use when the user asks to handle, fix, or respond to PR review comments."
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write
 argument-hint: [optional PR number or URL]
 ---

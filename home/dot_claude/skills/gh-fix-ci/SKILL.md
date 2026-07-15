@@ -1,6 +1,6 @@
 ---
 name: "gh-fix-ci"
-description: "Diagnose and fix failing GitHub Actions CI checks on PRs. Use when the user asks to debug or fix failing CI, PR checks, or GitHub Actions workflows."
+description: "GitHub Actions CI: diagnose and fix failing checks on PRs. Use when the user asks to debug or fix failing CI, PR checks, or GitHub Actions workflows."
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write
 argument-hint: [optional PR number or URL]
 ---

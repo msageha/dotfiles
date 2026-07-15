@@ -1,6 +1,6 @@
 ---
 name: documentation-writer
-description: "Create and improve technical documentation using the Diataxis framework. Use when the user needs tutorials, how-to guides, reference docs, or explanations."
+description: "Documentation: create and improve technical docs (tutorials, how-to guides, reference, explanations) using the Diataxis framework. Use when the user needs tutorials, how-to guides, reference docs, or explanations."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: [topic, file path, or document type]
 ---
