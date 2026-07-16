@@ -5,14 +5,8 @@ model: sonnet
 effort: medium
 tools: Read, Grep, Glob, Bash, mcp__playwright, mcp__chrome-devtools
 mcpServers:
-  - playwright:
-      type: stdio
-      command: npx
-      args: ["-y", "@playwright/mcp@latest"]
-  - chrome-devtools:
-      type: stdio
-      command: npx
-      args: ["-y", "chrome-devtools-mcp@latest"]
+  - playwright
+  - chrome-devtools
 ---
 
 You verify and debug web frontends in a real browser.
