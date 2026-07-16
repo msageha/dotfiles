@@ -9,6 +9,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 env:
   # mise の ubi/aqua backend をはじめ各ステップが GitHub API を叩くため、
   # 無認証だと runner の共有 IP で rate limit (60 req/h) に当たる。

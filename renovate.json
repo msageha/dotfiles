@@ -8,6 +8,7 @@
   "lockFileMaintenance": {
     "enabled": true
   },
+  "minimumReleaseAge": "7 days",
   "customDatasources": {
     "onepassword-cli": {
       "defaultRegistryUrlTemplate": "https://app-updates.agilebits.com/product_history/CLI2",
@@ -15,6 +16,15 @@
     }
   },
   "packageRules": [
+    {
+      "description": "patch/minor は minimumReleaseAge (7日) 経過後、CI green を条件に自動マージする。major は供給網攻撃対策の猶予期間だけでは不十分なため対象外とし、人手レビューを必須とする",
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "automergeType": "pr"
+    },
     {
       "matchDatasources": [
         "custom.onepassword-cli"
@@ -24,6 +34,43 @@
     }
   ],
   "customManagers": [
+    {
+      "customType": "regex",
+      "description": "workflow の container.image (digest pin + バージョンコメント) を docker datasource で更新する。ネイティブのgithub-actions managerはdigestのみ追従し、末尾のバージョンコメントを更新しないため必要",
+      "fileMatch": [
+        "^\\.github/workflows/.+\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "image:\\s+(?<depName>[a-z0-9./_-]+)@(?<currentDigest>sha256:[a-f0-9]{64})\\s+#\\s+(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "dprint.json の公式プラグイン (dprint/dprint-plugin-*) の WASM URL を更新する。@ 以降の sha256 checksum は github-release-attachments datasource が release asset (plugin.wasm) の実ハッシュ照合で追従させる",
+      "fileMatch": [
+        "(^|/)dprint\\.json$"
+      ],
+      "matchStrings": [
+        "https://plugins\\.dprint\\.dev/(?<depName>[a-z0-9-]+)-(?<currentValue>\\d+\\.\\d+\\.\\d+)\\.wasm(?:@(?<currentDigest>[a-f0-9]{64}))?"
+      ],
+      "datasourceTemplate": "github-release-attachments",
+      "packageNameTemplate": "dprint/dprint-plugin-{{depName}}",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "dprint.json の g-plane プラグインの WASM URL を更新する (tag は v prefix 付きなので currentValue に含めて照合する)",
+      "fileMatch": [
+        "(^|/)dprint\\.json$"
+      ],
+      "matchStrings": [
+        "https://plugins\\.dprint\\.dev/g-plane/(?<depName>[a-z0-9_-]+)-(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\.wasm(?:@(?<currentDigest>[a-f0-9]{64}))?"
+      ],
+      "datasourceTemplate": "github-release-attachments",
+      "packageNameTemplate": "g-plane/{{depName}}",
+      "versioningTemplate": "semver"
+    },
     {
       "customType": "regex",
       "fileMatch": [
