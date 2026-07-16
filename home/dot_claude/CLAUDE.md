@@ -29,6 +29,15 @@
 - それ以外のツール (MCP 含む) 利用は自律判断に委ねてよい。ユーザーが毎回「このツールを使え」と指示する必要は無い。
 - **長期自律実行を行う前に、検証機構が用意されていることを確認する**。プロジェクト直下の `.claude/verify.sh` (実行可能ファイル) は Stop hook で自動実行される。バックエンドはテストランナー、フロントエンドは Playwright/Puppeteer/Chrome DevTools を verify.sh から起動する想定。
 - 検証機構が無いプロジェクトで自律時間が長くなりそうな場合は、先に最小限の検証スクリプトを `.claude/verify.sh` として整備してから着手する。
+- 検証が期待どおりに通らなくても、パッチ全体を安易に巻き戻して終わらない。原因の仮説を複数 (目安 3 つ) 立てて順に検証し、各試行の後に関連テストを回す。それでも解決しない場合に限り変更を巻き戻し、得られた知見と次に試すべき実験を要約して報告する。
+- 難しそうに見えるタスクを「不可能」と早期に結論づけない。スコープ内で bounded な前進を続け、不確実性は不確実と明記する。
+
+## Subagent への委譲
+
+- 探索・テスト実行・ログ解析・大量ファイルのスキャンなど、ノイズの多い中間出力を伴う作業は main thread で行わずサブエージェントに委譲し、要約だけを受け取る (main thread の context 汚染・劣化を防ぐ)。
+- 委譲時は、作業の分割方法・全員の完了を待つか・返すべき要約の形式をプロンプトで明示する。
+- カスタムエージェント: `code-reviewer` / `security-reviewer` (誤りが高くつくレビュー用。fable + xhigh 固定) / `debugger` (具体的な失敗の根本原因分析。fable + xhigh 固定) / `test-runner` (検証コマンド実行。sonnet + low 固定) / `source-grounded-researcher` (調査。sonnet + medium 固定) / `browser-debugger` (playwright / chrome-devtools MCP を内包。sonnet + medium 固定)。
+- モデルを固定していない汎用サブエージェント (general-purpose / Explore など) に探索を委譲するときは sonnet 級のモデルと低めの effort を指定し、レビュー・セキュリティなど誤りが高くつく作業には fable + xhigh を使う。
 
 ## MCP servers (autonomous use)
 
@@ -39,9 +48,8 @@
 - **codex**: アーキテクチャ相談、設計パターン、複雑なコード生成のレビュー。
 - **antigravity**: Gemini (Antigravity) へのセカンドオピニオン・情報調査・検索。
 - **context7**: ライブラリ・フレームワーク・SDK・CLI の最新ドキュメント参照。学習データが古い可能性があるため、ライブラリ仕様を扱う際は積極的に参照する。
-- **chrome-devtools**: ブラウザデバッグ、パフォーマンス分析。
 - **github** (plugin 由来): github リポジトリの調査など。認証はシェル初期化時に `gh auth token` から `GITHUB_PERSONAL_ACCESS_TOKEN` へ動的注入される (gh 未ログイン環境では接続不可)。
-- **playwright**: E2E テストとブラウザ自動化。フロントエンドの検証機構として推奨。
+- **playwright / chrome-devtools**: フロントエンド変更の実地検証 (「動くか」= playwright) とブラウザのデバッグ・パフォーマンス分析 (「なぜ遅い / 壊れるか」= chrome-devtools)。スナップショット・コンソールログ・ネットワークダンプ等のノイズの多い中間出力を伴う作業は、同じ MCP を持つ `browser-debugger` サブエージェントへの委譲を優先する。
 - **dart**: Dart/Flutter 開発全般 (作成・解析・整形・テスト・実行中アプリのデバッグ)。シェル直叩きより MCP を優先する。
 - **drawio**: フローチャート、アーキテクチャ図、視覚的ドキュメントの生成。
 - **figma**: Figma URL/デザインからのコード生成、Code Connect 管理、FigJam 作成。

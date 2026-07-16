@@ -1,6 +1,8 @@
 ---
 name: code-reviewer
 description: Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues.
+model: fable
+effort: xhigh
 tools: Read, Grep, Glob, Bash
 skills:
   - review

@@ -1,6 +1,8 @@
 ---
 name: security-reviewer
 description: Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes.
+model: fable
+effort: xhigh
 tools: Read, Grep, Glob, Bash
 skills:
   - security
