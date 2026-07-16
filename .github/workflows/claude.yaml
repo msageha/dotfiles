@@ -1,0 +1,62 @@
+name: Claude Code
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  # assigned は if 条件 (@claude メンション必須) と噛み合わないため opened のみ
+  issues:
+    types: [opened]
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  # issue / PR 単位で直列化する。実行中ジョブは変更を push しうるためキャンセルしない
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # @claude メンション + author_association による一次フィルタ。
+    # 起動は OWNER / MEMBER のみに許可する (COLLABORATOR は read-only の
+    # outside collaborator も含みうるため許可しない)。
+    # なお書き込み権限の厳密な検証は claude-code-action 内部でも行われる
+    # (src/entrypoints/prepare.ts が src/github/validation/permissions.ts の
+    # checkWritePermissions を呼び、write/admin 以外なら実行を拒否する)
+    if: |
+      (github.event_name == 'issue_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' &&
+        contains(github.event.review.body, '@claude') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.review.author_association)) ||
+      (github.event_name == 'issues' &&
+        (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.issue.author_association))
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
+          # claude-code-action は自前の token で git 認証を構成する
+          persist-credentials: false
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@12531344451323133b0493233c759991ac61da12 # v1.0.174
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
