@@ -2,7 +2,7 @@
 name: test-runner
 description: Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task.
 model: sonnet
-effort: low
+effort: medium
 tools: Read, Grep, Glob, Bash
 skills:
   - test

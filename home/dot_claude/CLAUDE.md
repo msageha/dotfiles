@@ -49,7 +49,7 @@
 - **antigravity**: Gemini (Antigravity) へのセカンドオピニオン・情報調査・検索。
 - **context7**: ライブラリ・フレームワーク・SDK・CLI の最新ドキュメント参照。学習データが古い可能性があるため、ライブラリ仕様を扱う際は積極的に参照する。
 - **github** (plugin 由来): github リポジトリの調査など。認証はシェル初期化時に `gh auth token` から `GITHUB_PERSONAL_ACCESS_TOKEN` へ動的注入される (gh 未ログイン環境では接続不可)。
-- **playwright / chrome-devtools**: フロントエンド変更の実地検証 (「動くか」= playwright) とブラウザのデバッグ・パフォーマンス分析 (「なぜ遅い / 壊れるか」= chrome-devtools)。main からも直接使えるが、スナップショット・コンソールログ・ネットワークダンプ等のノイズの多い中間出力を伴う作業は、同じ MCP を持つ `browser-debugger` サブエージェントへの委譲を優先する。
+- **playwright / chrome-devtools**: フロントエンド変更の実地検証 (「動くか」= playwright) とブラウザのデバッグ・パフォーマンス分析 (「なぜ遅い / 壊れるか」= chrome-devtools)。スナップショット・コンソールログ・ネットワークダンプ等のノイズの多い中間出力を伴う作業は、同じ MCP を持つ `browser-debugger` サブエージェントへの委譲を優先する。
 - **dart**: Dart/Flutter 開発全般 (作成・解析・整形・テスト・実行中アプリのデバッグ)。シェル直叩きより MCP を優先する。
 - **drawio**: フローチャート、アーキテクチャ図、視覚的ドキュメントの生成。
 - **figma**: Figma URL/デザインからのコード生成、Code Connect 管理、FigJam 作成。

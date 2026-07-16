@@ -2,7 +2,7 @@
 name: browser-debugger
 description: Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues.
 model: sonnet
-effort: medium
+effort: high
 tools: Read, Grep, Glob, Bash, mcp__playwright, mcp__chrome-devtools
 mcpServers:
   - playwright

@@ -2,7 +2,7 @@
 name: source-grounded-researcher
 description: Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries.
 model: sonnet
-effort: medium
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 
