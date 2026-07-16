@@ -9,6 +9,9 @@ env:
   IMAGE: msageha/dotfiles
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     if: github.event.workflow_run.conclusion == 'success'
