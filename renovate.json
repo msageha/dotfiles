@@ -74,7 +74,7 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "^\\.github/workflows/docker-image-cd\\.yml$"
+        "^\\.github/workflows/docker-image-cd\\.yaml$"
       ],
       "matchStrings": [
         "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n"
