@@ -26,30 +26,12 @@
       ],
       "env": {}
     },
-    "chrome-devtools": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
-      ],
-      "env": {}
-    },
     "antigravity": {
       "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "ask-antigravity-mcp"
-      ],
-      "env": {}
-    },
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
       ],
       "env": {}
     },

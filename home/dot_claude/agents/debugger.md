@@ -1,6 +1,8 @@
 ---
 name: debugger
 description: Debugging specialist for failing tests, runtime errors, and CI failures. Use when a concrete failure needs root-cause analysis and a minimal fix.
+model: fable
+effort: xhigh
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - test
