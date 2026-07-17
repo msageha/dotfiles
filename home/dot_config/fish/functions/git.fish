@@ -49,3 +49,18 @@ end
 function ghq_all_update
     ghq list | ghq get --update --parallel
 end
+
+function ghq_all_checkout_main
+    # Checkout 'main' (or 'master' as fallback) in all repositories managed by ghq
+    for repo in (ghq list --full-path)
+        if git -C $repo show-ref --verify --quiet refs/heads/main
+            echo "$repo: checking out 'main'"
+            git -C $repo checkout main
+        else if git -C $repo show-ref --verify --quiet refs/heads/master
+            echo "$repo: checking out 'master'"
+            git -C $repo checkout master
+        else
+            echo "$repo: neither 'main' nor 'master' found, skipping"
+        end
+    end
+end
