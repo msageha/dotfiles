@@ -38,7 +38,6 @@ formulae_base=(
 # Formula tools — テスト/開発に必要なため CI でも導入する。
 # SKIP_CLI_TOOLS=true でまとめてスキップする
 formulae=(
-    1password-cli
     chezmoi
     dockutil
     exiv2
@@ -72,6 +71,7 @@ formulae=(
 # Cask (GUI アプリ) — CI ではインストールしない。SKIP_GUI_TOOLS=true でもスキップする
 casks=(
     1password
+    1password-cli
     android-studio
     antigravity-cli
     bettertouchtool
