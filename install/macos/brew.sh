@@ -28,8 +28,10 @@ function update() {
 
 # base formulae — SKIP_CLI_TOOLS=true でも導入する最小セット。
 # 後続の chezmoi スクリプトが前提とするツールのみを置く
-# (fish: setup_shell.sh / fisher.sh、git: fonts.sh 等、mise: install/common/mise.sh)。
+# (dockutil: system_settings.sh の dock_apps、fish: setup_shell.sh / fisher.sh、
+# git: fonts.sh 等、mise: install/common/mise.sh)。
 formulae_base=(
+    dockutil
     fish
     git
     mise
@@ -39,7 +41,6 @@ formulae_base=(
 # SKIP_CLI_TOOLS=true でまとめてスキップする
 formulae=(
     chezmoi
-    dockutil
     exiv2
     git-secrets
     gnupg
