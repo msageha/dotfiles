@@ -1,0 +1,10 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -e
+{{   if not (dig "skip_cli_tools" false .) -}}
+if [ -z "${CI:-}" ]; then
+  mo optimize
+  mo clean
+fi
+{{   end -}}
+{{ end -}}

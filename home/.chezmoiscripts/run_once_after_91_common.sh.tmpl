@@ -4,7 +4,7 @@ set -e
 
 {{ if eq .chezmoi.os "linux" -}}
 {{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
-export PATH="$HOME/.local/bin:$HOME/Works/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 {{   end -}}
 {{ end -}}
 {{ if eq .chezmoi.os "darwin" -}}
@@ -18,25 +18,17 @@ export CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
 (
 {{   include "../install/common/setup_shell.sh" }}
 )
-# フォントの描画はクライアント側 (端末エミュレータ) で行われるため、ヘッドレス環境
-# (Docker・CLI のみのサーバー等) では不要。GUI レスを表す skip_gui_tools=true なら
-# スキップする。サーバー上で画像/PDF 等のラスタライズをする場合は別途明示的に入れる。
-# macOS は skip_gui_tools 未定義のため dig の既定値 false でフォールバックする。
-{{ if not (dig "skip_gui_tools" false .) -}}
 (
-{{   include "../install/common/fonts.sh" }}
+{{   include "../install/common/fisher.sh" }}
 )
-{{ end -}}
 (
 {{   include "../install/common/mise.sh" }}
 )
 eval "$(mise activate bash --shims)"
 (
-{{   include "../install/common/fisher.sh" }}
-)
-(
 {{   include "../install/common/completions.sh" }}
 )
+
 {{ if not (dig "skip_cli_tools" false .) -}}
 (
 {{   include "../install/common/git_open.sh" }}
@@ -45,17 +37,17 @@ eval "$(mise activate bash --shims)"
 {{   include "../install/common/git_secrets.sh" }}
 )
 {{ end -}}
+
 {{ if not (dig "skip_gui_tools" false .) -}}
+# フォントの描画はクライアント側 (端末エミュレータ) で行われるため、ヘッドレス環境では不要。
+# GUI レス (skip_gui_tools=true) ならスキップする。
+# サーバー上で画像/PDF 等のラスタライズをする場合は別途明示的に入れる必要あり。
+(
+{{   include "../install/common/fonts.sh" }}
+)
 (
 {{   include "../install/common/ghostty.sh" }}
 )
-{{ end -}}
-
-{{ if eq .chezmoi.os "darwin" -}}
-if [ -z "${CI:-}" ]; then
-  mo optimize
-  mo clean
-fi
 {{ end -}}
 
 # fish の設定ファイルのキャッシュを削除する

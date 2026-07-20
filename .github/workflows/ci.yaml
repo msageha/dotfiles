@@ -48,6 +48,8 @@ jobs:
           cat <<EOF > "$HOME/.config/chezmoi/chezmoi.toml"
           [data]
           computer_name = "ci-${{ matrix.os }}"
+          # macOS / Linux 共通。CLI ツールとコーディングエージェント設定は CI で検証し、
+          # GUI 系 (フォント・ghostty・cask) はスキップする
           skip_cli_tools = false
           skip_gui_tools = true
 

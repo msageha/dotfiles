@@ -38,8 +38,7 @@ computer_name = {{ $computerName | quote }}
 {{- end }}
 
 {{ $skipCliTools := false -}}
-{{- if eq .chezmoi.os "linux" }}
-# Ubuntu specific configuration
+{{- if ne .chezmoi.os "windows" }}
 {{-   $skipCliTools = promptBoolOnce . "skip_cli_tools" "Skip CLI tool installation? (default: yes)" true }}
 skip_cli_tools = {{ $skipCliTools }}
 {{-   $skipGuiTools := true }}

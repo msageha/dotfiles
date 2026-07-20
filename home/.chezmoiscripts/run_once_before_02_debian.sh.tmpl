@@ -1,13 +1,12 @@
-{{ if ne .chezmoi.os "windows" -}}
+{{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
 set -e
-{{ if eq .chezmoi.os "linux" -}}
 {{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
 export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
 {{     include "../install/debian/apt.sh" }}
 {{     if not .skip_cli_tools -}}
 {{       include "../install/debian/coding_agent.sh" }}
-{{       include "../install/common/plugins.sh" }}
+{{       include "../install/common/claude_plugins.sh" }}
 {{     end -}}
 {{     if eq .chezmoi.osRelease.id "ubuntu" -}}
 {{       if not .skip_gui_tools -}}
@@ -18,5 +17,4 @@ export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
 curl -fsSL https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
 {{   end -}}
-{{ end -}}
 {{ end -}}

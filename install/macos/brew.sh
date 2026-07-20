@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+RED="\033[0;31m"
 BLUE="\033[0;34m"
 NC="\033[0m" # No Color (リセット)
 
@@ -25,15 +26,22 @@ function update() {
     brew update
 }
 
-# Formula tools — テスト/開発に必要なため CI でも導入する
-formulae=(
-    antigravity-cli
+# base formulae — SKIP_CLI_TOOLS=true でも導入する最小セット。
+# 後続の chezmoi スクリプトが前提とするツールのみを置く
+# (fish: setup_shell.sh / fisher.sh、git: fonts.sh 等、mise: install/common/mise.sh)。
+formulae_base=(
+    fish
+    git
     mise
+)
+
+# Formula tools — テスト/開発に必要なため CI でも導入する。
+# SKIP_CLI_TOOLS=true でまとめてスキップする
+formulae=(
+    1password-cli
     chezmoi
     dockutil
     exiv2
-    fish
-    git
     git-secrets
     gnupg
     googleworkspace-cli
@@ -61,10 +69,11 @@ formulae=(
     # aircrack-ng bfg binutils binwalk cifer dex2jar dns2tcp fcrackzip foremost hydra john knock netpbm nmap pngcheck socat sqlmap tcpflow tcpreplay ucspi-tcp xpdf x
 )
 
-# Cask (GUI アプリ) — CI ではインストールしない
+# Cask (GUI アプリ) — CI ではインストールしない。SKIP_GUI_TOOLS=true でもスキップする
 casks=(
     1password
     android-studio
+    antigravity-cli
     bettertouchtool
     chatgpt
     claude
@@ -101,12 +110,23 @@ casks=(
 )
 
 function install() {
-    printf "%b\n" "${BLUE}Installing formula packages...${NC}"
-    brew install "${formulae[@]}"
+    printf "%b\n" "${BLUE}Installing base formula packages...${NC}"
+    brew install "${formulae_base[@]}"
+
+    if [ "$SKIP_CLI_TOOLS" = "true" ]; then
+        printf "%b\n" "${BLUE}Skipping formula tools (SKIP_CLI_TOOLS=true).${NC}"
+    else
+        printf "%b\n" "${BLUE}Installing formula packages...${NC}"
+        brew install "${formulae[@]}"
+    fi
 
     # cask は macOS 専用のため CI (Linux) ではスキップする
     if [ -n "${CI:-}" ]; then
         printf "%b\n" "${BLUE}CI 環境のため cask のインストールをスキップします。${NC}"
+        return 0
+    fi
+    if [ "$SKIP_GUI_TOOLS" = "true" ]; then
+        printf "%b\n" "${BLUE}Skipping cask packages (SKIP_GUI_TOOLS=true).${NC}"
         return 0
     fi
     printf "%b\n" "${BLUE}Installing cask packages...${NC}"
@@ -152,6 +172,14 @@ function cleanup() {
 }
 
 function main() {
+    # 呼び出し側 (run_once_before の chezmoi テンプレート) が SKIP_CLI_TOOLS /
+    # SKIP_GUI_TOOLS を必ず渡す契約。未設定は設定ミスとみなして落とす
+    # ("false" へ暗黙フォールバックしない)。
+    if [ -z "${SKIP_CLI_TOOLS+x}" ] || [ -z "${SKIP_GUI_TOOLS+x}" ]; then
+        printf "%b\n" "${RED}SKIP_CLI_TOOLS / SKIP_GUI_TOOLS are not set; they must be exported by the caller.${NC}" >&2
+        exit 1
+    fi
+
     install_brew
     doctor
     update

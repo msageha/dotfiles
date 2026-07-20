@@ -26,9 +26,10 @@
 .config/mise
 {{ end }}
 
-# .claude / .codex / .gemini / .grok (コーディングエージェント設定) は Linux で skip_cli_tools=true、
-# Windows で skip_windows_extras=true のとき管理対象外にする。
-# macOS、またはそれぞれ false のときは従来どおり管理する。
+# .claude / .codex / .gemini / .grok (コーディングエージェント設定) は
+# macOS / Linux で skip_cli_tools=true
+# Windows で skip_windows_extras=true
+# のとき管理対象外にする
 {{- $skipCodingAgent := false }}
 {{- if hasKey . "skip_cli_tools" }}
 {{ $skipCodingAgent = .skip_cli_tools }}

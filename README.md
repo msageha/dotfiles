@@ -79,7 +79,7 @@ fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --ini
 #### API キー
 
 API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secrets を復号して環境変数に注入し、`home/.chezmoi.toml.tmpl` がそれを `data.apiKeys` に反映する。未注入の環境変数は空文字で展開されるため、鍵未配置の初回 bootstrap では空のまま進み、1Password 認証後に上記の手順を再実行することで実値に更新される。
-`data.apiKeys` が生成されるのは、コーディングエージェント設定を管理する環境（macOS、Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）のみ。
+`data.apiKeys` が生成されるのは、コーディングエージェント設定を管理する環境（macOS / Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）のみ。
 
 | 環境変数             | データキー           | 説明                                                                                                             |
 | -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -137,12 +137,12 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 | --------------- | --------------- | ---------------------- |
 | `computer_name` | `computer_name` | macOS のコンピュータ名 |
 
-#### Linux (Ubuntu / Debian) のみ
+#### macOS / Linux (Ubuntu / Debian) 共通
 
-| プロンプト                        | データキー       | 説明                                                                                                                              |
-| --------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `Skip CLI tool installation ...?` | `skip_cli_tools` | CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）とコーディングエージェント設定をスキップするかどうか（デフォルト `true`） |
-| `Skip GUI tool installation?`     | `skip_gui_tools` | GUI 系パッケージのインストールをスキップするかどうか（デフォルト `true`）                                                         |
+| プロンプト                        | データキー       | 説明                                                                                                                                                                          |
+| --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Skip CLI tool installation ...?` | `skip_cli_tools` | CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）とコーディングエージェント設定をスキップするかどうか（デフォルト: `true`）                                            |
+| `Skip GUI tool installation?`     | `skip_gui_tools` | GUI 系パッケージ（macOS は cask）・フォント・システム設定等のインストールをスキップするかどうか（デフォルト: `true`）。`skip_cli_tools=true` のときは質問されず `true` になる |
 
 #### Windows のみ
 
