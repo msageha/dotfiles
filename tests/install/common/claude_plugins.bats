@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
 
-readonly SCRIPT_PATH="./install/common/plugins.sh"
+readonly SCRIPT_PATH="./install/common/claude_plugins.sh"
 
 function setup() {
-    # shellcheck source=install/common/plugins.sh
+    # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
 
     plugin_names=(
@@ -18,7 +18,7 @@ function setup() {
     )
 }
 
-@test "[common] plugins - functions defined" {
+@test "[common] claude_plugins - functions defined" {
     [ -e "${SCRIPT_PATH}" ]
     declare -F cloudflare >/dev/null
     declare -F github >/dev/null
@@ -31,7 +31,7 @@ function setup() {
     [ "${#lsp_plugins[@]}" -gt 0 ]
 }
 
-@test "[common] plugins - main skips cleanly without claude" {
+@test "[common] claude_plugins - main skips cleanly without claude" {
     if command -v claude &>/dev/null; then
         skip "claude is installed on this machine"
     fi
@@ -39,7 +39,7 @@ function setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "[common] plugins - plugins installed" {
+@test "[common] claude_plugins - plugins installed" {
     command -v claude &>/dev/null || skip "claude not installed"
     local installed
     installed="$(claude plugin list 2>/dev/null)"

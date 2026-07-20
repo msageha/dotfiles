@@ -1,11 +1,9 @@
-{{ if ne .chezmoi.os "windows" -}}
+{{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
 set -e
-{{ if eq .chezmoi.os "linux" -}}
 {{   if eq .chezmoi.osRelease.id "alpine" -}}
 {{     include "../install/alpine/apk.sh" }}
 curl -fsSL https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
 {{   end -}}
-{{ end -}}
 {{ end -}}

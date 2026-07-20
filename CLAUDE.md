@@ -33,6 +33,19 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `tests/` — bats テスト (`tests/files`, `tests/install`)
 - `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) / `cloudbuild.yaml` — Ubuntu / Debian / Alpine 検証用イメージのビルド
 
+## data の skip_* フラグ
+
+ツール導入レベルは chezmoi data のフラグで制御する (プロンプトの詳細は README):
+macOS / Linux は `skip_cli_tools` / `skip_gui_tools` (デフォルトはともに true = 最小構成。
+`skip_cli_tools=true` のとき `skip_gui_tools` は質問されず true 固定)、
+Windows は `skip_windows_extras`。
+`.chezmoiignore` (コーディングエージェント設定の除外)・`dot_config/mise/config.toml.tmpl`・
+`run_once_*` スクリプト・`data.apiKeys` の生成条件が横断的に参照する。
+テンプレートで参照するときは、キー未定義の旧 config でも動くよう
+`dig "skip_cli_tools" false .` のフォールバック形を使う (既定 false = 全部入り)。
+例外: mise の言語ランタイム (go / java / node / pnpm) は dig 既定 true で、
+`skip_cli_tools=false` を明示した環境でのみインストールする。
+
 ## コマンド (Makefile)
 
 - `make apply` — `chezmoi apply --verbose` (実際に適用)
@@ -47,3 +60,26 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 このリポジトリの検証は上記の Make ターゲットで完結しており、`.claude/verify.sh` は用意しない
 (lint / format / テストは pre-commit と bats が包含する)。
 `.claude/` はローカル設定領域のためリポジトリ管理対象外。
+
+**`chezmoi execute-template --init` の出力は必ずマスクして表示する**。
+`home/.chezmoi.toml.tmpl` は fnox がシェル環境に注入した API キー (`GEMINI_API_KEY` 等) を
+`data.apiKeys` に平文展開するため、生出力をそのまま表示するとシークレットが漏れる。
+値を `sed -E 's/= ".+"/= "***"/'` 等でマスクするか、構造確認に必要なキー行だけを grep で抜き出す。
+
+### 既知の偽失敗と切り分け
+
+- Claude Code の sandbox 有効時は read deny (`~/.ssh`, `/**/.env*`) により `make test`
+  (`tests/files/common.bats` の `~/.ssh/config` 存在チェック) や `chezmoi apply` / `diff` / `dry_run`
+  (`~/.codex/.env` の lstat) が偽失敗する。write deny により `~/Library/Caches/mise|dprint` への
+  書き込みも "Operation not permitted" になる。コード起因と決めつけず、sandbox を外して
+  再実行して切り分ける。
+- `.pre-commit-config.yaml` の dprint hook から `--allow-no-files` を外さない。prek は対象ファイルを
+  複数バッチに分割して並列に `dprint fmt <subset>` を起動するため、あるバッチが dprint.json の
+  `excludes` に全部マッチすると "No files found to format" (exit 14) で非決定的に失敗する
+  (sandbox 起因の失敗と紛らわしいが別問題)。
+
+### git 運用の注意
+
+chezmoi 設定は `[git] autoCommit = true / autoPush = true` (`home/.chezmoi.toml.tmpl`) のため、
+`chezmoi add` / `chezmoi edit` など chezmoi コマンド経由で source を変更すると自動で
+commit + push まで走る。意図しない push を避けるため、source はファイルを直接編集する。

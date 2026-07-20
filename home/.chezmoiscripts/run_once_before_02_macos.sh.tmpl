@@ -1,28 +1,28 @@
-{{ if ne .chezmoi.os "windows" -}}
+{{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 set -e
-{{ if eq .chezmoi.os "darwin" -}}
 export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | quote }}
-
 {{   include "../install/macos/xcode_select.sh" }}
+
+export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
+export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 {{   include "../install/macos/brew.sh" }}
-{{   include "../install/common/plugins.sh" }}
-export COMPUTER_NAME={{ .computer_name | quote }}
+{{   if not (dig "skip_cli_tools" false .) -}}
+{{     include "../install/common/claude_plugins.sh" }}
+{{   end -}}
 
 # GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
 if [ -z "${CI:-}" ]; then
+export COMPUTER_NAME={{ .computer_name | quote }}
 {{   include "../install/macos/system_settings.sh" }}
+{{   if not (dig "skip_gui_tools" false .) -}}
 {{   include "../install/macos/app_settings.sh" }}
-  # Software Update は更新がある場合のみ適用する。--list は認証不要なので、
-  # 更新が無ければ --install を呼ばずにスキップし、不要な認証を避ける。
-  # --install の認可は Unix root ではなく Volume Owner (Secure Token) 側の
-  # Authorization Services 認証なので sudo は不要 (Apple Silicon)。
   if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
     echo "Software Update が見つかりました。インストールします..."
     softwareupdate --install --all
   else
     echo "利用可能な Software Update はありません。スキップします。"
   fi
+{{   end -}}
 fi
-{{ end -}}
 {{ end -}}

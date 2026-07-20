@@ -8,45 +8,40 @@ show_env = true
 show_tools = false
 
 [tools]
-{{ if eq .chezmoi.os "darwin" -}}
+{{/* 言語ランタイム は skip_cli_tools=false を明示した環境でのみ入れる */ -}}
+{{/* / クラウド CLIは、macos かつ skip_cli_tools=false の環境でのみ入れる */ -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 awscli = "2.35.11"
 aws-sso = "2.3.1"
-aws-vault = "7.12.4"
 {{ end -}}
 direnv = "2.37.1"
-{{ if eq .chezmoi.os "darwin" -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 flutter = "3.44.4-stable"
 {{ end -}}
 fzf = "0.73.1"
-{{ if eq .chezmoi.os "darwin" -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 gcloud = "574.0.0"
 {{ end -}}
 ghq = "1.10.1"
-{{/* 重い言語ランタイムは linux で skip_cli_tools=true のとき省く (最小構成・イメージ軽量化)。
-     mac は skip_cli_tools 未定義 → dig 既定 false で従来どおり常にインストールする。 */ -}}
-{{ if not (dig "skip_cli_tools" false .) -}}
+{{ if not (dig "skip_cli_tools" true .) -}}
 go = "1.26.4"
 java = "temurin-26.0.1+8"
 {{ end -}}
-{{ if eq .chezmoi.os "darwin" -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 kubectl = "1.36.2"
 {{ end -}}
-{{ if not (dig "skip_cli_tools" false .) -}}
-node = "26.4.0"
-pnpm = "11.9.0"
+{{ if not (dig "skip_cli_tools" true .) -}}
+
+
 {{ end -}}
 peco = "0.6.0"
-{{ if eq .chezmoi.os "darwin" -}}
-ruby = "4.0.5"
-{{ end -}}
 starship = "1.26.0"
-{{ if eq .chezmoi.os "darwin" -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 stern = "1.34.0"
 terraform = "1.15.7"
 terragrunt = "1.0.8"
 {{ end -}}
-{{/* CLI ユーティリティ群。最小構成 (skip_cli_tools=true) では省く。
-     procs / scc / flarectl は mise レジストリ未登録のため ubi/go backend で GitHub releases (またはソース) から取得する。 */ -}}
+{{/* CLI ユーティリティ群。最小構成 (skip_cli_tools=true) では省く。 */ -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 age = "1.3.1"
 bat = "0.26.1"
