@@ -33,15 +33,14 @@ function update() {
 formulae_base=(
     dockutil
     fish
-    git
     mise
 )
 
 # Formula tools — テスト/開発に必要なため CI でも導入する。
 # SKIP_CLI_TOOLS=true でまとめてスキップする
 formulae=(
-    chezmoi
     exiv2
+    git
     git-secrets
     gnupg
     googleworkspace-cli
@@ -50,23 +49,12 @@ formulae=(
     httpie
     imagemagick
     mole
-    mupdf
     mysql-client
-    p7zip
-    pigz
-    pkgconf
     poppler
     pv
-    qpdf
-    rename
-    rlwrap
     satococoa/tap/wtp
     tree
-    vbindiff
     wget
-
-    # CTF tools
-    # aircrack-ng bfg binutils binwalk cifer dex2jar dns2tcp fcrackzip foremost hydra john knock netpbm nmap pngcheck socat sqlmap tcpflow tcpreplay ucspi-tcp xpdf x
 )
 
 # Cask (GUI アプリ) — CI ではインストールしない。SKIP_GUI_TOOLS=true でもスキップする
@@ -89,7 +77,6 @@ casks=(
     ghostty
     goland
     google-chrome
-    google-drive
     google-japanese-ime
     grok-build
     insomnia
@@ -100,14 +87,11 @@ casks=(
     orbstack
     pycharm
     raycast
-    simple-comic
     the-unarchiver
     visual-studio-code
-    vlc
     wakatime
     webstorm
     xcodes-app
-    zoom
 )
 
 function install() {

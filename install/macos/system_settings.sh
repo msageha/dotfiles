@@ -4,6 +4,8 @@ set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
 RED="\033[0;31m"
 BLUE="\033[0;34m"
 NC="\033[0m" # No Color (リセット)
+CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
+CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
 
 # 1. コンピュータ名の変更
 function computer_name() {
@@ -25,8 +27,15 @@ function computer_name() {
     sudo dscacheutil -flushcache  # DNSキャッシュをクリア
 }
 
+# 2. ユーザーアイコンの設定
+function user_icon() {
+    printf "%b\n" "${BLUE}ユーザーアイコンを設定しています...${NC}"
+    local icon="$CHEZMOI_REPO_ROOT/settings/common/icon.png"
+    sudo dscl . -delete "/Users/$USER" JPEGPhoto || true
+    sudo dscl . -create "/Users/$USER" Picture "$icon"
+}
 
-# 2. システムの基本設定
+# 3. システムの基本設定
 function system_settings() {
     printf "%b\n" "${BLUE}システムの基本設定を行っています...${NC}"
     defaults write NSGlobalDomain AppleLanguages -array "ja-JP"
@@ -46,7 +55,7 @@ function system_settings() {
     defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true  # 印刷完了後にプリンタアプリを自動終了
 }
 
-# 3. Dockの設定
+# 4. Dockの設定
 function dock_settings() {
     printf "%b\n" "${BLUE}Dockの設定を行っています...${NC}"
     defaults write com.apple.dock orientation -string "right"  # 右にDockを配置
@@ -60,7 +69,7 @@ function dock_settings() {
     defaults write com.apple.dock autohide-time-modifier -float 0.5  # Dockアニメーション高速化
 }
 
-# 4. Dockに固定するアプリを追加
+# 5. Dockに固定するアプリを追加
 function dock_apps() {
     printf "%b\n" "${BLUE}Dockにアプリを追加しています...${NC}"
     if ! command -v dockutil &>/dev/null; then
@@ -89,7 +98,7 @@ function dock_apps() {
     dockutil --add "$HOME/Downloads" --view grid --display folder --sort dateadded --no-restart
 }
 
-# 5. メニューバーの設定
+# 6. メニューバーの設定
 function menu_bar_settings() {
     printf "%b\n" "${BLUE}メニューバーの設定を行っています...${NC}"
     # Bluetoothアイコン表示、バッテリーのパーセント表示、音量アイコンを有効化
@@ -98,7 +107,7 @@ function menu_bar_settings() {
     defaults write com.apple.controlcenter.plist Sound -int 18  # 音量アイコン表示
 }
 
-# 6. Finderの設定
+# 7. Finderの設定
 function finder_settings() {
     printf "%b\n" "${BLUE}Finderの設定を行っています...${NC}"
     # 隠しファイル表示、パスバー、ステータスバーの表示を有効化
@@ -113,7 +122,7 @@ function finder_settings() {
     # _FXShowPosixPathInTitle は macOS Ventura (13) 以降で無効化されたため削除
 }
 
-# 7. ホットコーナーの設定
+# 8. ホットコーナーの設定
 function hot_corners_settings() {
     printf "%b\n" "${BLUE}ホットコーナーの設定を行っています...${NC}"
     defaults write com.apple.dock wvous-tr-corner -int 5  # 右上で、スクリーンセイバー開始
@@ -122,14 +131,14 @@ function hot_corners_settings() {
     defaults write com.apple.dock wvous-bl-corner -int 13  # 左下で、ロック画面
 }
 
-# 8. スクリーンセーバーの設定
+# 9. スクリーンセーバーの設定
 function screensaver_settings() {
     printf "%b\n" "${BLUE}スクリーンセーバーの設定を行っています...${NC}"
     # 5分後にスクリーンセーバーを起動
     defaults -currentHost write com.apple.screensaver idleTime -int 300
 }
 
-# 9. 壁紙の設定
+# 10. 壁紙の設定
 function wallpaper_settings() {
     printf "%b\n" "${BLUE}壁紙の設定を行っています...${NC}"
     # Draculaテーマの壁紙をダウンロードして設定
@@ -144,7 +153,7 @@ function wallpaper_settings() {
         printf "%b\n" "${RED}壁紙の設定に失敗しました (オートメーション許可が必要な場合があります)。${NC}"
 }
 
-# 10. スクリーンショットの設定
+# 11. スクリーンショットの設定
 function screenshot_settings() {
     printf "%b\n" "${BLUE}スクリーンショットの設定を行っています...${NC}"
     mkdir -p "$HOME/Pictures/Screenshots"
@@ -153,7 +162,7 @@ function screenshot_settings() {
     defaults write com.apple.screencapture style -string "window"  # ウィンドウキャプチャモード
 }
 
-# 11. キーボード設定
+# 12. キーボード設定
 function keyboard_settings() {
     printf "%b\n" "${BLUE}キーボード設定を行っています...${NC}"
     # キーリピート速度を調整
@@ -162,7 +171,7 @@ function keyboard_settings() {
     defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない（キーリピート優先）
 }
 
-# 12. トラックパッドの設定
+# 13. トラックパッドの設定
 function trackpad_settings() {
     printf "%b\n" "${BLUE}トラックパッドの設定を行っています...${NC}"
     defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true  # 2本指で右クリック
@@ -182,7 +191,7 @@ function trackpad_settings() {
     defaults write com.apple.AppleMultitouchTrackpad TrackpadMomentumScroll -bool true  # 慣性スクロール有効
 }
 
-# 13. ウィンドウ管理の設定
+# 14. ウィンドウ管理の設定
 function window_manager_settings() {
     printf "%b\n" "${BLUE}ウィンドウ管理の設定を行っています...${NC}"
     defaults write com.apple.WindowManager GloballyEnabled -bool false  # Stage Managerを無効化
@@ -192,7 +201,7 @@ function window_manager_settings() {
     defaults write com.apple.WindowManager StandardHideWidgets -bool false  # 標準モードでもウィジェットを表示
 }
 
-# 14. Finder、SystemUIServer、Dockの再起動
+# 15. Finder、SystemUIServer、Dockの再起動
 function restart_services() {
     printf "%b\n" "${BLUE}Finder、SystemUIServer、Dockを再起動しています...${NC}"
     killall Finder || true
@@ -202,6 +211,7 @@ function restart_services() {
 
 function main() {
     computer_name
+    user_icon
     system_settings
     dock_settings
     dock_apps
