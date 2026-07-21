@@ -7,14 +7,12 @@ NC="\033[0m" # No Color (リセット)
 
 # apt で入れる GUI 関連パッケージ
 apt_apps=(
-    fcitx-mozc  # 日本語入力
+    fcitx5-mozc  # 日本語入力
 )
 
 # snap で入れる GUI アプリ
 snap_apps=(
     discord
-    drawio
-    ngrok
 )
 
 # snap (--classic) で入れる GUI アプリ

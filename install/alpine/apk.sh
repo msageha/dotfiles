@@ -21,15 +21,6 @@ apk_base=(
     # base / infra
     ca-certificates
     curl
-    wget
-    unzip
-    # NOTE: alpine は skip_cli_tools=true の最小構成でのみビルドする。この構成で導入する
-    # mise 管理ツール (direnv/fzf/ghq/peco/starship) はすべてプリビルドのバイナリで、
-    # C/C++ のコンパイルは発生しない。build-base + pkgconf は ~210MB を占めるだけの
-    # 無駄になるため入れない (ソースビルドが必要になったら個別に apk add すること)。
-    # glibc リンクのバイナリ (mise 管理ツール等) を musl 上で動かす互換レイヤ
-    gcompat
-
     # shells / vcs
     fish
     zsh

@@ -30,16 +30,10 @@ apt_base=(
     # base / infra
     ca-certificates
     curl
-    wget
-    unzip
-    gnupg
-    build-essential
-    pkgconf
 
     # shells / vcs
     fish
     zsh
-    git
 )
 
 # software-properties-common (add-apt-repository を提供) は Ubuntu の PPA 追加
@@ -50,6 +44,12 @@ if [ "$(. /etc/os-release && echo "${ID:-}")" = "ubuntu" ]; then
 fi
 
 apt_tools=(
+    build-essential
+    git
+    gnupg
+    pkgconf
+    unzip
+    wget
     # CLI tools
     exiv2
     graphviz
