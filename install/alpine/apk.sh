@@ -2,7 +2,15 @@
 set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
 
 BLUE="\033[0;34m"
+YELLOW="\033[0;33m"
 NC="\033[0m" # No Color (リセット)
+
+function has_privilege() {
+    if [ "$(id -u)" -eq 0 ]; then
+        return 0
+    fi
+    sudo -v 2>/dev/null
+}
 
 function update() {
     printf "%b\n" "${BLUE}Updating APK package index...${NC}"
@@ -44,6 +52,11 @@ function clean() {
 }
 
 function main() {
+    if ! has_privilege; then
+        printf "%b\n" "${YELLOW}root/sudo 権限が無いため APK 関連の操作をすべてスキップします。${NC}" >&2
+        return 0
+    fi
+
     update
     install_base
     upgrade
