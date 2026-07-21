@@ -46,21 +46,28 @@ function git_checkout_main
     return 1
 end
 
-function ghq_all_update
+function git_all_pull_ff_only
+    # Run 'git pull --ff-only' (via ghq) in all repositories managed by ghq
     ghq list | ghq get --update --parallel
 end
 
-function ghq_all_checkout_main
-    # Checkout 'main' (or 'master' as fallback) in all repositories managed by ghq
+function git_all_switch_main
+    # Switch to 'main' (or 'master' as fallback) in all repositories managed by ghq
     for repo in (ghq list --full-path)
         if git -C $repo show-ref --verify --quiet refs/heads/main
-            echo "$repo: checking out 'main'"
-            git -C $repo checkout main
+            echo "$repo: switching to 'main'"
+            git -C $repo switch main
         else if git -C $repo show-ref --verify --quiet refs/heads/master
-            echo "$repo: checking out 'master'"
-            git -C $repo checkout master
+            echo "$repo: switching to 'master'"
+            git -C $repo switch master
         else
             echo "$repo: neither 'main' nor 'master' found, skipping"
         end
     end
+end
+
+function git_all_fetch
+    # Fetch in all repositories managed by ghq (8 repos in parallel)
+    ghq list --full-path | xargs -P 8 -I{} sh -c \
+        'git -C "$1" fetch --quiet && echo "$1: fetched" || echo "$1: fetch failed"' _ {}
 end
