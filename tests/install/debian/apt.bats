@@ -42,3 +42,20 @@ function setup() {
     [[ "$output" == *"Skipping APT upgrade in CI."* ]]
     [[ "$output" != *"Upgrading APT packages"* ]]
 }
+
+@test "[debian] apt - no root/sudo skips all APT operations" {
+    # sudo が使えない (未インストール/sudoers 未登録/非対話でパスワード入力不可等) 環境では、
+    # main() の先頭で権限を判定し、以降の apt 操作を一切行わず警告のみで終了する。
+    run env SKIP_CLI_TOOLS=true bash -c 'sudo() { return 1; }; source '"${SCRIPT_PATH}"'; main'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"root/sudo 権限が無いため"* ]]
+    [[ "$output" != *"Updating APT package lists"* ]]
+}
+
+@test "[debian] apt - root bypasses sudo entirely" {
+    # root (EUID 0) では sudo を一切呼ばずに has_privilege が真になる (sudo 未インストールの
+    # root 専用環境でも動く)。
+    run bash -c 'id() { echo 0; }; sudo() { echo "sudo should not be called"; return 1; }; source '"${SCRIPT_PATH}"'; has_privilege'
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"sudo should not be called"* ]]
+}

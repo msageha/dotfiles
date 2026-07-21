@@ -3,7 +3,15 @@ set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
+YELLOW="\033[0;33m"
 NC="\033[0m" # No Color (リセット)
+
+function has_privilege() {
+    if [ "$(id -u)" -eq 0 ]; then
+        return 0
+    fi
+    sudo -v 2>/dev/null
+}
 
 function update() {
     printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
@@ -116,6 +124,11 @@ function main() {
     if [ -z "${SKIP_CLI_TOOLS+x}" ]; then
         printf "%b\n" "${RED}SKIP_CLI_TOOLS is not set; it must be exported by the caller.${NC}" >&2
         exit 1
+    fi
+
+    if ! has_privilege; then
+        printf "%b\n" "${YELLOW}root/sudo 権限が無いため APT 関連の操作をすべてスキップします。${NC}" >&2
+        return 0
     fi
 
     update

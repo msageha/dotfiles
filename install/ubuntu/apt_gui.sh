@@ -27,6 +27,13 @@ snap_classic_apps=(
     webstorm
 )
 
+function has_privilege() {
+    if [ "$(id -u)" -eq 0 ]; then
+        return 0
+    fi
+    sudo -v 2>/dev/null
+}
+
 function update() {
     printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
     sudo apt update -yq
@@ -90,6 +97,11 @@ function install_chrome() {
 
 function main() {
     printf "%b\n" "${BLUE}=== Starting GUI Application Installation ===${NC}"
+
+    if ! has_privilege; then
+        printf "%b\n" "${YELLOW}root/sudo 権限が無いため GUI アプリのインストールをすべてスキップします。${NC}" >&2
+        return 0
+    fi
 
     update
     install_apt_apps
