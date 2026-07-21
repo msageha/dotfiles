@@ -33,6 +33,10 @@
 
 [pull]
     rebase = false                        # pull時のrebaseを無効に設定
+    ff = only                             # fast-forward可能なときのみpullを許可
+
+[fetch]
+    prune = true                          # リモートで削除されたブランチの追跡refをfetch時に掃除
 
 [color]
     ui = auto                             # 色の自動設定
