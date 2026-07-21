@@ -1,13 +1,14 @@
 [tools]
-prek = "0.4.8"
-hadolint = "2.14.0"
 actionlint = "1.7.12"
-bats = "1.13.0"
 age = "1.3.1"
-fnox = "1.29.0"
-op = "2.34.1"
-dprint = "0.55.1"
+bats = "1.13.0"
 chezmoi = "2.71.1"
+dprint = "0.55.1"
+fnox = "1.29.0"
+hadolint = "2.14.0"
+op = "2.34.1"
+prek = "0.4.8"
+shellcheck = "0.11.0"
 
 [hooks]
 postinstall = "prek install"
