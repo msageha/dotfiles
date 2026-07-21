@@ -1,0 +1,13 @@
+model = "fugu-cyber"
+model_reasoning_effort = "high"
+model_provider = "fugu_cyber"
+model_catalog_json = "~/.codex/fugu-cyber.json"
+
+[features]
+image_generation = false
+
+[analytics]
+enabled = false
+
+[otel]
+metrics_exporter = "none"
