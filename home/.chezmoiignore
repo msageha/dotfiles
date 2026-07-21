@@ -69,9 +69,11 @@
 !.codex/AGENTS.md
 !.codex/config.toml
 !.codex/fugu.config.toml
+!.codex/fugu-cyber.config.toml
 !.codex/fusion.config.toml
 !.codex/pareto-code.config.toml
 !.codex/fugu.json
+!.codex/fugu-cyber.json
 !.codex/fusion.json
 # owl-alpha.json は廃止済み。上の CLAUDE-FABLE-5.md と同じく .chezmoiremove 発火用の暫定エントリ
 !.codex/owl-alpha.json

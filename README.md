@@ -86,6 +86,7 @@ API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secr
 | `GEMINI_API_KEY`     | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用        |
 | `GOOGLE_MAP_API_KEY` | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
 | `FUGU_API_KEY`       | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
+| `FUGU_PAYG_API_KEY`  | `apiKeys.fuguCyber`  | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ) で使用                                               |
 | `OPENROUTER_API_KEY` | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
 
 API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
