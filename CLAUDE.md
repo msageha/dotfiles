@@ -61,10 +61,20 @@ Windows は `skip_windows_extras`。
 (lint / format / テストは pre-commit と bats が包含する)。
 `.claude/` はローカル設定領域のためリポジトリ管理対象外。
 
-**`chezmoi execute-template --init` の出力は必ずマスクして表示する**。
-`home/.chezmoi.toml.tmpl` は fnox がシェル環境に注入した API キー (`GEMINI_API_KEY` 等) を
-`data.apiKeys` に平文展開するため、生出力をそのまま表示するとシークレットが漏れる。
-値を `sed -E 's/= ".+"/= "***"/'` 等でマスクするか、構造確認に必要なキー行だけを grep で抜き出す。
+**secret を含み得る出力は実行前に必ずマスクする。「まず生で試して後でマスクする」は不可。**
+このリポジトリで実際に secret 実値を出力しうるコマンド:
+
+- `chezmoi execute-template --init` — `home/.chezmoi.toml.tmpl` が fnox 注入の API キー
+  (`GEMINI_API_KEY` 等) を `data.apiKeys` に平文展開する。
+- `fnox exec -- printenv <KEY>` / `fnox exec -- env` — secret を実際に復号した値を返す。
+- `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env` や
+  `~/.config/chezmoi/chezmoi.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
+- `cat` / `git diff` で secret ファイルを直接読む。
+
+値を `sed -E 's/= ".+"/= "***"/'` 等でマスクするか、キー名のみ grep で抜き出すか、`wc -c` 等で
+有無・長さだけを確認する。secret ファイルが対象範囲に入るスコープで `chezmoi apply` / `diff` を
+使うときは `--verbose` を付けない。fnox・1Password 経由の実行でも「ツールを使っている = 注意している」
+にはならず、同じ確認を省略しない。
 
 ### 既知の偽失敗と切り分け
 
