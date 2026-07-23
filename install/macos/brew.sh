@@ -80,6 +80,7 @@ casks=(
     google-japanese-ime
     grok-build
     insomnia
+    keka
     mole-app
     ngrok
     obsidian
@@ -87,7 +88,6 @@ casks=(
     orbstack
     pycharm
     raycast
-    the-unarchiver
     visual-studio-code
     wakatime
     webstorm
