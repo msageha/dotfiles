@@ -1,4 +1,5 @@
 name: mise lock
+
 on:
   schedule:
     - cron: "0 0 * * 1" # 毎週月曜 00:00 UTC
@@ -8,27 +9,47 @@ on:
     paths:
       - mise.toml
   workflow_dispatch:
+
 permissions:
   contents: write
   pull-requests: write
+  # PR 作成 / push 後に CI 系 workflow を workflow_dispatch で起動するため (最下段のステップ参照)
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   mise-lock:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
+      # push は下段のステップで明示的にトークンを渡して行うため、
+      # チェックアウトに認証情報を残さない
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
+          persist-credentials: false
+
+      # install: false — 古い mise.lock のまま mise install すると checksum 不一致で
+      # 失敗しうるため、mise 本体のみ導入して lock の再生成だけを行う。
       - name: Install mise
-        run: curl https://mise.run | sh
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          install: false
+          cache: false
+
+      # mise.toml のバージョン更新は Renovate に任せる。
+      # ここでは pin されたバージョンのまま mise.lock の checksum / URL だけを再生成する。
       - name: Run mise lock
         env:
           # mise の GitHub API アクセス (リリース取得・SLSA 検証) を認証付きにして
           # ランナー共有 IP の無認証 rate limit (60 req/h) を回避する
           GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          mise lock
+        run: mise lock
+
       - name: Check for changes
         id: diff
         run: |
@@ -37,7 +58,9 @@ jobs:
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-      # Renovate 等が mise.toml を変更した既存 PR には、同じブランチに直接 commit して追従させる。
+
+      # Renovate 等が mise.toml を変更した既存 PR には、
+      # 同じブランチに直接 commit して mise.lock を追従させる。
       # fork からの PR は GITHUB_TOKEN で push できないためスキップする。
       - name: Push mise.lock update to the pull request branch
         if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
@@ -49,10 +72,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add mise.lock
           git commit -m "chore: update mise.lock"
-          git push origin "HEAD:$HEAD_REF"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$HEAD_REF"
+
       # schedule / workflow_dispatch では新規に PR を作る。
-      # GITHUB_TOKEN で作成した PR の pull_request トリガーは承認待ち状態になるため、
-      # write 権限者が Actions タブから "Approve and run workflows" が必要になる。
       - name: Open pull request
         if: steps.diff.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:
@@ -63,9 +85,20 @@ jobs:
           git checkout -B chore/mise-lock
           git add mise.lock
           git commit -m "chore: update mise.lock"
-          git push --force origin chore/mise-lock
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" chore/mise-lock
 
-          if ! gh pr view chore/mise-lock >/dev/null 2>&1; then
-            gh pr create --title "chore: update mise.lock" --base main --head chore/mise-lock \
+          if ! gh pr view chore/mise-lock --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --title "chore: update mise.lock" --base main --head chore/mise-lock \
               --body "mise lock の自動実行による mise.lock の更新です。差分を確認してください。"
           fi
+
+      # GITHUB_TOKEN による push / PR 作成からは新しい workflow run が発火しない
+      # (再帰実行防止の GitHub 仕様)。workflow_dispatch はその例外なので、
+      # 更新したブランチへ CI 系 workflow を明示的に起動して required check を付ける。
+      # CI 系チェック (prek / gitleaks / chezmoi) は ci.yaml に集約されているため ci.yaml のみ起動する。
+      - name: Dispatch CI workflows for the updated branch
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'chore/mise-lock' }}
+        run: gh workflow run ci.yaml --repo "$GITHUB_REPOSITORY" --ref "$TARGET_REF"

@@ -9,6 +9,10 @@ repos:
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-json
+        # chezmoi の modify-template / includeTemplate 対象は Go テンプレート構文を
+        # 含み JSON として不正なため除外する
+        exclude: ^home/(\.chezmoitemplates/|modify_)
       - id: check-toml
         exclude: ^home/(dot_codex|dot_grok)/modify_private_config\.toml$
       - id: check-added-large-files
