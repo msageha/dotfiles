@@ -48,6 +48,16 @@
       ],
       "extractVersion": "op_[^/]+_v(?<version>\\d+\\.\\d+\\.\\d+)\\.zip$",
       "versioning": "semver"
+    },
+    {
+      "description": "op は GitHub に公開リポジトリが存在せず組み込み mise manager では lookup 不能 (no-result 警告の抑止)。更新は custom.onepassword-cli datasource の regex manager が担う",
+      "matchManagers": [
+        "mise"
+      ],
+      "matchDepNames": [
+        "op"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
