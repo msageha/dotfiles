@@ -1,10 +1,11 @@
 name: Docker Image Continuous Deployment (CD)
 on:
-  workflow_run:
-    workflows: ["CI"]
+  # CI (ci.yaml) は pull_request でのみ実行され、ruleset の required checks が
+  # merge 条件のため「CI green 後にのみビルドする」は branch protection 側で担保される。
+  # workflow_run 連鎖 (CI 完走待ち) は CI の push トリガー撤去に伴い成立しなくなったので使わない。
+  push:
     branches: [main]
-    types:
-      - completed
+  workflow_dispatch:
 env:
   IMAGE: msageha/dotfiles
 permissions:
@@ -14,7 +15,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
