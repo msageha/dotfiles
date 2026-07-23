@@ -1,0 +1,52 @@
+name: prek
+
+# ci.yaml から reusable workflow として呼び出される。
+# pull_request / workflow_dispatch のトリガーは ci.yaml 側が持つ。
+on:
+  workflow_call:
+    inputs:
+      fail-fast:
+        description: "失敗時に呼び出し元の run 全体をキャンセルして他の並列チェックを止める"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  # fail-fast step (gh run cancel) に必要。呼び出し元でも同じ権限を付与すること
+  # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
+  actions: write
+
+env:
+  # mise の ubi/aqua backend をはじめ各ステップが GitHub API を叩くため、
+  # 無認証だと runner の共有 IP で rate limit (60 req/h) に当たる。
+  # Actions のエフェメラルトークンを使い認証付きにする
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      # curl | sh の未検証インストールではなく SHA pin した mise-action を使い、
+      # mise.lock の checksum / cosign 検証つきでツールを導入する
+      - name: Install mise
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: true
+
+      - name: Run prek
+        run: mise exec -- prek run --all-files
+
+      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
+      # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
+      - name: Cancel the entire run on failure
+        if: failure() && inputs.fail-fast
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"

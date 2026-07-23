@@ -6,7 +6,9 @@
     ":enablePreCommit"
   ],
   "timezone": "Asia/Tokyo",
-  "schedule": ["* 5 * * *"],
+  "schedule": [
+    "* 5 * * *"
+  ],
   "separateMajorMinor": true,
   "lockFileMaintenance": {
     "enabled": true
@@ -52,8 +54,8 @@
     {
       "customType": "regex",
       "description": "workflow の container.image (digest pin + バージョンコメント) を docker datasource で更新する。ネイティブのgithub-actions managerはdigestのみ追従し、末尾のバージョンコメントを更新しないため必要",
-      "fileMatch": [
-        "^\\.github/workflows/.+\\.ya?ml$"
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
       ],
       "matchStrings": [
         "image:\\s+(?<depName>[a-z0-9./_-]+)@(?<currentDigest>sha256:[a-f0-9]{64})\\s+#\\s+(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"
@@ -63,8 +65,8 @@
     {
       "customType": "regex",
       "description": "dprint.json の公式プラグイン (dprint/dprint-plugin-*) の WASM URL を更新する。@ 以降の sha256 checksum は github-release-attachments datasource が release asset (plugin.wasm) の実ハッシュ照合で追従させる",
-      "fileMatch": [
-        "(^|/)dprint\\.json$"
+      "managerFilePatterns": [
+        "/(^|/)dprint\\.json$/"
       ],
       "matchStrings": [
         "https://plugins\\.dprint\\.dev/(?<depName>[a-z0-9-]+)-(?<currentValue>\\d+\\.\\d+\\.\\d+)\\.wasm(?:@(?<currentDigest>[a-f0-9]{64}))?"
@@ -76,8 +78,8 @@
     {
       "customType": "regex",
       "description": "dprint.json の g-plane プラグインの WASM URL を更新する (tag は v prefix 付きなので currentValue に含めて照合する)",
-      "fileMatch": [
-        "(^|/)dprint\\.json$"
+      "managerFilePatterns": [
+        "/(^|/)dprint\\.json$/"
       ],
       "matchStrings": [
         "https://plugins\\.dprint\\.dev/g-plane/(?<depName>[a-z0-9_-]+)-(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\.wasm(?:@(?<currentDigest>[a-f0-9]{64}))?"
@@ -88,8 +90,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^\\.github/workflows/docker-image-cd\\.yaml$"
+      "managerFilePatterns": [
+        "/^\\.github/workflows/docker-image-cd\\.yaml$/"
       ],
       "matchStrings": [
         "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n"
@@ -98,9 +100,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^mise\\.toml$",
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^mise\\.toml$/",
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "op = \"(?<currentValue>[^\"]+)\"\\n"
@@ -110,8 +112,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^install/common/fonts\\.sh$"
+      "managerFilePatterns": [
+        "/^install/common/fonts\\.sh$/"
       ],
       "matchStrings": [
         "NERD_FONTS_VERSION=\"(?<currentValue>v[\\d.]+)\"\\n"
@@ -121,8 +123,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^install/windows/setup_powershell\\.ps1$"
+      "managerFilePatterns": [
+        "/^install/windows/setup_powershell\\.ps1$/"
       ],
       "matchStrings": [
         "\\$NerdFontsVersion = '(?<currentValue>v[\\d.]+)'\\n"
@@ -132,8 +134,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "awscli = \"(?<currentValue>[^\"]+)\"\\n"
@@ -143,8 +145,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "aws-vault = \"(?<currentValue>[^\"]+)\"\\n"
@@ -155,8 +157,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "direnv = \"(?<currentValue>[^\"]+)\"\\n"
@@ -167,8 +169,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "flutter = \"(?<currentValue>\\d[^\"]*)\"\\n"
@@ -178,8 +180,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "fzf = \"(?<currentValue>[^\"]+)\"\\n"
@@ -190,8 +192,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "ghq = \"(?<currentValue>[^\"]+)\"\\n"
@@ -202,8 +204,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "go = \"(?<currentValue>[^\"]+)\"\\n"
@@ -214,8 +216,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "java = \"(?<currentValue>[^\"]+)\"\\n"
@@ -225,8 +227,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "kubectl = \"(?<currentValue>[^\"]+)\"\\n"
@@ -237,8 +239,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "node = \"(?<currentValue>[^\"]+)\"\\n"
@@ -248,8 +250,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "pnpm = \"(?<currentValue>[^\"]+)\"\\n"
@@ -260,8 +262,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "peco = \"(?<currentValue>[^\"]+)\"\\n"
@@ -272,8 +274,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "ruby = \"(?<currentValue>[^\"]+)\"\\n"
@@ -284,8 +286,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "starship = \"(?<currentValue>[^\"]+)\"\\n"
@@ -296,8 +298,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "stern = \"(?<currentValue>[^\"]+)\"\\n"
@@ -308,8 +310,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "terraform = \"(?<currentValue>[^\"]+)\"\\n"
@@ -320,8 +322,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "terragrunt = \"(?<currentValue>[^\"]+)\"\\n"
@@ -332,9 +334,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^mise\\.toml$",
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^mise\\.toml$/",
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "age = \"(?<currentValue>[^\"]+)\"\\n"
@@ -345,8 +347,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "bat = \"(?<currentValue>[^\"]+)\"\\n"
@@ -357,8 +359,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "bats = \"(?<currentValue>[^\"]+)\"\\n"
@@ -369,8 +371,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "duf = \"(?<currentValue>[^\"]+)\"\\n"
@@ -381,8 +383,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "dust = \"(?<currentValue>[^\"]+)\"\\n"
@@ -393,8 +395,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "eza = \"(?<currentValue>[^\"]+)\"\\n"
@@ -405,8 +407,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "fastfetch = \"(?<currentValue>[^\"]+)\"\\n"
@@ -417,8 +419,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "fd = \"(?<currentValue>[^\"]+)\"\\n"
@@ -429,9 +431,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^mise\\.toml$",
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^mise\\.toml$/",
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "fnox = \"(?<currentValue>[^\"]+)\"\\n"
@@ -442,8 +444,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "gh = \"(?<currentValue>[^\"]+)\"\\n"
@@ -454,8 +456,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "git-lfs = \"(?<currentValue>[^\"]+)\"\\n"
@@ -466,8 +468,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "hadolint = \"(?<currentValue>[^\"]+)\"\\n"
@@ -478,8 +480,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "hexyl = \"(?<currentValue>[^\"]+)\"\\n"
@@ -490,8 +492,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "jq = \"(?<currentValue>[^\"]+)\"\\n"
@@ -502,8 +504,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "prek = \"(?<currentValue>[^\"]+)\"\\n"
@@ -514,8 +516,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "ripgrep = \"(?<currentValue>[^\"]+)\"\\n"
@@ -526,8 +528,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "ruff = \"(?<currentValue>[^\"]+)\"\\n"
@@ -538,8 +540,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "shellcheck = \"(?<currentValue>[^\"]+)\"\\n"
@@ -550,8 +552,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "tmux = \"(?<currentValue>[^\"]+)\"\\n"
@@ -562,8 +564,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "ty = \"(?<currentValue>[^\"]+)\"\\n"
@@ -574,8 +576,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "uv = \"(?<currentValue>[^\"]+)\"\\n"
@@ -586,8 +588,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "websocat = \"(?<currentValue>[^\"]+)\"\\n"
@@ -598,8 +600,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "yq = \"(?<currentValue>[^\"]+)\"\\n"
@@ -610,8 +612,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "zoxide = \"(?<currentValue>[^\"]+)\"\\n"
@@ -622,8 +624,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "\"ubi:boyter/scc\" = \"(?<currentValue>[^\"]+)\"\\n"
@@ -634,8 +636,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "\"ubi:dalance/procs\" = \"(?<currentValue>[^\"]+)\"\\n"
@@ -646,8 +648,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^home/dot_config/mise/config\\.toml\\.tmpl$"
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
         "\"go:github\\.com/cloudflare/cloudflare-go/cmd/flarectl\" = \"(?<currentValue>[^\"]+)\"\\n"
