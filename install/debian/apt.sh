@@ -10,7 +10,10 @@ function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
-    sudo -v 2>/dev/null
+    # sudo -v は sudoers の verifypw=all 仕様により、パスワード必須のグループルール
+    # (%sudo 等) と NOPASSWD ルールが併存するユーザーで偽陰性になる。実行可否は
+    # last-match で決まるため、sudo -n true で実コマンドを probe してフォールバックする。
+    sudo -v 2>/dev/null || sudo -n true 2>/dev/null
 }
 
 function update() {
@@ -34,6 +37,9 @@ apt_base=(
     # shells / vcs
     fish
     zsh
+    # chezmoi apply が .chezmoiexternal.toml (type = "git-repo") の取得に使うため、
+    # SKIP_CLI_TOOLS の値に関係なく base に必要 (apk_base と同じ扱い)
+    git
 )
 
 # software-properties-common (add-apt-repository を提供) は Ubuntu の PPA 追加
@@ -45,7 +51,6 @@ fi
 
 apt_tools=(
     build-essential
-    git
     gnupg
     pkgconf
     unzip

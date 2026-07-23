@@ -29,7 +29,10 @@ function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
-    sudo -v 2>/dev/null
+    # sudo -v は sudoers の verifypw=all 仕様により、パスワード必須のグループルール
+    # (%sudo 等) と NOPASSWD ルールが併存するユーザーで偽陰性になる。実行可否は
+    # last-match で決まるため、sudo -n true で実コマンドを probe してフォールバックする。
+    sudo -v 2>/dev/null || sudo -n true 2>/dev/null
 }
 
 function update() {

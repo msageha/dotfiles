@@ -52,6 +52,14 @@ function setup() {
     [[ "$output" != *"Updating APT package lists"* ]]
 }
 
+@test "[debian] apt - sudo -v false negative falls back to sudo -n true" {
+    # verifypw=all 環境 (パスワード必須のグループルールと NOPASSWD ルールの併存。
+    # CI コンテナの -G sudo + NOPASSWD:ALL 等) では sudo -v が失敗しても
+    # 実コマンドは last-match の NOPASSWD で通る。sudo -n true への fallback で真と判定する。
+    run bash -c 'sudo() { [ "$1" = "-v" ] && return 1; return 0; }; source '"${SCRIPT_PATH}"'; has_privilege'
+    [ "$status" -eq 0 ]
+}
+
 @test "[debian] apt - root bypasses sudo entirely" {
     # root (EUID 0) では sudo を一切呼ばずに has_privilege が真になる (sudo 未インストールの
     # root 専用環境でも動く)。
