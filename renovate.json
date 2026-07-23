@@ -5,6 +5,9 @@
     "helpers:pinGitHubActionDigests",
     ":enablePreCommit"
   ],
+  "timezone": "Asia/Tokyo",
+  "schedule": ["* 5 * * *"],
+  "separateMajorMinor": true,
   "lockFileMaintenance": {
     "enabled": true
   },
@@ -16,6 +19,18 @@
     }
   },
   "packageRules": [
+    {
+      "description": "PR の乱立を防ぐため、major 以外 (minor/patch/pin/digest) の更新は manager・エコシステム横断で 1 つの PR に集約する。major は separateMajorMinor により分離され、グルーピングせず個別 PR で人手レビューする",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "pinDigest"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    },
     {
       "description": "patch/minor は minimumReleaseAge (7日) 経過後、CI green を条件に自動マージする。major は供給網攻撃対策の猶予期間だけでは不十分なため対象外とし、人手レビューを必須とする",
       "matchUpdateTypes": [
