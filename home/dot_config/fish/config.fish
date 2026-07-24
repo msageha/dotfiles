@@ -47,14 +47,6 @@ if test -d $HOME/Works/bin
     fish_add_path $HOME/Works/bin
 end
 
-# --- flutterのパス追加 ---
-if type -q mise; and mise where flutter &>/dev/null
-    set -x FLUTTER_ROOT (mise where flutter)
-end
-if test -d $HOME/.pub-cache/bin
-    fish_add_path $HOME/.pub-cache/bin
-end
-
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
