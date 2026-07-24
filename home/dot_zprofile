@@ -55,9 +55,10 @@ if command -v aws-sso &>/dev/null; then
 fi
 
 # --- flutterのパス追加 ---
-if command -v mise &>/dev/null && mise where flutter &>/dev/null; then
-    export FLUTTER_ROOT="$(mise where flutter)"
-fi
+# FLUTTER_ROOT はここで export しない: シェル起動時のディレクトリで
+# `mise where flutter` が解決した値に固定され、mise のプロジェクト別 pin に
+# 追従しない (mise exec も既存値を上書きしないため矯正されない)。
+# 必要とするツールへは flutter tool 自身が子プロセスに供給する。
 if [ -d "$HOME/.pub-cache/bin" ]; then
     export PATH="$HOME/.pub-cache/bin:$PATH"
 fi
