@@ -48,9 +48,10 @@ if test -d $HOME/Works/bin
 end
 
 # --- flutterのパス追加 ---
-if type -q mise; and mise where flutter &>/dev/null
-    set -x FLUTTER_ROOT (mise where flutter)
-end
+# FLUTTER_ROOT はここで export しない: シェル起動時のディレクトリで
+# `mise where flutter` が解決した値に固定され、mise のプロジェクト別 pin に
+# 追従しない (mise exec も既存値を上書きしないため矯正されない)。
+# 必要とするツールへは flutter tool 自身が子プロセスに供給する。
 if test -d $HOME/.pub-cache/bin
     fish_add_path $HOME/.pub-cache/bin
 end
