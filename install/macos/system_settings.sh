@@ -29,10 +29,19 @@ function computer_name() {
 
 # 2. ユーザーアイコンの設定
 function user_icon() {
-    printf "%b\n" "${BLUE}ユーザーアイコンを設定しています...${NC}"
     local icon="$CHEZMOI_REPO_ROOT/settings/common/icon.png"
-    sudo dscl . -delete "/Users/$USER" JPEGPhoto || true
-    sudo dscl . -create "/Users/$USER" Picture "$icon"
+
+    # Picture が同じパスで、JPEGPhoto (System Settings による上書き) が無ければスキップ
+    # dscl -read は属性が無くても exit 0 で "No such key" を返すため、出力で存在判定する
+    local current
+    current="$(dscl . -read "/Users/$USER" Picture 2>/dev/null | sed -n 's/^Picture: //p')"
+    if [[ "$current" == "$icon" ]] && ! dscl . -read "/Users/$USER" JPEGPhoto 2>/dev/null | grep -q '^JPEGPhoto:'; then
+        printf "%b\n" "${BLUE}ユーザーアイコンは既に '$icon' です。スキップ${NC}"
+        return 0
+    fi
+
+    printf "%b\n" "${BLUE}ユーザーアイコンを設定しています...${NC}"
+    sudo sh -c 'dscl . -delete "/Users/$1" JPEGPhoto 2>/dev/null; dscl . -create "/Users/$1" Picture "$2"' _ "$USER" "$icon"
 }
 
 # 3. システムの基本設定
