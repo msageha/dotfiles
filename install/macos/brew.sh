@@ -72,7 +72,6 @@ casks=(
     datagrip
     discord
     drawio
-    dropbox
     figma
     ghostty
     goland
