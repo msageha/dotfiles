@@ -48,6 +48,50 @@
 [color]
     ui = auto                             # 色の自動設定
 
+# Dracula theme for Git (https://github.com/dracula/git の config/gitconfig をマージ。
+# upstream の配布形式が「内容を自分の gitconfig へコピー」のため include ではなく直書き)
+[color "branch"]
+    current = cyan bold reverse
+    local = white
+    plain =
+    remote = cyan
+
+[color "diff"]
+    commit =
+    func = cyan
+    plain =
+    whitespace = magenta reverse
+    meta = white
+    frag = cyan bold reverse
+    old = red
+    new = green
+
+[color "grep"]
+    context =
+    filename =
+    function =
+    linenumber = white
+    match =
+    selected =
+    separator =
+
+[color "interactive"]
+    error =
+    header =
+    help =
+    prompt =
+
+[color "status"]
+    added = green
+    changed = yellow
+    header =
+    localBranch =
+    nobranch =
+    remoteBranch = cyan bold
+    unmerged = magenta bold reverse
+    untracked = red
+    updated = green bold
+
 [alias]
     co = checkout                         # checkoutコマンドのエイリアス
     br = branch                           # branchコマンドのエイリアス
@@ -89,11 +133,6 @@
 {{- else }}
     helper = cache --timeout=3600
 {{- end }}
-
-[color "branch"]
-    current = yellow bold
-    remote = green
-    tracked = cyan
 
 [safe]
     directory = ~/.local/share/chezmoi

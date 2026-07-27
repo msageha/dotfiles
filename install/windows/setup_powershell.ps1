@@ -32,6 +32,7 @@ function Update-SessionPath {
 # install/common/fonts.sh の NERD_FONTS_VERSION と揃える
 $NerdFontsVersion = 'v3.4.0'
 $WindowsTerminalFont = 'SauceCodePro NF'
+$WindowsTerminalColorScheme = 'Dracula'
 
 # chezmoi 経由の実行では一時ファイルにコピーされ $PSScriptRoot がリポジトリ外を指すため、
 # 呼び出し元 (.chezmoiscripts) が設定する CHEZMOI_SOURCE_DIR を優先して使う。
@@ -105,18 +106,9 @@ function Install-StarshipConfig {
     Write-Step "Installed starship.toml -> $dest"
 }
 
-function Set-ProfileStarshipBlock([string]$ProfilePath) {
-    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と
-    # starship 初期化を、マーカーで囲んだ管理ブロックとして冪等に書き込む。
-    $begin = '# >>> chezmoi starship (managed) >>>'
-    $end   = '# <<< chezmoi starship (managed) <<<'
-    $block = @(
-        $begin
-        '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
-        '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-        'Invoke-Expression (&starship init powershell)'
-        $end
-    ) -join "`n"
+function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$End, [string[]]$Lines) {
+    # マーカーで囲んだ管理ブロックをプロファイルへ冪等に書き込む
+    $block = (@($Begin) + $Lines + @($End)) -join "`n"
 
     if (-not (Test-Path $ProfilePath)) {
         New-Item -ItemType File -Path $ProfilePath -Force | Out-Null
@@ -124,7 +116,7 @@ function Set-ProfileStarshipBlock([string]$ProfilePath) {
     $current = Get-Content -Path $ProfilePath -Raw -ErrorAction SilentlyContinue
     if ($null -eq $current) { $current = '' }
 
-    $pattern = [regex]::Escape($begin) + '[\s\S]*?' + [regex]::Escape($end)
+    $pattern = [regex]::Escape($Begin) + '[\s\S]*?' + [regex]::Escape($End)
     if ($current -match $pattern) {
         # 置換テキスト内の $ や \ がパターンとして解釈されないよう MatchEvaluator で置換する
         $updated = [regex]::Replace($current, $pattern, { param($m) $block })
@@ -139,9 +131,44 @@ function Set-ProfileStarshipBlock([string]$ProfilePath) {
     Write-Step "Configured PowerShell profile -> $ProfilePath"
 }
 
+function Set-ProfileStarshipBlock([string]$ProfilePath) {
+    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
+    Set-ProfileManagedBlock $ProfilePath `
+        '# >>> chezmoi starship (managed) >>>' `
+        '# <<< chezmoi starship (managed) <<<' `
+        @(
+            '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
+            '$OutputEncoding           = [System.Text.Encoding]::UTF8'
+            'Invoke-Expression (&starship init powershell)'
+        )
+}
+
+function Set-ProfileDraculaBlock([string]$ProfilePath) {
+    # PSReadLine トークン色の Dracula テーマ (https://github.com/dracula/powershell の
+    # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
+    # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
+    Set-ProfileManagedBlock $ProfilePath `
+        '# >>> chezmoi dracula (managed) >>>' `
+        '# <<< chezmoi dracula (managed) <<<' `
+        @(
+            'if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {'
+            '    Set-PSReadLineOption -Colors @{'
+            '        "Command"   = [ConsoleColor]::Green'
+            '        "Parameter" = [ConsoleColor]::Gray'
+            '        "Operator"  = [ConsoleColor]::Magenta'
+            '        "Variable"  = [ConsoleColor]::White'
+            '        "String"    = [ConsoleColor]::Yellow'
+            '        "Number"    = [ConsoleColor]::Blue'
+            '        "Type"      = [ConsoleColor]::Cyan'
+            '        "Comment"   = [ConsoleColor]::DarkCyan'
+            '    }'
+            '}'
+        )
+}
+
 function Set-PowerShellProfile {
     # $PROFILE は実行ホスト依存 (5.1 と pwsh でパスが異なる) のため、ユーザーが
-    # どちらのシェルを使っても starship が有効になるよう両方のプロファイルに書く。
+    # どちらのシェルを使っても設定が有効になるよう両方のプロファイルに書く。
     $documents = [Environment]::GetFolderPath('MyDocuments')
     $profilePaths = @(
         (Join-Path $documents 'WindowsPowerShell\Microsoft.PowerShell_profile.ps1') # Windows PowerShell 5.1
@@ -149,10 +176,53 @@ function Set-PowerShellProfile {
     )
     foreach ($profilePath in $profilePaths) {
         Set-ProfileStarshipBlock $profilePath
+        Set-ProfileDraculaBlock $profilePath
     }
 }
 
-function Set-WindowsTerminalFont {
+function Set-WindowsTerminalDraculaFragment {
+    # Dracula カラースキームを Windows Terminal の JSON Fragment として配置する
+    # (https://github.com/dracula/windows-terminal の dracula.json の静的コピー。
+    # 公式の Add-TerminalProfileDracula.ps1 は実行時ダウンロード方式のため使わない)。
+    # fragment がサポートするのは schemes の追加と GUID 指定のプロファイル更新のみで、
+    # profiles.defaults は対象外のため、既定スキームの適用は Set-WindowsTerminalDefaults が行う
+    $fragmentPath = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\Fragments\chezmoi\dracula.json'
+    $fragmentJson = @'
+{
+  "schemes": [
+    {
+      "name": "Dracula",
+      "cursorColor": "#F8F8F2",
+      "selectionBackground": "#44475A",
+      "background": "#282A36",
+      "foreground": "#F8F8F2",
+      "black": "#21222C",
+      "blue": "#BD93F9",
+      "cyan": "#8BE9FD",
+      "green": "#50FA7B",
+      "purple": "#FF79C6",
+      "red": "#FF5555",
+      "white": "#F8F8F2",
+      "yellow": "#F1FA8C",
+      "brightBlack": "#6272A4",
+      "brightBlue": "#D6ACFF",
+      "brightCyan": "#A4FFFF",
+      "brightGreen": "#69FF94",
+      "brightPurple": "#FF92DF",
+      "brightRed": "#FF6E6E",
+      "brightWhite": "#FFFFFF",
+      "brightYellow": "#FFFFA5"
+    }
+  ]
+}
+'@
+    New-Item -ItemType Directory -Force -Path (Split-Path $fragmentPath) | Out-Null
+    # Windows Terminal は BOM 無し UTF-8 の fragment を要求する
+    [System.IO.File]::WriteAllText($fragmentPath, $fragmentJson, [System.Text.UTF8Encoding]::new($false))
+    Write-Step "Installed Windows Terminal Dracula fragment -> $fragmentPath"
+}
+
+function Set-WindowsTerminalDefaults {
     $candidates = @(
         (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json'),
         (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\settings.json')
@@ -171,13 +241,18 @@ function Set-WindowsTerminalFont {
 
         # 設定済みなら書き換えない (再書き込みは下記のとおりコメントを失うため)
         $face = $null
-        if ($cfg.profiles.PSObject.Properties['defaults'] -and
-            $cfg.profiles.defaults.PSObject.Properties['font'] -and
-            $cfg.profiles.defaults.font.PSObject.Properties['face']) {
-            $face = $cfg.profiles.defaults.font.face
+        $scheme = $null
+        if ($cfg.profiles.PSObject.Properties['defaults']) {
+            if ($cfg.profiles.defaults.PSObject.Properties['font'] -and
+                $cfg.profiles.defaults.font.PSObject.Properties['face']) {
+                $face = $cfg.profiles.defaults.font.face
+            }
+            if ($cfg.profiles.defaults.PSObject.Properties['colorScheme']) {
+                $scheme = $cfg.profiles.defaults.colorScheme
+            }
         }
-        if ($face -eq $WindowsTerminalFont) {
-            Write-Step "Windows Terminal font is already $WindowsTerminalFont. Skipping"
+        if (($face -eq $WindowsTerminalFont) -and ($scheme -eq $WindowsTerminalColorScheme)) {
+            Write-Step "Windows Terminal font/colorScheme are already $WindowsTerminalFont / $WindowsTerminalColorScheme. Skipping"
             return
         }
 
@@ -189,17 +264,19 @@ function Set-WindowsTerminalFont {
             $cfg.profiles.defaults | Add-Member -NotePropertyName font -NotePropertyValue ([pscustomobject]@{}) -Force
         }
         $cfg.profiles.defaults.font | Add-Member -NotePropertyName face -NotePropertyValue $WindowsTerminalFont -Force
+        # colorScheme 本体 (Dracula) は Set-WindowsTerminalDraculaFragment が fragment として供給する
+        $cfg.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $WindowsTerminalColorScheme -Force
 
         # -Encoding utf8 は Windows PowerShell 5.1 だと BOM 付きで書き出され、
         # BOM 付き JSON を読めないパーサーがあるため .NET API で BOM 無し UTF-8 にする。
         $json = $cfg | ConvertTo-Json -Depth 32
         [System.IO.File]::WriteAllText($path, $json, [System.Text.UTF8Encoding]::new($false))
-        Write-Step "Set Windows Terminal font -> $WindowsTerminalFont"
+        Write-Step "Set Windows Terminal defaults -> font: $WindowsTerminalFont, colorScheme: $WindowsTerminalColorScheme"
         Write-Warn "settings.json は再シリアライズされるため JSONC コメントは保持されません (元ファイル: $path.bak)"
     }
     catch {
         Write-Warn "Windows Terminal の設定更新に失敗しました: $($_.Exception.Message)"
-        Write-Warn "手動で font.face を設定してください (書き換え後に失敗した場合はバックアップ $path.bak から復元できます)。"
+        Write-Warn "手動で font.face / colorScheme を設定してください (書き換え後に失敗した場合はバックアップ $path.bak から復元できます)。"
     }
 }
 
@@ -208,7 +285,8 @@ function Main {
     Install-NerdFont
     Install-StarshipConfig
     Set-PowerShellProfile
-    Set-WindowsTerminalFont
+    Set-WindowsTerminalDraculaFragment
+    Set-WindowsTerminalDefaults
     Write-Step 'Done. 新しい PowerShell を開き直すと反映されます。'
 }
 

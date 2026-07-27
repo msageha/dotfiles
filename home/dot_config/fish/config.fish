@@ -1,3 +1,10 @@
+# --- fish 本体の Dracula テーマ (https://github.com/dracula/fish) ---
+# テーマファイルは fisher (fish_plugins の dracula/fish) が themes/ に配置する。
+# fish >= 3.4 はプラグイン導入だけでは適用されないため明示的に choose する
+if test -f $HOME/.config/fish/themes/"Dracula Official.theme"
+    fish_config theme choose "Dracula Official"
+end
+
 # --- エイリアスの読み込み ---
 if test -f $HOME/.alias
     source $HOME/.alias
@@ -17,6 +24,27 @@ end
 
 # --- fzf Dracula Theme ---
 set -gx FZF_DEFAULT_OPTS "--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+
+# --- eza / ripgrep / grep Dracula Theme ---
+# (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
+set -gx EZA_COLORS "uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
+set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
+set -gx GREP_COLORS "mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
+if test (uname) = "Darwin"
+    # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
+    set -gx GREP_COLOR "1;38;2;255;85;85"
+end
+
+# --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
+set -gx MANPAGER "less -s -M +Gg"
+set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin bold
+set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin blink
+set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # begin reverse video
+set -gx LESS_TERMCAP_us (printf '\e[01;36m') # begin underline
+set -gx LESS_TERMCAP_me (printf '\e[0m') # reset bold/blink
+set -gx LESS_TERMCAP_se (printf '\e[0m') # reset reverse video
+set -gx LESS_TERMCAP_ue (printf '\e[0m') # reset underline
+set -gx GROFF_NO_SGR 1
 
 # --- カスタム関数のエイリアス ---
 alias fgc=fzf_gcloud_config
@@ -39,6 +67,14 @@ else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
 end
 if test -n "$brew_bin"
     "$brew_bin" shellenv fish | source
+end
+
+# --- dircolors (LS_COLORS) の Dracula テーマ ---
+# (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
+# GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
+set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
+if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
+    eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
 end
 
 # --- Goの設定 ---

@@ -11,6 +11,27 @@ export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
 export PSQL_HISTFILE="$HOME/.local/state/psql_history"
 export PYTHON_HISTORY="$HOME/.local/state/python_history"
 
+# --- eza / ripgrep / grep の Dracula テーマ ---
+# (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
+export EZA_COLORS="uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+export GREP_COLORS="mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
+if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
+    export GREP_COLOR="1;38;2;255;85;85"
+fi
+
+# --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
+export MANPAGER="less -s -M +Gg"
+export LESS_TERMCAP_mb=$'\e[1;31m'      # begin bold
+export LESS_TERMCAP_md=$'\e[1;34m'      # begin blink
+export LESS_TERMCAP_so=$'\e[01;45;37m'  # begin reverse video
+export LESS_TERMCAP_us=$'\e[01;36m'     # begin underline
+export LESS_TERMCAP_me=$'\e[0m'         # reset bold/blink
+export LESS_TERMCAP_se=$'\e[0m'         # reset reverse video
+export LESS_TERMCAP_ue=$'\e[0m'         # reset underline
+export GROFF_NO_SGR=1                   # for konsole
+
 # --- PATH: ツール置き場を先に通す ---
 # brew/mise/direnv/starship などの activate は PATH が揃っている前提のため、
 # それらより前に静的なバイナリ置き場を PATH へ追加しておく。
@@ -30,6 +51,15 @@ if [ -n "$_brew_bin" ]; then
     eval "$("$_brew_bin" shellenv)"
 fi
 unset _brew_bin
+
+# --- dircolors (LS_COLORS) の Dracula テーマ ---
+# (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
+# GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
+_dircolors_bin="$(command -v dircolors || command -v gdircolors || true)"
+if [ -n "$_dircolors_bin" ] && [ -f "$HOME/.config/dircolors/dracula/.dircolors" ]; then
+    eval "$("$_dircolors_bin" -b "$HOME/.config/dircolors/dracula/.dircolors")"
+fi
+unset _dircolors_bin
 
 # --- Goの設定 ---
 export GOPATH="$HOME/Works"

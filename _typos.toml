@@ -7,3 +7,5 @@ extend-exclude = ["*.age"]
 PN = "PN"
 # BetterTouchTool's own misspelled key name
 Fom = "Fom"
+# eza color code key (user execute for other file kinds) in EZA_COLORS
+ue = "ue"
