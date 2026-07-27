@@ -70,10 +70,28 @@ function raycast() {
     fi
 }
 
+function streamdeck() {
+    # 設定 profile は内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
+    # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
+    local profile="$CHEZMOI_REPO_ROOT/settings/macos/default.streamDeckProfile"
+    local profile_hash_file="$HOME/.local/state/chezmoi/streamdeck-profile.sha256"
+    local current_hash
+    current_hash="$(shasum -a 256 "$profile" | awk '{print $1}')"
+    if [ -f "$profile_hash_file" ] && [ "$(cat "$profile_hash_file")" = "$current_hash" ]; then
+        printf "%b\n" "${BLUE}Stream Deck 設定に変更なし。import をスキップします。${NC}"
+    else
+        printf "%b\n" "${BLUE}Stream Deck設定ファイルを開いています...${NC}"
+        open "$profile"
+        mkdir -p "$(dirname "$profile_hash_file")"
+        printf '%s\n' "$current_hash" > "$profile_hash_file"
+    fi
+}
+
 function main() {
     vscode
     bettertouchtool
     raycast
+    streamdeck
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

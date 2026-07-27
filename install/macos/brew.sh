@@ -72,6 +72,7 @@ casks=(
     datagrip
     discord
     drawio
+    elgato-stream-deck
     figma
     ghostty
     goland
