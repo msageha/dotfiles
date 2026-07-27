@@ -385,6 +385,18 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
+        "delta = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "dandavison/delta",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
+      ],
+      "matchStrings": [
         "duf = \"(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "muesli/duf",
