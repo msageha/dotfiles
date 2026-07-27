@@ -46,14 +46,21 @@ function git_checkout_main
     return 1
 end
 
+function __git_all_repos -d 'List repository paths (ghq + chezmoi source dir)'
+    ghq list --full-path
+    # ghq root の外にある chezmoi のソースディレクトリを一覧に足す
+    test -d $HOME/.local/share/chezmoi; and echo $HOME/.local/share/chezmoi
+end
+
 function git_all_pull_ff_only
-    # Run 'git pull --ff-only' (via ghq) in all repositories managed by ghq
-    ghq list | ghq get --update --parallel
+    # Run 'git pull --ff-only' in all repositories (8 repos in parallel)
+    __git_all_repos | xargs -P 8 -I{} sh -c \
+        'git -C "$1" pull --ff-only --quiet && echo "$1: pulled" || echo "$1: pull failed"' _ {}
 end
 
 function git_all_switch_main
-    # Switch to 'main' (or 'master' as fallback) in all repositories managed by ghq
-    for repo in (ghq list --full-path)
+    # Switch to 'main' (or 'master' as fallback) in all repositories
+    for repo in (__git_all_repos)
         if git -C $repo show-ref --verify --quiet refs/heads/main
             echo "$repo: switching to 'main'"
             git -C $repo switch main
@@ -67,7 +74,7 @@ function git_all_switch_main
 end
 
 function git_all_fetch
-    # Fetch in all repositories managed by ghq (8 repos in parallel)
-    ghq list --full-path | xargs -P 8 -I{} sh -c \
+    # Fetch in all repositories (8 repos in parallel)
+    __git_all_repos | xargs -P 8 -I{} sh -c \
         'git -C "$1" fetch --quiet && echo "$1: fetched" || echo "$1: fetch failed"' _ {}
 end
