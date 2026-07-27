@@ -15,10 +15,12 @@
 .zprofile
 .tmux.conf
 .vimrc
-# .vim は .chezmoiexternal.toml の external (dracula テーマ) の展開先。
+# .vim / .config/delta は .chezmoiexternal.toml の external (dracula テーマ) の展開先。
 # external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
 .vim
 .vim/**
+.config/delta
+.config/delta/**
 .config/fastfetch
 .config/fish
 .config/gh
