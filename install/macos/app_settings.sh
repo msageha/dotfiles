@@ -39,7 +39,7 @@ function bettertouchtool() {
 
     # 設定 preset は内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
     # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
-    local preset="$CHEZMOI_REPO_ROOT/settings/macos/btt/Default.bttpreset"
+    local preset="$CHEZMOI_REPO_ROOT/settings/macos/btt/dotfiles.bttpreset"
     local preset_hash_file="$HOME/.local/state/chezmoi/btt-preset.sha256"
     local current_hash
     current_hash="$(shasum -a 256 "$preset" | awk '{print $1}')"
@@ -73,7 +73,7 @@ function raycast() {
 function streamdeck() {
     # 設定 profile は内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
     # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
-    local profile="$CHEZMOI_REPO_ROOT/settings/macos/default.streamDeckProfile"
+    local profile="$CHEZMOI_REPO_ROOT/settings/macos/dotfiles.streamDeckProfile"
     local profile_hash_file="$HOME/.local/state/chezmoi/streamdeck-profile.sha256"
     local current_hash
     current_hash="$(shasum -a 256 "$profile" | awk '{print $1}')"
