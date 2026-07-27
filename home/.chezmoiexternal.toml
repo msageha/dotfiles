@@ -9,3 +9,15 @@ type = "git-repo"
 url = "https://github.com/dracula/delta"
 refreshPeriod = "720h"
 clone.args = ["--depth", "1", "-b", "main"]
+
+[".tmux/plugins/dracula"]
+type = "git-repo"
+url = "https://github.com/dracula/tmux"
+refreshPeriod = "720h"
+clone.args = ["--depth", "1", "-b", "master"]
+
+[".config/dircolors/dracula"]
+type = "git-repo"
+url = "https://github.com/dracula/dircolors"
+refreshPeriod = "720h"
+clone.args = ["--depth", "1", "-b", "main"]
