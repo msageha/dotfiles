@@ -28,12 +28,17 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
+  "fallbackModel": [],
+  "switchModelsOnFlag": false,
   "skipDangerousModePermissionPrompt": true,
   "model": "claude-fable-5",
   "includeGitInstructions": false,
   "language": "japanese",
   "env": {
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_AUTO_COMPACT": "1",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000"
   },
   "skipWebFetchPreflight": true,
 {{- /* statusline-command.sh は bash 前提のため、ネイティブ Windows では statusLine を設定しない */}}
