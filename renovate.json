@@ -43,6 +43,19 @@
       "automergeType": "pr"
     },
     {
+      "description": "gcloud は calver 的にほぼ毎週 major が上がるため、major 更新も non-major と同じグループ PR + automerge で扱う",
+      "matchDepNames": [
+        "google/cloud-sdk"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
       "matchDatasources": [
         "custom.onepassword-cli"
       ],
@@ -111,8 +124,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^mise\\.toml$/",
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
+        "/^mise\\.toml$/"
       ],
       "matchStrings": [
         "op = \"(?<currentValue>[^\"]+)\"\\n"
@@ -159,11 +171,11 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "aws-vault = \"(?<currentValue>[^\"]+)\"\\n"
+        "aws-sso = \"(?<currentValue>[^\"]+)\"\\n"
       ],
-      "depNameTemplate": "ByteNess/aws-vault",
+      "depNameTemplate": "synfinatic/aws-sso-cli",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)"
+      "extractVersionTemplate": "^v?(?<version>.+)"
     },
     {
       "customType": "regex",
@@ -202,6 +214,18 @@
     },
     {
       "customType": "regex",
+      "description": "gcloud は GitHub にバージョンタグを持たないため、SDK バージョンと同一タグが付く Docker Hub の google/cloud-sdk イメージで追従する",
+      "managerFilePatterns": [
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
+      ],
+      "matchStrings": [
+        "gcloud = \"(?<currentValue>[^\"]+)\"\\n"
+      ],
+      "depNameTemplate": "google/cloud-sdk",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
       "managerFilePatterns": [
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
@@ -226,11 +250,12 @@
     },
     {
       "customType": "regex",
+      "description": "java-version datasource は temurin- prefix なしの semver (例: 26.0.1+8) を返すため、prefix は currentValue の外に置いて照合する (Renovate 本体の asdf manager と同じ扱い)",
       "managerFilePatterns": [
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "java = \"(?<currentValue>[^\"]+)\"\\n"
+        "java = \"temurin-(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "java-jdk",
       "datasourceTemplate": "java-version"
@@ -288,18 +313,6 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "ruby = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "ruby-version",
-      "datasourceTemplate": "ruby-version",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
         "starship = \"(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "starship/starship",
@@ -345,8 +358,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^mise\\.toml$/",
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
+        "/^mise\\.toml$/"
       ],
       "matchStrings": [
         "age = \"(?<currentValue>[^\"]+)\"\\n"
@@ -364,18 +376,6 @@
         "bat = \"(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "sharkdp/bat",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "bats = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "bats-core/bats-core",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)"
     },
@@ -470,22 +470,10 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "git-lfs = \"(?<currentValue>[^\"]+)\"\\n"
+        "glab = \"(?<currentValue>[^\"]+)\"\\n"
       ],
-      "depNameTemplate": "git-lfs/git-lfs",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "hadolint = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "hadolint/hadolint",
-      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "gitlab-org/cli",
+      "datasourceTemplate": "gitlab-releases",
       "extractVersionTemplate": "^v(?<version>.+)"
     },
     {
@@ -518,47 +506,11 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "prek = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "j178/prek",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
         "ripgrep = \"(?<currentValue>[^\"]+)\"\\n"
       ],
       "depNameTemplate": "BurntSushi/ripgrep",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "ruff = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "astral-sh/ruff",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "shellcheck = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "koalaman/shellcheck",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>\\S+)"
     },
     {
       "customType": "regex",
@@ -578,9 +530,9 @@
         "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "ty = \"(?<currentValue>[^\"]+)\"\\n"
+        "usage = \"(?<currentValue>[^\"]+)\"\\n"
       ],
-      "depNameTemplate": "astral-sh/ty",
+      "depNameTemplate": "jdx/usage",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)"
     },
