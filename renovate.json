@@ -690,6 +690,33 @@
       "depNameTemplate": "cloudflare/cloudflare-go",
       "datasourceTemplate": "github-tags",
       "extractVersionTemplate": "^v?(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "description": "pre-commit hook の rev (autoupdate --freeze 形式の SHA pin + frozen コメント) を github-tags で更新する。組み込みの pre-commit manager は frozen 形式に未対応 (renovate#22567) のため必要",
+      "managerFilePatterns": [
+        "/^\\.pre-commit-config\\.yaml$/"
+      ],
+      "matchStrings": [
+        "repo: https://github\\.com/(?<depName>[^\\s]+)\\n\\s+rev: (?<currentDigest>[a-f0-9]{40}) # frozen: (?<currentValue>v[\\d.]+)"
+      ],
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "壁紙 URL の dracula/wallpaper commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^install/macos/system_settings\\.sh$/",
+        "/^install/ubuntu/system_settings\\.sh$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/dracula/wallpaper/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "dracula/wallpaper",
+      "packageNameTemplate": "https://github.com/dracula/wallpaper",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
     }
   ]
 }
