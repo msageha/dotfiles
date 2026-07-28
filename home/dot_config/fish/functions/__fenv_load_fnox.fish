@@ -24,6 +24,10 @@ function __fenv_load_fnox
     else if test "$selected" != default; and test -f fnox.$selected.toml
         cp fnox.$selected.toml "$temp_dir/fnox.toml"
     end
+    # fnox は fnox.local.toml もマージするため、存在すればコピーして本来のマージ結果に合わせる
+    if test -f fnox.local.toml
+        cp fnox.local.toml "$temp_dir/fnox.local.toml"
+    end
 
     set -l prompt_auth true
     if functions -q __fnox_preauth_1password
@@ -50,6 +54,9 @@ function __fenv_load_fnox
         string match -qr '^[A-Za-z_][A-Za-z0-9_]*=' -- "$line"; or continue
         set -l key (string split -m1 '=' -- "$line")[1]
         set -l val (string split -m1 '=' -- "$line")[2]
+        # KEY="value" / KEY='value' 形式で出力された場合に備えてクォートを除去する
+        set val (string trim -c '"' -- $val)
+        set val (string trim -c "'" -- $val)
         set -gx $key "$val"
     end
 end

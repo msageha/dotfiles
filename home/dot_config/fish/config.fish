@@ -125,8 +125,14 @@ if test -d $HOME/.orbstack/shell
 end
 
 # --- Starshipの設定 ---
-if type -q starship
-    starship init fish | source
+# mise activate (fish) の PATH 反映は fish_prompt 時のため、fresh シェルでは
+# type -q が失敗しうる。direnv と同様に mise which でフォールバックする
+set -l starship_bin (command -v starship 2>/dev/null)
+if test -z "$starship_bin"; and type -q mise
+    set starship_bin (mise which starship 2>/dev/null)
+end
+if test -n "$starship_bin"
+    "$starship_bin" init fish | source
 end
 
 # --- Xcodeの設定 ---
@@ -153,11 +159,22 @@ end
 # --- AWS CLI / aws-sso-cliの補完初期化 ---
 # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fish の
 # completions/*.fish 自動ロード (コマンド名一致が必須) には乗せず直接 source する。
-if type -q aws_completer
+# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする。
+# aws_completer は補完実行時 (プロンプト表示後 = PATH 反映済み) に名前解決されるので、
+# 登録判定のみフォールバックし、補完本体はコマンド名のまま呼び出す。
+set -l aws_completer_bin (command -v aws_completer 2>/dev/null)
+if test -z "$aws_completer_bin"; and type -q mise
+    set aws_completer_bin (mise which aws_completer 2>/dev/null)
+end
+if test -n "$aws_completer_bin"
     complete --command aws --no-files --arguments '(begin; set --local --export COMP_SHELL fish; set --local --export COMP_LINE (commandline); aws_completer | string trim --right; end)'
 end
-if type -q aws-sso
-    aws-sso setup completions --source --shell fish | source
+set -l aws_sso_bin (command -v aws-sso 2>/dev/null)
+if test -z "$aws_sso_bin"; and type -q mise
+    set aws_sso_bin (mise which aws-sso 2>/dev/null)
+end
+if test -n "$aws_sso_bin"
+    "$aws_sso_bin" setup completions --source --shell fish | source
 end
 
 # --- 1Password CLI のデフォルトアカウント ---
@@ -245,11 +262,21 @@ if not set -q GITHUB_PERSONAL_ACCESS_TOKEN; and type -q gh
 end
 
 # --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
-if type -q fzf
-    fzf --fish | source
+# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする
+set -l fzf_bin (command -v fzf 2>/dev/null)
+if test -z "$fzf_bin"; and type -q mise
+    set fzf_bin (mise which fzf 2>/dev/null)
+end
+if test -n "$fzf_bin"
+    "$fzf_bin" --fish | source
 end
 
 # --- zoxideの初期化 (z / zi コマンド) ---
-if type -q zoxide
-    zoxide init fish | source
+# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする
+set -l zoxide_bin (command -v zoxide 2>/dev/null)
+if test -z "$zoxide_bin"; and type -q mise
+    set zoxide_bin (mise which zoxide 2>/dev/null)
+end
+if test -n "$zoxide_bin"
+    "$zoxide_bin" init fish | source
 end

@@ -1,12 +1,14 @@
 function fzf_load_env
-    set -l env_files (find . -maxdepth 1 -name ".*.env" 2>/dev/null)
+    # 素の .env と .<name>.env の両方に一致させる。-o は暗黙の -a より結合が弱いため括弧でグルーピングする
+    set -l env_files (find . -maxdepth 1 \( -name ".env" -o -name ".*.env" \) 2>/dev/null)
 
     if test (count $env_files) -eq 0
         echo "No .env files found in the current directory."
         return
     end
 
-    set -l env_file (echo $env_files | fzf)
+    # echo だとリストがスペース連結で 1 行になるため、1 要素 1 行で fzf へ渡す
+    set -l env_file (printf '%s\n' $env_files | fzf)
 
     if test -n "$env_file"
         echo "Loading $env_file"
