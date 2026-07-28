@@ -71,9 +71,11 @@ jobs:
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
         run: chezmoi apply --source=${{ github.workspace }}
-      # bats もローカル (mise.toml) と同一バージョンに pin する (npm registry から導入)
+      # bats もローカル (mise.toml) と同一バージョンに pin する (npm registry から導入)。
+      # ubuntu runner の npm グローバル領域は root 所有のため、sudo を避けて
+      # ユーザー prefix (~/.local/bin は Install chezmoi step で PATH 追加済み) に入れる
       - name: Install bats
-        run: npm install -g bats@1.13.0
+        run: npm install -g --prefix "$HOME/.local" bats@1.13.0
       - name: Run bats tests
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
