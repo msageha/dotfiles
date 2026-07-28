@@ -43,8 +43,9 @@ Windows は `skip_windows_extras`。
 `run_once_*` スクリプト・`data.apiKeys` の生成条件が横断的に参照する。
 テンプレートで参照するときは、キー未定義の旧 config でも動くよう
 `dig "skip_cli_tools" false .` のフォールバック形を使う (既定 false = 全部入り)。
-例外: mise の言語ランタイム (go / java / node / pnpm) は dig 既定 true で、
-`skip_cli_tools=false` を明示した環境でのみインストールする。
+例外: `dot_config/mise/config.toml.tmpl` の言語ランタイム (go / java / node / pnpm)・LSP サーバー群と、
+macOS 限定のクラウド / 開発 CLI 群 (awscli / aws-sso / flutter / gcloud / kubectl / stern /
+terraform / terragrunt) は dig 既定 true で、`skip_cli_tools=false` を明示した環境でのみインストールする。
 
 ## コマンド (mise tasks)
 
@@ -55,6 +56,10 @@ Windows は `skip_windows_extras`。
 - `mise run pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
 - `mise run test` — `bats -r tests/`
 - `mise run build-ubuntu` など `build-*` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)
+- `mise run decrypt-google-ime` / `encrypt-google-ime` — Google IME 辞書の復号・再暗号化。
+  リポジトリは age 暗号化 (単一共有鍵、`home/.chezmoi.toml.tmpl`) を使い、辞書は
+  `settings/common/encrypted_google.ime.txt.age` で管理。平文 `google.ime.txt` は gitignore 済みで、
+  編集後は encrypt タスクで再暗号化してからコミットする。
 
 ## 検証
 
