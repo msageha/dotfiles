@@ -164,7 +164,7 @@ steps:
       - --platform=linux/amd64
       - --build-arg=BASE_IMAGE=${_GPU_BASE_IMAGE}
       - --build-arg=SKIP_CLI_TOOLS=false
-      - --build-arg=SKIP_GUI_TOOLS=false
+      - --build-arg=SKIP_GUI_TOOLS=true
       - --tag=${_IMAGE_NAME}:ubuntu-gpu
       - --provenance=false
       - --push

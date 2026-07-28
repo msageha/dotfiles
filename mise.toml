@@ -121,7 +121,7 @@ run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.3.0-base-ubuntu26.04 fals
 # Alpine は musl 環境のため最小構成 (skip_cli_tools=true) でビルドする。
 [tasks.build-alpine]
 description = "Alpine / 最小"
-run = "mise run docker-build alpine alpine:latest true docker/Dockerfile.alpine"
+run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 
 # buildx ビルダー (mybuilder) を用意して有効化する。
 [tasks.buildx-setup]
@@ -136,15 +136,15 @@ else
 fi
 '''
 
-# GPU (amd64 のみ) と GUI フル構成 (ubuntu-full) を除く 6 バリアントを
-# amd64/arm64 マルチアーキでビルドし registry に push する。
+# GPU (amd64 のみ) を除く 6 バリアントを amd64/arm64 マルチアーキでビルドし
+# registry に push する (GUI フル構成の ubuntu-full は cloudbuild.yaml 専用でローカルタスクに無い)。
 [tasks.build-multi-platform]
-description = "全バリアントのマルチアーキビルド + push"
+description = "GPU を除く 6 バリアントのマルチアーキビルド + push"
 depends = ["buildx-setup"]
 run = '''
 #!/usr/bin/env bash
 set -euo pipefail
-mise run docker-build-multi alpine alpine:latest true docker/Dockerfile.alpine
+mise run docker-build-multi alpine alpine:3.24 true docker/Dockerfile.alpine
 mise run docker-build-multi ubuntu-min ubuntu:26.04 true
 mise run docker-build-multi ubuntu ubuntu:26.04 false
 mise run docker-build-multi debian-min debian:trixie true

@@ -22,6 +22,10 @@ concurrency:
 
 jobs:
   mise-lock:
+    # fork からの PR は head ref が base リポジトリに存在せず checkout の時点で失敗し、
+    # GITHUB_TOKEN でも push できないため job ごとスキップする。
+    # schedule / workflow_dispatch は event_name != 'pull_request' なので常に実行される。
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

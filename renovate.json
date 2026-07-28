@@ -87,9 +87,11 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "chezmoi workflow のインストーラ tag (sh / ps1) を mise.toml の chezmoi pin と同じグループ PR で追従させる",
+      "description": "chezmoi workflow (sh / ps1) と Dockerfile のインストーラ tag を mise.toml の chezmoi pin と同じグループ PR で追従させる",
       "managerFilePatterns": [
-        "/^\\.github/workflows/chezmoi\\.yaml$/"
+        "/^\\.github/workflows/chezmoi\\.yaml$/",
+        "/^docker/Dockerfile\\.debian$/",
+        "/^docker/Dockerfile\\.alpine$/"
       ],
       "matchStrings": [
         "get\\.chezmoi\\.io\\)\" -- -b \"\\$HOME/\\.local/bin\" -t v(?<currentValue>[\\d.]+)",
@@ -164,11 +166,17 @@
     },
     {
       "customType": "regex",
+      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd の base: / mise.toml の docker-build 引数 / cloudbuild.yaml の BASE_IMAGE と _GPU_BASE_IMAGE)",
       "managerFilePatterns": [
-        "/^\\.github/workflows/docker-image-cd\\.yaml$/"
+        "/^\\.github/workflows/docker-image-cd\\.yaml$/",
+        "/^mise\\.toml$/",
+        "/^cloudbuild\\.yaml$/"
       ],
       "matchStrings": [
-        "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n"
+        "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n",
+        "mise run docker-build(?:-multi)? [\\w-]+ (?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)",
+        "--build-arg=BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n",
+        "_GPU_BASE_IMAGE: \"(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\""
       ],
       "datasourceTemplate": "docker"
     },
