@@ -36,11 +36,6 @@ jobs:
         with:
           persist-credentials: false
       # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
-      # バージョンは Renovate の custom manager が mise.toml の pin と同じグループ PR で追従する。
-      # NOTE: mise-action + mise exec/shims 経由で chezmoi apply を実行すると、mise の
-      # セッション環境が run_once 内の nested mise install (go backend) と干渉し、
-      # GOROOT / PATH が runner 同梱 go と混線してビルドに失敗するため使わない
-      # (macos-latest で実測。symlink で実体バイナリを呼んでも mise-action の残す環境で再現)
       - name: Install chezmoi
         run: |
           sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1
