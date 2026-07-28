@@ -35,21 +35,15 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      # curl | sh の未検証インストールではなく SHA pin した mise-action を使い、
-      # mise.toml の pin (chezmoi / bats) と mise.lock の checksum 検証つきで
-      # ローカルと同一バージョンのツールを導入する
-      - name: Install mise
-        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
-        with:
-          cache: true
-      # chezmoi は mise exec / shim 経由ではなく実体バイナリを直接呼ぶ。
-      # mise セッション環境の下で chezmoi apply を実行すると、run_once 内の
-      # nested mise install (go backend) で GOROOT / PATH が runner 同梱 go と
-      # 混線してビルドに失敗した実績があるため (macos-latest で実測)
-      - name: Expose chezmoi outside the mise session
+      # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
+      # バージョンは Renovate の custom manager が mise.toml の pin と同じグループ PR で追従する。
+      # NOTE: mise-action + mise exec/shims 経由で chezmoi apply を実行すると、mise の
+      # セッション環境が run_once 内の nested mise install (go backend) と干渉し、
+      # GOROOT / PATH が runner 同梱 go と混線してビルドに失敗するため使わない
+      # (macos-latest で実測。symlink で実体バイナリを呼んでも mise-action の残す環境で再現)
+      - name: Install chezmoi
         run: |
-          mkdir -p "$HOME/.local/bin"
-          ln -s "$(mise which chezmoi)" "$HOME/.local/bin/chezmoi"
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
@@ -77,6 +71,9 @@ jobs:
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
         run: chezmoi apply --source=${{ github.workspace }}
+      # bats もローカル (mise.toml) と同一バージョンに pin する (npm registry から導入)
+      - name: Install bats
+        run: npm install -g bats@1.13.0
       - name: Run bats tests
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
@@ -86,7 +83,7 @@ jobs:
           # shellcheck disable=SC1090
           source ~/.bash_profile
           set -e
-          mise run test
+          bats -r tests/
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       - name: Cancel the entire run on failure
@@ -102,13 +99,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      # unix job と違い mise-action を使わない例外: mise.toml のツール群 (hadolint 等) は
-      # Windows で未検証のため、公式インストーラで chezmoi のみ導入する (バージョンは最新追従)
+      # unix job と同様、ローカル (mise.toml) と同一バージョンに -t で pin して導入する
       - name: Install chezmoi
         shell: powershell
         run: |
           $chezmoiBin = Join-Path $HOME '.local\bin'
-          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin'"
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.71.1'"
           Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
       - name: Pre-configure chezmoi
         shell: powershell

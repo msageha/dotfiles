@@ -87,6 +87,32 @@
   "customManagers": [
     {
       "customType": "regex",
+      "description": "chezmoi workflow のインストーラ tag (sh / ps1) を mise.toml の chezmoi pin と同じグループ PR で追従させる",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/chezmoi\\.yaml$/"
+      ],
+      "matchStrings": [
+        "get\\.chezmoi\\.io\\)\" -- -b \"\\$HOME/\\.local/bin\" -t v(?<currentValue>[\\d.]+)",
+        "get\\.chezmoi\\.io/ps1'\\)} -b '\\$chezmoiBin' -t 'v(?<currentValue>[\\d.]+)'"
+      ],
+      "depNameTemplate": "twpayne/chezmoi",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi workflow の bats pin を npm datasource で追従させる",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/chezmoi\\.yaml$/"
+      ],
+      "matchStrings": [
+        "npm install -g bats@(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "bats",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
       "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/claude\\.json$/",
