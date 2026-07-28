@@ -68,12 +68,19 @@ jobs:
         run: chezmoi apply --source=${{ github.workspace }}
       # bats は mise.toml の pin + mise.lock の checksum 検証つきで mise 経由で導入・実行する。
       # mise セッション環境は apply 内の nested mise install (go backend) と干渉するため、
-      # mise-action は chezmoi apply より後に置く
+      # mise-action は chezmoi apply より後に置く。
+      # また apply が書いた user 側 config (~/.config/mise/config.toml) は mise.lock に無い
+      # ツールを含み lockfile 強制で解決に失敗するため、MISE_CONFIG_DIR を空の場所へ
+      # 退避して repo の mise.toml のみを対象にする
       - name: Install mise
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
         with:
           cache: true
+        env:
+          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
       - name: Run bats tests
+        env:
+          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
           # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
