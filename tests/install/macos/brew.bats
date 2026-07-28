@@ -19,7 +19,7 @@ function setup() {
     installed="$(brew list --formula -1 2>/dev/null; brew list --cask -1 2>/dev/null)"
 
     local missing=()
-    local packages=("${formulae_base[@]}" "${formulae[@]}" "${casks[@]}")
+    local packages=("${formulae_base[@]}" "${formulae[@]}" "${casks_coding_agents[@]}" "${casks[@]}")
     for package in "${packages[@]}"; do
         # Handle tap prefix (e.g. "satococoa/tap/wtp" -> "wtp")
         local name="${package##*/}"
@@ -44,5 +44,16 @@ function setup() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Skipping formula tools"* ]]
     [[ "$output" != *"Installing formula packages"* ]]
+    [[ "$output" != *"Installing coding agent casks"* ]]
+    [[ "$output" != *"Installing cask packages"* ]]
+}
+
+@test "[macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
+    # CLI あり GUI なし構成でも coding agent は Debian 側 (coding_agent.sh) と同様に導入する。
+    # CI では cask 全体が early return するため、CI を外して gating 自体を検証する。
+    run env -u CI SKIP_CLI_TOOLS=false SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installing coding agent casks"* ]]
+    [[ "$output" == *"Skipping cask packages"* ]]
     [[ "$output" != *"Installing cask packages"* ]]
 }

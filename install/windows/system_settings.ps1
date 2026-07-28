@@ -116,7 +116,14 @@ function Enable-DeveloperMode {
     # HKLM への書き込みが必要なため、既に有効なら何もせず、未昇格なら UAC 昇格して 1 回だけ設定する
     # (毎回 UAC ダイアログが出ると煩わしいため、まず現在値を読み取って判定する)。
     $path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
-    $current = (Get-ItemProperty -Path $path -Name 'AllowDevelopmentWithoutDevLicense' -ErrorAction SilentlyContinue).AllowDevelopmentWithoutDevLicense
+    # StrictMode ではキー/値が無いときの $null へのプロパティ参照が throw するため、
+    # Get-ItemPropertyValue の失敗を「未設定」として扱う
+    try {
+        $current = Get-ItemPropertyValue -Path $path -Name 'AllowDevelopmentWithoutDevLicense' -ErrorAction Stop
+    }
+    catch {
+        $current = $null
+    }
     if ($current -eq 1) {
         Write-Step '開発者モードは既に有効なため、スキップします。'
         return

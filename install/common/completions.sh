@@ -154,7 +154,9 @@ function zsh_completions() {
         pids+=($!); names+=("kubectl")
     fi
     if command -v ngrok &>/dev/null; then
-        gen_completion ngrok ngrok completion > "$comp_dir/_ngrok" &
+        # ngrok completion は $SHELL で出力形式を切り替えるため、実行シェルに依存しないよう
+        # zsh を明示する (zsh_completions は zsh 存在時のみ呼ばれるので command -v は必ず通る)
+        gen_completion ngrok env SHELL="$(command -v zsh)" ngrok completion > "$comp_dir/_ngrok" &
         pids+=($!); names+=("ngrok")
     fi
     if command -v bat &>/dev/null; then

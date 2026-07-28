@@ -16,9 +16,19 @@ function has_privilege() {
     sudo -v 2>/dev/null || sudo -n true 2>/dev/null
 }
 
+# root では sudo を介さず直接実行する (sudo 未導入の root 環境で command not found に
+# ならないようにする。has_privilege は root を許可するため実行系も root に対応させる)。
+function run_privileged() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 function update() {
     printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
-    sudo apt -yq update
+    run_privileged apt -yq update
 }
 
 # Docker など非ネイティブ環境では推奨パッケージを入れずイメージを軽量化する
@@ -41,13 +51,6 @@ apt_base=(
     # SKIP_CLI_TOOLS の値に関係なく base に必要 (apk_base と同じ扱い)
     git
 )
-
-# software-properties-common (add-apt-repository を提供) は Ubuntu の PPA 追加
-# (install/ubuntu/fastfetch.sh) でのみ使う。Debian trixie 以降は同パッケージが
-# 公式リポジトリから削除されているため、Ubuntu のときだけ base に加える。
-if [ "$(. /etc/os-release && echo "${ID:-}")" = "ubuntu" ]; then
-    apt_base+=(software-properties-common)
-fi
 
 apt_tools=(
     build-essential
@@ -73,18 +76,19 @@ apt_tools=(
 
 function install_base() {
     printf "%b\n" "${BLUE}Installing base APT packages...${NC}"
-    sudo apt install -yq "${apt_install_opts[@]}" "${apt_base[@]}"
+    run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_base[@]}"
 }
 
 function install_tools() {
     printf "%b\n" "${BLUE}Installing APT tool packages...${NC}"
-    sudo apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
+    run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
 }
 
 function install_chezmoi() {
     printf "%b\n" "${BLUE}Installing chezmoi...${NC}"
     if ! command -v chezmoi &>/dev/null; then
-        sh -c "$(curl -fsLS get.chezmoi.io)"
+        # インストール先を明示する (未指定だと ./bin に落ちる)。docker/Dockerfile.debian と同形式
+        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
     else
         printf "%b\n" "${BLUE}chezmoi is already installed.${NC}"
     fi
@@ -98,8 +102,8 @@ function install_docker() {
     fi
     printf "%b\n" "${BLUE}Installing Docker...${NC}"
     if ! command -v docker &>/dev/null; then
-        curl -fsSL https://get.docker.com | sudo sh
-        sudo usermod -aG docker "$USER"
+        curl -fsSL https://get.docker.com | run_privileged sh
+        run_privileged usermod -aG docker "$USER"
     else
         printf "%b\n" "${BLUE}Docker is already installed.${NC}"
     fi
@@ -112,15 +116,15 @@ function upgrade() {
     fi
 
     printf "%b\n" "${BLUE}Upgrading APT packages...${NC}"
-    sudo apt -yq upgrade
+    run_privileged apt -yq upgrade
 }
 
 function clean() {
     printf "%b\n" "${BLUE}Cleaning up APT...${NC}"
-    sudo apt -yq autoremove
-    sudo apt -yq autoclean
-    sudo apt -yq clean
-    sudo rm -rf /var/lib/apt/lists/*
+    run_privileged apt -yq autoremove
+    run_privileged apt -yq autoclean
+    run_privileged apt -yq clean
+    run_privileged rm -rf /var/lib/apt/lists/*
 }
 
 function main() {

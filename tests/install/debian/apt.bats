@@ -67,3 +67,17 @@ function setup() {
     [ "$status" -eq 0 ]
     [[ "$output" != *"sudo should not be called"* ]]
 }
+
+@test "[debian] apt - run_privileged executes directly as root" {
+    # root では sudo 未導入でも各操作が 127 にならないよう、sudo を介さず直接実行する。
+    run bash -c 'id() { echo 0; }; sudo() { echo "sudo should not be called"; return 127; }; source '"${SCRIPT_PATH}"'; run_privileged echo ok'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ok"* ]]
+    [[ "$output" != *"sudo should not be called"* ]]
+}
+
+@test "[debian] apt - run_privileged uses sudo for non-root" {
+    run bash -c 'id() { echo 1000; }; sudo() { echo "via sudo: $*"; }; source '"${SCRIPT_PATH}"'; run_privileged echo ok'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"via sudo: echo ok"* ]]
+}

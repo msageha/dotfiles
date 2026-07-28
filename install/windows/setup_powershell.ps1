@@ -132,14 +132,18 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$
 }
 
 function Set-ProfileStarshipBlock([string]$ProfilePath) {
-    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
+    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化。
+    # starship の導入失敗/未導入時にプロファイル読み込みごとエラーにならないよう、
+    # Dracula ブロックと同様に Get-Command でガードする
     Set-ProfileManagedBlock $ProfilePath `
         '# >>> chezmoi starship (managed) >>>' `
         '# <<< chezmoi starship (managed) <<<' `
         @(
             '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
             '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-            'Invoke-Expression (&starship init powershell)'
+            'if (Get-Command starship -ErrorAction SilentlyContinue) {'
+            '    Invoke-Expression (&starship init powershell)'
+            '}'
         )
 }
 

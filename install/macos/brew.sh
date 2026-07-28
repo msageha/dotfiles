@@ -10,7 +10,12 @@ function install_brew() {
     if ! command -v brew &>/dev/null; then
         printf "%b\n" "${BLUE}Installing Homebrew...${NC}"
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        eval "$(/opt/homebrew/bin/brew shellenv)"
+        # brew の prefix は Apple Silicon (/opt/homebrew) と Intel (/usr/local) で異なる
+        if [[ -x /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [[ -x /usr/local/bin/brew ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
     else
         printf "%b\n" "${BLUE}Homebrew is already installed.${NC}"
     fi
@@ -57,17 +62,23 @@ formulae=(
     wget
 )
 
+# coding agent casks — 配布形態が cask なだけで実体は CLI ツールのため、
+# Debian 側 (install/debian/coding_agent.sh) と同じく SKIP_CLI_TOOLS で gating する
+# (SKIP_GUI_TOOLS=true の CLI 専用構成でも導入する)。
+casks_coding_agents=(
+    antigravity-cli
+    claude-code
+    codex
+)
+
 # Cask (GUI アプリ) — CI ではインストールしない。SKIP_GUI_TOOLS=true でもスキップする
 casks=(
     1password
     1password-cli
     android-studio
-    antigravity-cli
     bettertouchtool
     chatgpt
     claude
-    claude-code
-    codex
     cyberduck
     datagrip
     discord
@@ -110,6 +121,14 @@ function install() {
         printf "%b\n" "${BLUE}CI 環境のため cask のインストールをスキップします。${NC}"
         return 0
     fi
+
+    if [ "$SKIP_CLI_TOOLS" = "true" ]; then
+        printf "%b\n" "${BLUE}Skipping coding agent casks (SKIP_CLI_TOOLS=true).${NC}"
+    else
+        printf "%b\n" "${BLUE}Installing coding agent casks...${NC}"
+        brew install --cask "${casks_coding_agents[@]}"
+    fi
+
     if [ "$SKIP_GUI_TOOLS" = "true" ]; then
         printf "%b\n" "${BLUE}Skipping cask packages (SKIP_GUI_TOOLS=true).${NC}"
         return 0
