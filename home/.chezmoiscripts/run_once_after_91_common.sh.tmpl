@@ -3,17 +3,10 @@
 set -e
 
 {{ if eq .chezmoi.os "linux" -}}
-# mise (と debian 系では claude 等) が ~/.local/bin に入るため、Alpine 含む linux 全般で
-# 後続 include が参照できるよう PATH を通す (ログインシェルに無い初回マシン対策)
 export PATH="$HOME/.local/bin:$PATH"
 {{ end -}}
 {{ if eq .chezmoi.os "darwin" -}}
-# Homebrew の prefix は Apple Silicon (/opt/homebrew) と Intel (/usr/local) で異なる
-if [ -x /opt/homebrew/bin/brew ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [ -x /usr/local/bin/brew ]; then
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
 {{ end -}}
 
 export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }}
@@ -55,6 +48,4 @@ eval "$(mise activate bash --shims)"
 )
 {{ end -}}
 
-# fish の設定ファイルのキャッシュを削除する
-rm -f "$HOME/.cache/fish/config.fish"
 {{ end -}}

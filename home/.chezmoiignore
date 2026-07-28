@@ -7,8 +7,6 @@
 !.ssh/config
 {{ end }}
 
-# technoface / sakanaai の identity は .gitconfig の includeIf が darwin 限定
-# (dot_gitconfig.tmpl) のため、参照されない非 darwin では展開しない
 {{ if ne .chezmoi.os "darwin" }}
 .gitconfig.technoface.gitlab
 .gitconfig.sakanaai.github
@@ -66,10 +64,6 @@
 !.claude/skills
 !.claude/skills/**
 {{ else }}
-{{- /* gws-* skills は gws CLI (Homebrew の googleworkspace-cli) 前提のため macOS 以外では
-     展開しない。`!` (whitelist) は記載順に関係なく ignore パターンより常に優先されるため、
-     包括的な `!.claude/skills/**` があると下の .claude/skills/gws-* の ignore が空振りする。
-     非 darwin では source の skills ディレクトリを列挙し、gws-* 以外だけを個別に whitelist する */}}
 !.claude/skills
 {{- range glob (joinPath .chezmoi.sourceDir "dot_claude/skills/*") }}
 {{- $name := base . }}
@@ -82,8 +76,7 @@
 !.claude/rules
 !.claude/rules/**
 {{ end }}
-# gws-* skills 本体の ignore (非 darwin では上の分岐が gws-* を whitelist しないため有効に働く)。
-# ディレクトリ単体のパターンだけでは中身に効かないことがあるため /** も併記する
+{{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない。 */}}
 {{ if ne .chezmoi.os "darwin" }}
 .claude/skills/gws-*
 .claude/skills/gws-*/**
@@ -92,9 +85,6 @@
 {{ if $skipCodingAgent }}
 .claude.json
 {{ end }}
-# ~/.config/agents/AGENTS.md (エージェント共通規約) も他のコーディングエージェント設定と
-# 同じ gate で除外する。Windows ブロックが .config/* を個別 ignore する方式のため、
-# skip しない Windows では従来どおり展開される
 {{ if $skipCodingAgent }}
 .config/agents
 .config/agents/**

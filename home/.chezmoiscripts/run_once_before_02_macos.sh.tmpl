@@ -13,8 +13,6 @@ export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 
 # GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
 if [ -z "${CI:-}" ]; then
-{{- /* promptStringOnce のユーザー入力。二重引用符 (quote) だと $ やバッククォートが
-     シェル展開されるため、単一引用符 + 内部シングルクォートのエスケープで literal にする */}}
 export COMPUTER_NAME={{ .computer_name | replace "'" "'\\''" | squote }}
 {{   include "../install/macos/system_settings.sh" }}
 {{   if not (dig "skip_gui_tools" false .) -}}

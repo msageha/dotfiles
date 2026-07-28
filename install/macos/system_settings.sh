@@ -152,8 +152,7 @@ function wallpaper_settings() {
     printf "%b\n" "${BLUE}壁紙の設定を行っています...${NC}"
     # Draculaテーマの壁紙をダウンロードして設定
     mkdir -p "$HOME/Pictures"
-    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする。
-    # upstream の改変・削除の影響を受けないよう master ではなく commit SHA に固定する
+    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
     if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/macos.png" --output "$HOME/Pictures/wallpaper.png"; then
         printf "%b\n" "${RED}壁紙のダウンロードに失敗しました。スキップします。${NC}"
         return 0

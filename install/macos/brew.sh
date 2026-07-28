@@ -10,12 +10,7 @@ function install_brew() {
     if ! command -v brew &>/dev/null; then
         printf "%b\n" "${BLUE}Installing Homebrew...${NC}"
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        # brew の prefix は Apple Silicon (/opt/homebrew) と Intel (/usr/local) で異なる
-        if [[ -x /opt/homebrew/bin/brew ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        elif [[ -x /usr/local/bin/brew ]]; then
-            eval "$(/usr/local/bin/brew shellenv)"
-        fi
+        eval "$(/opt/homebrew/bin/brew shellenv)"
     else
         printf "%b\n" "${BLUE}Homebrew is already installed.${NC}"
     fi
@@ -62,9 +57,7 @@ formulae=(
     wget
 )
 
-# coding agent casks — 配布形態が cask なだけで実体は CLI ツールのため、
-# Debian 側 (install/debian/coding_agent.sh) と同じく SKIP_CLI_TOOLS で gating する
-# (SKIP_GUI_TOOLS=true の CLI 専用構成でも導入する)。
+# coding agent casks — 配布形態が cask なだけで実体は CLI ツールのため
 casks_coding_agents=(
     antigravity-cli
     claude-code

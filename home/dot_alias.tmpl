@@ -3,8 +3,6 @@
 {{ if eq .chezmoi.os "darwin" -}}
 alias chrome='open -a "Google Chrome"'
 {{ end -}}
-{{- /* settings.fusion.json は .chezmoiignore の skipCodingAgent gate で展開されないことが
-     あるため、同じ条件 (or の算出式も合わせる) で alias も gate する */}}
 {{ if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) -}}
 alias claude-fusion='claude --settings ~/.claude/settings.fusion.json --dangerously-skip-permissions'
 {{ end -}}

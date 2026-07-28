@@ -10,14 +10,10 @@ function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
-    # sudo -v は sudoers の verifypw=all 仕様により、パスワード必須のグループルール
-    # (%sudo 等) と NOPASSWD ルールが併存するユーザーで偽陰性になる。実行可否は
-    # last-match で決まるため、sudo -n true で実コマンドを probe してフォールバックする。
     sudo -v 2>/dev/null || sudo -n true 2>/dev/null
 }
 
-# root では sudo を介さず直接実行する (sudo 未導入の root 環境で command not found に
-# ならないようにする。has_privilege は root を許可するため実行系も root に対応させる)。
+# root では sudo を介さず直接実行する
 function run_privileged() {
     if [ "$(id -u)" -eq 0 ]; then
         "$@"

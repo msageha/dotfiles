@@ -55,7 +55,6 @@ USER ${USERNAME}
 
 # secret は BuildKit 既定で root 所有 0400 のため、非 root ユーザーが読めるよう mode=0444 を指定する
 # (GitHub のレート制限回避用トークン。未指定だと cat が権限拒否され匿名枠で 403 になる)。
-# chezmoi はローカル (mise.toml) / CI と同一バージョンに -t で pin して導入する。
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1 && \

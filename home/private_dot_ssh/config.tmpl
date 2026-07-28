@@ -5,8 +5,7 @@
 Include ~/.orbstack/ssh/config
 
 {{ end -}}
-# config.local (encrypted_config.local.age) は age 鍵があれば全 OS に展開されるため、
-# Include も OS 共通に置く。欠損した Include は黙って無視される。
+# age 鍵が無いと展開されないが、欠損した Include は黙って無視される。
 Include ~/.ssh/config.local
 
 Host github.com

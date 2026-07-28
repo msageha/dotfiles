@@ -22,9 +22,6 @@ function main
 
     fish_update_completions
 
-    # キャッシュ削除は best-effort だが、最後に置くと関数全体の status を上書きして
-    # fisher の失敗を握りつぶすため、終了ステータスは update の結果を明示的に返す
-    rm $HOME/.cache/fish/config.fish 2> /dev/null
     return $update_status
 end
 
