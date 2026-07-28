@@ -2,6 +2,10 @@
      Windows は .config/mise を展開しないため、delta が存在しない環境で
      core.pager が壊れないよう mise 側と同じ条件で gate する */ -}}
 {{- $useDelta := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
+{{- /* git-secrets のフックとテンプレートディレクトリは run_once_after_91_common.sh.tmpl →
+     install/common/git_secrets.sh で導入される。同スクリプトは Windows では走らず
+     (after_91 の OS gate)、導入自体も skip_cli_tools=false のときのみのため、同じ条件で gate する */ -}}
+{{- $useGitSecrets := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
 [ghq]
     root = ~/Works/src                    # GHQのルートディレクトリを指定
     shallow = true
@@ -12,6 +16,7 @@
 
 [init]
     defaultBranch = main                  # 新規リポジトリのデフォルトブランチ名を設定
+{{- if $useGitSecrets }}
     templatedir = ~/.git-templates/git-secrets
 
 [secrets]
@@ -21,6 +26,7 @@
     patterns = (\"|')?(AWS|aws|Aws)?_?(ACCOUNT|account|Account)_?(ID|id|Id)?(\"|')?\\s*(:|=>|=)\\s*(\"|')?[0-9]{4}\\-?[0-9]{4}\\-?[0-9]{4}(\"|')?
     allowed = AKIAIOSFODNN7EXAMPLE
     allowed = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+{{- end }}
 
 [core]
     editor = vim                          # デフォルトエディタをVimに設定
@@ -129,6 +135,8 @@
 [credential]
 {{- if eq .chezmoi.os "darwin" }}
     helper = osxkeychain
+{{- else if eq .chezmoi.os "windows" }}
+    helper = manager                      # Git Credential Manager (Git for Windows 標準。cache は unix ソケット前提で動かない)
 {{- else }}
     helper = cache --timeout=3600
 {{- end }}

@@ -1,7 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 set -e
-export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | quote }}
+export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }}
 {{   include "../install/macos/xcode_select.sh" }}
 
 export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
@@ -13,7 +13,9 @@ export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 
 # GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
 if [ -z "${CI:-}" ]; then
-export COMPUTER_NAME={{ .computer_name | quote }}
+{{- /* promptStringOnce のユーザー入力。二重引用符 (quote) だと $ やバッククォートが
+     シェル展開されるため、単一引用符 + 内部シングルクォートのエスケープで literal にする */}}
+export COMPUTER_NAME={{ .computer_name | replace "'" "'\\''" | squote }}
 {{   include "../install/macos/system_settings.sh" }}
 {{   if not (dig "skip_gui_tools" false .) -}}
 {{   include "../install/macos/app_settings.sh" }}

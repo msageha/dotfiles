@@ -3,15 +3,20 @@
 set -e
 
 {{ if eq .chezmoi.os "linux" -}}
-{{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
+# mise (と debian 系では claude 等) が ~/.local/bin に入るため、Alpine 含む linux 全般で
+# 後続 include が参照できるよう PATH を通す (ログインシェルに無い初回マシン対策)
 export PATH="$HOME/.local/bin:$PATH"
-{{   end -}}
 {{ end -}}
 {{ if eq .chezmoi.os "darwin" -}}
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew の prefix は Apple Silicon (/opt/homebrew) と Intel (/usr/local) で異なる
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 {{ end -}}
 
-export CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
+export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }}
 
 # 各 install スクリプトは色変数や main などの名前が重複するため subshell で隔離する。
 # ファイル間で必要な環境変数 (mise の PATH) は親で明示的に引き継ぐ。
