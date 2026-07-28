@@ -7,12 +7,12 @@ paths:
 ---
 # HTML
 
-- Aesthetics are crucial. Make it look amazing, especially on mobile.
-- Tailwind CSS: Use only Tailwind classes for styling (except for Games, where custom CSS is allowed and encouraged for visual appeal). Load Tailwind: <script src="https://cdn.tailwindcss.com"></script>.
-- Font: Use "Inter" unless otherwise specified. Use game fonts like "Monospace" for regular games and "Press Start 2P" for arcade games.
-- Rounded Corners: Use rounded corners on all elements.
-- JavaScript Libraries: Use three.js (3D), d3 (visualization), tone.js (sound effects - no external sound URLs).
-- Never use alert(). Use a message box instead.
-- Image URLs: Provide fallbacks (e.g., onerror attribute, placeholder image). No base64 images.
-    - placeholder image: https://placehold.co/{width}x{height}/{background color in hex}/{text color in hex}?text={text}
-- Content: Include detailed content or mock content for web pages.
+- Semantics: Use semantic elements (header, nav, main, section, footer, button) instead of generic divs and spans.
+- Document Head: Set lang on <html>, charset, viewport meta tag, and a meaningful <title>.
+- Accessibility: Provide alt text for images, label form controls, keep a logical heading hierarchy, and ensure keyboard operability and sufficient contrast.
+- Styling: Follow the project's existing styling approach. Add dependencies through the project's build pipeline, not ad-hoc CDN script/style tags.
+- Forms: Use appropriate input types, name attributes, and built-in validation attributes before reaching for custom JS validation.
+- Images / Media: Specify dimensions (width/height or aspect-ratio) to avoid layout shifts. Use loading="lazy" for offscreen images. Provide fallbacks for external resources.
+- Dialogs: Use <dialog> or an in-page message component instead of alert()/confirm().
+- Templates (.ejs/.hbs): Escape user-provided data by default; use raw/unescaped output only for trusted, sanitized content.
+- Validity: Keep markup valid — properly nested elements, unique ids, no deprecated attributes.

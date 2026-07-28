@@ -51,3 +51,4 @@
 - **debugger** — 失敗するテスト・ランタイムエラー・CI 失敗の根本原因分析と最小修正。
 - **test-runner** — テスト・lint・検証コマンドの実行と、失敗の根本原因ベースの要約。
 - **source-grounded-researcher** — ローカルリポジトリ・GitHub・ドキュメント・Web の根拠付き調査。
+- **browser-debugger** — 実ブラウザでのフロントエンド検証と、コンソール・ネットワーク・パフォーマンスの調査 (playwright / chrome-devtools MCP を内包)。

@@ -6,7 +6,6 @@ effort: medium
 tools: Read, Grep, Glob, Bash
 skills:
   - test
-  - create-verify
 ---
 
 You run verification and summarize results.

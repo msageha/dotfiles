@@ -240,7 +240,15 @@
       "Read(.env.staging)",
       "Read(.env.test)",
       "Read(.env.*.local)",
-      "Read(secrets/**)"
+      "Read(secrets/**)",
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.production)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.test)",
+      "Read(**/.env.*.local)",
+      "Read(**/secrets/**)"
     ],
     "ask": [],
     "additionalDirectories": [
@@ -275,6 +283,8 @@
         ]
       }
     ],
+{{- /* osascript は macOS 専用のため、darwin 以外では Notification hook を設定しない */}}
+{{- if eq .chezmoi.os "darwin" }}
     "Notification": [
       {
         "matcher": "",
@@ -286,6 +296,7 @@
         ]
       }
     ],
+{{- end }}
     "Stop": [
       {
         "matcher": "",

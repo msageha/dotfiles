@@ -1,7 +1,7 @@
 name = "browser_debugger"
 description = "Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues."
 model = "gpt-5.6-terra"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 You verify and debug web frontends in a real browser.
@@ -15,10 +15,10 @@ You verify and debug web frontends in a real browser.
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@latest"]
+args = ["-y", "@playwright/mcp@0.0.78"]
 startup_timeout_ms = 20_000
 
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@latest"]
+args = ["-y", "chrome-devtools-mcp@1.6.0"]
 startup_timeout_ms = 20_000
