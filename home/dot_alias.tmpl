@@ -3,4 +3,6 @@
 {{ if eq .chezmoi.os "darwin" -}}
 alias chrome='open -a "Google Chrome"'
 {{ end -}}
+{{ if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) -}}
 alias claude-fusion='claude --settings ~/.claude/settings.fusion.json --dangerously-skip-permissions'
+{{ end -}}

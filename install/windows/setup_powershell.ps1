@@ -139,7 +139,9 @@ function Set-ProfileStarshipBlock([string]$ProfilePath) {
         @(
             '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
             '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-            'Invoke-Expression (&starship init powershell)'
+            'if (Get-Command starship -ErrorAction SilentlyContinue) {'
+            '    Invoke-Expression (&starship init powershell)'
+            '}'
         )
 }
 

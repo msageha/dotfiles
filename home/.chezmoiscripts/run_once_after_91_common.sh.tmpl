@@ -3,15 +3,13 @@
 set -e
 
 {{ if eq .chezmoi.os "linux" -}}
-{{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
 export PATH="$HOME/.local/bin:$PATH"
-{{   end -}}
 {{ end -}}
 {{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 {{ end -}}
 
-export CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
+export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }}
 
 # 各 install スクリプトは色変数や main などの名前が重複するため subshell で隔離する。
 # ファイル間で必要な環境変数 (mise の PATH) は親で明示的に引き継ぐ。
@@ -50,6 +48,4 @@ eval "$(mise activate bash --shims)"
 )
 {{ end -}}
 
-# fish の設定ファイルのキャッシュを削除する
-rm -f "$HOME/.cache/fish/config.fish"
 {{ end -}}

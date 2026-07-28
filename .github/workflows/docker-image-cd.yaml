@@ -44,7 +44,7 @@ jobs:
             skip_cli_tools: "true"
             file: docker/Dockerfile.debian
           - tag: alpine
-            base: alpine:latest
+            base: alpine:3.24
             skip_cli_tools: "true"
             file: docker/Dockerfile.alpine
           - tag: ubuntu-gpu

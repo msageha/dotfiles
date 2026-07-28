@@ -31,3 +31,22 @@
         [ -d "${directory}" ]
     done
 }
+
+@test "[common] gws-* skills are not deployed on non-macOS" {
+    if [[ "$(uname)" == "Darwin" ]]; then
+        skip "gws-* skills are deployed only on macOS"
+    fi
+    # skip_cli_tools=true では .claude/skills 自体が管理対象外
+    # (.chezmoiignore の skipCodingAgent gate と同条件) のため、その場合は確認しない。
+    if [ "$(chezmoi execute-template '{{ dig "skip_cli_tools" false . }}' 2>/dev/null)" == "true" ]; then
+        skip "coding agent settings are not managed (skip_cli_tools=true)"
+    fi
+    # 個別 whitelist (.chezmoiignore の非 darwin 分岐) で gws-* 以外の skills は展開されること
+    echo "Checking ${HOME}/.claude/skills/commit"
+    [ -d "${HOME}/.claude/skills/commit" ]
+    # gws-* skills は展開されないこと (マッチが無ければ glob はリテラルのまま残り -e は偽になる)
+    for path in "${HOME}/.claude/skills/"gws-*; do
+        echo "Checking absence of ${path}"
+        [ ! -e "${path}" ]
+    done
+}

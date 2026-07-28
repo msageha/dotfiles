@@ -128,12 +128,23 @@ function Set-PowerToysSettings {
     }
 }
 
+function Get-UserChoiceProgId([string]$Path) {
+    # StrictMode ではキー/値が無いときの $null へのプロパティ参照が throw するため、
+    # Get-ItemPropertyValue の失敗を「未設定 ($null)」として扱う
+    try {
+        return Get-ItemPropertyValue -Path $Path -Name 'ProgId' -ErrorAction Stop
+    }
+    catch {
+        return $null
+    }
+}
+
 function Test-DefaultAppsAlreadySet {
     # UserChoice は「書き込み」はハッシュ保護されるが「読み取り」は誰でもできるため、
     # 既に望む状態になっているかはここで判定できる。7-Zip は拡張子ごとに ProgId を持つが、
     # .zip を代表として確認する (全拡張子を厳密に見るのはやり過ぎなので簡易判定とする)。
-    $browserProgId = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' -ErrorAction SilentlyContinue).ProgId
-    $zipProgId = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice' -ErrorAction SilentlyContinue).ProgId
+    $browserProgId = Get-UserChoiceProgId 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice'
+    $zipProgId = Get-UserChoiceProgId 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice'
 
     $browserIsChrome = $browserProgId -like 'ChromeHTML*'
     $zipIs7Zip = $zipProgId -like '7-Zip.*'

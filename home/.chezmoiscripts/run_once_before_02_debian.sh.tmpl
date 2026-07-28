@@ -5,14 +5,14 @@ set -e
 # coding_agent.sh が claude 等を ~/.local/bin へ入れるため、後続の claude_plugins.sh が
 # probe できるよう include 群より前に PATH を通す (ログインシェルに無い初回マシン対策)
 export PATH="$HOME/.local/bin:$PATH"
-export SKIP_CLI_TOOLS={{ .skip_cli_tools }}
+export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
 {{     include "../install/debian/apt.sh" }}
-{{     if not .skip_cli_tools -}}
+{{     if not (dig "skip_cli_tools" false .) -}}
 {{       include "../install/debian/coding_agent.sh" }}
 {{       include "../install/common/claude_plugins.sh" }}
 {{     end -}}
 {{     if eq .chezmoi.osRelease.id "ubuntu" -}}
-{{       if not .skip_gui_tools -}}
+{{       if not (dig "skip_gui_tools" false .) -}}
 {{         include "../install/ubuntu/apt_gui.sh" }}
 {{         include "../install/ubuntu/system_settings.sh" }}
 {{       end -}}

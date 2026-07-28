@@ -79,8 +79,12 @@ function wallpaper_settings() {
     local wallpaper_path="$HOME/Pictures/wallpaper.png"
     mkdir -p "$HOME/Pictures"
 
-    curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/ubuntu-2.png" \
-        --output "$wallpaper_path"
+    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
+    if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/ubuntu-2.png" \
+        --output "$wallpaper_path"; then
+        printf "%b\n" "${YELLOW}壁紙のダウンロードに失敗しました。スキップします。${NC}"
+        return 0
+    fi
 
     gset org.gnome.desktop.background picture-uri "file://${wallpaper_path}"
     gset org.gnome.desktop.background picture-uri-dark "file://${wallpaper_path}"

@@ -57,17 +57,21 @@ formulae=(
     wget
 )
 
+# coding agent casks — 配布形態が cask なだけで実体は CLI ツールのため
+casks_coding_agents=(
+    antigravity-cli
+    claude-code
+    codex
+)
+
 # Cask (GUI アプリ) — CI ではインストールしない。SKIP_GUI_TOOLS=true でもスキップする
 casks=(
     1password
     1password-cli
     android-studio
-    antigravity-cli
     bettertouchtool
     chatgpt
     claude
-    claude-code
-    codex
     cyberduck
     datagrip
     discord
@@ -110,6 +114,14 @@ function install() {
         printf "%b\n" "${BLUE}CI 環境のため cask のインストールをスキップします。${NC}"
         return 0
     fi
+
+    if [ "$SKIP_CLI_TOOLS" = "true" ]; then
+        printf "%b\n" "${BLUE}Skipping coding agent casks (SKIP_CLI_TOOLS=true).${NC}"
+    else
+        printf "%b\n" "${BLUE}Installing coding agent casks...${NC}"
+        brew install --cask "${casks_coding_agents[@]}"
+    fi
+
     if [ "$SKIP_GUI_TOOLS" = "true" ]; then
         printf "%b\n" "${BLUE}Skipping cask packages (SKIP_GUI_TOOLS=true).${NC}"
         return 0

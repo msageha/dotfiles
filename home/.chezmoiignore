@@ -7,6 +7,11 @@
 !.ssh/config
 {{ end }}
 
+{{ if ne .chezmoi.os "darwin" }}
+.gitconfig.technoface.gitlab
+.gitconfig.sakanaai.github
+{{ end }}
+
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
 # git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける。
 {{ if eq .chezmoi.os "windows" }}
@@ -55,13 +60,23 @@
 !.claude/statusline-command.sh
 !.claude/agents
 !.claude/agents/**
+{{ if eq .chezmoi.os "darwin" }}
 !.claude/skills
 !.claude/skills/**
+{{ else }}
+!.claude/skills
+{{- range glob (joinPath .chezmoi.sourceDir "dot_claude/skills/*") }}
+{{- $name := base . }}
+{{- if not (hasPrefix "gws-" $name) }}
+!.claude/skills/{{ $name }}
+!.claude/skills/{{ $name }}/**
+{{- end }}
+{{- end }}
+{{ end }}
 !.claude/rules
 !.claude/rules/**
 {{ end }}
-# gws-* skills は gws CLI (Homebrew の googleworkspace-cli) 前提のため macOS 以外では展開しない。
-# ディレクトリ単体のパターンだけでは中身に効かないことがあるため /** も併記する
+{{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない。 */}}
 {{ if ne .chezmoi.os "darwin" }}
 .claude/skills/gws-*
 .claude/skills/gws-*/**
@@ -69,6 +84,10 @@
 # .claude.json (Claude MCP 設定) も skip_coding_agent=true のとき除外する
 {{ if $skipCodingAgent }}
 .claude.json
+{{ end }}
+{{ if $skipCodingAgent }}
+.config/agents
+.config/agents/**
 {{ end }}
 # Ignore everything under .codex/ by default
 .codex/*

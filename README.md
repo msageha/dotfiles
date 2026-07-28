@@ -172,7 +172,10 @@ docker container run -it msageha/dotfiles:ubuntu
 | `mise run build-alpine`          | `alpine`          | Alpine / 最小                    |
 | `mise run build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
 
-マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` / `mise run push`。CI では `cloudbuild.yaml` が Artifact Registry へ push する。
+マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` / `mise run push`。CD のレジストリは役割分担している:
+
+- **Artifact Registry** — `cloudbuild.yaml` (Cloud Build) が push する。GUI フル構成の `ubuntu-full` と、`ubuntu` の別名である `latest` タグを含む。
+- **DockerHub** — `.github/workflows/docker-image-cd.yaml` が main への push を契機に 7 バリアントを multi-arch (GPU は amd64 のみ) でビルドして push する。`latest` は更新しない。
 
 ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。
 
@@ -219,6 +222,16 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 
 依存関係 (GitHub Actions・mise.toml のツール・ベースイメージ等) の更新は [Renovate](https://docs.renovatebot.com/) (`renovate.json`) が自動 PR を作成する。
 
+### CI/CD (GitHub Actions)
+
+`.github/workflows/` に 7 つの workflow がある。
+
+- `ci.yaml` — PR で `prek.yaml` (lint / format)・`gitleaks.yaml` (secret scan)・`chezmoi.yaml` を reusable workflow として並列実行し、1 つでも失敗したら run 全体をキャンセルする (fail-fast)
+- `chezmoi.yaml` — Linux / macOS / Windows で dry-run に加えて実際に `chezmoi apply` まで行い、Linux / macOS では続けて bats テスト (`mise run test`) も実行する
+- `mise-lock.yaml` — `mise.lock` を週次で再生成し、mise.toml を変更する PR にも追従 commit する
+- `claude.yaml` — issue / PR での `@claude` メンションで Claude Code を起動する
+- `docker-image-cd.yaml` — main への push で 7 バリアントを multi-arch ビルドし DockerHub へ push する CD (上記「Docker」参照)
+
 ## Structure
 
 ```
@@ -249,8 +262,8 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
 ├── tests/                         # BATS テスト (files / install)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
-├── .github/workflows/             # CI (prek, bats, chezmoi dry-run, secret scan)
-├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
+├── .github/workflows/             # CI/CD (ci = prek + gitleaks + chezmoi の集約 / mise-lock / claude / docker-image-cd)
+├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & Artifact Registry へ push)
 ├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
 ├── renovate.json                  # 依存関係の自動更新設定
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)

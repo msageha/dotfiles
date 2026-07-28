@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# printf '%.0f' が小数点カンマロケールで失敗するのを防ぐ
+export LC_ALL=C
+
 input=$(cat)
 
 # statusline は高頻度で呼ばれるため、同一 JSON への jq 起動は 1 回にまとめて

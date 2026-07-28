@@ -9,15 +9,21 @@ function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
-    # sudo -v は sudoers の verifypw=all 仕様により、パスワード必須のグループルール
-    # (%wheel 等) と NOPASSWD ルールが併存するユーザーで偽陰性になる。実行可否は
-    # last-match で決まるため、sudo -n true で実コマンドを probe してフォールバックする。
     sudo -v 2>/dev/null || sudo -n true 2>/dev/null
+}
+
+# root では sudo を介さず直接実行する
+function run_privileged() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
 }
 
 function update() {
     printf "%b\n" "${BLUE}Updating APK package index...${NC}"
-    sudo apk update
+    run_privileged apk update
 }
 
 apk_base=(
@@ -32,7 +38,7 @@ apk_base=(
 
 function install_base() {
     printf "%b\n" "${BLUE}Installing base APK packages...${NC}"
-    sudo apk add "${apk_base[@]}"
+    run_privileged apk add "${apk_base[@]}"
 }
 
 function upgrade() {
@@ -42,12 +48,12 @@ function upgrade() {
     fi
 
     printf "%b\n" "${BLUE}Upgrading APK packages...${NC}"
-    sudo apk upgrade
+    run_privileged apk upgrade
 }
 
 function clean() {
     printf "%b\n" "${BLUE}Cleaning up APK cache...${NC}"
-    sudo rm -rf /var/cache/apk/*
+    run_privileged rm -rf /var/cache/apk/*
 }
 
 function main() {

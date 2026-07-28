@@ -4,10 +4,10 @@
 # This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
-# 欠損した Include は黙って無視される。
+{{ end -}}
+# age 鍵が無いと展開されないが、欠損した Include は黙って無視される。
 Include ~/.ssh/config.local
 
-{{ end -}}
 Host github.com
   HostName github.com
   User msageha

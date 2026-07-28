@@ -29,31 +29,41 @@ function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
-    # sudo -v は sudoers の verifypw=all 仕様により、パスワード必須のグループルール
-    # (%sudo 等) と NOPASSWD ルールが併存するユーザーで偽陰性になる。実行可否は
-    # last-match で決まるため、sudo -n true で実コマンドを probe してフォールバックする。
     sudo -v 2>/dev/null || sudo -n true 2>/dev/null
+}
+
+# root では sudo を介さず直接実行する
+function run_privileged() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
 }
 
 function update() {
     printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
-    sudo apt update -yq
+    run_privileged apt update -yq
 }
 
 function install_apt_apps() {
     printf "%b\n" "${BLUE}Installing APT GUI packages...${NC}"
-    sudo apt install -yq "${apt_apps[@]}"
+    run_privileged apt install -yq "${apt_apps[@]}"
 }
 
 function install_snap_apps() {
     printf "%b\n" "${BLUE}Installing snap apps...${NC}"
+    if ! command -v snap &>/dev/null; then
+        printf "%b\n" "${YELLOW}snap が見つかりません (snapd 非搭載環境)。snap アプリのインストールをスキップします。${NC}"
+        return 0
+    fi
     for app in "${snap_apps[@]}"; do
         if snap list "$app" &>/dev/null; then
             printf "%b\n" "${BLUE}${app} is already installed. Skipping${NC}"
             continue
         fi
         printf "%b\n" "${BLUE}Installing ${app}...${NC}"
-        sudo snap install "$app"
+        run_privileged snap install "$app"
     done
     for app in "${snap_classic_apps[@]}"; do
         if snap list "$app" &>/dev/null; then
@@ -61,7 +71,7 @@ function install_snap_apps() {
             continue
         fi
         printf "%b\n" "${BLUE}Installing ${app} (classic)...${NC}"
-        sudo snap install "$app" --classic
+        run_privileged snap install "$app" --classic
     done
 }
 
@@ -93,7 +103,7 @@ function install_chrome() {
         printf "%b\n" "${YELLOW}Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping.${NC}"
         return 0
     fi
-    sudo apt install -yq "$deb"
+    run_privileged apt install -yq "$deb"
 }
 
 function main() {

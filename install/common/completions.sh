@@ -154,7 +154,7 @@ function zsh_completions() {
         pids+=($!); names+=("kubectl")
     fi
     if command -v ngrok &>/dev/null; then
-        gen_completion ngrok ngrok completion > "$comp_dir/_ngrok" &
+        gen_completion ngrok env SHELL="$(command -v zsh)" ngrok completion > "$comp_dir/_ngrok" &
         pids+=($!); names+=("ngrok")
     fi
     if command -v bat &>/dev/null; then

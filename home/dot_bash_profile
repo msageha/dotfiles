@@ -16,6 +16,9 @@ export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
 export PSQL_HISTFILE="$HOME/.local/state/psql_history"
 export PYTHON_HISTORY="$HOME/.local/state/python_history"
 
+# --- fzf の Dracula テーマ ---
+export FZF_DEFAULT_OPTS="--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+
 # --- eza / ripgrep / grep の Dracula テーマ ---
 # (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
 export EZA_COLORS="uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"

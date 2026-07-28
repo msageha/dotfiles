@@ -275,6 +275,8 @@
         ]
       }
     ],
+{{- /* osascript は macOS 専用 */}}
+{{- if eq .chezmoi.os "darwin" }}
     "Notification": [
       {
         "matcher": "",
@@ -286,6 +288,7 @@
         ]
       }
     ],
+{{- end }}
     "Stop": [
       {
         "matcher": "",

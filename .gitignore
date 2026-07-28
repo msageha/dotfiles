@@ -19,7 +19,6 @@
 !.dockerignore
 !.gcloudignore
 !cloudbuild.yaml
-!Makefile
 
 # --- ドキュメント ---
 !README.md
