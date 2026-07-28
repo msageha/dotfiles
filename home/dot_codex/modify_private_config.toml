@@ -30,7 +30,7 @@ metrics_exporter = "none"
 
 [mcp_servers.context7]
 command = "npx"
-args = ["-y", "@upstash/context7-mcp@latest"]
+args = ["-y", "@upstash/context7-mcp@3.2.5"]
 startup_timeout_ms = 20_000
 
 [model_providers.sakana]

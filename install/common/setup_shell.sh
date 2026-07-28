@@ -38,10 +38,39 @@ function create_bashrc() {
 function create_zshrc() {
     printf "%b\n" "${BLUE}Creating .zshrc and source .zprofile...${NC}"
     touch "$HOME/.zshrc"
-    if ! grep -Fxq "source \$HOME/.zprofile" "$HOME/.zshrc"; then
-        # If not found, append the source command to .zshrc
-        echo "source \$HOME/.zprofile" >> "$HOME/.zshrc"
+    local block_begin="# >>> dotfiles zsh init >>>"
+    local block_end="# <<< dotfiles zsh init <<<"
+    # 旧形式の無条件 source は login shell (zsh 自身も ~/.zprofile を読む) で
+    # 初期化を二重実行させるため、見つけたら除去してブロック形式へ移行する
+    if grep -Fxq "source \$HOME/.zprofile" "$HOME/.zshrc"; then
+        # 全行が対象行のとき grep -v は exit 1 を返すが、空になるのは正常系
+        grep -Fxv "source \$HOME/.zprofile" "$HOME/.zshrc" > "$HOME/.zshrc.tmp" || true
+        mv "$HOME/.zshrc.tmp" "$HOME/.zshrc"
     fi
+    # 既存ブロックを除去してから書き直すことで、内容更新時も再実行で追従できる
+    if grep -Fxq "$block_begin" "$HOME/.zshrc"; then
+        awk -v begin="$block_begin" -v end="$block_end" \
+            '$0 == begin {skip=1} !skip {print} $0 == end {skip=0}' \
+            "$HOME/.zshrc" > "$HOME/.zshrc.tmp"
+        mv "$HOME/.zshrc.tmp" "$HOME/.zshrc"
+    fi
+    # 機械ローカルな追記 (installer 由来のブロック等) より先に実行されるよう先頭へ挿入する
+    {
+        cat <<'EOF'
+# >>> dotfiles zsh init >>>
+# login shell では zsh 自身が ~/.zprofile を読むため、非 login の対話シェルのみ source する
+# (無条件に source すると login shell で PATH 構築・compinit 等の初期化が二重実行される)
+if [[ ! -o login ]]; then
+    source "$HOME/.zprofile"
+fi
+# macOS の /etc/zshrc (~/.zprofile の後・~/.zshrc の前に読まれる) が HISTFILE を
+# ~/.zsh_history へ上書きするため、zsh の履歴ファイルは ~/.zshrc 側で設定する
+HISTFILE="$HOME/.local/state/zsh_history"
+# <<< dotfiles zsh init <<<
+EOF
+        cat "$HOME/.zshrc"
+    } > "$HOME/.zshrc.tmp"
+    mv "$HOME/.zshrc.tmp" "$HOME/.zshrc"
 }
 
 function create_fish_config() {

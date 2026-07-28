@@ -71,9 +71,60 @@
         "op"
       ],
       "enabled": false
+    },
+    {
+      "description": "age / fnox は custom regex manager 側で更新するため、組み込み mise manager との二重検出 (重複 PR) を防いで片側に寄せる",
+      "matchManagers": [
+        "mise"
+      ],
+      "matchDepNames": [
+        "age",
+        "fnox"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
+    {
+      "customType": "regex",
+      "description": "chezmoi workflow のインストーラ tag (sh / ps1) を mise.toml の chezmoi pin と同じグループ PR で追従させる",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/chezmoi\\.yaml$/"
+      ],
+      "matchStrings": [
+        "get\\.chezmoi\\.io\\)\" -- -b \"\\$HOME/\\.local/bin\" -t v(?<currentValue>[\\d.]+)",
+        "get\\.chezmoi\\.io/ps1'\\)} -b '\\$chezmoiBin' -t 'v(?<currentValue>[\\d.]+)'"
+      ],
+      "depNameTemplate": "twpayne/chezmoi",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
+      "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoitemplates/claude\\.json$/",
+        "/^home/dot_gemini/private_settings\\.json\\.tmpl$/",
+        "/^home/dot_gemini/config/private_mcp_config\\.json\\.tmpl$/",
+        "/^home/dot_codex/modify_private_config\\.toml$/",
+        "/^home/dot_grok/modify_private_config\\.toml$/"
+      ],
+      "matchStrings": [
+        "\"-y\",\\s*\"(?<depName>(?:@[a-z0-9._-]+/)?[a-z0-9._-]+)@(?<currentValue>\\d[\\w.-]*)\""
+      ],
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "uvx で起動する MCP サーバーを pypi datasource で更新する",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoitemplates/claude\\.json$/"
+      ],
+      "matchStrings": [
+        "\"(?<depName>nanobanana-mcp-server)@(?<currentValue>[\\w.-]+)\""
+      ],
+      "datasourceTemplate": "pypi"
+    },
     {
       "customType": "regex",
       "description": "workflow の container.image (digest pin + バージョンコメント) を docker datasource で更新する。ネイティブのgithub-actions managerはdigestのみ追従し、末尾のバージョンコメントを更新しないため必要",

@@ -35,9 +35,10 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
       - name: Install chezmoi
         run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
@@ -65,14 +66,21 @@ jobs:
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
         run: chezmoi apply --source=${{ github.workspace }}
-      - name: Install bats
-        run: |
-          if command -v brew &>/dev/null; then
-            brew install bats-core
-          else
-            sudo apt-get update && sudo apt-get install -y bats
-          fi
+      # bats は mise.toml の pin + mise.lock の checksum 検証つきで mise 経由で導入・実行する。
+      # mise セッション環境は apply 内の nested mise install (go backend) と干渉するため、
+      # mise-action は chezmoi apply より後に置く。
+      # また apply が書いた user 側 config (~/.config/mise/config.toml) は mise.lock に無い
+      # ツールを含み lockfile 強制で解決に失敗するため、MISE_CONFIG_DIR を空の場所へ
+      # 退避して repo の mise.toml のみを対象にする
+      - name: Install mise
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: true
+        env:
+          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
       - name: Run bats tests
+        env:
+          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
           # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
@@ -81,7 +89,7 @@ jobs:
           # shellcheck disable=SC1090
           source ~/.bash_profile
           set -e
-          make test
+          mise run test
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       - name: Cancel the entire run on failure
@@ -97,11 +105,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      # unix job と同様、ローカル (mise.toml) と同一バージョンに -t で pin して導入する
       - name: Install chezmoi
         shell: powershell
         run: |
           $chezmoiBin = Join-Path $HOME '.local\bin'
-          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin'"
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.71.1'"
           Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
       - name: Pre-configure chezmoi
         shell: powershell

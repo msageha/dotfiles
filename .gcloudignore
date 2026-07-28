@@ -15,3 +15,5 @@
 !settings
 !settings/common
 !settings/common/**
+# make decrypt_google_ime で復号された平文辞書を GCS ステージングへ上げない (.dockerignore と対で維持する)
+settings/common/google.ime.txt

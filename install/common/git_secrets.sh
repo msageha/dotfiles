@@ -16,6 +16,8 @@ function main() {
     # 空でも git が無視するため害は無い)。
     if ! command -v git-secrets &>/dev/null; then
         printf "%b\n" "${YELLOW}git-secrets が見つかりません。フック導入をスキップします。${NC}"
+        # templatedir が存在しないと git init 時に警告が出るため、フック無しでも空ディレクトリだけ用意する
+        mkdir -p "$TEMPLATE_DIR"
         return 0
     fi
     printf "%b\n" "${BLUE}Installing git-secrets hooks into ${TEMPLATE_DIR}...${NC}"

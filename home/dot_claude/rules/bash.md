@@ -2,7 +2,6 @@
 paths:
   - "**/*.sh"
   - "**/*.bash"
-  - "**/Makefile"
 ---
 # Bash Shell
 

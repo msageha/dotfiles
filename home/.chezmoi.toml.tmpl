@@ -1,11 +1,9 @@
-{{/* age 暗号化。単一共有鍵。$ageRecipient が空の間は暗号化機能は無効 (scaffold 状態) */ -}}
-{{- $ageRecipient := "age100fze4m9k88fyzpg2z5l2hfmk9f299mzl63sjz3s9gk0s8hkt94smeccd0" }}
-{{- if $ageRecipient }}
+{{/* age 暗号化。単一共有鍵 */ -}}
 encryption = "age"
 [age]
     identity = {{ (joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt") | quote }}
-    recipient = {{ $ageRecipient | quote }}
-{{ end }}
+    recipient = "age100fze4m9k88fyzpg2z5l2hfmk9f299mzl63sjz3s9gk0s8hkt94smeccd0"
+
 [git]
 autoCommit = true
 autoPush = true
@@ -24,7 +22,8 @@ args = ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
 [data]
 {{- if eq .chezmoi.os "darwin" }}
 # mac OS specific configuration
-{{-   $current := output "sh" "-c" "name=$(scutil --get ComputerName 2>/dev/null || true); echo \"current computer_name: $name\" >&2; printf '%s' \"$name\"" | trim }}
+{{/* 現在の ComputerName を stderr へ表示し、promptStringOnce の入力の参考にする (値自体は使わない) */}}
+{{-   $_ := output "sh" "-c" "name=$(scutil --get ComputerName 2>/dev/null || true); echo \"current computer_name: $name\" >&2; printf '%s' \"$name\"" | trim }}
 {{-   $model := output "sh" "-c" "system_profiler SPHardwareDataType | awk -F': ' '/Model Name/ { print $2 }'" | trim }}
 {{-   $computerName := "" }}
 {{-   if eq $model "MacBook Pro" }}

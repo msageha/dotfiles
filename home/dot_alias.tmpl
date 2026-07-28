@@ -1,3 +1,5 @@
+# このファイルは bash / zsh / fish の 3 シェルから共有 source される。
+# `alias name=value` 形式など、3 シェルすべてで解釈できる構文のみ書くこと。
 {{ if eq .chezmoi.os "darwin" -}}
 alias chrome='open -a "Google Chrome"'
 {{ end -}}

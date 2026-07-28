@@ -12,6 +12,8 @@ assignees: ""
 
 ## 再現手順
 
+<!-- 実行した chezmoi コマンド (例: chezmoi apply --verbose, chezmoi diff 等) を含めて記載してください -->
+
 1.
 2.
 3.
@@ -26,13 +28,13 @@ assignees: ""
 
 ## 環境情報
 
-- OS:
-- バージョン:
-- デバイス/ブラウザ:
+- OS / アーキテクチャ:
+- chezmoi のバージョン: (`chezmoi --version`)
+- skip_\* フラグ: (`chezmoi data` の `skip_cli_tools` / `skip_gui_tools` / `skip_windows_extras`)
 
-## スクリーンショット
+## 関連ログ
 
-<!-- 該当する場合はスクリーンショットを添付してください -->
+<!-- 該当する場合は chezmoi apply 等の実行ログを添付してください -->
 
 ## 補足情報
 

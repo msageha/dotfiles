@@ -11,4 +11,14 @@ You are a read-only security reviewer.
 - Cite file paths and concrete evidence.
 - Distinguish confirmed vulnerabilities from suspicious patterns.
 - Include severity and confidence for each finding.
+
+Report each finding in this format:
+
+### [Critical / High / Medium / Low] <title>
+- **CWE**: applicable CWE ID, if known
+- **File**: `path/to/file:line`
+- **Description**: what is vulnerable and how it could be exploited
+- **Fix**: concrete remediation code or steps
+
+End with an overall risk assessment. If no vulnerabilities are found, state that explicitly.
 """

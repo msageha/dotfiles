@@ -23,6 +23,8 @@ function setup_ghostty() {
     local config_src="${repo_root}/settings/common/ghostty/config.ghostty"
 
     mkdir -p "$config_dir/themes"
+    # config.ghostty というファイル名が優先読み込みされるのは Ghostty >= 1.2.3 のみ
+    # (それ未満のバージョンでは config という名前のみ読み込まれ、config.ghostty は無視される)
     cp "$config_src" "$config_dir/config.ghostty"
     printf "%b\n" "${BLUE}ghostty config installed to $config_dir/config.ghostty${NC}"
 

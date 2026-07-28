@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Makefile の build-multi-platform と同じバリアントに加え、GPU (amd64 のみ) を含める。
+        # mise タスク build-multi-platform と同じバリアントに加え、GPU (amd64 のみ) を含める。
         # GPU は arm64 を持たないため下の exclude で arm64 の組み合わせを除外する。
         # GUI フル構成 (ubuntu-full) は multi-arch 対象外のため含めない。
         variant:
