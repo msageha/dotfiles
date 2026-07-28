@@ -66,11 +66,13 @@ jobs:
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
         run: chezmoi apply --source=${{ github.workspace }}
-      # bats もローカル (mise.toml) と同一バージョンに pin する (npm registry から導入)。
-      # ubuntu runner の npm グローバル領域は root 所有のため、sudo を避けて
-      # ユーザー prefix (~/.local/bin は Install chezmoi step で PATH 追加済み) に入れる
-      - name: Install bats
-        run: npm install -g --prefix "$HOME/.local" bats@1.13.0
+      # bats は mise.toml の pin + mise.lock の checksum 検証つきで mise 経由で導入・実行する。
+      # mise セッション環境は apply 内の nested mise install (go backend) と干渉するため、
+      # mise-action は chezmoi apply より後に置く
+      - name: Install mise
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: true
       - name: Run bats tests
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
@@ -80,7 +82,7 @@ jobs:
           # shellcheck disable=SC1090
           source ~/.bash_profile
           set -e
-          bats -r tests/
+          mise run test
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       - name: Cancel the entire run on failure

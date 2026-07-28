@@ -101,18 +101,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi workflow の bats pin を npm datasource で追従させる",
-      "managerFilePatterns": [
-        "/^\\.github/workflows/chezmoi\\.yaml$/"
-      ],
-      "matchStrings": [
-        "npm install -g bats@(?<currentValue>[\\d.]+)"
-      ],
-      "depNameTemplate": "bats",
-      "datasourceTemplate": "npm"
-    },
-    {
-      "customType": "regex",
       "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/claude\\.json$/",
