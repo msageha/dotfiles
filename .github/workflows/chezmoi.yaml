@@ -42,6 +42,15 @@ jobs:
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
         with:
           cache: true
+      # chezmoi は mise exec / shim 経由ではなく実体バイナリを直接呼ぶ。
+      # mise セッション環境の下で chezmoi apply を実行すると、run_once 内の
+      # nested mise install (go backend) で GOROOT / PATH が runner 同梱 go と
+      # 混線してビルドに失敗した実績があるため (macos-latest で実測)
+      - name: Expose chezmoi outside the mise session
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          ln -s "$(mise which chezmoi)" "$HOME/.local/bin/chezmoi"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
           mkdir -p "$HOME/.config/chezmoi"
@@ -63,11 +72,11 @@ jobs:
           openRouter = ""
           EOF
       - name: Initialize chezmoi
-        run: mise exec -- chezmoi init --source=${{ github.workspace }}
+        run: chezmoi init --source=${{ github.workspace }}
       - name: Test chezmoi apply (dry-run)
-        run: mise exec -- chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
+        run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
-        run: mise exec -- chezmoi apply --source=${{ github.workspace }}
+        run: chezmoi apply --source=${{ github.workspace }}
       - name: Run bats tests
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
