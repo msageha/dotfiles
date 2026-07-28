@@ -79,8 +79,9 @@ function wallpaper_settings() {
     local wallpaper_path="$HOME/Pictures/wallpaper.png"
     mkdir -p "$HOME/Pictures"
 
-    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
-    if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/ubuntu-2.png" \
+    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする。
+    # upstream の改変・削除の影響を受けないよう master ではなく commit SHA に固定する
+    if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/ubuntu-2.png" \
         --output "$wallpaper_path"; then
         printf "%b\n" "${YELLOW}壁紙のダウンロードに失敗しました。スキップします。${NC}"
         return 0
