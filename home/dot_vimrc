@@ -132,7 +132,7 @@ set scrolloff=3
 " Draculaカラースキームを使用
 " (+syntax が無い vim-tiny 等では if ごと未評価のブロックとしてスキップされ、E319 を出さない)
 if has('syntax')
-  packadd! dracula
+  silent! packadd! dracula
   syntax enable
-  colorscheme dracula
+  silent! colorscheme dracula
 endif

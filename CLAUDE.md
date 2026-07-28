@@ -46,18 +46,20 @@ Windows は `skip_windows_extras`。
 例外: mise の言語ランタイム (go / java / node / pnpm) は dig 既定 true で、
 `skip_cli_tools=false` を明示した環境でのみインストールする。
 
-## コマンド (Makefile)
+## コマンド (mise tasks)
 
-- `make apply` — `chezmoi apply --verbose` (実際に適用)
-- `make dry_run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
-- `make pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
-- `make test` — `bats -r tests/`
-- `make build-ubuntu` など `build-*` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)
+タスクは `mise.toml` の `[tasks]` で定義する (Makefile は廃止済み)。
+
+- `mise run apply` — `chezmoi apply --verbose` (実際に適用)
+- `mise run dry-run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
+- `mise run pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
+- `mise run test` — `bats -r tests/`
+- `mise run build-ubuntu` など `build-*` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)
 
 ## 検証
 
-変更後は `make pre-commit` → `make test` → `make dry_run` が通ることを確認する。
-このリポジトリの検証は上記の Make ターゲットで完結しており、`.claude/verify.sh` は用意しない
+変更後は `mise run pre-commit` → `mise run test` → `mise run dry-run` が通ることを確認する。
+このリポジトリの検証は上記の mise タスクで完結しており、`.claude/verify.sh` は用意しない
 (lint / format / テストは pre-commit と bats が包含する)。
 `.claude/` はローカル設定領域のためリポジトリ管理対象外。
 
@@ -78,8 +80,8 @@ Windows は `skip_windows_extras`。
 
 ### 既知の偽失敗と切り分け
 
-- Claude Code の sandbox 有効時は read deny (`~/.ssh`, `/**/.env*`) により `make test`
-  (`tests/files/common.bats` の `~/.ssh/config` 存在チェック) や `chezmoi apply` / `diff` / `dry_run`
+- Claude Code の sandbox 有効時は read deny (`~/.ssh`, `/**/.env*`) により `mise run test`
+  (`tests/files/common.bats` の `~/.ssh/config` 存在チェック) や `chezmoi apply` / `diff` / `dry-run`
   (`~/.codex/.env` の lstat) が偽失敗する。write deny により `~/Library/Caches/mise|dprint` への
   書き込みも "Operation not permitted" になる。コード起因と決めつけず、sandbox を外して
   再実行して切り分ける。

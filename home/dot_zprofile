@@ -4,7 +4,8 @@ if [ -f "$HOME/.alias" ]; then
 fi
 
 # --- ヒストリーファイルの設定 ---
-export HISTFILE="$HOME/.local/state/zsh_history"
+# zsh 自身の HISTFILE は macOS の /etc/zshrc による上書きを避けるため
+# ~/.zshrc (install/common/setup_shell.sh が管理するブロック) で設定する
 export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
 export SQL_HISTORY="$HOME/.local/state/sql_history"
 export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
@@ -196,6 +197,7 @@ if command -v fnox &>/dev/null; then
     }
 
     _fnox_hook() {
+        local previous_exit_status=$?
         trap -- '' SIGINT
         if _fnox_preauth_1password; then
             eval "$(command fnox hook-env -s zsh)"
@@ -203,6 +205,7 @@ if command -v fnox &>/dev/null; then
             eval "$(FNOX_PROMPT_AUTH=false command fnox hook-env -s zsh)"
         fi
         trap - SIGINT
+        return $previous_exit_status
     }
 fi
 

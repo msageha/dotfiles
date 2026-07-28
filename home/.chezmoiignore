@@ -38,13 +38,9 @@
 # macOS / Linux で skip_cli_tools=true
 # Windows で skip_windows_extras=true
 # のとき管理対象外にする
-{{- $skipCodingAgent := false }}
-{{- if hasKey . "skip_cli_tools" }}
-{{ $skipCodingAgent = .skip_cli_tools }}
-{{- end }}
-{{- if hasKey . "skip_windows_extras" }}
-{{ $skipCodingAgent = .skip_windows_extras }}
-{{- end }}
+{{- /* unix は skip_cli_tools、Windows は skip_windows_extras のみ定義されるため or で片方を拾う。
+     キー未定義の旧 config でも動くよう dig のフォールバック形を使う (CLAUDE.md の規約) */}}
+{{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 
 # Ignore everything under .claude/ by default
 .claude/*
@@ -58,8 +54,11 @@
 !.claude/settings.fusion.json
 !.claude/statusline-command.sh
 !.claude/agents
+!.claude/agents/**
 !.claude/skills
+!.claude/skills/**
 !.claude/rules
+!.claude/rules/**
 {{ end }}
 # gws-* skills は gws CLI (Homebrew の googleworkspace-cli) 前提のため macOS 以外では展開しない。
 # ディレクトリ単体のパターンだけでは中身に効かないことがあるため /** も併記する
@@ -88,7 +87,9 @@
 !.codex/pareto-code.json
 !.codex/.env
 !.codex/agents
+!.codex/agents/**
 !.codex/rules
+!.codex/rules/**
 {{ end }}
 # Ignore everything under .gemini/ by default
 .gemini/*
@@ -111,4 +112,5 @@
 !.grok/AGENTS.md
 !.grok/config.toml
 !.grok/skills
+!.grok/skills/**
 {{ end }}

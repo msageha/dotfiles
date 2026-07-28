@@ -3,10 +3,14 @@ set -euo pipefail
 
 input=$(cat)
 
-used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
-remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
-model=$(echo "$input" | jq -r '.model.display_name // empty')
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
+# statusline は高頻度で呼ばれるため、同一 JSON への jq 起動は 1 回にまとめて
+# 値を行単位で受け取る (各値に改行は含まれない前提)
+{
+  read -r used
+  read -r remaining
+  read -r model
+  read -r cwd
+} < <(jq -r '.context_window.used_percentage // "", .context_window.remaining_percentage // "", .model.display_name // "", .workspace.current_dir // .cwd // ""' <<<"$input")
 
 BAR_WIDTH=20
 

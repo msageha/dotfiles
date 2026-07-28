@@ -5,6 +5,11 @@ fi
 
 # --- ヒストリーファイルの設定 ---
 export HISTFILE="$HOME/.local/state/bash_history"
+# 既定 HISTSIZE=500 は小さく、複数端末を使うと古い履歴から消えてしまうため拡張し、
+# histappend で終了時の上書きではなく追記にする
+export HISTSIZE=10000
+export HISTFILESIZE=10000
+shopt -s histappend
 export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
 export SQL_HISTORY="$HOME/.local/state/sql_history"
 export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"

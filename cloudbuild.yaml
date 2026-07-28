@@ -41,7 +41,7 @@ steps:
     id: setup-buildx
     waitFor:
       - docker-login
-  # 以下のビルドはベースイメージ別 / 役割別のマトリクス (Makefile と同一)。
+  # 以下のビルドはベースイメージ別 / 役割別のマトリクス (mise.toml の build-* タスクと同一)。
   # 役割: -min=CLI ツールも省く最小構成 / 無印=CLI のみ (GUI 省略) / -full=CLI+GUI
   # buildx の multi-platform + --push は manifest list を直接生成・push するため
   # arch ごとの個別ビルド + imagetools 合成は不要。

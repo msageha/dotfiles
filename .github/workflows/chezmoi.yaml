@@ -35,10 +35,13 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Install chezmoi
-        run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # curl | sh の未検証インストールではなく SHA pin した mise-action を使い、
+      # mise.toml の pin (chezmoi / bats) と mise.lock の checksum 検証つきで
+      # ローカルと同一バージョンのツールを導入する
+      - name: Install mise
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: true
       - name: Pre-configure chezmoi
         run: |
           mkdir -p "$HOME/.config/chezmoi"
@@ -60,18 +63,11 @@ jobs:
           openRouter = ""
           EOF
       - name: Initialize chezmoi
-        run: chezmoi init --source=${{ github.workspace }}
+        run: mise exec -- chezmoi init --source=${{ github.workspace }}
       - name: Test chezmoi apply (dry-run)
-        run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
+        run: mise exec -- chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
-        run: chezmoi apply --source=${{ github.workspace }}
-      - name: Install bats
-        run: |
-          if command -v brew &>/dev/null; then
-            brew install bats-core
-          else
-            sudo apt-get update && sudo apt-get install -y bats
-          fi
+        run: mise exec -- chezmoi apply --source=${{ github.workspace }}
       - name: Run bats tests
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
@@ -81,7 +77,7 @@ jobs:
           # shellcheck disable=SC1090
           source ~/.bash_profile
           set -e
-          make test
+          mise run test
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       - name: Cancel the entire run on failure
@@ -97,6 +93,8 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      # unix job と違い mise-action を使わない例外: mise.toml のツール群 (hadolint 等) は
+      # Windows で未検証のため、公式インストーラで chezmoi のみ導入する (バージョンは最新追従)
       - name: Install chezmoi
         shell: powershell
         run: |

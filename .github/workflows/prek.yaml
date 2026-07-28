@@ -41,7 +41,7 @@ jobs:
           cache: true
 
       - name: Run prek
-        run: mise exec -- prek run --all-files
+        run: mise run pre-commit
 
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。

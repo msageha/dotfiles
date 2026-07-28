@@ -103,13 +103,13 @@ with pdfplumber.open("input.pdf") as pdf:
 ### Merge PDFs
 
 ```python
-from pypdf import PdfMerger
+from pypdf import PdfWriter
 
-merger = PdfMerger()
-merger.append("file1.pdf")
-merger.append("file2.pdf")
-merger.write("merged.pdf")
-merger.close()
+writer = PdfWriter()
+writer.append("file1.pdf")
+writer.append("file2.pdf")
+writer.write("merged.pdf")
+writer.close()
 ```
 
 ### Split PDF

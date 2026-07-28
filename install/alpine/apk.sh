@@ -36,6 +36,11 @@ function install_base() {
 }
 
 function upgrade() {
+    if [ -n "${CI:-}" ]; then
+        printf "%b\n" "${BLUE}CI 環境のため APK upgrade をスキップします。${NC}"
+        return 0
+    fi
+
     printf "%b\n" "${BLUE}Upgrading APK packages...${NC}"
     sudo apk upgrade
 }

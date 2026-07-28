@@ -1,7 +1,7 @@
 ---
 name: review
 description: Review the current working-tree diff as a senior engineer across correctness, security, performance, readability, and maintainability. Use when the user wants a code review of their uncommitted or recent changes.
-allowed-tools: Read, Grep, Glob, Bash(git diff:*, git log:*, git show:*)
+allowed-tools: Read, Grep, Glob, Bash(git diff:*), Bash(git log:*), Bash(git show:*)
 ---
 
 # コードレビュー

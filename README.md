@@ -151,26 +151,28 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 | ------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェント設定も展開される |
 
+Windows は最小構成（chezmoi 管理の dotfiles + winget によるアプリ導入 + コーディングエージェント CLI のみ）。`install/common/` 配下のセットアップ（mise によるツール管理・シェル補完・git-secrets・フォント一括導入・ghostty 共通設定など）は Windows では実行されない（`run_once_after_91_common.sh.tmpl` が Windows を丸ごと対象外にしている）。ただし Windows Terminal 用の Nerd Font のみ `install/windows/setup_powershell.ps1` で別途導入される。
+
 ### Docker
 
 開発環境イメージをローカルでビルドできる（ベース OS / ツール構成別の 7 バリアント）。イメージ名は既定で `msageha/dotfiles:<tag>`（`DOCKER_REPOSITORY` で上書き可）。
 
 ```bash
-make build-ubuntu                    # 標準構成 (Ubuntu + CLI)
+mise run build-ubuntu                  # 標準構成 (Ubuntu + CLI)
 docker container run -it msageha/dotfiles:ubuntu
 ```
 
-| ターゲット                   | タグ              | 構成                             |
-| ---------------------------- | ----------------- | -------------------------------- |
-| `make build-ubuntu-min`      | `ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く) |
-| `make build-ubuntu`          | `ubuntu`          | Ubuntu / CLI                     |
-| `make build-debian-min`      | `debian-min`      | Debian / 最小                    |
-| `make build-debian`          | `debian`          | Debian / CLI                     |
-| `make build-debian-slim-min` | `debian-slim-min` | Debian slim / 最小               |
-| `make build-alpine`          | `alpine`          | Alpine / 最小                    |
-| `make build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
+| ターゲット                       | タグ              | 構成                             |
+| -------------------------------- | ----------------- | -------------------------------- |
+| `mise run build-ubuntu-min`      | `ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く) |
+| `mise run build-ubuntu`          | `ubuntu`          | Ubuntu / CLI                     |
+| `mise run build-debian-min`      | `debian-min`      | Debian / 最小                    |
+| `mise run build-debian`          | `debian`          | Debian / CLI                     |
+| `mise run build-debian-slim-min` | `debian-slim-min` | Debian slim / 最小               |
+| `mise run build-alpine`          | `alpine`          | Alpine / 最小                    |
+| `mise run build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
 
-マルチアーキ (amd64/arm64) ビルドと registry への push は `make build-multi-platform` / `make push`。CI では `cloudbuild.yaml` が Artifact Registry へ push する。
+マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` / `mise run push`。CI では `cloudbuild.yaml` が Artifact Registry へ push する。
 
 ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。
 
@@ -193,11 +195,11 @@ chezmoi edit ~/.ssh/config.local      # 復号して編集 → 保存時に再�
 chezmoi decrypt <source>/encrypted_foo.age   # 標準出力へ復号
 ```
 
-`settings/` 配下（chezmoi 管理外）は Make ターゲットを使う。
+`settings/` 配下（chezmoi 管理外）は mise タスクを使う。
 
 ```bash
-make decrypt_google_ime   # encrypted_google.ime.txt.age → settings/common/google.ime.txt (平文, gitignore 済み)
-make encrypt_google_ime   # 平文を編集後に再暗号化
+mise run decrypt-google-ime   # encrypted_google.ime.txt.age → settings/common/google.ime.txt (平文, gitignore 済み)
+mise run encrypt-google-ime   # 平文を編集後に再暗号化
 ```
 
 ## 開発
@@ -210,9 +212,9 @@ mise install  # ツールを導入し、git hook (pre-commit) を自動登録す
 ```
 
 ```bash
-make pre-commit   # prek run --all-files
-make test         # bats -r tests/
-make dry_run      # chezmoi apply --dry-run --verbose --force
+mise run pre-commit  # prek run --all-files
+mise run test        # bats -r tests/
+mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ```
 
 依存関係 (GitHub Actions・mise.toml のツール・ベースイメージ等) の更新は [Renovate](https://docs.renovatebot.com/) (`renovate.json`) が自動 PR を作成する。
@@ -249,8 +251,7 @@ make dry_run      # chezmoi apply --dry-run --verbose --force
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)
 ├── .github/workflows/             # CI (prek, bats, chezmoi dry-run, secret scan)
 ├── cloudbuild.yaml                # Cloud Build (マルチアーキ build & push)
-├── Makefile                       # ビルド / テスト / 暗号化ユーティリティ
-├── mise.toml / mise.lock          # 開発ツール (prek/hadolint/actionlint/bats/dprint) のバージョン管理
+├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
 ├── renovate.json                  # 依存関係の自動更新設定
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
 ├── dprint.json                    # json/yaml/markdown/toml のフォーマット設定 (dprint)

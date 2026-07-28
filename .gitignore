@@ -2,7 +2,6 @@
 
 # --- Git / CI 設定 ---
 !.gitignore
-!.gitattributes
 !.pre-commit-config.yaml
 !_typos.toml
 !.github
@@ -35,10 +34,6 @@
 # --- インストールスクリプト ---
 !install
 !install/**
-
-# --- ユーティリティスクリプト ---
-!bin
-!bin/**
 
 # --- アプリケーション設定 ---
 !settings
