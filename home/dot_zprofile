@@ -52,6 +52,17 @@ if [ -n "$_brew_bin" ]; then
 fi
 unset _brew_bin
 
+# --- デフォルトエディタ ---
+# git や crontab は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
+# code の検出は brew shellenv で PATH が揃った後に行う必要がある。
+if command -v code &>/dev/null; then
+    export EDITOR="code --wait"
+else
+    export EDITOR="vim"
+fi
+export VISUAL="$EDITOR"
+
 # --- dircolors (LS_COLORS) の Dracula テーマ ---
 # (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
 # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い

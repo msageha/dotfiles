@@ -69,6 +69,17 @@ if test -n "$brew_bin"
     "$brew_bin" shellenv fish | source
 end
 
+# --- デフォルトエディタ ---
+# git や crontab は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
+# code の検出は brew shellenv で PATH が揃った後に行う必要がある。
+if type -q code
+    set -gx EDITOR "code --wait"
+else
+    set -gx EDITOR vim
+end
+set -gx VISUAL $EDITOR
+
 # --- dircolors (LS_COLORS) の Dracula テーマ ---
 # (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
 # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
