@@ -38,3 +38,8 @@ jobs:
     uses: ./.github/workflows/chezmoi.yaml
     with:
       fail-fast: true
+
+  docker-alpine:
+    uses: ./.github/workflows/docker-alpine.yaml
+    with:
+      fail-fast: true

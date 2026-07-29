@@ -17,6 +17,7 @@ export COMPUTER_NAME={{ .computer_name | replace "'" "'\\''" | squote }}
 {{   include "../install/macos/system_settings.sh" }}
 {{   if not (dig "skip_gui_tools" false .) -}}
 {{   include "../install/macos/app_settings.sh" }}
+{{   include "../install/macos/dracula_theme.sh" }}
   if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
     echo "Software Update が見つかりました。インストールします..."
     softwareupdate --install --all

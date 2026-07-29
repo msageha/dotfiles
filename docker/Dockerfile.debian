@@ -8,6 +8,10 @@ ENV DEBCONF_NOWARNINGS=yes
 ARG USERNAME=mzk
 ENV USER=${USERNAME}
 ENV TZ=Asia/Tokyo
+# Dockerfile.alpine と同じ値に固定し、variant 間で volume mount の権限を揃える
+# (ubuntu:26.04 既定の ubuntu ユーザー (uid 1000) との衝突も避ける)
+ARG GID=1009
+ARG UID=1009
 ENV HOME=/home/${USERNAME}
 # chezmoi のツール導入レベルを制御するビルド引数。
 # SKIP_CLI_TOOLS=false で最小構成
@@ -28,8 +32,8 @@ RUN \
   rm /etc/localtime && \
   ln -s /usr/share/zoneinfo/${TZ} /etc/localtime && \
   dpkg-reconfigure -f noninteractive tzdata && \
-  groupadd ${USERNAME} && \
-  useradd -g ${USERNAME} -G sudo -m -s /bin/bash ${USERNAME} && \
+  groupadd --gid "${GID}" ${USERNAME} && \
+  useradd --gid "${GID}" --uid "${UID}" -G sudo -m -s /bin/bash ${USERNAME} && \
   echo "${USERNAME}:${USERNAME}" | chpasswd && \
   echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 

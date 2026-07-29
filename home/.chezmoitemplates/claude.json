@@ -57,9 +57,7 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "--from",
-        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
-        "mcp-youtube-transcript"
+        "mcp-youtube-transcript@0.3.5"
       ],
       "env": {}
     },

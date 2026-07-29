@@ -1,23 +1,27 @@
+# dracula テーマ群は commit SHA で固定する (vim plugin 等はコード実行を伴うため
+# branch 追従にしない)。git-repo 型は branch しか指定できず commit を固定できないため
+# archive 型で pin し、SHA の更新は renovate の git-refs custom manager が
+# 各リポジトリの default branch 最新に追従させる。
 [".vim/pack/themes/start/dracula"]
-type = "git-repo"
-url = "https://github.com/dracula/vim"
-refreshPeriod = "720h"
-clone.args = ["--depth", "1", "-b", "master"]
+type = "archive"
+url = "https://github.com/dracula/vim/archive/4f068752154e70ef8e03d6a70992033fff20a165.tar.gz"
+exact = true
+stripComponents = 1
 
 [".config/delta/dracula"]
-type = "git-repo"
-url = "https://github.com/dracula/delta"
-refreshPeriod = "720h"
-clone.args = ["--depth", "1", "-b", "main"]
+type = "archive"
+url = "https://github.com/dracula/delta/archive/3e0b3ca3d1bb893c08949167893e3d2ac8b7bcc5.tar.gz"
+exact = true
+stripComponents = 1
 
 [".tmux/plugins/dracula"]
-type = "git-repo"
-url = "https://github.com/dracula/tmux"
-refreshPeriod = "720h"
-clone.args = ["--depth", "1", "-b", "master"]
+type = "archive"
+url = "https://github.com/dracula/tmux/archive/a4612670d77c8546690dc79d23eae591c6dfa8d3.tar.gz"
+exact = true
+stripComponents = 1
 
 [".config/dircolors/dracula"]
-type = "git-repo"
-url = "https://github.com/dracula/dircolors"
-refreshPeriod = "720h"
-clone.args = ["--depth", "1", "-b", "main"]
+type = "archive"
+url = "https://github.com/dracula/dircolors/archive/4b80eae10819becb1ba285aecd81487540b14b44.tar.gz"
+exact = true
+stripComponents = 1

@@ -26,7 +26,8 @@ function fzf_load_env
             set val (string trim -c "'" -- $val)
             if test -n "$key"
                 set -gx $key $val
-                echo "  $key=$val"
+                # .env の値は secret を含みうるためキー名のみ表示する
+                echo "  $key"
             end
         end
     else

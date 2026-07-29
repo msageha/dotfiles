@@ -10,5 +10,9 @@ $env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir }}'
 {{   include "../install/windows/system_settings.ps1" }}
 {{   include "../install/windows/apps.ps1" }}
 {{   include "../install/windows/coding_agent.ps1" }}
+# coding_agent.ps1 が claude を %USERPROFILE%\.local\bin へ入れるため、後続の
+# claude_plugins.ps1 が probe できるよう PATH を通す (ログインシェルに無い初回マシン対策)
+$env:Path = (Join-Path $HOME '.local\bin') + ';' + $env:Path
+{{   include "../install/windows/claude_plugins.ps1" }}
 {{ end -}}
 {{ end -}}

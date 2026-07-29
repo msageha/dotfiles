@@ -91,18 +91,37 @@ function install_chezmoi() {
 }
 
 
+# get.docker.com の curl | sh は未検証スクリプトの root 実行になるため使わず、
+# 公式 apt リポジトリから GPG 署名検証付きで導入する
+# (https://docs.docker.com/engine/install/debian/#install-using-the-repository)
 function install_docker() {
     if [ -f /.dockerenv ]; then
         printf "%b\n" "${BLUE}Running inside Docker, skipping Docker installation.${NC}"
         return
     fi
     printf "%b\n" "${BLUE}Installing Docker...${NC}"
-    if ! command -v docker &>/dev/null; then
-        curl -fsSL https://get.docker.com | run_privileged sh
-        run_privileged usermod -aG docker "$USER"
-    else
+    if command -v docker &>/dev/null; then
         printf "%b\n" "${BLUE}Docker is already installed.${NC}"
+        return
     fi
+
+    local os_id codename
+    os_id="$(. /etc/os-release && echo "$ID")"
+    codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+    if [ "$os_id" != "ubuntu" ] && [ "$os_id" != "debian" ]; then
+        printf "%b\n" "${YELLOW}Docker の apt リポジトリは ubuntu/debian のみ対応です (ID=${os_id})。スキップします。${NC}" >&2
+        return 0
+    fi
+
+    run_privileged install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL "https://download.docker.com/linux/${os_id}/gpg" | run_privileged tee /etc/apt/keyrings/docker.asc > /dev/null
+    run_privileged chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${os_id} ${codename} stable" \
+        | run_privileged tee /etc/apt/sources.list.d/docker.list > /dev/null
+    run_privileged apt -yq update
+    run_privileged apt install -yq "${apt_install_opts[@]}" \
+        docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    run_privileged usermod -aG docker "$USER"
 }
 
 function upgrade() {

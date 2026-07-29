@@ -72,7 +72,16 @@ function terminal_app_dracula() {
     defaults write com.apple.Terminal "Default Window Settings" -string "Dracula"
     defaults write com.apple.Terminal "Startup Window Settings" -string "Dracula"
 
-    # フォントを SauceCodePro Nerd Font 18pt に設定（Ghostty と統一）
+    # フォントを SauceCodePro Nerd Font 18pt に設定（Ghostty と統一）。
+    # PyObjC (AppKit) は CLT の python3 に含まれない場合があるため、無ければ
+    # フォント設定だけスキップする (テーマ自体は導入済み)
+    if ! python3 -c 'import AppKit, Foundation' 2>/dev/null; then
+        printf "%b\n" "${BLUE}  PyObjC が無いためフォント設定をスキップします${NC}"
+        trap - RETURN
+        rm -rf "$tmp_dir"
+        printf "%b\n" "${BLUE}  Draculaテーマをインストールしデフォルトに設定しました${NC}"
+        return 0
+    fi
     python3 - <<'PYTHON'
 import AppKit, Foundation
 
