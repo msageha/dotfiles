@@ -14,9 +14,9 @@ function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
 function Set-ExplorerSettings {
     Write-Step 'エクスプローラーの設定を行っています...'
     $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    New-ItemProperty -Path $advanced -Name 'Hidden' -Value 1 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $advanced -Name 'Hidden' -Value 1 -PropertyType DWord -Force | Out-Null        # 隠しファイルを表示
     New-ItemProperty -Path $advanced -Name 'HideFileExt' -Value 0 -PropertyType DWord -Force | Out-Null   # ファイルの拡張子を表示
-    New-ItemProperty -Path $advanced -Name 'ShowStatusBar' -Value 1 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $advanced -Name 'ShowStatusBar' -Value 1 -PropertyType DWord -Force | Out-Null # ステータスバーを表示
     New-ItemProperty -Path $advanced -Name 'LaunchTo' -Value 1 -PropertyType DWord -Force | Out-Null      # 起動時にクイックアクセスではなく PC を表示
 }
 
@@ -78,10 +78,10 @@ function Set-TaskbarSettings {
     New-ItemProperty -Path $feeds -Name 'ShellFeedsTaskbarViewMode' -Value 2 -PropertyType DWord -Force | Out-Null # ニュースと関心事項を非表示 (Windows 10)
 
     New-ItemProperty -Path $advanced -Name 'TaskbarMn' -Value 0 -PropertyType DWord -Force | Out-Null         # Chat アイコンを非表示
-    New-ItemProperty -Path $advanced -Name 'ShowCopilotButton' -Value 0 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $advanced -Name 'ShowCopilotButton' -Value 0 -PropertyType DWord -Force | Out-Null # Copilot アイコンを非表示
 
-    New-ItemProperty -Path $advanced -Name 'IsBatteryPercentageEnabled' -Value 1 -PropertyType DWord -Force | Out-Null
-    New-ItemProperty -Path $advanced -Name 'ShowSecondsInSystemClock' -Value 1 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $advanced -Name 'IsBatteryPercentageEnabled' -Value 1 -PropertyType DWord -Force | Out-Null # バッテリー残量%を表示
+    New-ItemProperty -Path $advanced -Name 'ShowSecondsInSystemClock' -Value 1 -PropertyType DWord -Force | Out-Null   # 時計に秒を表示
 }
 
 function Set-PowerSettings {
@@ -196,10 +196,10 @@ function Set-StartMenuSettings {
     $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
     $start = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start'
 
-    New-ItemProperty -Path $search -Name 'BingSearchEnabled' -Value 0 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $search -Name 'BingSearchEnabled' -Value 0 -PropertyType DWord -Force | Out-Null           # 検索での Web 結果を無効化
     New-ItemProperty -Path $advanced -Name 'Start_IrisRecommendations' -Value 0 -PropertyType DWord -Force | Out-Null # 「おすすめ」表示を無効化
     New-Item -Path $start -Force -ErrorAction SilentlyContinue | Out-Null
-    New-ItemProperty -Path $start -Name 'ShowRecentList' -Value 0 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $start -Name 'ShowRecentList' -Value 0 -PropertyType DWord -Force | Out-Null               # 最近追加したアプリの表示を無効化
 }
 
 function Restart-Explorer {

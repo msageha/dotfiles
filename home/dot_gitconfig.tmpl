@@ -5,15 +5,15 @@
 {{- /* git-secrets は run_once_after_91_common.sh.tmpl → install/common/git_secrets.sh で導入される。 */ -}}
 {{- $useGitSecrets := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
 [ghq]
-    root = ~/Works/src
+    root = ~/Works/src                    # GHQのルートディレクトリを指定
     shallow = true
 
 [user]
-    name = Mizuki Sango
-    email = msageha+git@gmail.com
+    name = Mizuki Sango                   # Gitで使用するユーザー名
+    email = msageha+git@gmail.com         # Gitで使用するメールアドレス
 
 [init]
-    defaultBranch = main
+    defaultBranch = main                  # 新規リポジトリのデフォルトブランチ名を設定
 {{- if $useGitSecrets }}
     templatedir = ~/.git-templates/git-secrets
 
@@ -27,29 +27,29 @@
 {{- end }}
 
 [core]
-    editor = vim
-    excludesFile = ~/.gitignore
+    editor = vim                          # デフォルトエディタをVimに設定
+    excludesFile = ~/.gitignore           # グローバルな.gitignoreファイルの指定
 {{- if $useDelta }}
-    pager = delta
+    pager = delta                         # diff/log等のページャにdeltaを使用
 {{- end }}
 
 [filter "lfs"]
-    smudge = git-lfs smudge -- %f
-    process = git-lfs filter-process
-    required = true
-    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f         # LFSファイルの読み込み時の処理
+    process = git-lfs filter-process      # LFSファイルのフィルタ処理
+    required = true                       # LFSを必須に設定
+    clean = git-lfs clean -- %f           # LFSファイルの保存時の処理
 
 [grep]
-    lineNumber = true
+    lineNumber = true                     # grep結果に行番号を表示
 
 [pull]
-    ff = only
+    ff = only                             # fast-forward可能なときのみpullを許可
 
 [fetch]
-    prune = true
+    prune = true                          # リモートで削除されたブランチの追跡refをfetch時に掃除
 
 [color]
-    ui = auto
+    ui = auto                             # 色の自動設定
 
 # Dracula theme for Git (https://github.com/dracula/git の config/gitconfig をマージ。
 # upstream の配布形式が「内容を自分の gitconfig へコピー」のため include ではなく直書き)
@@ -96,24 +96,24 @@
     updated = green bold
 
 [alias]
-    co = checkout
-    br = branch
-    ci = commit
-    st = status
-    lg = log --oneline --graph --decorate
-    lga = log --oneline --graph --decorate --all
-    ls = ls-files
-    cp = cherry-pick
-    rb = rebase
-    rbi = rebase -i
-    rbc = rebase --continue
+    co = checkout                         # checkoutコマンドのエイリアス
+    br = branch                           # branchコマンドのエイリアス
+    ci = commit                           # commitコマンドのエイリアス
+    st = status                           # statusコマンドのエイリアス
+    lg = log --oneline --graph --decorate # 簡潔なログ表示
+    lga = log --oneline --graph --decorate --all # 全ブランチのログ表示
+    ls = ls-files                         # トラッキングしているファイルを表示
+    cp = cherry-pick                      # cherry-pickコマンドのエイリアス
+    rb = rebase                           # rebaseコマンドのエイリアス
+    rbi = rebase -i                       # インタラクティブなrebaseコマンドのエイリアス
+    rbc = rebase --continue               # rebaseの続行コマンドのエイリアス
 
 [diff]
-    tool = vimdiff
+    tool = vimdiff                        # 差分表示ツールにVimdiffを指定
 
 [merge]
-    tool = vimdiff
-    conflictstyle = diff3
+    tool = vimdiff                        # マージツールにVimdiffを指定
+    conflictstyle = diff3                 # コンフリクト表示スタイルを設定
 {{- if $useDelta }}
 
 [interactive]
@@ -124,11 +124,11 @@
 
 [delta]
     features = dracula                    # dracula.gitconfigの [delta "dracula"] を有効化
-    side-by-side = true
+    side-by-side = true                   # 左右分割表示
 {{- end }}
 
 [push]
-    default = current
+    default = current                     # プッシュのデフォルト設定
 
 [credential]
 {{- if eq .chezmoi.os "darwin" }}
@@ -152,11 +152,11 @@
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
 {{ if (stat $ageKey) }}
 [includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
-    path = ~/.gitconfig.technoface.gitlab
+    path = ~/.gitconfig.technoface.gitlab # Technoface GitLab専用の設定
 
 [includeIf "gitdir:~/Works/src/github.com/SakanaAIBusiness/"]
-    path = ~/.gitconfig.sakanaai.github
+    path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
 [includeIf "gitdir:~/Works/src/github.com/SakanaAI/"]
-    path = ~/.gitconfig.sakanaai.github
+    path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
 {{ end }}
 {{- end }}
