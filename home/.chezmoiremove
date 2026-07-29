@@ -15,12 +15,6 @@
 .claude/commands/security.md
 .claude/commands/test.md
 
-# 廃止した install/common/fonts.sh がフォントディレクトリ直下へフラットに導入していた
-# 旧フォントを削除する (現行の配置は .chezmoiexternal.toml による導入元ごとのサブディレクトリ)。
-# 旧版のフォントファイルが新版と同名ファミリーで残り、フォント解決で新版を隠すのを防ぐ。
-# powerline/fonts 由来のフラットなフォントは命名に共通パターンが無く
-# (例: "CPMono_v07 Black.otf")、glob で安全に列挙できないため対象外とする
-# (upstream は 2024-03 以降更新が無く、旧版シャドーイングの実害も無い)。
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) -}}
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}

@@ -34,7 +34,6 @@ eval "$(mise activate bash --shims)"
 {{ end -}}
 
 {{ if not (dig "skip_gui_tools" false .) -}}
-# フォントはスクリプトではなく .chezmoiexternal.toml の external として導入する
 (
 {{   include "../install/common/ghostty.sh" }}
 )
