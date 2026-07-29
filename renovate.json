@@ -777,7 +777,7 @@
         "/^install/common/git_open\\.sh$/"
       ],
       "matchStrings": [
-        "GIT_OPEN_COMMIT=\"(?<currentDigest>[a-f0-9]{40})\""
+        "raw\\.githubusercontent\\.com/paulirish/git-open/(?<currentDigest>[a-f0-9]{40})/"
       ],
       "depNameTemplate": "paulirish/git-open",
       "packageNameTemplate": "https://github.com/paulirish/git-open",
