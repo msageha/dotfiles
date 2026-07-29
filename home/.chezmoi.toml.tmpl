@@ -1,4 +1,4 @@
-{{/* age 暗号化。単一共有鍵 */ -}}
+{{/* 単一共有鍵 */ -}}
 encryption = "age"
 [age]
     identity = {{ (joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt") | quote }}

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -Eeuo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
 YELLOW="\033[0;33m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
@@ -13,7 +13,6 @@ function has_privilege() {
     sudo -v 2>/dev/null || sudo -n true 2>/dev/null
 }
 
-# root では sudo を介さず直接実行する
 function run_privileged() {
     if [ "$(id -u)" -eq 0 ]; then
         "$@"

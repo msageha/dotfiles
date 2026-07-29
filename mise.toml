@@ -41,7 +41,6 @@ run = "chezmoi encrypt settings/common/google.ime.txt > settings/common/encrypte
 description = "encrypted_google.ime.txt.age → settings/common/google.ime.txt (平文, gitignore 済み)"
 run = "chezmoi decrypt settings/common/encrypted_google.ime.txt.age > settings/common/google.ime.txt"
 
-# 1 バリアントをビルドする共通レシピ。
 # 使い方: mise run docker-build <tag> <base-image> <skip_cli_tools> [dockerfile]
 # (dockerfile 省略時は docker/Dockerfile.debian)
 # GUI ツールはどのバリアントでもインストールしないため SKIP_GUI_TOOLS=true 固定。
@@ -66,7 +65,6 @@ DOCKER_BUILDKIT=1 docker build \
     -t "${DOCKER_REPOSITORY:-msageha/dotfiles}:$tag" .
 '''
 
-# 1 バリアントを amd64/arm64 マルチアーキでビルドし registry に push する共通レシピ。
 # 引数は docker-build と同じ。マルチアーキ manifest list はローカル docker に
 # load できないため --push 一択 (事前に docker login 済みであること)。
 # 呼び出し側で buildx ビルダー (mybuilder) を有効化しておくこと (buildx-setup)。
@@ -124,7 +122,6 @@ run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.3.0-base-ubuntu26.04 fals
 description = "Alpine / 最小"
 run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 
-# buildx ビルダー (mybuilder) を用意して有効化する。
 [tasks.buildx-setup]
 description = "buildx ビルダー (mybuilder) の作成・有効化"
 run = '''
@@ -137,7 +134,7 @@ else
 fi
 '''
 
-# GPU (amd64 のみ) を除く 6 バリアントを amd64/arm64 マルチアーキでビルドし registry に push
+# GPU は amd64 のみのためマルチアーキ対象外。
 [tasks.build-multi-platform]
 description = "GPU を除く 6 バリアントのマルチアーキビルド + push"
 depends = ["buildx-setup"]
@@ -152,7 +149,7 @@ mise run docker-build-multi debian debian:trixie false
 mise run docker-build-multi debian-slim-min debian:trixie-slim true
 '''
 
-# ビルド済みの全タグを push する (途中失敗で即中断する)。
+# 途中失敗で即中断する。
 [tasks.push]
 description = "ビルド済み全タグの docker push"
 run = '''

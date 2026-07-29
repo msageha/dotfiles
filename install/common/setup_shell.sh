@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail  # エラー処理と未定義変数の扱いを強化
+set -euo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function validate_bash() {
     if ! command -v bash &>/dev/null; then
@@ -30,7 +30,6 @@ function create_bashrc() {
     printf "%b\n" "${BLUE}Creating .bashrc and source .bash_profile...${NC}"
     touch "$HOME/.bashrc"
     if ! grep -Fxq "source \$HOME/.bash_profile" "$HOME/.bashrc"; then
-        # If not found, append the source command to .bashrc
         echo "source \$HOME/.bash_profile" >> "$HOME/.bashrc"
     fi
 }

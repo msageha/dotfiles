@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -Eeuo pipefail
 
 BLUE="\033[0;34m"
 YELLOW="\033[0;33m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 # git-secrets のフックを git テンプレートディレクトリに導入する。
 # dot_gitconfig の init.templatedir = ~/.git-templates/git-secrets と対応し、

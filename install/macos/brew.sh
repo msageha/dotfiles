@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 
 function install_brew() {
@@ -140,7 +140,7 @@ upgrade_exclude=(
 )
 
 function upgrade() {
-    # --greedy は cask を含む全更新で時間がかかるため CI ではスキップする
+    # cask を含む全更新は時間がかかるため CI ではスキップする
     if [ -n "${CI:-}" ]; then
         printf "%b\n" "${BLUE}CI 環境のため brew upgrade をスキップします。${NC}"
         return 0

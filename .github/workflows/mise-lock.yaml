@@ -77,7 +77,6 @@ jobs:
           git commit -m "chore: update mise.lock"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$HEAD_REF"
 
-      # schedule / workflow_dispatch では新規に PR を作る。
       - name: Open pull request
         if: steps.diff.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:

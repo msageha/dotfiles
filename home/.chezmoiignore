@@ -53,7 +53,6 @@
      キー未定義の旧 config でも動くよう dig のフォールバック形を使う (CLAUDE.md の規約) */}}
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 
-# Ignore everything under .claude/ by default
 .claude/*
 {{ if not $skipCodingAgent }}
 # Manage only these files
@@ -87,7 +86,7 @@
 .claude/skills/gws-*
 .claude/skills/gws-*/**
 {{ end }}
-# .claude.json (Claude MCP 設定) も skip_coding_agent=true のとき除外する
+# .claude.json は Claude MCP 設定
 {{ if $skipCodingAgent }}
 .claude.json
 {{ end }}
@@ -95,7 +94,6 @@
 .config/agents
 .config/agents/**
 {{ end }}
-# Ignore everything under .codex/ by default
 .codex/*
 {{ if not $skipCodingAgent }}
 !.codex/AGENTS.md
@@ -116,7 +114,6 @@
 !.codex/rules
 !.codex/rules/**
 {{ end }}
-# Ignore everything under .gemini/ by default
 .gemini/*
 {{ if not $skipCodingAgent }}
 !.gemini/settings.json
@@ -131,7 +128,7 @@
 !.gemini/config/skills
 !.gemini/config/skills/**
 {{ end }}
-# Ignore everything under .grok/ by default (auth・sessions・logs 等のランタイム状態を除外)
+# auth・sessions・logs 等のランタイム状態のため .grok/* を ignore
 .grok/*
 {{ if not $skipCodingAgent }}
 !.grok/AGENTS.md

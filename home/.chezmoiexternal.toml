@@ -74,7 +74,7 @@ stripComponents = 2
 include = ["*/*/*.ttf", "*/*/*.otf"]
 
 {{ if eq .chezmoi.os "linux" }}
-# Terminus (ビットマップフォント) のみ深さが違う (*/Terminus/PCF/*.pcf.gz)。
+# Terminus (ビットマップフォント) のみ深さが違う。
 # PCF は fontconfig (Linux) 専用で macOS の CoreText は扱えないため Linux 限定。
 ["{{ $fontDir }}/powerline-fonts-terminus-pcf"]
 type = "archive"

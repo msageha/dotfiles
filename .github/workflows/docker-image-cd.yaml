@@ -56,7 +56,6 @@ jobs:
             runner: ubuntu-latest
           - os: linux/arm64
             runner: ubuntu-26.04-arm
-        # GPU (ubuntu-gpu) は amd64 のみ。arm64 の組み合わせを除外する。
         # マトリクス値がオブジェクトのため、exclude では該当エントリを完全一致で指定する。
         exclude:
           - variant:

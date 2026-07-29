@@ -1,5 +1,4 @@
 function git_clean_branches
-    # 現在のブランチ名を取得
     set -l current_branch (git symbolic-ref --short HEAD 2>/dev/null)
 
     # detached HEAD では symbolic-ref が空文字を返すため、未クォートの比較で
@@ -9,7 +8,6 @@ function git_clean_branches
         return 1
     end
 
-    # 削除しないブランチ名（master, main）をリストに追加
     set -l protected_branches master main
 
     # 削除対象を先に列挙し、確認を取ってから削除する

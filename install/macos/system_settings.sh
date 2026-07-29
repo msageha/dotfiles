@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -Eeuo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
 CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
 
@@ -25,12 +25,11 @@ function computer_name() {
         return 0
     fi
 
-    # コンピュータのネットワーク名を変更し、DNSキャッシュをクリア
     printf "%b\n" "${BLUE}コンピュータ名を設定しています... ($COMPUTER_NAME)${NC}"
-    sudo scutil --set ComputerName "$COMPUTER_NAME"  # 環境変数を使用
-    sudo scutil --set HostName "$COMPUTER_NAME"  # ホスト名を変更
+    sudo scutil --set ComputerName "$COMPUTER_NAME"
+    sudo scutil --set HostName "$COMPUTER_NAME"
     sudo scutil --set LocalHostName "$COMPUTER_NAME"  # Bonjour名
-    sudo dscacheutil -flushcache  # DNSキャッシュをクリア
+    sudo dscacheutil -flushcache
 }
 
 # 2. ユーザーアイコンの設定
@@ -55,32 +54,32 @@ function system_settings() {
     printf "%b\n" "${BLUE}システムの基本設定を行っています...${NC}"
     defaults write NSGlobalDomain AppleLanguages -array "ja-JP"
     defaults write NSGlobalDomain AppleLocale -string "ja_JP"
-    defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"  # ダークモード
-    defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false  # ダブルクリックで最小化を無効化
-    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false  # 自動大文字機能を無効化
-    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false  # 自動ピリオド挿入を無効化
-    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false  # 自動スペルチェックを無効化
-    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false  # スマートクォートを無効化
-    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false  # スマートダッシュを無効化
-    defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true  # 保存ダイアログを常に展開
-    defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true  # 印刷ダイアログを常に展開
-    defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false  # iCloudへの自動保存を無効化
-    defaults write NSGlobalDomain AppleShowAllExtensions -bool true  # 全ファイルの拡張子を表示
+    defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+    defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false
+    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+    defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+    defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+    defaults write NSGlobalDomain AppleShowAllExtensions -bool true
     defaults write NSGlobalDomain NSWindowResizeTime -float 0.1  # ウィンドウリサイズアニメーション高速化
-    defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true  # 印刷完了後にプリンタアプリを自動終了
+    defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 }
 
 # 4. Dockの設定
 function dock_settings() {
     printf "%b\n" "${BLUE}Dockの設定を行っています...${NC}"
-    defaults write com.apple.dock orientation -string "right"  # 右にDockを配置
-    defaults write com.apple.dock tilesize -int 50  # Dockアイコンのサイズを50に設定
-    defaults write com.apple.dock show-recents -bool false  # 最近のアプリを非表示
-    defaults write com.apple.dock autohide -bool true  # Dockを自動で隠す
-    defaults write com.apple.dock magnification -bool false  # 拡大機能を無効化
+    defaults write com.apple.dock orientation -string "right"
+    defaults write com.apple.dock tilesize -int 50
+    defaults write com.apple.dock show-recents -bool false
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock magnification -bool false
     defaults write com.apple.dock mru-spaces -bool false  # Spacesの自動並べ替えを無効化
     defaults write com.apple.dock expose-group-apps -bool true  # Mission Controlでアプリごとにウィンドウをグループ化
-    defaults write com.apple.dock autohide-delay -float 0  # Dock表示の遅延をなくす
+    defaults write com.apple.dock autohide-delay -float 0
     defaults write com.apple.dock autohide-time-modifier -float 0.5  # Dockアニメーション高速化
 }
 
@@ -116,24 +115,22 @@ function dock_apps() {
 # 6. メニューバーの設定
 function menu_bar_settings() {
     printf "%b\n" "${BLUE}メニューバーの設定を行っています...${NC}"
-    # Bluetoothアイコン表示、バッテリーのパーセント表示、音量アイコンを有効化
     defaults write com.apple.controlcenter.plist Bluetooth -int 18  # Bluetoothアイコン表示
-    defaults write com.apple.controlcenter.plist BatteryShowPercentage -bool true  # バッテリーパーセント表示
+    defaults write com.apple.controlcenter.plist BatteryShowPercentage -bool true
     defaults write com.apple.controlcenter.plist Sound -int 18  # 音量アイコン表示
 }
 
 # 7. Finderの設定
 function finder_settings() {
     printf "%b\n" "${BLUE}Finderの設定を行っています...${NC}"
-    # 隠しファイル表示、パスバー、ステータスバーの表示を有効化
-    defaults write com.apple.finder AppleShowAllFiles true  # 隠しファイルを表示
-    defaults write com.apple.finder ShowPathbar -bool true  # パスバーを表示
-    defaults write com.apple.finder ShowStatusBar -bool true  # ステータスバーを表示
+    defaults write com.apple.finder AppleShowAllFiles true
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.finder ShowStatusBar -bool true
     defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # デフォルト表示をリスト表示に設定
-    defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false  # 拡張子変更の警告を無効化
+    defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
     defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"  # 検索時にカレントフォルダを対象
-    defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true  # ネットワーク上に.DS_Storeを作成しない
-    defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true  # USB上に.DS_Storeを作成しない
+    defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+    defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
     # _FXShowPosixPathInTitle は macOS Ventura (13) 以降で無効化されたため削除
 }
 
@@ -173,16 +170,15 @@ function screenshot_settings() {
     printf "%b\n" "${BLUE}スクリーンショットの設定を行っています...${NC}"
     mkdir -p "$HOME/Pictures/Screenshots"
     defaults write com.apple.screencapture location "$HOME/Pictures/Screenshots"
-    defaults write com.apple.screencapture show-thumbnail -bool false  # 撮影後のサムネイルを非表示
-    defaults write com.apple.screencapture style -string "window"  # ウィンドウキャプチャモード
+    defaults write com.apple.screencapture show-thumbnail -bool false
+    defaults write com.apple.screencapture style -string "window"
 }
 
 # 12. キーボード設定
 function keyboard_settings() {
     printf "%b\n" "${BLUE}キーボード設定を行っています...${NC}"
-    # キーリピート速度を調整
-    defaults write -g InitialKeyRepeat -int 15  # 最初のリピートまでの時間
-    defaults write -g KeyRepeat -int 2  # リピート速度
+    defaults write -g InitialKeyRepeat -int 15
+    defaults write -g KeyRepeat -int 2
     defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない（キーリピート優先）
 }
 
@@ -190,9 +186,9 @@ function keyboard_settings() {
 function trackpad_settings() {
     printf "%b\n" "${BLUE}トラックパッドの設定を行っています...${NC}"
     defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true  # 2本指で右クリック
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false  # 3本指ドラッグ無効
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadPinch -bool true  # ピンチズーム有効
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadRotate -bool true  # 回転ジェスチャー有効
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadPinch -bool true
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadRotate -bool true
     defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerDoubleTapGesture -int 1  # スマートズーム有効
     defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerFromRightEdgeSwipeGesture -int 3  # 右端スワイプで通知センター
     defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerHorizSwipeGesture -int 2  # 4本指横スワイプでデスクトップ切替
@@ -202,15 +198,15 @@ function trackpad_settings() {
     defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 2  # 3本指横スワイプでページ切替
     defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 0  # 3本指縦スワイプ無効 (BTTの新規タブ/タブを閉じるジェスチャを優先。Mission Control/App Exposéは4本指)
     defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerTapGesture -int 0  # 3本指タップ無効 (BTTのミドルクリックジェスチャを優先)
-    defaults write com.apple.dock showAppExposeGestureEnabled -bool true  # App Exposéジェスチャ有効 (4本指下スワイプ)
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadMomentumScroll -bool true  # 慣性スクロール有効
+    defaults write com.apple.dock showAppExposeGestureEnabled -bool true  # 4本指下スワイプ
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadMomentumScroll -bool true
 }
 
 # 14. ウィンドウ管理の設定
 function window_manager_settings() {
     printf "%b\n" "${BLUE}ウィンドウ管理の設定を行っています...${NC}"
     defaults write com.apple.WindowManager GloballyEnabled -bool false  # Stage Managerを無効化
-    defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false  # タイルウィンドウのマージンを無効化
+    defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
     defaults write com.apple.WindowManager HideDesktop -bool true  # デスクトップクリックでウィンドウを隠す
     defaults write com.apple.WindowManager StageManagerHideWidgets -bool false  # ウィジェットを表示
     defaults write com.apple.WindowManager StandardHideWidgets -bool false  # 標準モードでもウィジェットを表示

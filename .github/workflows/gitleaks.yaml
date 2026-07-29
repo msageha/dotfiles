@@ -36,7 +36,6 @@ jobs:
       - name: Run gitleaks
         run: gitleaks git --redact -v .
 
-      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       # gitleaks の container 内には gh CLI が無いため github-script で API を叩く。
       - name: Cancel the entire run on failure

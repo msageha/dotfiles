@@ -41,7 +41,6 @@ $RepoRoot = if ($env:CHEZMOI_SOURCE_DIR) {
 } else {
     (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 }
-# リポジトリ内の starship.toml (chezmoi source) のパス
 $StarshipSource = Join-Path $RepoRoot 'home\dot_config\starship.toml'
 
 function Install-Starship {

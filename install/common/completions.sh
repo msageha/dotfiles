@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail  # エラー処理と未定義変数の扱いを強化
+set -euo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function gen_completion() {
     local name="$1"

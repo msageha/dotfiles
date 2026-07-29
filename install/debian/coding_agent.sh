@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function install_antigravity_cli() {
     printf "%b\n" "${BLUE}Installing antigravity-cli...${NC}"

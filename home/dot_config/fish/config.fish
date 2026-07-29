@@ -93,13 +93,13 @@ set -x GOBIN "$HOME/.local/bin"
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
-    set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include" # Cプリプロセッサ用フラグ
+    set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"
 end
 
 # --- Google Cloud SDKのPython設定 ---
 set -gx CLOUDSDK_PYTHON (type -p python3)
 
-# --- Docker環境設定 --- (Docker内で動作している場合に設定)
+# --- Docker環境設定 ---
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
     set -x DOCKER_MACHINE_NAME "docker"
 end

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -Eeuo pipefail
 
 BLUE="\033[0;34m"
 YELLOW="\033[0;33m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 # gsettings を安全に適用する。スキーマ/キーが存在しない GNOME 構成や拡張未導入の
 # 環境ではスキップし、set -e で apply 全体を止めないようにする。
@@ -20,32 +20,32 @@ function gset() {
 # 1. 外観・インターフェース
 function interface_settings() {
     printf "%b\n" "${BLUE}インターフェース設定を適用中...${NC}"
-    gset org.gnome.desktop.interface color-scheme 'prefer-dark'    # ダークモード
-    gset org.gnome.desktop.interface gtk-theme 'Yaru-dark'         # GTK テーマ (Ubuntu)
-    gset org.gnome.desktop.interface show-battery-percentage true  # バッテリー残量を%表示
-    gset org.gnome.desktop.interface clock-show-weekday true       # 時計に曜日を表示
-    gset org.gnome.desktop.interface clock-show-seconds true       # 時計に秒を表示
-    gset org.gnome.desktop.interface enable-hot-corners false      # ホットコーナーを無効化
+    gset org.gnome.desktop.interface color-scheme 'prefer-dark'
+    gset org.gnome.desktop.interface gtk-theme 'Yaru-dark'
+    gset org.gnome.desktop.interface show-battery-percentage true
+    gset org.gnome.desktop.interface clock-show-weekday true
+    gset org.gnome.desktop.interface clock-show-seconds true
+    gset org.gnome.desktop.interface enable-hot-corners false
 }
 
 # 2. Dock
 function dock_settings() {
     printf "%b\n" "${BLUE}Dock設定を適用中...${NC}"
-    gset org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'   # 左に配置
-    gset org.gnome.shell.extensions.dash-to-dock dock-fixed false       # 画面に固定しない
-    gset org.gnome.shell.extensions.dash-to-dock autohide true          # 自動で隠す
-    gset org.gnome.shell.extensions.dash-to-dock intellihide true       # ウィンドウ重なり時に隠す
-    gset org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 32   # アイコンサイズ
-    gset org.gnome.shell.extensions.dash-to-dock show-mounts false       # マウント済みボリュームを表示しない
+    gset org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
+    gset org.gnome.shell.extensions.dash-to-dock dock-fixed false
+    gset org.gnome.shell.extensions.dash-to-dock autohide true
+    gset org.gnome.shell.extensions.dash-to-dock intellihide true  # ウィンドウ重なり時に隠す
+    gset org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 32
+    gset org.gnome.shell.extensions.dash-to-dock show-mounts false
 }
 
 # 3. ファイルマネージャ
 function nautilus_settings() {
     printf "%b\n" "${BLUE}ファイルマネージャ設定を適用中...${NC}"
-    gset org.gnome.nautilus.preferences default-folder-viewer 'list-view'  # リスト表示をデフォルトに
-    gset org.gnome.nautilus.preferences show-hidden-files true             # 隠しファイルを表示
-    gset org.gtk.Settings.FileChooser show-hidden true                     # ファイル選択ダイアログでも隠し表示
-    gset org.gtk.Settings.FileChooser sort-directories-first true          # ディレクトリを先頭に
+    gset org.gnome.nautilus.preferences default-folder-viewer 'list-view'
+    gset org.gnome.nautilus.preferences show-hidden-files true
+    gset org.gtk.Settings.FileChooser show-hidden true
+    gset org.gtk.Settings.FileChooser sort-directories-first true
 }
 
 # 4. キーボード
@@ -59,17 +59,17 @@ function keyboard_settings() {
 # 5. タッチパッド
 function touchpad_settings() {
     printf "%b\n" "${BLUE}タッチパッド設定を適用中...${NC}"
-    gset org.gnome.desktop.peripherals.touchpad tap-to-click true       # タップでクリック
-    gset org.gnome.desktop.peripherals.touchpad natural-scroll true     # ナチュラルスクロール
+    gset org.gnome.desktop.peripherals.touchpad tap-to-click true
+    gset org.gnome.desktop.peripherals.touchpad natural-scroll true
     gset org.gnome.desktop.peripherals.touchpad click-method 'fingers'  # 2本指で右クリック
 }
 
 # 6. 電源・画面ロック
 function power_settings() {
     printf "%b\n" "${BLUE}電源・画面ロック設定を適用中...${NC}"
-    gset org.gnome.desktop.session idle-delay 'uint32 300'      # 5分で画面オフ
-    gset org.gnome.desktop.screensaver lock-enabled true        # 画面ロックを有効化
-    gset org.gnome.desktop.screensaver lock-delay 'uint32 0'    # 画面オフ後すぐロック
+    gset org.gnome.desktop.session idle-delay 'uint32 300'    # 5分で画面オフ
+    gset org.gnome.desktop.screensaver lock-enabled true
+    gset org.gnome.desktop.screensaver lock-delay 'uint32 0'  # 画面オフ後すぐロック
 }
 
 # 7. 壁紙の設定

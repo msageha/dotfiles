@@ -53,7 +53,6 @@ jobs:
       # docker-image-cd の smoke test と同じ条件で起動確認する
       - name: Smoke test image
         run: docker run --rm dotfiles:alpine-ci fish -c 'mise --version'
-      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める
       - name: Cancel the entire run on failure
         if: failure() && inputs.fail-fast
         env:
