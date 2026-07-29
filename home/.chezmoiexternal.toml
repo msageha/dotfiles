@@ -25,7 +25,6 @@ exact = true
 stripComponents = 1
 
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) }}
-# 単一ファイルの導入物も external (type="file") で配置し、SHA 更新を apply で反映させる
 [".local/bin/git-open"]
 type = "file"
 url = "https://raw.githubusercontent.com/paulirish/git-open/63c0e77aaf18b72c839b1113c1e2f9514413643b/git-open"

@@ -32,8 +32,6 @@ RUN \
   apk add --no-cache --virtual .build-deps shadow && \
   cp "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
   echo "${TZ}" > /etc/timezone && \
-  # alpine ベースは uid >= 1000 のユーザーを含まないため、${USERNAME} は uid/gid 1000 に
-  # 決定的に割り当たる (Dockerfile.debian の全バリアントと同じ値になる)
   groupadd "${USERNAME}" && \
   useradd -g "${USERNAME}" -G wheel -m -s /bin/bash "${USERNAME}" && \
   echo "${USERNAME}:${USERNAME}" | chpasswd && \
