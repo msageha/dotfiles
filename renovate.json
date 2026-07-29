@@ -772,6 +772,20 @@
     },
     {
       "customType": "regex",
+      "description": "git-open の commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^install/common/git_open\\.sh$/"
+      ],
+      "matchStrings": [
+        "GIT_OPEN_COMMIT=\"(?<currentDigest>[a-f0-9]{40})\""
+      ],
+      "depNameTemplate": "paulirish/git-open",
+      "packageNameTemplate": "https://github.com/paulirish/git-open",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
       "description": "壁紙 URL の dracula/wallpaper commit SHA を git-refs datasource で master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^install/macos/system_settings\\.sh$/",
