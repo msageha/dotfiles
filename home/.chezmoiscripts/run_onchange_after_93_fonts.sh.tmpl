@@ -1,0 +1,11 @@
+{{ if and (eq .chezmoi.os "linux") (not (dig "skip_gui_tools" false .)) -}}
+#!/bin/bash
+set -e
+
+# Linux はフォント更新後に fontconfig キャッシュの再構築が必要
+# fontconfig の無い環境ではキャッシュ更新自体が不要なのでスキップする
+# .chezmoiexternal.toml hash: {{ include ".chezmoiexternal.toml" | sha256sum }}
+if command -v fc-cache &>/dev/null; then
+    fc-cache -f
+fi
+{{ end -}}
