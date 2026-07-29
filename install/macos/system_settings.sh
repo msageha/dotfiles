@@ -11,6 +11,12 @@ CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
 function computer_name() {
     printf "%b\n" "${BLUE}Setting computer name...${NC}"
 
+    # config に computer_name が無い場合は空で渡ってくる。空名を scutil に設定しない
+    if [ -z "${COMPUTER_NAME:-}" ]; then
+        printf "%b\n" "${BLUE}COMPUTER_NAME が未設定のためスキップ${NC}"
+        return 0
+    fi
+
     # すでに目的の名前ならスキップする
     local current
     current="$(scutil --get ComputerName 2>/dev/null || true)"

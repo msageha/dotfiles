@@ -21,4 +21,14 @@
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf
 {{ $fontDir }}/SymbolsNerdFont*.ttf
 {{ $fontDir }}/SourceHanCodeJP-*.otf
+{{- /* 旧 install/common/fonts.sh (powerline/fonts の install.sh) がフォントディレクトリ
+       直下へ flat 展開した全ファミリーの残骸。現行の external は powerline-fonts/
+       サブディレクトリ配下に置くため衝突しない。手動導入した powerline フォントも
+       対象になる点に注意 (必要なら再導入する) */}}
+{{ $fontDir }}/* for Powerline.ttf
+{{ $fontDir }}/* for Powerline.otf
+{{ $fontDir }}/* For Powerline.ttf
+{{ $fontDir }}/* For Powerline.otf
+{{ $fontDir }}/PowerlineSymbols.otf
+{{ $fontDir }}/PowerlineExtraSymbols.otf
 {{ end -}}

@@ -137,7 +137,7 @@ fi
 '''
 
 # GPU (amd64 のみ) を除く 6 バリアントを amd64/arm64 マルチアーキでビルドし
-# registry に push する (GUI フル構成の ubuntu-full は cloudbuild.yaml 専用でローカルタスクに無い)。
+# registry に push する。
 [tasks.build-multi-platform]
 description = "GPU を除く 6 バリアントのマルチアーキビルド + push"
 depends = ["buildx-setup"]

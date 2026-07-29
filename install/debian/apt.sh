@@ -56,6 +56,9 @@ apt_tools=(
     wget
     # CLI tools
     exiv2
+    # dot_gitconfig の init.templatedir が指す secret 検出フックの実体
+    # (install/common/git_secrets.sh が導入する。macOS は brew formulae 側)
+    git-secrets
     graphviz
     htop
     imagemagick

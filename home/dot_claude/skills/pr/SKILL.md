@@ -64,9 +64,10 @@ Run the following commands simultaneously:
 
 ## Test plan
 - [ ] Testing steps or verification checklist
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
+
+Do NOT append any attribution footer (e.g. "Generated with Claude Code") -- attribution is
+deliberately disabled in settings.json.
 
 ## Step 6: Confirm with User
 

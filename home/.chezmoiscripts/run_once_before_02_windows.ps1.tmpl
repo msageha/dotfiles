@@ -2,7 +2,8 @@
 {{- /* Windows PowerShell 5.1 は BOM 無しの .ps1 を ANSI として読み、日本語コメントが
        UTF-8 のまま化けて構文を破壊する。先頭に BOM を出力して UTF-8 として読ませる */ -}}
 {{- "\ufeff" -}}
-$env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir }}'
+{{- /* PowerShell の single quote 内は ' を '' に二重化してエスケープする (bash 版と対称) */ -}}
+$env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir | replace "'" "''" }}'
 
 {{   include "../install/windows/winget.ps1" }}
 {{   include "../install/windows/setup_powershell.ps1" }}

@@ -52,3 +52,8 @@
 - **test-runner** — テスト・lint・検証コマンドの実行と、失敗の根本原因ベースの要約。
 - **source-grounded-researcher** — ローカルリポジトリ・GitHub・ドキュメント・Web の根拠付き調査。
 - **browser-debugger** — 実ブラウザでのフロントエンド検証と、コンソール・ネットワーク・パフォーマンスの調査 (playwright / chrome-devtools MCP を内包)。
+
+## Skills
+
+`~/.grok/skills/` に定義済み (commit / deps / explain / pr / refactor / review / security / test)。
+`commit` / `pr` はユーザーの明示要求時のみ使う。自発的にコミット・PR 作成をしない。

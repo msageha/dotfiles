@@ -21,7 +21,8 @@ background-blur-radius = 0
 
 # Terminal
 term = "xterm-256color"
-scrollback-limit = 2000
+# scrollback-limit の単位はバイト (行数ではない)。2MB ≒ 数千行分
+scrollback-limit = 2000000
 
 # Window Size
 window-inherit-font-size = true
@@ -42,6 +43,8 @@ macos-hidden = always
 # keybind = global:alt+space=toggle_quick_terminal
 # quick-terminal-animation-duration = 0
 
+# command 行は install/common/ghostty.sh が配置時に実環境の fish パスへ書き換える
+# (fish が無い環境では行ごと除去される)。ここの値は Apple Silicon macOS のデフォルト
 command = /opt/homebrew/bin/fish
 shell-integration = fish
 clipboard-trim-trailing-spaces = true

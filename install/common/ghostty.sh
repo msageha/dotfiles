@@ -23,7 +23,17 @@ function setup_ghostty() {
     mkdir -p "$config_dir"
     # config.ghostty というファイル名が優先読み込みされるのは Ghostty >= 1.2.3 のみ
     # (それ未満のバージョンでは config という名前のみ読み込まれ、config.ghostty は無視される)
-    cp "$config_src" "$config_dir/config.ghostty"
+    #
+    # source 側の command 行は Apple Silicon macOS の /opt/homebrew/bin/fish 固定なので、
+    # 配置時に実環境の fish パスへ書き換える (Linux では /usr/bin/fish 等になる)。
+    # fish が無い環境では行ごと除去し、ログインシェルのデフォルトに任せる
+    local fish_path
+    fish_path="$(command -v fish || true)"
+    if [[ -n "$fish_path" ]]; then
+        sed "s|^command = .*|command = ${fish_path}|" "$config_src" > "$config_dir/config.ghostty"
+    else
+        grep -v '^command = ' "$config_src" > "$config_dir/config.ghostty"
+    fi
     printf "%b\n" "${BLUE}ghostty config installed to $config_dir/config.ghostty${NC}"
     # Dracula テーマ (themes/dracula) は .chezmoiexternal.toml の external が配置する
 }

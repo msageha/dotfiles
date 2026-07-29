@@ -16,6 +16,23 @@
 - 独立して実行可能な完全なコードを書く。`...` 等のプレースホルダで省略しない。
 - 自律的な変更にはテストを検証手段として用意する。純粋に表層的な変更 (整形・コメントのみ) か、ユーザーが明示的にオプトアウトした場合のみ省略する。
 
+## 言語・ツール別 rules
+
+言語・ファイル種別固有の規約は `~/.claude/rules/*.md` に置いてある (各ファイル冒頭 frontmatter の `paths` glob が適用範囲)。
+該当する種別のファイルを編集する前に対応する rule を読んでから着手すること。
+
+- `bash.md`, `makefile.md` — \*.sh / \*.bash / Makefile / \*.mk
+- `fish.md` — \*.fish / conf.d
+- `python.md` — \*.py / pyproject.toml / requirements.txt
+- `go.md` — \*.go / go.mod
+- `typescript.md`, `javascript.md`, `react.md` — \*.ts / \*.tsx / \*.js / \*.jsx
+- `html.md` — \*.html / \*.htm / \*.ejs / \*.hbs
+- `cpp.md` — \*.cpp / \*.cc / \*.h / \*.hpp / CMakeLists.txt
+- `dart-flutter.md` — \*.dart / pubspec.yaml
+- `github-actions.md` — .github/workflows/ / action.yml
+- `gitignore.md` — .gitignore
+- `cli-tools.md` — 言語を問わず CLI ツールを実装・変更するとき
+
 ## MCP サーバー
 
 `~/.gemini/config/mcp_config.json` で有効。明示指示が無くてもタスク文脈に合致すれば使ってよい。

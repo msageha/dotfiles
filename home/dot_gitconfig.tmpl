@@ -154,9 +154,19 @@
 [includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
     path = ~/.gitconfig.technoface.gitlab # Technoface GitLab専用の設定
 
-[includeIf "hasconfig:remote.*.url:*github.com/SakanaAIBusiness/**"]
+# hasconfig の glob は wildmatch (pathname) のため先頭 `*` が `/` や `:` を跨げず、
+# `*github.com/...` は HTTPS 形式にも scp 形式にもマッチしない。URL 形式ごとに列挙する。
+[includeIf "hasconfig:remote.*.url:https://github.com/SakanaAIBusiness/**"]
     path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
-[includeIf "hasconfig:remote.*.url:*github.com/SakanaAI/**"]
+[includeIf "hasconfig:remote.*.url:git@github.com:SakanaAIBusiness/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/SakanaAIBusiness/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
+[includeIf "hasconfig:remote.*.url:https://github.com/SakanaAI/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
+[includeIf "hasconfig:remote.*.url:git@github.com:SakanaAI/**"]
+    path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/SakanaAI/**"]
     path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
 {{ end }}
 {{- end }}

@@ -98,7 +98,8 @@ jobs:
       # GITHUB_TOKEN による push / PR 作成からは新しい workflow run が発火しない
       # (再帰実行防止の GitHub 仕様)。workflow_dispatch はその例外なので、
       # 更新したブランチへ CI 系 workflow を明示的に起動して required check を付ける。
-      # CI 系チェック (prek / gitleaks / chezmoi) は ci.yaml に集約されているため ci.yaml のみ起動する。
+      # CI 系チェック (prek / gitleaks / chezmoi / docker-alpine / docker-debian) は
+      # ci.yaml に集約されているため ci.yaml のみ起動する。
       - name: Dispatch CI workflows for the updated branch
         if: steps.diff.outputs.changed == 'true'
         env:

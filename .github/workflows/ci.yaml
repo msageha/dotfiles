@@ -43,3 +43,8 @@ jobs:
     uses: ./.github/workflows/docker-alpine.yaml
     with:
       fail-fast: true
+
+  docker-debian:
+    uses: ./.github/workflows/docker-debian.yaml
+    with:
+      fail-fast: true

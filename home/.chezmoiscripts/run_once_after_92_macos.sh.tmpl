@@ -1,6 +1,11 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 set -e
+
+# 初回ブートストラップ (chezmoi init --apply 直後) はシェルがまだ .zprofile を読んでおらず
+# /opt/homebrew/bin が PATH に無いため、brew 配下のコマンド (mo) が解決できるようにする。
+# このリポジトリは Apple Silicon のみサポート (Intel の /usr/local には対応しない)
+eval "$(/opt/homebrew/bin/brew shellenv)"
 {{   if not (dig "skip_cli_tools" false .) -}}
 if [ -z "${CI:-}" ]; then
   mo optimize

@@ -76,18 +76,14 @@
       "Bash(git:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
-      "Bash(node:*)",
       "Bash(flutter:*)",
       "Bash(dart:*)",
-      "Bash(python:*)",
       "Bash(pip:*)",
       "Bash(uv:*)",
       "Bash(go:*)",
       "Bash(cargo:*)",
       "Bash(make:*)",
       "Bash(docker:*)",
-      "Bash(curl:*)",
-      "Bash(wget:*)",
       "Bash(gh:*)",
       "Bash(chezmoi:*)",
       "Bash(brew:*)",
@@ -98,9 +94,6 @@
       "Bash(ghq:*)",
       "Bash(fzf:*)",
       "Bash(tmux:*)",
-      "Bash(fish:*)",
-      "Bash(ssh:*)",
-      "Bash(scp:*)",
       "Bash(ls:*)",
       "Bash(which:*)",
       "Bash(cat:*)",
@@ -129,13 +122,11 @@
       "Bash(diff:*)",
       "Bash(basename:*)",
       "Bash(dirname:*)",
-      "Bash(xargs:*)",
       "Bash(tee:*)",
       "Bash(tar:*)",
       "Bash(unzip:*)",
       "Bash(jq:*)",
       "Bash(yq:*)",
-      "Bash(env:*)",
       "Bash(printenv:*)",
       "Bash(export:*)",
       "Bash(date:*)",
@@ -147,7 +138,6 @@
       "Bash(tokei:*)",
       "Bash(magick:*)",
       "Bash(maestro:*)",
-      "Bash(python3:*)",
       "Bash(pip3:*)",
       "Bash(uvx:*)",
       "Bash(marp:*)",
@@ -160,7 +150,6 @@
       "Bash(lsof:*)",
       "Bash(time:*)",
       "Bash(test:*)",
-      "Bash(bash:*)",
       "Bash(pdftoppm:*)",
       "Bash(sips:*)",
       "Bash(pgrep:*)",
@@ -168,7 +157,6 @@
       "Bash(cd:*)",
       "Bash(kill:*)",
       "Bash(codex:*)",
-      "Bash(osascript:*)",
       "Bash(claude:*)",
       "Bash(defaults:*)",
       "Bash(cliclick:*)",
@@ -211,14 +199,12 @@
       "Bash(helm:*)",
       "Bash(aws:*)",
       "Bash(az:*)",
-      "Bash(zsh:*)",
-      "Bash(sh:*)",
       "Edit(.claude/verify.sh)",
       "Edit(.env.template)",
       "WebSearch",
       "WebFetch",
       "mcp__context7__*",
-      "mcp__github__*",
+      "mcp__plugin_github_github__*",
       "mcp__codex__*",
       "mcp__antigravity__*",
       "mcp__chrome-devtools__*",
@@ -234,15 +220,31 @@
     ],
     "deny": [
       "Read(.env)",
-      "Read(.env.local)",
-      "Read(.env.development)",
-      "Read(.env.production)",
-      "Read(.env.staging)",
-      "Read(.env.test)",
-      "Read(.env.*.local)",
-      "Read(secrets/**)"
+      "Read(.env.*)",
+      "Read(secrets/**)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/.envrc)",
+      "Read(**/secrets/**)",
+      "Read(**/terraform.tfvars)",
+      "Read(**/*.auto.tfvars)",
+      "Read(**/*.tfstate)",
+      "Read(**/*.tfstate.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.docker/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/.azure/**)",
+      "Read(~/.netrc)",
+      "Read(~/.npmrc)",
+      "Read(~/.bash_history)",
+      "Read(~/.zsh_history)"
     ],
-    "ask": [],
+    "ask": [
+      "Bash(ssh:*)",
+      "Bash(scp:*)"
+    ],
     "additionalDirectories": [
       "~/Works",
       "~/.local/share/chezmoi"
@@ -250,13 +252,15 @@
     "defaultMode": "auto"
   },
   "hooks": {
+{{- /* 以下の hooks は POSIX シェル + jq 前提。ネイティブ Windows では毎回エラー (exit≠2 で fail-open) になるだけなので設定しない */}}
+{{- if ne .chezmoi.os "windows" }}
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "CMD=$(cat | jq -r '.tool_input.command'); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(])[[:space:]]*(sudo[[:space:]]+)?(rm[[:space:]]+-[[:alpha:]]*r[[:alpha:]]*[[:space:]]+(/|~|\\*|\\.([[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]].*--force([^-]|$)|chmod[[:space:]]+(-r[[:space:]]+)?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+table)' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
+            "command": "CMD=$(cat | jq -r '.tool_input.command' | tr -d \"'\\\"\"); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(`])[[:space:]]*((sudo|env)[[:space:]]+)*(([^;&|[:space:]]*/)?rm[[:space:]]+(-{1,2}[[:alnum:]=-]+[[:space:]]+)*(-[[:alpha:]]*r[[:alpha:]]*|--recursive)([[:space:]]+-{1,2}[[:alnum:]=-]+)*[[:space:]]+(/|~|\\$HOME|\\*|\\.\\.?(/|[[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(-f|--force)([[:space:]]|$)|chmod[[:space:]]+(-[[:alpha:]]+[[:space:]]+)*0?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+table)' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
             "timeout": 5
           }
         ]
@@ -268,7 +272,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> ~/.claude/command-audit.log",
+            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
             "async": true,
             "timeout": 5
           }
@@ -295,11 +299,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -x .claude/verify.sh ]; then bash .claude/verify.sh; fi",
+            "command": "INPUT=$(cat); if printf '%s' \"$INPUT\" | jq -e '.stop_hook_active == true' >/dev/null 2>&1; then exit 0; fi; if [ -x .claude/verify.sh ]; then bash .claude/verify.sh >&2 || exit 2; fi",
             "timeout": 600
           }
         ]
       }
     ]
+{{- end }}
   }
 }

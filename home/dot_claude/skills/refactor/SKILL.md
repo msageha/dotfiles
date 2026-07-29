@@ -1,7 +1,7 @@
 ---
 name: refactor
 description: "Refactor: plan and apply a behavior-preserving refactor of a file or symbol, keeping existing tests green and the change to roughly one commit. Use when the user wants to clean up or restructure code without changing its observable behavior."
-allowed-tools: Read, Grep, Glob, Edit, Bash(git diff:*), Bash(git stash:*)
+allowed-tools: Read, Grep, Glob, Edit, Bash(git diff:*), Bash(git stash:*), Bash(mise run:*), Bash(make test:*), Bash(npm test:*), Bash(pnpm test:*), Bash(yarn test:*), Bash(vitest:*), Bash(jest:*), Bash(pytest:*), Bash(go test:*), Bash(cargo test:*), Bash(bats:*)
 argument-hint: <file-path-or-symbol>
 ---
 

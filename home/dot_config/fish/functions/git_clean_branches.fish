@@ -1,6 +1,6 @@
 function git_clean_branches
     # 現在のブランチ名を取得
-    set current_branch (git symbolic-ref --short HEAD 2>/dev/null)
+    set -l current_branch (git symbolic-ref --short HEAD 2>/dev/null)
 
     # detached HEAD では symbolic-ref が空文字を返すため、未クォートの比較で
     # test の引数エラーになる。空の場合は全ブランチ削除の判定ができないため中断する
@@ -10,19 +10,32 @@ function git_clean_branches
     end
 
     # 削除しないブランチ名（master, main）をリストに追加
-    set protected_branches master main
+    set -l protected_branches master main
 
-    # master, main 以外のすべてのローカルブランチを削除
+    # 削除対象を先に列挙し、確認を取ってから削除する
+    # (-D は未マージブランチも消すため、black-box に即実行しない)
+    set -l targets
     for branch in (git branch --format="%(refname:short)")
-        if not contains $branch $protected_branches
-            if test "$branch" != "$current_branch"
-                git branch -D $branch
-                echo "Deleted branch: $branch"
-            else
-                echo "Skipping current branch: $branch"
-            end
-        else
+        if contains $branch $protected_branches
             echo "Protected branch: $branch"
+        else if test "$branch" = "$current_branch"
+            echo "Skipping current branch: $branch"
+        else
+            set -a targets $branch
         end
+    end
+
+    if test (count $targets) -eq 0
+        echo "No branches to delete."
+        return 0
+    end
+
+    printf 'Will force-delete (-D): %s\n' $targets
+    read -l -P "Delete "(count $targets)" branches (including unmerged)? [y/N] " ans
+    string match -qi y -- $ans; or return 1
+
+    for branch in $targets
+        git branch -D $branch
+        echo "Deleted branch: $branch"
     end
 end

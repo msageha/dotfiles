@@ -17,12 +17,6 @@ permissions:
   # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
   actions: write
 
-env:
-  # mise の ubi/aqua backend をはじめ各ステップが GitHub API を叩くため、
-  # 無認証だと runner の共有 IP で rate limit (60 req/h) に当たる。
-  # Actions のエフェメラルトークンを使い認証付きにする
-  GITHUB_TOKEN: ${{ github.token }}
-
 jobs:
   prek:
     runs-on: ubuntu-latest
@@ -34,13 +28,19 @@ jobs:
           persist-credentials: false
 
       # curl | sh の未検証インストールではなく SHA pin した mise-action を使い、
-      # mise.lock の checksum / cosign 検証つきでツールを導入する
+      # mise.lock の checksum / cosign 検証つきでツールを導入する。
+      # GITHUB_TOKEN は GitHub API を叩くステップ (ubi/aqua backend の rate limit 回避)
+      # だけに step-level で渡し、workflow レベルで全ステップへ露出させない
       - name: Install mise
         uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
         with:
           cache: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Run prek
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: mise run pre-commit
 
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。

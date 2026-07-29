@@ -65,7 +65,8 @@ if test -n "$brew_bin"
 end
 
 # --- デフォルトエディタ ---
-# git や crontab は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# crontab 等の CLI は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# git のコミットエディタはここではなく gitconfig の core.editor = vim が最優先される (意図どおり)。
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある。
 if type -q code

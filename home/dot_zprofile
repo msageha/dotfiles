@@ -57,7 +57,8 @@ fi
 unset _brew_bin
 
 # --- デフォルトエディタ ---
-# git や crontab は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# crontab 等の CLI は VISUAL を EDITOR より優先して参照するため両方を揃える。
+# git のコミットエディタはここではなく gitconfig の core.editor = vim が最優先される (意図どおり)。
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある。
 if command -v code &>/dev/null; then
@@ -91,13 +92,25 @@ autoload -Uz compinit && compinit
 # aws_completer は bash 形式の `complete -C` を前提とするため bashcompinit が必要。
 # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fpath autoload
 # (ファイル名一致が必須) ではなくこの場で直接 source する。
-if command -v aws_completer &>/dev/null; then
+# 両方とも mise 経由でのみ導入されるため、mise activate 前の fresh シェルでは
+# command -v が失敗しうる。direnv と同様に mise which でフォールバックする
+_aws_completer_bin="$(command -v aws_completer || true)"
+if [ -z "$_aws_completer_bin" ] && command -v mise &>/dev/null; then
+    _aws_completer_bin="$(mise which aws_completer 2>/dev/null || true)"
+fi
+if [ -n "$_aws_completer_bin" ]; then
     autoload -Uz bashcompinit && bashcompinit
-    complete -C aws_completer aws
+    complete -C "$_aws_completer_bin" aws
 fi
-if command -v aws-sso &>/dev/null; then
-    eval "$(aws-sso setup completions --source --shell zsh)"
+unset _aws_completer_bin
+_aws_sso_bin="$(command -v aws-sso || true)"
+if [ -z "$_aws_sso_bin" ] && command -v mise &>/dev/null; then
+    _aws_sso_bin="$(mise which aws-sso 2>/dev/null || true)"
 fi
+if [ -n "$_aws_sso_bin" ]; then
+    eval "$("$_aws_sso_bin" setup completions --source --shell zsh)"
+fi
+unset _aws_sso_bin
 
 # --- JDKの設定 ---
 if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
@@ -132,9 +145,36 @@ if [ -d "$HOME/.orbstack/shell" ]; then
 fi
 
 # --- Starshipの設定 ---
-if command -v starship &>/dev/null; then
-    eval "$(starship init zsh)"
+# starship は mise 経由でのみ導入され、mise activate の PATH 反映はプロンプト時のため、
+# fresh シェルでは command -v が失敗しうる。direnv と同様に mise which でフォールバックする
+_starship_bin="$(command -v starship || true)"
+if [ -z "$_starship_bin" ] && command -v mise &>/dev/null; then
+    _starship_bin="$(mise which starship 2>/dev/null || true)"
 fi
+if [ -n "$_starship_bin" ]; then
+    eval "$("$_starship_bin" init zsh)"
+fi
+unset _starship_bin
+
+# --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド) ---
+_fzf_bin="$(command -v fzf || true)"
+if [ -z "$_fzf_bin" ] && command -v mise &>/dev/null; then
+    _fzf_bin="$(mise which fzf 2>/dev/null || true)"
+fi
+if [ -n "$_fzf_bin" ]; then
+    eval "$("$_fzf_bin" --zsh)"
+fi
+unset _fzf_bin
+
+# --- zoxideの初期化 ---
+_zoxide_bin="$(command -v zoxide || true)"
+if [ -z "$_zoxide_bin" ] && command -v mise &>/dev/null; then
+    _zoxide_bin="$(mise which zoxide 2>/dev/null || true)"
+fi
+if [ -n "$_zoxide_bin" ]; then
+    eval "$("$_zoxide_bin" init zsh)"
+fi
+unset _zoxide_bin
 
 # --- Xcodeの設定 ---
 # DEVELOPER_DIR は xcrun / ビルドツールが参照する。usr/bin を prepend すると
