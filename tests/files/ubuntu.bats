@@ -15,7 +15,7 @@
     done
 
     directories_exists=(
-        "${HOME}/Works/bin"
+        "${HOME}/.local/bin"
     )
     # フォントは skip_gui_tools=true の環境では導入されない
     # (run_once_after_91_common.sh.tmpl のガードと同条件) ため、その場合は確認しない。
