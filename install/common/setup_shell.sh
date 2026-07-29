@@ -47,8 +47,6 @@ function create_zshrc() {
         grep -Fxv "source \$HOME/.zprofile" "$HOME/.zshrc" > "$HOME/.zshrc.tmp" || true
         mv "$HOME/.zshrc.tmp" "$HOME/.zshrc"
     fi
-    # 開始マーカーだけ残って終了マーカーが欠損している場合、下の awk はブロック開始以降を
-    # すべて削除してユーザー行を巻き込むため、更新せず手動修復を促して終了する
     if grep -Fxq "$block_begin" "$HOME/.zshrc" && ! grep -Fxq "$block_end" "$HOME/.zshrc"; then
         printf "%b\n" "${RED}~/.zshrc の管理ブロック終了マーカー (${block_end}) が見つかりません。巻き込み削除を避けるため更新をスキップします。手動で修復してください。${NC}" >&2
         return 0

@@ -39,7 +39,7 @@
 - `dart-flutter.md` — \*.dart / pubspec.yaml
 - `github-actions.md` — .github/workflows/ / action.yml
 - `gitignore.md` — .gitignore
-- `cli-tools.md` — CLI アプリケーション本体 (cmd/ / cli/ 配下) を実装・変更するとき
+- `cli-tools.md` — CLI アプリケーションを実装・変更するとき
 
 ## MCP サーバー
 

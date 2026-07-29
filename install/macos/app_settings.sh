@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
 
+RED="\033[0;31m"
 BLUE="\033[0;34m"
 NC="\033[0m" # No Color (リセット)
 CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
@@ -14,10 +15,10 @@ function vscode() {
 }
 
 function bettertouchtool() {
-    # cask の導入失敗などでアプリが無い場合に open で apply 全体を止めないようスキップする
+    # cask の導入失敗などでアプリが無い場合は fail-fast (open の不明瞭なエラーで止まる前に原因を明示する)
     if [ ! -d "/Applications/BetterTouchTool.app" ]; then
-        printf "%b\n" "${BLUE}BetterTouchTool.app が見つかりません。BTT の設定をスキップします。${NC}"
-        return 0
+        printf "%b\n" "${RED}BetterTouchTool.app が見つかりません。brew install --cask bettertouchtool で導入してから再実行してください。${NC}" >&2
+        return 1
     fi
 
     # BTT はアクティベート状態を CLI から確実に判定する手段が無いため、初回に

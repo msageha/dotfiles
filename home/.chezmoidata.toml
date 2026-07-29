@@ -1,10 +1,6 @@
 [github]
 user = "msageha"
 
-# MCP サーバーのバージョン pin の単一ソース。Claude (.chezmoitemplates/claude.json) /
-# Codex (dot_codex/modify_private_config.toml, dot_codex/agents/*.toml.tmpl) /
-# Gemini (dot_gemini/*.tmpl) / Grok (dot_grok/modify_private_config.toml) から参照する。
-# バージョン更新は renovate が下の annotation で追従する。
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
 context7 = "3.2.5"

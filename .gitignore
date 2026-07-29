@@ -42,10 +42,6 @@ settings/common/google.ime.txt
 !tests
 !tests/**
 
-# --- リポジトリ内ツール (pre-commit local hook 等) ---
-!scripts
-!scripts/**
-
 # === ホワイトリスト内から再除外: 機密・不要ファイル ===
 
 # OS メタデータ

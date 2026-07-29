@@ -5,8 +5,6 @@
   analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
   otel のログ・トレース exporter はデフォルト none のため設定不要。
 */ -}}
-{{- /* joinPath (filepath.Join) は Clean を通るため、Windows では区切りが \ に統一される
-      (printf "%s/…" だとネイティブ区切りの homeDir と / が混在したキーになる) */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}
 {{- $desired := printf `
@@ -60,15 +58,6 @@ stream_idle_timeout_ms = 600000
 
 [notice]
 "hide_gpt-5.1-codex-max_migration_prompt" = true
-
-# model_migrations は「表示済み migration プロンプトの確認記録」(旧モデル = 提示された新モデル)。
-# 参照されるのはキーが現在の model と一致するときだけで、過去モデルのエントリは inert
-# (codex-rs/tui/src/app/startup_prompts.rs の should_show_model_migration_prompt)。
-# 現在の model (gpt-5.6-terra) はカタログ上 upgrade を持たない終端モデルのため、
-# ここが古いままでもプロンプトは発火しない。履歴として温存する。
-[notice.model_migrations]
-"gpt-5.1-codex-max" = "gpt-5.2-codex"
-"gpt-5.2-codex" = "gpt-5.3-codex"
 
 [projects.%q]
 trust_level = "trusted"

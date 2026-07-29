@@ -9,14 +9,6 @@ export PATH="$HOME/.local/bin:$PATH"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 {{ end -}}
 
-# 補完生成は run_once ではなく run_onchange にする (run_once だと skip フラグ変更などで
-# 後から導入したツールの補完が永久に生成されない)。ツール導入セットの決定要素を
-# ハッシュとして埋め込み、変化したら再実行させる。
-# mise config hash: {{ includeTemplate "dot_config/mise/config.toml.tmpl" . | sha256sum }}
-{{ if eq .chezmoi.os "darwin" -}}
-# brew.sh hash: {{ include "../install/macos/brew.sh" | sha256sum }}
-{{ end -}}
-
 eval "$(mise activate bash --shims)"
 (
 {{ include "../install/common/completions.sh" }}

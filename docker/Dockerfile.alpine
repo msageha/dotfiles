@@ -67,7 +67,7 @@ RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   chezmoi apply --source="$HOME/dotfiles" && \
   rm -rf "$HOME/dotfiles" && \
   rm -rf "$HOME/.cache" && \
-  # java が導入されるビルド変種では src.zip を落とす (未導入なら no-op。Dockerfile.debian と同じ掃除)
+  # java が導入されるビルド変種では src.zip を落とす
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
   # chezmoi は provisioning 専用でランタイム不要。~42MB あるため apply 後に削除する
   # (再適用が必要なら curl get.chezmoi.io で都度入れ直す)。

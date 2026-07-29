@@ -9,8 +9,6 @@ function fenv -d "Select and load mise/fnox environment for the current director
     for env_file in mise.*.toml fnox.*.toml
         test -f "$env_file"; or continue
         set -l name (string replace -r '^(mise|fnox)\.' '' -- "$env_file" | string replace -r '\.toml$' '')
-        # *.local.toml は環境ではなくマシンローカルの overlay ファイルなので候補にしない
-        test "$name" = local; and continue
         contains -- "$name" $candidates; or set -a candidates "$name"
     end
 

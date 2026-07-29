@@ -60,9 +60,17 @@ repos:
         types_or: [json, yaml, markdown, toml]
       - id: psscriptanalyzer
         name: Lint PowerShell scripts with PSScriptAnalyzer
-        # pwsh / PSScriptAnalyzer が無い環境ではスクリプト側でスキップする
-        language: script
-        entry: scripts/psscriptanalyzer.sh
+        # pwsh は mise.toml の powershell で供給する。PSScriptAnalyzer モジュールは初回に
+        # Install-Module -Scope CurrentUser で導入する (以降はキャッシュ)。
+        # 除外ルールの理由:
+        # - PSAvoidUsingWriteHost: セットアップスクリプトの色付きコンソール出力は Write-Host が意図
+        # - PSUseBOMForUnicodeEncodedFile: リポジトリ規約は BOM 無し UTF-8 (5.1 実行時は
+        #   .chezmoiscripts テンプレートが BOM を付与する)
+        # - PSUseShouldProcessForStateChangingFunctions / PSUseSingularNouns: 配布 cmdlet 向けの
+        #   規約で、内部専用のセットアップ関数には過剰
+        language: system
+        entry: mise exec -- pwsh -NoProfile -CommandWithArgs 'if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) { Install-Module PSScriptAnalyzer -Force -Scope CurrentUser }; $findings = @($args | ForEach-Object { Invoke-ScriptAnalyzer -Path $_ -Severity Warning, Error -ExcludeRule PSAvoidUsingWriteHost, PSUseBOMForUnicodeEncodedFile, PSUseShouldProcessForStateChangingFunctions, PSUseSingularNouns }); if ($findings) { $findings | Format-Table -AutoSize | Out-String | Write-Host; exit 1 }'
+        require_serial: true
         types: [powershell]
   - repo: https://github.com/crate-ci/typos
     rev: 37bb98842b0d8c4ffebdb75301a13db0267cef89 # frozen: v1.47.2

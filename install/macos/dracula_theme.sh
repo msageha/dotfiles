@@ -30,8 +30,7 @@ function terminal_app_dracula() {
     fi
 
     # Dracula.terminal をインポートしてデフォルトに設定。
-    # open は非同期のため、固定 sleep ではなくプロファイルが実際に登録されるまで
-    # ポーリングで待つ (インポート完了前に tmp_dir を削除するレースを防ぐ)
+    # open は非同期のため、固定 sleep ではなくプロファイルが実際に登録されるまでポーリングで待つ
     open "$tmp_dir/Dracula.terminal"
     local waited=0
     until defaults read com.apple.Terminal "Window Settings" 2>/dev/null | grep -q '"Dracula"'; do

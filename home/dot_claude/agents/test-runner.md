@@ -4,8 +4,6 @@ description: Runs tests, lint, and verification commands, then summarizes failur
 model: sonnet
 effort: medium
 tools: Read, Grep, Glob, Bash
-# test skill は preload しない (skill 側は「修正まで一括実施」を指示しており、
-# この agent の read-only 設計・変更禁止と矛盾するため)
 skills:
   - create-verify
 ---

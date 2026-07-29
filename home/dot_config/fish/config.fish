@@ -127,8 +127,7 @@ end
 
 # --- Starshipの設定 ---
 # mise activate (fish) の PATH 反映は fish_prompt 時のため、fresh シェルでは
-# type -q が失敗しうる。direnv と同様に mise which でフォールバックする。
-# プロンプト描画は対話シェル専用 (非対話のスクリプト実行を遅くしない)
+# type -q が失敗しうる。direnv と同様に mise which でフォールバックする
 if status is-interactive
     set -l starship_bin (command -v starship 2>/dev/null)
     if test -z "$starship_bin"; and type -q mise
