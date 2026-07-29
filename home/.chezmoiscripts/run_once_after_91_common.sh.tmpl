@@ -34,12 +34,7 @@ eval "$(mise activate bash --shims)"
 {{ end -}}
 
 {{ if not (dig "skip_gui_tools" false .) -}}
-# フォントの描画はクライアント側 (端末エミュレータ) で行われるため、ヘッドレス環境では不要。
-# GUI レス (skip_gui_tools=true) ならスキップする。
-# サーバー上で画像/PDF 等のラスタライズをする場合は別途明示的に入れる必要あり。
-(
-{{   include "../install/common/fonts.sh" }}
-)
+# フォントはスクリプトではなく .chezmoiexternal.toml の external として導入する
 (
 {{   include "../install/common/ghostty.sh" }}
 )

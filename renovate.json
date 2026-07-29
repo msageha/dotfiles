@@ -193,11 +193,12 @@
     },
     {
       "customType": "regex",
+      "description": "chezmoi external の Nerd Fonts release zip (SourceCodePro / NerdFontsSymbolsOnly) を github-releases で追従させる。2 URL が同一バージョンで一括更新される",
       "managerFilePatterns": [
-        "/^install/common/fonts\\.sh$/"
+        "/^home/\\.chezmoiexternal\\.toml$/"
       ],
       "matchStrings": [
-        "NERD_FONTS_VERSION=\"(?<currentValue>v[\\d.]+)\"\\n"
+        "nerd-fonts/releases/download/(?<currentValue>v[\\d.]+)/"
       ],
       "depNameTemplate": "ryanoasis/nerd-fonts",
       "datasourceTemplate": "github-releases"
@@ -811,6 +812,34 @@
       "packageNameTemplate": "https://github.com/dracula/xcode",
       "currentValueTemplate": "master",
       "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (archive pin) の powerline/fonts commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "github\\.com/powerline/fonts/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
+      ],
+      "depNameTemplate": "powerline/fonts",
+      "packageNameTemplate": "https://github.com/powerline/fonts",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external の source-han-code-jp をタグ追従させる。R 付きタグのみがフォント成果物のリリースで無印はソースのリリースのため、extractVersion で R 付きに限定する (semver ではないので loose versioning)",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "source-han-code-jp/archive/refs/tags/(?<currentValue>[\\d.]+R)\\.zip"
+      ],
+      "depNameTemplate": "adobe-fonts/source-han-code-jp",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^(?<version>[\\d.]+R)$",
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",

@@ -1,0 +1,16 @@
+{{ if and (eq .chezmoi.os "linux") (not (dig "skip_gui_tools" false .)) -}}
+#!/bin/bash
+set -e
+
+# Linux はフォント更新後に fontconfig キャッシュの再構築が必要 (macOS は不要)。
+# external の更新自体はスクリプトを発火させないため、.chezmoiexternal.toml の
+# 内容ハッシュを埋め込み、フォント external の pin 更新時に run_onchange を
+# 再実行させる。フォント以外の external 変更でも発火するが、fc-cache -f は
+# 冪等で軽量なため許容する。
+# .chezmoiexternal.toml hash: {{ include ".chezmoiexternal.toml" | sha256sum }}
+
+# fontconfig の無い環境ではキャッシュ更新自体が不要なのでスキップする
+if command -v fc-cache &>/dev/null; then
+    fc-cache -f
+fi
+{{ end -}}
