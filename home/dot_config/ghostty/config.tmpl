@@ -21,7 +21,9 @@ background-blur-radius = 0
 
 # Terminal
 term = "xterm-256color"
-scrollback-limit = 2000
+# scrollback-limit の単位はバイト (行数ではない)。2MB。
+# 注意: Ghostty の config はインラインコメント非対応 (値の後に # を書くと行ごと無視される)
+scrollback-limit = 2000000
 
 # Window Size
 window-inherit-font-size = true
@@ -42,7 +44,13 @@ macos-hidden = always
 # keybind = global:alt+space=toggle_quick_terminal
 # quick-terminal-animation-duration = 0
 
+# command は非絶対パスなら PATH 解決されるが、macOS の GUI アプリは launchd の
+# 最小 PATH で起動して fish を解決できないため、OS ごとの絶対パスを指定する
+{{ if eq .chezmoi.os "darwin" -}}
 command = /opt/homebrew/bin/fish
+{{ else -}}
+command = /usr/bin/fish
+{{ end -}}
 shell-integration = fish
 clipboard-trim-trailing-spaces = true
 shell-integration-features = no-cursor

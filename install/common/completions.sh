@@ -37,9 +37,6 @@ function fish_completions() {
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion fish > "$comp_dir/docker.fish" &
         pids+=($!); names+=("docker")
-    else
-        gen_completion docker curl -sfL https://raw.githubusercontent.com/docker/cli/master/contrib/completion/fish/docker.fish > "$comp_dir/docker.fish" &
-        pids+=($!); names+=("docker")
     fi
     if command -v chezmoi &>/dev/null; then
         gen_completion chezmoi chezmoi completion fish > "$comp_dir/chezmoi.fish" &
@@ -133,9 +130,6 @@ function zsh_completions() {
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion zsh > "$comp_dir/_docker" &
         pids+=($!); names+=("docker")
-    else
-        gen_completion docker curl -sfL https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker > "$comp_dir/_docker" &
-        pids+=($!); names+=("docker")
     fi
     if command -v chezmoi &>/dev/null; then
         gen_completion chezmoi chezmoi completion zsh > "$comp_dir/_chezmoi" &
@@ -228,9 +222,6 @@ function bash_completions() {
     # Docker Compose v2 は Docker CLI プラグインのため、docker completion bash で両方カバーされる
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion bash > "$comp_dir/docker" &
-        pids+=($!); names+=("docker")
-    else
-        gen_completion docker curl -sfL https://raw.githubusercontent.com/docker/cli/master/contrib/completion/bash/docker > "$comp_dir/docker" &
         pids+=($!); names+=("docker")
     fi
     if command -v chezmoi &>/dev/null; then

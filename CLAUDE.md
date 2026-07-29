@@ -23,6 +23,9 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   Claude Code が実行時に書き込むその他のランタイム状態 (カウンタ・キャッシュ等) は
   apply のたびにリセットされる。
   chezmoi 内部で実行されるため外部 interpreter 不要で Windows でも動く
+- `~/.claude/settings.json` は通常テンプレート (`dot_claude/settings.json.tmpl`) で全量管理する。
+  外部ツール (ローカルデーモン等) がランタイム注入する hooks は apply のたびに消える (意図的な裁定。
+  hooks 配列の部分マージは脆いため、温存が必要になったら modify-template 化を検討する)
 
 ## ディレクトリ構成
 
@@ -31,7 +34,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)
 - `settings/` — アプリ設定 (`common/`, `macos/`)
 - `tests/` — bats テスト (`tests/files`, `tests/install`)
-- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) / `cloudbuild.yaml` — Ubuntu / Debian / Alpine 検証用イメージのビルド
+- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) — Ubuntu / Debian / Alpine 検証用イメージのビルド (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)
 
 ## data の skip_* フラグ
 

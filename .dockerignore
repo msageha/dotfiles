@@ -16,3 +16,11 @@
 !settings/common
 !settings/common/**
 settings/common/google.ime.txt
+
+**/.env
+**/.env.*
+**/*.env
+**/.envrc
+**/*.pem
+**/*.key
+**/.DS_Store

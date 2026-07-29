@@ -154,9 +154,9 @@
 [includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
     path = ~/.gitconfig.technoface.gitlab # Technoface GitLab専用の設定
 
-[includeIf "hasconfig:remote.*.url:*github.com/SakanaAIBusiness/**"]
+[includeIf "gitdir:~/Works/src/github.com/SakanaAIBusiness/"]
     path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
-[includeIf "hasconfig:remote.*.url:*github.com/SakanaAI/**"]
+[includeIf "gitdir:~/Works/src/github.com/SakanaAI/"]
     path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
 {{ end }}
 {{- end }}

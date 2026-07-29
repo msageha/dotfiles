@@ -1,0 +1,69 @@
+name: docker-debian
+
+# ci.yaml から reusable workflow として呼び出される。
+# Dockerfile.debian 固有のロジック (ubuntu デフォルトユーザーの削除・locale 生成・useradd 等) は
+# chezmoi.yaml の native runner apply では検証されず、docker-image-cd (main push) まで
+# 無検証だったため、PR 時点でビルドを通して検証する (docker-alpine.yaml と同型)。
+# ubuntu-min は userdel ubuntu の経路、debian-min は素の Debian 経路をカバーする。
+# cache scope を docker-image-cd の <tag>-linux-amd64 と揃え、main のビルドキャッシュを
+# PR から再利用して所要時間を抑える。
+on:
+  workflow_call:
+    inputs:
+      fail-fast:
+        description: "失敗時に呼び出し元の run 全体をキャンセルして他の並列チェックを止める"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  # fail-fast step (gh run cancel) に必要。呼び出し元でも同じ権限を付与すること
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        variant:
+          - tag: ubuntu-min
+            base: ubuntu:26.04
+          - tag: debian-min
+            base: debian:trixie
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - name: Build image (no push)
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          file: docker/Dockerfile.debian
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: dotfiles:${{ matrix.variant.tag }}-ci
+          build-args: |
+            BASE_IMAGE=${{ matrix.variant.base }}
+            SKIP_CLI_TOOLS=true
+            SKIP_GUI_TOOLS=true
+          provenance: false
+          # GitHub のレート制限回避のため token を BuildKit secret で渡す (任意)。
+          secrets: |
+            github_token=${{ github.token }}
+          cache-from: type=gha,scope=${{ matrix.variant.tag }}-linux-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant.tag }}-linux-amd64
+      # docker-image-cd の smoke test と同じ条件で起動確認する
+      - name: Smoke test image
+        run: docker run --rm dotfiles:${{ matrix.variant.tag }}-ci fish -c 'mise --version'
+      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める
+      - name: Cancel the entire run on failure
+        if: failure() && inputs.fail-fast
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"

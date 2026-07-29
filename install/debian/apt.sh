@@ -56,6 +56,7 @@ apt_tools=(
     wget
     # CLI tools
     exiv2
+    git-secrets
     graphviz
     htop
     imagemagick

@@ -17,12 +17,6 @@ permissions:
   # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
   actions: write
 
-env:
-  # chezmoi apply が実行する mise install (ubi/aqua backend) をはじめ各ステップが
-  # GitHub API を叩くため、無認証だと runner の共有 IP で rate limit (60 req/h) に当たる。
-  # Actions のエフェメラルトークンを使い認証付きにする
-  GITHUB_TOKEN: ${{ github.token }}
-
 jobs:
   chezmoi:
     runs-on: ${{ matrix.os }}
@@ -63,8 +57,12 @@ jobs:
       - name: Initialize chezmoi
         run: chezmoi init --source=${{ github.workspace }}
       - name: Test chezmoi apply (dry-run)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
       # bats は mise.toml の pin + mise.lock の checksum 検証つきで mise 経由で導入・実行する。
       # mise セッション環境は apply 内の nested mise install (go backend) と干渉するため、
@@ -78,9 +76,11 @@ jobs:
           cache: true
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Run bats tests
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
           # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
@@ -136,9 +136,13 @@ jobs:
         run: chezmoi init --source=${{ github.workspace }}
       - name: Test chezmoi apply (dry-run)
         shell: powershell
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }} --dry-run --verbose
       - name: Apply chezmoi
         shell: powershell
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
       # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める
       - name: Cancel the entire run on failure

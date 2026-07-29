@@ -39,6 +39,12 @@
 .config/ripgrep
 {{ end }}
 
+# ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマを展開しない
+{{ if or (eq .chezmoi.os "windows") (dig "skip_gui_tools" false .) }}
+.config/ghostty
+.config/ghostty/**
+{{ end }}
+
 # .claude / .codex / .gemini / .grok (コーディングエージェント設定) は
 # macOS / Linux で skip_cli_tools=true
 # Windows で skip_windows_extras=true

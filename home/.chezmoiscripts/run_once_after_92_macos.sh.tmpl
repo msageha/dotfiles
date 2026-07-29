@@ -1,6 +1,9 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 set -e
+
+# brew 配下のコマンド (mo) が解決できるように
+eval "$(/opt/homebrew/bin/brew shellenv)"
 {{   if not (dig "skip_cli_tools" false .) -}}
 if [ -z "${CI:-}" ]; then
   mo optimize

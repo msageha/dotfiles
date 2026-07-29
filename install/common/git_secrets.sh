@@ -12,8 +12,8 @@ NC="\033[0m" # No Color (リセット)
 TEMPLATE_DIR="$HOME/.git-templates/git-secrets"
 
 function main() {
-    # macOS は brew、それ以外は未導入のことがあるので、無ければスキップ (templatedir は
-    # 空でも git が無視するため害は無い)。
+    # macOS は brew、Debian/Ubuntu は apt で導入される。
+    # Alpine には git-secrets パッケージが無い (v3.22 時点で確認) ため恒常スキップになる。
     if ! command -v git-secrets &>/dev/null; then
         printf "%b\n" "${YELLOW}git-secrets が見つかりません。フック導入をスキップします。${NC}"
         # templatedir が存在しないと git init 時に警告が出るため、フック無しでも空ディレクトリだけ用意する

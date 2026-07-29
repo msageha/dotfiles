@@ -10,7 +10,7 @@ ENV USER=${USERNAME}
 ENV TZ=Asia/Tokyo
 ENV HOME=/home/${USERNAME}
 # chezmoi のツール導入レベルを制御するビルド引数。
-# SKIP_CLI_TOOLS=false で最小構成
+# SKIP_CLI_TOOLS=true で最小構成
 ARG SKIP_CLI_TOOLS=true
 ARG SKIP_GUI_TOOLS=true
 
