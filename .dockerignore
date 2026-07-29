@@ -17,18 +17,10 @@
 !settings/common/**
 settings/common/google.ime.txt
 
-# whitelist したサブツリー内に untracked で置かれ得る機微ファイル・ゴミの再除外。
-# COPY はビルドコンテキスト全体を独立レイヤーとして永続化するため、
-# clean checkout でないローカルビルド (mise run docker-build → push) でも
-# 公開イメージに混入しないようここで確実に落とす (.gitignore の再除外ブロックと対)
 **/.env
 **/.env.*
 **/*.env
 **/.envrc
-**/secrets
 **/*.pem
 **/*.key
-**/id_rsa
-**/id_ed25519
 **/.DS_Store
-**/.idea

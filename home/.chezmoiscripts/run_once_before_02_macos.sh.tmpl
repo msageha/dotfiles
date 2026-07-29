@@ -13,9 +13,6 @@ export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 
 # GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
 if [ -z "${CI:-}" ]; then
-{{- /* computer_name は darwin の init では必ず promptStringOnce で設定されるが、
-       手動編集や他 OS から流用した config でキーが無くても template error で
-       apply 全体を落とさないよう dig でフォールバックする (空なら consumer 側で skip) */}}
 export COMPUTER_NAME={{ dig "computer_name" "" . | replace "'" "'\\''" | squote }}
 {{   include "../install/macos/system_settings.sh" }}
 {{   if not (dig "skip_gui_tools" false .) -}}

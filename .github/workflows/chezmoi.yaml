@@ -17,10 +17,6 @@ permissions:
   # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
   actions: write
 
-# GITHUB_TOKEN (actions: write 付き) は GitHub API を叩くステップ (chezmoi apply 内の
-# mise install の ubi/aqua backend・mise-action・bats) だけに step-level で渡す。
-# 無認証だと runner の共有 IP で rate limit (60 req/h) に当たるための措置で、
-# get.chezmoi.io など未検証の外部インストーラを実行するステップには露出させない
 jobs:
   chezmoi:
     runs-on: ${{ matrix.os }}

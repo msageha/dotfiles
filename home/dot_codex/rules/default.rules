@@ -1,6 +1,3 @@
-# git push は「明示指示があったときのみ」(AGENTS.md) を permission 層でも守るため allow しない。
-# curl は network_access=true と組み合わさると prompt injection 時の無承認 exfil 経路
-# (curl -d @file 等) になるため allow しない。どちらも都度承認で使う
 prefix_rule(pattern=["git", "add"], decision="allow")
 prefix_rule(pattern=["git", "commit"], decision="allow")
 prefix_rule(pattern=["xcodebuild"], decision="allow")

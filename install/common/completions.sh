@@ -33,9 +33,7 @@ function fish_completions() {
         gen_completion uv uv generate-shell-completion fish > "$comp_dir/uv.fish" &
         pids+=($!); names+=("uv")
     fi
-    # Docker Compose v2 は Docker CLI プラグインのため、docker completion fish で両方カバーされる。
-    # docker 不在時は skip する (他ツールと同じ方針。master 追従 URL からの取得は upstream の
-    # ファイル移動で壊れ、completion 生成全体を巻き込むため行わない)
+    # Docker Compose v2 は Docker CLI プラグインのため、docker completion fish で両方カバーされる
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion fish > "$comp_dir/docker.fish" &
         pids+=($!); names+=("docker")
@@ -128,8 +126,7 @@ function zsh_completions() {
         gen_completion uv uv generate-shell-completion zsh > "$comp_dir/_uv" &
         pids+=($!); names+=("uv")
     fi
-    # Docker Compose v2 は Docker CLI プラグインのため、docker completion zsh で両方カバーされる。
-    # docker 不在時は skip する (fish_completions と同じ方針)
+    # Docker Compose v2 は Docker CLI プラグインのため、docker completion zsh で両方カバーされる
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion zsh > "$comp_dir/_docker" &
         pids+=($!); names+=("docker")
@@ -222,8 +219,7 @@ function bash_completions() {
         gen_completion uv uv generate-shell-completion bash > "$comp_dir/uv" &
         pids+=($!); names+=("uv")
     fi
-    # Docker Compose v2 は Docker CLI プラグインのため、docker completion bash で両方カバーされる。
-    # docker 不在時は skip する (fish_completions と同じ方針)
+    # Docker Compose v2 は Docker CLI プラグインのため、docker completion bash で両方カバーされる
     if command -v docker &>/dev/null; then
         gen_completion docker docker completion bash > "$comp_dir/docker" &
         pids+=($!); names+=("docker")

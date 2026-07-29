@@ -27,8 +27,6 @@ jobs:
         with:
           persist-credentials: false
 
-      # curl | sh の未検証インストールではなく SHA pin した mise-action を使い、
-      # mise.lock の checksum / cosign 検証つきでツールを導入する。
       # GITHUB_TOKEN は GitHub API を叩くステップ (ubi/aqua backend の rate limit 回避)
       # だけに step-level で渡し、workflow レベルで全ステップへ露出させない
       - name: Install mise

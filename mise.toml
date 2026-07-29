@@ -136,8 +136,7 @@ else
 fi
 '''
 
-# GPU (amd64 のみ) を除く 6 バリアントを amd64/arm64 マルチアーキでビルドし
-# registry に push する。
+# GPU (amd64 のみ) を除く 6 バリアントを amd64/arm64 マルチアーキでビルドし registry に push
 [tasks.build-multi-platform]
 description = "GPU を除く 6 バリアントのマルチアーキビルド + push"
 depends = ["buildx-setup"]
