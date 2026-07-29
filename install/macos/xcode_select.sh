@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -euo pipefail  # エラー処理と未定義変数の扱いを強化
+set -euo pipefail
 
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function install() {
     if ! xcode-select -p &>/dev/null; then

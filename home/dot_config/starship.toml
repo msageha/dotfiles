@@ -76,7 +76,6 @@ style_user = "bg:rose fg:on_rose bold"
 style_root = "bg:rose fg:on_rose bold"
 format = '[ $user]($style)[](bg:slate fg:rose)'
 
-# cwd
 [directory]
 truncation_length = 2
 truncation_symbol = "…/"

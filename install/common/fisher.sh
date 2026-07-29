@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -euo pipefail  # エラー処理と未定義変数の扱いを強化
+set -euo pipefail
 
 RED="\033[0;31m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 function validate_fish() {
     if ! command -v fish &>/dev/null; then

@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 BLUE="\033[0;34m"
 YELLOW="\033[0;33m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 
 # 公式 marketplace (claude-plugins-official) から plugin を取得する共通処理。
 # add / install は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する。

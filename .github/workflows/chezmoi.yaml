@@ -84,7 +84,6 @@ jobs:
           source ~/.bash_profile
           set -e
           mise run test
-      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める。
       # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
       - name: Cancel the entire run on failure
         if: failure() && inputs.fail-fast
@@ -132,7 +131,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
-      # fail-fast: run 全体をキャンセルして並列で走る他のチェックを止める
       - name: Cancel the entire run on failure
         if: failure() && inputs.fail-fast
         shell: powershell

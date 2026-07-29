@@ -6,14 +6,12 @@ NC="\033[0m"
 
 # Xcode の Dracula テーマ (*.xccolortheme) は .chezmoiexternal.toml の external が配置する
 
-# Terminal.app に Dracula テーマをインストール
 # https://draculatheme.com/terminal-app
 function terminal_app_dracula() {
     printf "%b\n" "${BLUE}Terminal.app Draculaテーマをインストール中...${NC}"
 
     local repo_url="https://github.com/dracula/terminal-app.git"
 
-    # 既にプロファイルが存在する場合はスキップ
     if defaults read com.apple.Terminal "Window Settings" 2>/dev/null | grep -q '"Dracula"'; then
         printf "%b\n" "${BLUE}  Draculaテーマは既にインストールされています。スキップ${NC}"
         return 0
@@ -29,7 +27,6 @@ function terminal_app_dracula() {
         return 0
     fi
 
-    # Dracula.terminal をインポートしてデフォルトに設定。
     # open は非同期のため、固定 sleep ではなくプロファイルが実際に登録されるまでポーリングで待つ
     open "$tmp_dir/Dracula.terminal"
     local waited=0

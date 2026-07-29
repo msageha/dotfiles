@@ -62,8 +62,7 @@ RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   rm -rf $HOME/dotfiles && \
   rm -rf "$HOME/.cache" && \
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
-  # chezmoi は provisioning 専用でランタイム不要。~42MB あるため apply 後に削除する
-  # (再適用が必要なら curl get.chezmoi.io で都度入れ直す)。Dockerfile.alpine と同じ掃除
+  # chezmoi は provisioning 専用でランタイム不要
   rm -f "$HOME/.local/bin/chezmoi" && \
   # mise.run が入れるバイナリは strip されておらず ~83MB ある。binutils を一時導入して
   # strip し、binutils はランタイムに残さず削除する (Dockerfile.alpine と同じ掃除)

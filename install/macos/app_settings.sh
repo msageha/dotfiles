@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -Eeuo pipefail
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color (リセット)
+NC="\033[0m"
 CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
 CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
 
-# VS Codeの設定
 function vscode() {
     printf "%b\n" "${BLUE}VS Codeの設定を適用中...${NC}"
     # ウィンドウ状態の保存を無効化は VS Code の Settings Sync で管理されない

@@ -37,16 +37,17 @@ repos:
     rev: 57e1618d78fd469a92c1e584e8c9313024656623 # frozen: v2.14.0
     hooks:
       - id: hadolint
-        args: [
-          --ignore,
-          DL3008,
-          --ignore,
-          DL3015,
-          --ignore,
-          DL3018,
-          --ignore,
-          DL3004,
-        ]
+        args:
+          [
+            --ignore,
+            DL3008,
+            --ignore,
+            DL3015,
+            --ignore,
+            DL3018,
+            --ignore,
+            DL3004,
+          ]
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: 067260dc5fe6ea86b7551bfd6f8b3ba4e6c93129 # frozen: v1.28.0
     hooks:
@@ -60,14 +61,6 @@ repos:
         types_or: [json, yaml, markdown, toml]
       - id: psscriptanalyzer
         name: Lint PowerShell scripts with PSScriptAnalyzer
-        # pwsh は mise.toml の powershell で供給する。PSScriptAnalyzer モジュールは初回に
-        # Install-Module -Scope CurrentUser で導入する (以降はキャッシュ)。
-        # 除外ルールの理由:
-        # - PSAvoidUsingWriteHost: セットアップスクリプトの色付きコンソール出力は Write-Host が意図
-        # - PSUseBOMForUnicodeEncodedFile: リポジトリ規約は BOM 無し UTF-8 (5.1 実行時は
-        #   .chezmoiscripts テンプレートが BOM を付与する)
-        # - PSUseShouldProcessForStateChangingFunctions / PSUseSingularNouns: 配布 cmdlet 向けの
-        #   規約で、内部専用のセットアップ関数には過剰
         language: system
         entry: mise exec -- pwsh -NoProfile -CommandWithArgs 'if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) { Install-Module PSScriptAnalyzer -Force -Scope CurrentUser }; $findings = @($args | ForEach-Object { Invoke-ScriptAnalyzer -Path $_ -Severity Warning, Error -ExcludeRule PSAvoidUsingWriteHost, PSUseBOMForUnicodeEncodedFile, PSUseShouldProcessForStateChangingFunctions, PSUseSingularNouns }); if ($findings) { $findings | Format-Table -AutoSize | Out-String | Write-Host; exit 1 }'
         require_serial: true

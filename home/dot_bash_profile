@@ -90,13 +90,13 @@ export GOBIN="$HOME/.local/bin"
 # --- JDKの設定 ---
 if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
     export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-    export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include" # Cプリプロセッサ用フラグ
+    export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
 fi
 
 # --- Google Cloud SDKのPython設定 ---
 export CLOUDSDK_PYTHON="$(command -v python3)"
 
-# --- Docker環境設定 --- (Docker内で動作している場合に設定)
+# --- Docker環境設定 ---
 if [ -e /.dockerenv ] && [ -z "$DOCKER_MACHINE_NAME" ]; then
     export DOCKER_MACHINE_NAME="docker"
 fi
