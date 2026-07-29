@@ -8,27 +8,21 @@ steps:
       - --install
       - arm64
     id: setup-qemu
-  # Artifact Registry 認証: アクセストークン取得
-  - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        gcloud auth print-access-token > /workspace/.ar_token
-    id: get-token
-    waitFor:
-      - setup-qemu
-  # Artifact Registry 認証: Docker ログイン
+  # Artifact Registry 認証: ビルド用サービスアカウントのアクセストークンを
+  # metadata server から取得し、同一 step 内でそのまま docker login へ渡す
+  # (/workspace にトークンファイルを書くと step 失敗時に残留するため経由させない)
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: bash
     args:
       - -c
       - |
-        cat /workspace/.ar_token | docker login -u oauth2accesstoken --password-stdin https://${_REGION}-docker.pkg.dev
-        rm -f /workspace/.ar_token
+        set -euo pipefail
+        curl -sf -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
+          | sed -E 's/.*"access_token"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/' \
+          | docker login -u oauth2accesstoken --password-stdin https://${_REGION}-docker.pkg.dev
     id: docker-login
     waitFor:
-      - get-token
+      - setup-qemu
   # buildx ビルダーの作成
   - name: "gcr.io/cloud-builders/docker"
     args:

@@ -249,6 +249,10 @@ function bash_completions() {
         gen_completion kubectl kubectl completion bash > "$comp_dir/kubectl" &
         pids+=($!); names+=("kubectl")
     fi
+    if command -v ngrok &>/dev/null; then
+        gen_completion ngrok env SHELL="$(command -v bash)" ngrok completion > "$comp_dir/ngrok" &
+        pids+=($!); names+=("ngrok")
+    fi
     if command -v bat &>/dev/null; then
         gen_completion bat bat --completion bash > "$comp_dir/bat" &
         pids+=($!); names+=("bat")

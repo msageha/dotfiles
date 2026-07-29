@@ -85,9 +85,9 @@ end
 
 # --- Goの設定 ---
 set -x GOPATH "$HOME/Works"
-if test -d $HOME/Works/bin
-    fish_add_path $HOME/Works/bin
-end
+# go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
+# mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
+set -x GOBIN "$HOME/.local/bin"
 
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java

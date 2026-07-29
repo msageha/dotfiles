@@ -66,10 +66,6 @@ set backupskip=/tmp/*,/private/tmp/*
 set modeline
 set modelines=4
 
-" ディレクトリごとの.vimrcファイルを有効にし、安全でないコマンドを無効に
-set exrc
-set secure
-
 " --------------------------------------------
 " Display Settings
 " --------------------------------------------

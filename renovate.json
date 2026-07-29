@@ -123,7 +123,7 @@
         "/^home/\\.chezmoitemplates/claude\\.json$/"
       ],
       "matchStrings": [
-        "\"(?<depName>nanobanana-mcp-server)@(?<currentValue>[\\w.-]+)\""
+        "\"(?<depName>nanobanana-mcp-server|mcp-youtube-transcript)@(?<currentValue>[\\w.-]+)\""
       ],
       "datasourceTemplate": "pypi"
     },
@@ -702,6 +702,115 @@
       ],
       "datasourceTemplate": "github-tags",
       "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "docker-alpine workflow のビルド引数のベースイメージを docker datasource で追従する (docker-image-cd の alpine variant と同期)",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/docker-alpine\\.yaml$/"
+      ],
+      "matchStrings": [
+        "BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (archive pin) の dracula/vim commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "github\\.com/dracula/vim/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
+      ],
+      "depNameTemplate": "dracula/vim",
+      "packageNameTemplate": "https://github.com/dracula/vim",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (archive pin) の dracula/delta commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "github\\.com/dracula/delta/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
+      ],
+      "depNameTemplate": "dracula/delta",
+      "packageNameTemplate": "https://github.com/dracula/delta",
+      "currentValueTemplate": "main",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (archive pin) の dracula/tmux commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "github\\.com/dracula/tmux/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
+      ],
+      "depNameTemplate": "dracula/tmux",
+      "packageNameTemplate": "https://github.com/dracula/tmux",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (archive pin) の dracula/dircolors commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "github\\.com/dracula/dircolors/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
+      ],
+      "depNameTemplate": "dracula/dircolors",
+      "packageNameTemplate": "https://github.com/dracula/dircolors",
+      "currentValueTemplate": "main",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (file pin) の git-open commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/paulirish/git-open/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "paulirish/git-open",
+      "packageNameTemplate": "https://github.com/paulirish/git-open",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (file pin) の dracula/ghostty commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/dracula/ghostty/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "dracula/ghostty",
+      "packageNameTemplate": "https://github.com/dracula/ghostty",
+      "currentValueTemplate": "main",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (file pin) の dracula/xcode commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/dracula/xcode/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "dracula/xcode",
+      "packageNameTemplate": "https://github.com/dracula/xcode",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
     },
     {
       "customType": "regex",

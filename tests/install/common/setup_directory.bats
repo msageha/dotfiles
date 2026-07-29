@@ -13,9 +13,10 @@ function setup() {
     directories_exists=(
         "${HOME}/Downloads"
         "${HOME}/Documents"
-        "${HOME}/Works/bin"
         "${HOME}/Works/pkg"
         "${HOME}/.ssh"
+        "${HOME}/.local/bin"
+        "${HOME}/.local/state"
     )
     for directory in "${directories_exists[@]}"; do
         echo "Checking ${directory}"

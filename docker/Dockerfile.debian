@@ -28,6 +28,7 @@ RUN \
   rm /etc/localtime && \
   ln -s /usr/share/zoneinfo/${TZ} /etc/localtime && \
   dpkg-reconfigure -f noninteractive tzdata && \
+  if id ubuntu >/dev/null 2>&1; then userdel -r ubuntu; fi && \
   groupadd ${USERNAME} && \
   useradd -g ${USERNAME} -G sudo -m -s /bin/bash ${USERNAME} && \
   echo "${USERNAME}:${USERNAME}" | chpasswd && \

@@ -78,9 +78,9 @@ unset _dircolors_bin
 
 # --- Goの設定 ---
 export GOPATH="$HOME/Works"
-if [ -d "$HOME/Works/bin" ]; then
-    export PATH="$HOME/Works/bin:$PATH"
-fi
+# go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
+# mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
+export GOBIN="$HOME/.local/bin"
 
 # --- zsh補完システムの初期化 ---
 # completions.sh が生成した _<cmd> 形式の補完を compinit より前に fpath へ追加する

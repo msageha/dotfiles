@@ -4,44 +4,7 @@ set -Eeuo pipefail
 BLUE="\033[0;34m"
 NC="\033[0m"
 
-# Xcode に Dracula テーマをインストール
-# https://draculatheme.com/xcode
-function xcode_dracula() {
-    printf "%b\n" "${BLUE}Xcode Draculaテーマをインストール中...${NC}"
-
-    local theme_dir="$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes"
-    local repo_url="https://github.com/dracula/xcode.git"
-
-    # テーマディレクトリを作成
-    mkdir -p "$theme_dir"
-
-    # 既にテーマが存在する場合はスキップ
-    if [[ -f "$theme_dir/Dracula.xccolortheme" ]]; then
-        printf "%b\n" "${BLUE}  Draculaテーマは既にインストールされています。スキップ${NC}"
-        return 0
-    fi
-
-    local tmp_dir
-    tmp_dir="$(mktemp -d)"
-    # shellcheck disable=SC2064
-    trap "rm -rf '$tmp_dir'" RETURN
-
-    if ! git clone --depth 1 "$repo_url" "$tmp_dir" 2>/dev/null; then
-        printf "%b\n" "${BLUE}  リポジトリのクローンに失敗しました。スキップ${NC}"
-        return 0
-    fi
-
-    # Dracula.xccolortheme と Alucard.xccolortheme を配置
-    for theme_file in "$tmp_dir/"*.xccolortheme; do
-        [[ -f "$theme_file" ]] && cp "$theme_file" "$theme_dir/"
-    done
-
-    trap - RETURN
-    rm -rf "$tmp_dir"
-
-    printf "%b\n" "${BLUE}  Draculaテーマをインストールしました${NC}"
-    printf "%b\n" "${BLUE}  Xcode → Preferences → Themes から選択してください${NC}"
-}
+# Xcode の Dracula テーマ (*.xccolortheme) は .chezmoiexternal.toml の external が配置する
 
 # Terminal.app に Dracula テーマをインストール
 # https://draculatheme.com/terminal-app
@@ -73,6 +36,15 @@ function terminal_app_dracula() {
     defaults write com.apple.Terminal "Startup Window Settings" -string "Dracula"
 
     # フォントを SauceCodePro Nerd Font 18pt に設定（Ghostty と統一）
+    # PyObjC (AppKit) は CLT の python3 に含まれない場合があるため、無ければ
+    # フォント設定だけスキップする
+    if ! python3 -c 'import AppKit, Foundation' 2>/dev/null; then
+        printf "%b\n" "${BLUE}  PyObjC が無いためフォント設定をスキップします${NC}"
+        trap - RETURN
+        rm -rf "$tmp_dir"
+        printf "%b\n" "${BLUE}  Draculaテーマをインストールしデフォルトに設定しました${NC}"
+        return 0
+    fi
     python3 - <<'PYTHON'
 import AppKit, Foundation
 
@@ -100,7 +72,6 @@ PYTHON
 }
 
 function main() {
-    xcode_dracula
     terminal_app_dracula
 }
 

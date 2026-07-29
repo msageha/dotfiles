@@ -29,9 +29,6 @@ eval "$(mise activate bash --shims)"
 
 {{ if not (dig "skip_cli_tools" false .) -}}
 (
-{{   include "../install/common/git_open.sh" }}
-)
-(
 {{   include "../install/common/git_secrets.sh" }}
 )
 {{ end -}}
