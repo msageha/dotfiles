@@ -32,9 +32,9 @@ executable = true
 {{ end }}
 
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}
-{{ $ghosttyDir := ".config/ghostty" }}
-{{- if eq .chezmoi.os "darwin" }}{{ $ghosttyDir = "Library/Application Support/com.mitchellh.ghostty" }}{{ end }}
-["{{ $ghosttyDir }}/themes/dracula"]
+{{- /* カスタムテーマの探索パスは ~/.config/ghostty/themes と Ghostty resources dir のみ
+      (+show-config --docs で確認)。macOS も XDG 側に置く (旧 AppSupport 配置は探索対象外) */}}
+[".config/ghostty/themes/dracula"]
 type = "file"
 url = "https://raw.githubusercontent.com/dracula/ghostty/b0e64590232331d9837c82cc1c5138e11ea39f76/dracula"
 {{ end }}

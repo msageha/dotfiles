@@ -151,7 +151,7 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msage
 | ------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェント設定も展開される |
 
-Windows は最小構成（chezmoi 管理の dotfiles + winget によるアプリ導入 + コーディングエージェント CLI のみ）。`install/common/` 配下のセットアップ（mise によるツール管理・シェル補完・git-secrets・ghostty 共通設定など）は Windows では実行されない（`run_once_after_91_common.sh.tmpl` が Windows を丸ごと対象外にしている）。フォント（`.chezmoiexternal.toml` の external として導入）も Windows は対象外で、Windows Terminal 用の Nerd Font のみ `install/windows/setup_powershell.ps1` で別途導入される。
+Windows は最小構成（chezmoi 管理の dotfiles + winget によるアプリ導入 + コーディングエージェント CLI のみ）。`install/common/` 配下のセットアップ（mise によるツール管理・シェル補完・git-secrets など）は Windows では実行されない（`run_once_after_91_common.sh.tmpl` が Windows を丸ごと対象外にしている）。フォント（`.chezmoiexternal.toml` の external として導入）も Windows は対象外で、Windows Terminal 用の Nerd Font のみ `install/windows/setup_powershell.ps1` で別途導入される。
 
 ### Docker
 
@@ -256,7 +256,7 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   ├── debian/ ubuntu/ alpine/    # Linux 系
 │   └── windows/                   # Windows (winget ブートストラップ・コーディングエージェント・GUI アプリ・Starship 等・システム設定、.chezmoiscripts から実行)
 ├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
-│   ├── common/                    # ghostty / vscode / IME 辞書(暗号化)
+│   ├── common/                    # vscode / IME 辞書(暗号化)
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化)
 ├── tests/                         # BATS テスト (files / install)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine)

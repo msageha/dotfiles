@@ -21,14 +21,19 @@
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf
 {{ $fontDir }}/SymbolsNerdFont*.ttf
 {{ $fontDir }}/SourceHanCodeJP-*.otf
-{{- /* 旧 install/common/fonts.sh (powerline/fonts の install.sh) がフォントディレクトリ
-       直下へ flat 展開した全ファミリーの残骸。現行の external は powerline-fonts/
-       サブディレクトリ配下に置くため衝突しない。手動導入した powerline フォントも
-       対象になる点に注意 (必要なら再導入する) */}}
 {{ $fontDir }}/* for Powerline.ttf
 {{ $fontDir }}/* for Powerline.otf
 {{ $fontDir }}/* For Powerline.ttf
 {{ $fontDir }}/* For Powerline.otf
 {{ $fontDir }}/PowerlineSymbols.otf
 {{ $fontDir }}/PowerlineExtraSymbols.otf
+{{- /* ghostty 設定は chezmoi 管理 (~/.config/ghostty/config) へ移行済み。
+       旧 installer (install/common/ghostty.sh、廃止) と旧 external が置いた残骸を掃除する。
+       AppSupport はアプリの状態も置かれうるためディレクトリごとではなくファイル単位で消す */}}
+{{- if eq .chezmoi.os "darwin" }}
+Library/Application Support/com.mitchellh.ghostty/config.ghostty
+Library/Application Support/com.mitchellh.ghostty/themes/dracula
+{{- else }}
+.config/ghostty/config.ghostty
+{{- end }}
 {{ end -}}
