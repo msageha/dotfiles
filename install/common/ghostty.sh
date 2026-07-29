@@ -4,8 +4,6 @@ set -euo pipefail  # エラー処理と未定義変数の扱いを強化
 BLUE="\033[0;34m"
 NC="\033[0m" # No Color (リセット)
 
-THEME_URL="https://raw.githubusercontent.com/dracula/ghostty/main/dracula"
-
 function setup_ghostty() {
     # ghostty は OS ごとに設定ディレクトリが異なる
     local config_dir
@@ -22,18 +20,12 @@ function setup_ghostty() {
     repo_root="$(cd "$source_dir/.." && pwd)"
     local config_src="${repo_root}/settings/common/ghostty/config.ghostty"
 
-    mkdir -p "$config_dir/themes"
+    mkdir -p "$config_dir"
     # config.ghostty というファイル名が優先読み込みされるのは Ghostty >= 1.2.3 のみ
     # (それ未満のバージョンでは config という名前のみ読み込まれ、config.ghostty は無視される)
     cp "$config_src" "$config_dir/config.ghostty"
     printf "%b\n" "${BLUE}ghostty config installed to $config_dir/config.ghostty${NC}"
-
-    # Dracula テーマ (取得失敗は警告のみで全体は止めない)
-    if curl -fsSL "$THEME_URL" -o "$config_dir/themes/dracula"; then
-        printf "%b\n" "${BLUE}ghostty dracula theme installed.${NC}"
-    else
-        printf "%b\n" "WARN: failed to fetch ghostty dracula theme from $THEME_URL" >&2
-    fi
+    # Dracula テーマ (themes/dracula) は .chezmoiexternal.toml の external が配置する
 }
 
 function main() {

@@ -12,6 +12,7 @@
     "CLAUDE.md",
     "home/dot_claude/**/*.md",
     "home/.chezmoitemplates/**",
+    "home/.chezmoiexternal.toml",
     "**/modify_*"
   ],
   "plugins": [

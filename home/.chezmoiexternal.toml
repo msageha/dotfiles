@@ -1,7 +1,5 @@
-# dracula テーマ群は commit SHA で固定する (vim plugin 等はコード実行を伴うため
-# branch 追従にしない)。git-repo 型は branch しか指定できず commit を固定できないため
-# archive 型で pin し、SHA の更新は renovate の git-refs custom manager が
-# 各リポジトリの default branch 最新に追従させる。
+# dracula テーマ群は commit SHA で固定する
+# archive 型で pin し、更新は renovate で追従させる。
 [".vim/pack/themes/start/dracula"]
 type = "archive"
 url = "https://github.com/dracula/vim/archive/4f068752154e70ef8e03d6a70992033fff20a165.tar.gz"
@@ -25,3 +23,29 @@ type = "archive"
 url = "https://github.com/dracula/dircolors/archive/4b80eae10819becb1ba285aecd81487540b14b44.tar.gz"
 exact = true
 stripComponents = 1
+
+{{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) }}
+# 単一ファイルの導入物も external (type="file") で配置し、SHA 更新を apply で反映させる
+[".local/bin/git-open"]
+type = "file"
+url = "https://raw.githubusercontent.com/paulirish/git-open/63c0e77aaf18b72c839b1113c1e2f9514413643b/git-open"
+executable = true
+{{ end }}
+
+{{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}
+{{ $ghosttyDir := ".config/ghostty" }}
+{{- if eq .chezmoi.os "darwin" }}{{ $ghosttyDir = "Library/Application Support/com.mitchellh.ghostty" }}{{ end }}
+["{{ $ghosttyDir }}/themes/dracula"]
+type = "file"
+url = "https://raw.githubusercontent.com/dracula/ghostty/b0e64590232331d9837c82cc1c5138e11ea39f76/dracula"
+{{ end }}
+
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_gui_tools" false .)) }}
+["Library/Developer/Xcode/UserData/FontAndColorThemes/Dracula.xccolortheme"]
+type = "file"
+url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f14d3ee8a3b40788/Dracula.xccolortheme"
+
+["Library/Developer/Xcode/UserData/FontAndColorThemes/Alucard.xccolortheme"]
+type = "file"
+url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f14d3ee8a3b40788/Alucard.xccolortheme"
+{{ end }}

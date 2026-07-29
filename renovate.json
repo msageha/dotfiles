@@ -772,15 +772,43 @@
     },
     {
       "customType": "regex",
-      "description": "git-open の commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "description": "chezmoi external (file pin) の git-open commit SHA を git-refs datasource で master の最新 commit に追従させる",
       "managerFilePatterns": [
-        "/^install/common/git_open\\.sh$/"
+        "/^home/\\.chezmoiexternal\\.toml$/"
       ],
       "matchStrings": [
         "raw\\.githubusercontent\\.com/paulirish/git-open/(?<currentDigest>[a-f0-9]{40})/"
       ],
       "depNameTemplate": "paulirish/git-open",
       "packageNameTemplate": "https://github.com/paulirish/git-open",
+      "currentValueTemplate": "master",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (file pin) の dracula/ghostty commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/dracula/ghostty/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "dracula/ghostty",
+      "packageNameTemplate": "https://github.com/dracula/ghostty",
+      "currentValueTemplate": "main",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
+      "description": "chezmoi external (file pin) の dracula/xcode commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoiexternal\\.toml$/"
+      ],
+      "matchStrings": [
+        "raw\\.githubusercontent\\.com/dracula/xcode/(?<currentDigest>[a-f0-9]{40})/"
+      ],
+      "depNameTemplate": "dracula/xcode",
+      "packageNameTemplate": "https://github.com/dracula/xcode",
       "currentValueTemplate": "master",
       "datasourceTemplate": "git-refs"
     },
