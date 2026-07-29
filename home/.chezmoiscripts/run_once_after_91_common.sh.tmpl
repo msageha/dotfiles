@@ -23,9 +23,6 @@ export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }
 {{   include "../install/common/mise.sh" }}
 )
 eval "$(mise activate bash --shims)"
-(
-{{   include "../install/common/completions.sh" }}
-)
 
 {{ if not (dig "skip_cli_tools" false .) -}}
 (

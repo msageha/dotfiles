@@ -29,7 +29,8 @@ function Update-SessionPath {
     $env:Path = ($current + $added) -join ';'
 }
 
-# install/common/fonts.sh の NERD_FONTS_VERSION と揃える
+# home/.chezmoiexternal.toml の nerd-fonts external (SourceCodePro.zip / NerdFontsSymbolsOnly.zip)
+# のバージョンと揃える
 $NerdFontsVersion = 'v3.4.0'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'

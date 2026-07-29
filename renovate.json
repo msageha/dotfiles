@@ -2,8 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    "helpers:pinGitHubActionDigests",
-    ":enablePreCommit"
+    "helpers:pinGitHubActionDigests"
   ],
   "timezone": "Asia/Tokyo",
   "schedule": [
@@ -103,7 +102,7 @@
     },
     {
       "customType": "regex",
-      "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する",
+      "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する。context7 / chrome-devtools / playwright の pin は home/.chezmoidata.toml へ一元化済みで、ここは claude.json に残る個別 pin (antigravity / drawio 等) と、誤って再インライン化された pin の追従用",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/claude\\.json$/",
         "/^home/dot_gemini/private_settings\\.json\\.tmpl$/",
@@ -115,6 +114,16 @@
         "\"-y\",\\s*\"(?<depName>(?:@[a-z0-9._-]+/)?[a-z0-9._-]+)@(?<currentValue>\\d[\\w.-]*)\""
       ],
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "home/.chezmoidata.toml の MCP バージョン pin (単一ソース) を annotation コメントで追従する",
+      "managerFilePatterns": [
+        "/^home/\\.chezmoidata\\.toml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\n[A-Za-z0-9_]+ = \"(?<currentValue>[\\w.-]+)\""
+      ]
     },
     {
       "customType": "regex",

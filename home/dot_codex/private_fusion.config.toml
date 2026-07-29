@@ -1,3 +1,6 @@
+# codex --profile <name> が読む profile-v2 overlay (~/.codex/<name>.config.toml)。
+# standalone ではなく base の config.toml に再帰マージされるため、ここには上書きしたい
+# キーだけを書く (model_provider が参照する [model_providers.*] は base 側の定義が効く)。
 model = "openrouter/fusion"
 model_reasoning_effort = "high"
 model_provider = "openrouter"

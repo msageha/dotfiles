@@ -15,10 +15,10 @@ You verify and debug web frontends in a real browser.
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@0.0.78"]
+args = ["-y", "@playwright/mcp@{{ .mcp.playwright }}"]
 startup_timeout_ms = 20_000
 
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@1.6.0"]
+args = ["-y", "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"]
 startup_timeout_ms = 20_000

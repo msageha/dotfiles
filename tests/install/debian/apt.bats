@@ -29,7 +29,9 @@ function setup() {
 
 @test "[debian] apt - SKIP_CLI_TOOLS=true skips tools and chezmoi/docker" {
     # base のみ実行し、追加ツール群はスキップする (sudo/curl はスタブで無害化)。
-    run env SKIP_CLI_TOOLS=true bash -c 'sudo() { :; }; curl() { :; }; source '"${SCRIPT_PATH}"'; main'
+    # root で bats を実行すると run_privileged が sudo を介さず実 apt を叩いてしまうため、
+    # id もスタブして非 root 扱いにし、必ず sudo スタブを経由させる。
+    run env SKIP_CLI_TOOLS=true bash -c 'id() { echo 1000; }; sudo() { :; }; curl() { :; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 0 ]
     [[ "$output" == *"Skipping apt tools"* ]]
     [[ "$output" != *"Installing APT tool packages"* ]]
@@ -46,7 +48,8 @@ function setup() {
 @test "[debian] apt - no root/sudo skips all APT operations" {
     # sudo が使えない (未インストール/sudoers 未登録/非対話でパスワード入力不可等) 環境では、
     # main() の先頭で権限を判定し、以降の apt 操作を一切行わず警告のみで終了する。
-    run env SKIP_CLI_TOOLS=true bash -c 'sudo() { return 1; }; source '"${SCRIPT_PATH}"'; main'
+    # root で bats を実行すると has_privilege が id で真になってしまうため id もスタブする。
+    run env SKIP_CLI_TOOLS=true bash -c 'id() { echo 1000; }; sudo() { return 1; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 0 ]
     [[ "$output" == *"root/sudo 権限が無いため"* ]]
     [[ "$output" != *"Updating APT package lists"* ]]

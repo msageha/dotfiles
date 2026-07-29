@@ -22,7 +22,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7-mcp@3.2.5"
+        "@upstash/context7-mcp@{{ .mcp.context7 }}"
       ],
       "env": {}
     },
@@ -31,7 +31,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "chrome-devtools-mcp@1.6.0"
+        "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"
       ],
       "env": {}
     },
@@ -49,7 +49,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@playwright/mcp@0.0.78"
+        "@playwright/mcp@{{ .mcp.playwright }}"
       ],
       "env": {}
     },

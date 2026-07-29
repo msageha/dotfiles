@@ -1,8 +1,8 @@
 ---
+# conf.d は nginx/systemd 等にも存在するディレクトリ名のため、fish のファイルは
+# 拡張子 (*.fish) だけで判定する (fish の conf.d が読むのも *.fish のみ)
 paths:
   - "**/*.fish"
-  - "**/config.fish"
-  - "**/conf.d/**"
 ---
 # Fish Shell
 

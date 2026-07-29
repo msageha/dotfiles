@@ -7,7 +7,9 @@ function docker_run -d 'run and exec docker container'
         set CMD $argv[2..-1]
     end
 
-    echo "executing: docker container run -it $IMAGE $CMD"
     set DIR_NAME (basename $PWD)
-    docker container run --env DOCKER_MACHINE_NAME=$IMAGE --entrypoint "" -v ./:/tmp/$DIR_NAME -it $IMAGE $CMD
+    # 表示と実行が乖離しないよう、同じリストを echo してから実行する
+    set -l docker_cmd docker container run --env DOCKER_MACHINE_NAME=$IMAGE --entrypoint "" -v ./:/tmp/$DIR_NAME -it $IMAGE $CMD
+    echo "executing: $docker_cmd"
+    $docker_cmd
 end

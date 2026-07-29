@@ -10,10 +10,7 @@ on:
   # PR head ブランチへ明示的に dispatch できるようにする
   workflow_dispatch:
 
-permissions:
-  contents: read
-  # fail-fast: 失敗した job が run 全体をキャンセルする (他の並列チェックを止める) のに必要
-  actions: write
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,28 +20,45 @@ concurrency:
 # その時点で run 全体をキャンセルする (fail-fast)。
 # チェックを追加するときはここに job を足し、呼び出される側は
 # workflow_call + fail-fast input を持つ reusable workflow として実装する。
+# permissions は workflow レベルではなく job レベルで付与する (zizmor excessive-permissions)。
+# actions: write は fail-fast (失敗した job が gh run cancel で run 全体を止める) に必要。
 jobs:
   prek:
     uses: ./.github/workflows/prek.yaml
+    permissions:
+      contents: read
+      actions: write
     with:
       fail-fast: true
 
   gitleaks:
     uses: ./.github/workflows/gitleaks.yaml
+    permissions:
+      contents: read
+      actions: write
     with:
       fail-fast: true
 
   chezmoi:
     uses: ./.github/workflows/chezmoi.yaml
+    permissions:
+      contents: read
+      actions: write
     with:
       fail-fast: true
 
   docker-alpine:
     uses: ./.github/workflows/docker-alpine.yaml
+    permissions:
+      contents: read
+      actions: write
     with:
       fail-fast: true
 
   docker-debian:
     uses: ./.github/workflows/docker-debian.yaml
+    permissions:
+      contents: read
+      actions: write
     with:
       fail-fast: true

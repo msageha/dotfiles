@@ -14,6 +14,12 @@ function vscode() {
 }
 
 function bettertouchtool() {
+    # cask の導入失敗などでアプリが無い場合に open で apply 全体を止めないようスキップする
+    if [ ! -d "/Applications/BetterTouchTool.app" ]; then
+        printf "%b\n" "${BLUE}BetterTouchTool.app が見つかりません。BTT の設定をスキップします。${NC}"
+        return 0
+    fi
+
     # BTT はアクティベート状態を CLI から確実に判定する手段が無いため、初回に
     # アクティベートリンクを開いたらマーカーを作り、以降はリンクを開かない。
     # 再アクティベートしたい場合はこのマーカーを削除する。

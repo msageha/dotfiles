@@ -38,10 +38,10 @@ credentials/
 # -------------------------------
 *.pyc
 venv/
+.venv/
 .ipynb_checkpoints
 Untitled.ipynb
 log_tensorboard/
-*.db
 mlflow/*
 
 # -------------------------------
@@ -55,10 +55,9 @@ mlflow/*
 # -------------------------------
 # Modeling-related files
 # -------------------------------
-log/
-logs/
+# log/ logs/ *.gz *.db のような汎用パターンはグローバルには置かない
+# (全リポジトリで「git add が黙って効かない」事故の温床。必要ならリポジトリ側で ignore する)
 checkpoint/
-*.gz
 
 # -------------------------------
 # Node.js-related
@@ -89,7 +88,7 @@ Thumbs.db
 # -------------------------------
 # DBeaver-related
 # -------------------------------
-Scripts
+# Scripts (裸のディレクトリ名) は Windows venv の Scripts/ 等にも一致するため置かない
 .project
 .dbeaver/
 

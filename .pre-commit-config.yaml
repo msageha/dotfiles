@@ -47,6 +47,10 @@ repos:
           --ignore,
           DL3004,
         ]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 067260dc5fe6ea86b7551bfd6f8b3ba4e6c93129 # frozen: v1.28.0
+    hooks:
+      - id: zizmor
   - repo: local
     hooks:
       - id: dprint-fmt
@@ -54,6 +58,12 @@ repos:
         language: system
         entry: mise exec -- dprint fmt --allow-no-files
         types_or: [json, yaml, markdown, toml]
+      - id: psscriptanalyzer
+        name: Lint PowerShell scripts with PSScriptAnalyzer
+        # pwsh / PSScriptAnalyzer が無い環境ではスクリプト側でスキップする
+        language: script
+        entry: scripts/psscriptanalyzer.sh
+        types: [powershell]
   - repo: https://github.com/crate-ci/typos
     rev: 37bb98842b0d8c4ffebdb75301a13db0267cef89 # frozen: v1.47.2
     hooks:
