@@ -30,16 +30,16 @@
 該当する種別のファイルを編集する前に対応する rule を読んでから着手すること。
 
 - `bash.md`, `makefile.md` — \*.sh / \*.bash / Makefile / \*.mk
-- `fish.md` — \*.fish / conf.d
+- `fish.md` — \*.fish
 - `python.md` — \*.py / pyproject.toml / requirements.txt
 - `go.md` — \*.go / go.mod
 - `typescript.md`, `javascript.md`, `react.md` — \*.ts / \*.tsx / \*.js / \*.jsx
 - `html.md` — \*.html / \*.htm / \*.ejs / \*.hbs
-- `cpp.md` — \*.cpp / \*.cc / \*.h / \*.hpp / CMakeLists.txt
+- `cpp.md` — \*.cpp / \*.cc / \*.hpp / CMakeLists.txt
 - `dart-flutter.md` — \*.dart / pubspec.yaml
 - `github-actions.md` — .github/workflows/ / action.yml
 - `gitignore.md` — .gitignore
-- `cli-tools.md` — 言語を問わず CLI ツールを実装・変更するとき
+- `cli-tools.md` — CLI アプリケーションを実装・変更するとき
 
 ## MCP サーバー
 

@@ -1,2 +1,10 @@
 [github]
 user = "msageha"
+
+[mcp]
+# renovate: datasource=npm depName=@upstash/context7-mcp
+context7 = "3.2.5"
+# renovate: datasource=npm depName=chrome-devtools-mcp
+chromeDevtools = "1.6.0"
+# renovate: datasource=npm depName=@playwright/mcp
+playwright = "0.0.78"

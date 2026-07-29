@@ -1,10 +1,14 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- $desired := fromToml `
+{{- $desired := printf `
 [cli]
 auto_update = false
 
 [features]
-support_permission = false
+# support_permission は undocumented (docs.x.ai の settings reference に記載なし) だが、
+# バイナリ埋め込み README では「prompt before tool execution」と説明されている。
+# false はツール実行前プロンプトの無効化 (全 auto-approve 相当) の可能性が高いため、
+# ガードを残す安全側の true にする。挙動は --permission-mode / --always-approve で都度緩められる。
+support_permission = true
 telemetry = false
 feedback = false
 
@@ -23,16 +27,16 @@ hooks = false
 
 [mcp_servers.context7]
 command = "npx"
-args = ["-y", "@upstash/context7-mcp@3.2.5"]
+args = ["-y", "@upstash/context7-mcp@%s"]
 
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@1.6.0"]
+args = ["-y", "chrome-devtools-mcp@%s"]
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@0.0.78"]
-` -}}
+args = ["-y", "@playwright/mcp@%s"]
+` .mcp.context7 .mcp.chromeDevtools .mcp.playwright | fromToml -}}
 {{- if lookPath "dart" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
 [mcp_servers.dart]

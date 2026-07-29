@@ -47,12 +47,6 @@ jobs:
 
           [data.github]
           user = "msageha"
-
-          [data.apiKeys]
-          gemini = ""
-          googleMaps = ""
-          fugu = ""
-          openRouter = ""
           EOF
       - name: Initialize chezmoi
         run: chezmoi init --source=${{ github.workspace }}
@@ -124,12 +118,6 @@ jobs:
 
           [data.github]
           user = "msageha"
-
-          [data.apiKeys]
-          gemini = ""
-          googleMaps = ""
-          fugu = ""
-          openRouter = ""
           '@ | Set-Content -Path (Join-Path $HOME '.config\chezmoi\chezmoi.toml') -Encoding utf8
       - name: Initialize chezmoi
         shell: powershell

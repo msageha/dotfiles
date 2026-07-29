@@ -29,9 +29,18 @@ function terminal_app_dracula() {
         return 0
     fi
 
-    # Dracula.terminal をインポートしてデフォルトに設定
+    # Dracula.terminal をインポートしてデフォルトに設定。
+    # open は非同期のため、固定 sleep ではなくプロファイルが実際に登録されるまでポーリングで待つ
     open "$tmp_dir/Dracula.terminal"
-    sleep 1
+    local waited=0
+    until defaults read com.apple.Terminal "Window Settings" 2>/dev/null | grep -q '"Dracula"'; do
+        if [ "$waited" -ge 30 ]; then
+            printf "%b\n" "${BLUE}  Dracula プロファイルの登録を確認できませんでした。続行します${NC}"
+            break
+        fi
+        sleep 1
+        waited=$((waited + 1))
+    done
     defaults write com.apple.Terminal "Default Window Settings" -string "Dracula"
     defaults write com.apple.Terminal "Startup Window Settings" -string "Dracula"
 

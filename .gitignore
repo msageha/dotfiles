@@ -23,7 +23,6 @@
 # --- ドキュメント ---
 !README.md
 !CLAUDE.md
-!AGENTS.md
 
 # --- chezmoi 本体 ---
 !.chezmoiroot
@@ -49,17 +48,19 @@ settings/common/google.ime.txt
 **/.DS_Store
 **/Thumbs.db
 
-# エディタ一時ファイル
+# エディタ一時ファイル・ローカル設定
 **/*.swp
 **/*.swo
 **/*.tmp
 **/.*~
 **/*~
+**/.idea/
 
 # 環境変数・シークレット
 **/.env
 **/*.env
 **/.env.*
+**/.envrc
 **/secrets/
 **/*_token
 **/*_password

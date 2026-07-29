@@ -40,7 +40,6 @@ pnpm = "11.9.0"
 "npm:typescript" = "5.9.3"
 "npm:typescript-language-server" = "5.3.0"
 {{ end -}}
-peco = "0.6.0"
 starship = "1.26.0"
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 stern = "1.34.0"
@@ -49,8 +48,6 @@ terragrunt = "1.0.8"
 {{ end -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 uv = "0.11.25"
-{{ end -}}
-{{ if not (dig "skip_cli_tools" false .) -}}
 {{/* モダンCLI ユーティリティ群 */ -}}
 bat = "0.26.1"
 delta = "0.19.2"

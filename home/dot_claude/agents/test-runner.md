@@ -5,7 +5,6 @@ model: sonnet
 effort: medium
 tools: Read, Grep, Glob, Bash
 skills:
-  - test
   - create-verify
 ---
 

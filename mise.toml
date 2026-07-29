@@ -7,6 +7,9 @@ dprint = "0.55.1"
 fnox = "1.29.0"
 hadolint = "2.14.0"
 op = "2.34.1"
+# PSScriptAnalyzer hook (prek) の実行ホスト。モジュール本体は hook が初回に
+# Install-Module -Scope CurrentUser で導入する
+powershell = "7.6.4"
 prek = "0.4.8"
 shellcheck = "0.11.0"
 

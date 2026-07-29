@@ -38,10 +38,10 @@ credentials/
 # -------------------------------
 *.pyc
 venv/
+.venv/
 .ipynb_checkpoints
 Untitled.ipynb
 log_tensorboard/
-*.db
 mlflow/*
 
 # -------------------------------
@@ -55,10 +55,7 @@ mlflow/*
 # -------------------------------
 # Modeling-related files
 # -------------------------------
-log/
-logs/
 checkpoint/
-*.gz
 
 # -------------------------------
 # Node.js-related
@@ -89,7 +86,6 @@ Thumbs.db
 # -------------------------------
 # DBeaver-related
 # -------------------------------
-Scripts
 .project
 .dbeaver/
 

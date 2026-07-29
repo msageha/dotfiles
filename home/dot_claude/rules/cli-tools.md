@@ -1,13 +1,11 @@
 ---
 paths:
-  - "**/*.sh"
-  - "**/*.bash"
-  - "**/*.go"
-  - "**/*.py"
-  - "**/*.rs"
-  - "**/Makefile"
+  - "**/cmd/**"
+  - "**/cli/**"
 ---
 # Command Line Tools
+
+These requirements apply to CLI applications, not to ad-hoc scripts or hooks.
 
 - User Interface: Implement consistent CLI patterns (subcommands, flags, arguments).
 - Help Documentation: Include --help output with examples and option descriptions.

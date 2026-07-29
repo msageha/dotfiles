@@ -43,7 +43,8 @@ function Register-ExistingAppInstaller {
     }
     catch {
         # App Installer 自体が無い環境 (Windows Server 等) では失敗する。
-        # その場合は呼び出し元が GitHub リリースからの導入に進む
+        # その場合は呼び出し元が GitHub リリースからの導入に進む (best-effort)
+        Write-Verbose "App Installer の Store 登録に失敗しました: $($_.Exception.Message)"
     }
 }
 

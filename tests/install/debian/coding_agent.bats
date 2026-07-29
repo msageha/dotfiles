@@ -19,7 +19,8 @@ function setup() {
 
 @test "[debian] coding_agent - CLIs available" {
     local missing=()
-    command -v antigravity &>/dev/null || missing+=("antigravity")
+    # インストーラが配置する CLI 名は agy (install_antigravity_cli の probe と揃える)
+    command -v agy &>/dev/null || missing+=("agy")
     command -v claude &>/dev/null || missing+=("claude")
     command -v codex &>/dev/null || missing+=("codex")
     if [[ ${#missing[@]} -gt 0 ]]; then

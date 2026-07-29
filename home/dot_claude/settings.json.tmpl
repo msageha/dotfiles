@@ -45,14 +45,14 @@
 {{- if ne .chezmoi.os "windows" }}
   "statusLine": {
     "type": "command",
-    "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh"
+    "command": "bash '{{ .chezmoi.homeDir }}/.claude/statusline-command.sh'"
   },
 {{- end }}
   "sandbox": {
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
     "network": {
-      "allowedDomains": ["*", "127.0.0.1", "localhost"],
+      "allowedDomains": ["*"],
       "allowAllUnixSockets": true,
       "allowLocalBinding": true
     },
@@ -114,7 +114,6 @@
       "Bash(ln:*)",
       "Bash(touch:*)",
       "Bash(mktemp:*)",
-      "Bash(mktemp)",
       "Bash(tree:*)",
       "Bash(pwd)",
       "Bash(wc:*)",

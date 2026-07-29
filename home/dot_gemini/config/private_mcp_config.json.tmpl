@@ -2,17 +2,17 @@
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@3.2.5"]
+      "args": ["-y", "@upstash/context7-mcp@{{ .mcp.context7 }}"]
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@1.6.0"]
+      "args": ["-y", "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"]
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@0.0.78"]
+      "args": ["-y", "@playwright/mcp@{{ .mcp.playwright }}"]
     },
-    "maps-grounding-lite-mcp": {
+    "maps-grounding-lite": {
       "httpUrl": "https://mapstools.googleapis.com/mcp",
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"

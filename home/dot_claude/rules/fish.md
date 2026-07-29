@@ -1,8 +1,6 @@
 ---
 paths:
   - "**/*.fish"
-  - "**/config.fish"
-  - "**/conf.d/**"
 ---
 # Fish Shell
 

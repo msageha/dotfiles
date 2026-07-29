@@ -3,8 +3,8 @@ paths:
   - "**/*.cpp"
   - "**/*.cc"
   - "**/*.cxx"
-  - "**/*.h"
   - "**/*.hpp"
+  - "**/*.hxx"
   - "**/CMakeLists.txt"
 ---
 # C++

@@ -41,6 +41,18 @@ function setup() {
     [ "$(grep -Fxc "# <<< dotfiles zsh init <<<" "${HOME}/.zshrc")" -eq 1 ]
 }
 
+@test "[common] setup_shell - create_zshrc keeps file intact when end marker is missing" {
+    # 終了マーカー欠損時にブロック開始以降のユーザー行を巻き込み削除しないこと
+    printf '%s\n' "# >>> dotfiles zsh init >>>" "# stale managed line" "# user line" > "${HOME}/.zshrc"
+
+    run create_zshrc
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"終了マーカー"* ]]
+    grep -Fxq "# user line" "${HOME}/.zshrc"
+    # ファイルは書き換えられていない (マーカーの重複挿入もしない)
+    [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc")" -eq 1 ]
+}
+
 @test "[common] setup_shell - create_bashrc appends source line once" {
     create_bashrc
     create_bashrc

@@ -122,7 +122,8 @@ function install_docker() {
     run_privileged apt -yq update
     run_privileged apt install -yq "${apt_install_opts[@]}" \
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    run_privileged usermod -aG docker "$USER"
+    # $USER は set -u 環境 (cron・一部コンテナ等) で unbound になり得るため id -un を使う
+    run_privileged usermod -aG docker "$(id -un)"
 }
 
 function upgrade() {

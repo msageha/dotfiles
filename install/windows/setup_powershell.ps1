@@ -29,7 +29,7 @@ function Update-SessionPath {
     $env:Path = ($current + $added) -join ';'
 }
 
-# install/common/fonts.sh の NERD_FONTS_VERSION と揃える
+# home/.chezmoiexternal.toml の nerd-fonts external のバージョンと揃える
 $NerdFontsVersion = 'v3.4.0'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'
@@ -118,8 +118,9 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$
 
     $pattern = [regex]::Escape($Begin) + '[\s\S]*?' + [regex]::Escape($End)
     if ($current -match $pattern) {
-        # 置換テキスト内の $ や \ がパターンとして解釈されないよう MatchEvaluator で置換する
-        $updated = [regex]::Replace($current, $pattern, { param($m) $block })
+        # .NET regex の置換文字列で特別扱いされるのは $ のみ。$$ へエスケープして literal 置換にする
+        # (\ は置換文字列では特別な意味を持たない)
+        $updated = [regex]::Replace($current, $pattern, $block.Replace('$', '$$'))
     }
     else {
         $sep = if ($current.TrimEnd().Length -gt 0) { "`n`n" } else { '' }

@@ -105,12 +105,16 @@ jobs:
       # 起動確認する。fish -c は config.fish を読むため、シェル設定と mise の PATH が
       # 壊れているイメージをここで検出できる (ビルド成功のみでの公開を防ぐ)
       - name: Smoke test image
-        run: docker run --rm "${IMAGE}@${{ steps.build.outputs.digest }}" fish -c 'mise --version'
+        # outputs は run へ直接展開せず env 経由で渡す (zizmor template-injection)
+        env:
+          BUILD_DIGEST: ${{ steps.build.outputs.digest }}
+        run: docker run --rm "${IMAGE}@${BUILD_DIGEST}" fish -c 'mise --version'
       - name: Export digest
+        env:
+          BUILD_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           mkdir -p "${{ runner.temp }}/digests"
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+          touch "${{ runner.temp }}/digests/${BUILD_DIGEST#sha256:}"
       - name: Upload digest
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

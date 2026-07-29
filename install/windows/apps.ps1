@@ -186,7 +186,8 @@ function Find-GoogleJapaneseInputTip {
         if (-not $m.Success) { continue }
         $langId  = $m.Groups[1].Value
         $clsid   = $m.Groups[2].Value
-        $profile = $m.Groups[3].Value
+        # $profile は PowerShell の自動変数 (プロファイルパス) のため別名にする
+        $profileGuid = $m.Groups[3].Value
         $candidatePaths = @(
             "HKLM:\SOFTWARE\Microsoft\CTF\TIP\$clsid"
             "HKLM:\SOFTWARE\WOW6432Node\Microsoft\CTF\TIP\$clsid"
@@ -196,7 +197,7 @@ function Find-GoogleJapaneseInputTip {
             # 既定値 / Description 値のいずれかに入っている
             $keys = @(
                 Get-Item -Path $path -ErrorAction SilentlyContinue
-                Get-Item -Path "$path\LanguageProfile\0x0000$langId\$profile" -ErrorAction SilentlyContinue
+                Get-Item -Path "$path\LanguageProfile\0x0000$langId\$profileGuid" -ErrorAction SilentlyContinue
             ) | Where-Object { $_ }
             foreach ($key in $keys) {
                 $descriptions = @($key.GetValue(''), $key.GetValue('Description'))

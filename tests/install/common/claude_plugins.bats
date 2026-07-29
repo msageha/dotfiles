@@ -6,6 +6,8 @@ function setup() {
     # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
 
+    # lsp_plugins は SCRIPT_PATH の source で定義される (shellcheck は -x 無しで追跡できない)
+    # shellcheck disable=SC2154
     plugin_names=(
         cloudflare
         github
@@ -29,6 +31,24 @@ function setup() {
     declare -F sonatype_guide >/dev/null
     declare -F lsp >/dev/null
     [ "${#lsp_plugins[@]}" -gt 0 ]
+}
+
+@test "[common] claude_plugins - plugin list is in sync with claude_plugins.ps1" {
+    # install/windows/claude_plugins.ps1 は同じ plugin 一覧の手動コピーを持つため、
+    # 片方だけ更新される drift をここで検出する。
+    local ps1_path="./install/windows/claude_plugins.ps1"
+    [ -e "${ps1_path}" ]
+
+    local sh_list ps1_list
+    sh_list="$(
+        {
+            grep -oE 'install_plugin [a-z0-9-]+@claude-plugins-official' "${SCRIPT_PATH}" | awk '{print $2}'
+            printf '%s@claude-plugins-official\n' "${lsp_plugins[@]}"
+        } | sort
+    )"
+    ps1_list="$(grep -oE "'[a-z0-9-]+@claude-plugins-official'" "${ps1_path}" | tr -d "'" | sort)"
+
+    diff <(printf '%s\n' "${sh_list}") <(printf '%s\n' "${ps1_list}")
 }
 
 @test "[common] claude_plugins - main skips cleanly without claude" {

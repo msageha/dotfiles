@@ -17,13 +17,16 @@ function fzf_load_env
             set -l kv (string replace -r '^export\s+' '' -- $line)
             set -l key (string split -m1 '=' -- $kv)[1]
             set -l val (string split -m1 '=' -- $kv)[2]
-            # クォートされていない場合はインラインコメントを除去
-            if not string match -qr '^["\x27]' -- $val
-                set val (string replace -r '\s+#.*$' '' -- $val)
+            if string match -qr '^"' -- $val
+                # ダブルクォート値: 閉じクォートまでを値とし、後続 (インラインコメント等) は捨てる
+                set val (string replace -r '^"((?:[^"\\\\]|\\\\.)*)".*$' '$1' -- $val)
+            else if string match -qr "^'" -- $val
+                # シングルクォート値: 同上
+                set val (string replace -r "^'([^']*)'.*\$" '$1' -- $val)
+            else
+                # 非クォート値: インラインコメントを除去して前後の空白を落とす
+                set val (string replace -r '\s+#.*$' '' -- $val | string trim)
             end
-            # クォートを除去
-            set val (string trim -c '"' -- $val)
-            set val (string trim -c "'" -- $val)
             if test -n "$key"
                 set -gx $key $val
                 # .env の値は secret を含みうるためキー名のみ表示する
