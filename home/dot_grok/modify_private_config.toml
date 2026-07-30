@@ -6,9 +6,9 @@ auto_update = false
 [features]
 # support_permission は undocumented (docs.x.ai の settings reference に記載なし) だが、
 # バイナリ埋め込み README では「prompt before tool execution」と説明されている。
-# false はツール実行前プロンプトの無効化 (全 auto-approve 相当) の可能性が高いため、
-# ガードを残す安全側の true にする。挙動は --permission-mode / --always-approve で都度緩められる。
-support_permission = true
+# 自律実行を優先し、ツール実行前プロンプトを無効化 (全 auto-approve 相当) する false にする。
+# ガードを戻したい場合は true + --permission-mode で都度制御する。
+support_permission = false
 telemetry = false
 feedback = false
 

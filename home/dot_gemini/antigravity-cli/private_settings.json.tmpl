@@ -1,7 +1,9 @@
 {
   "model": "Gemini 3.1 Pro (High)",
   "enableTerminalSandbox": false,
-  "toolPermission": "request-review",
+{{- /* always-proceed = 全ツールを承認プロンプトなしで実行 (自律実行優先)。
+       他の値: request-review (デフォルト) / proceed-in-sandbox / strict。 */}}
+  "toolPermission": "always-proceed",
   "enableTelemetry": false,
   "showFeedbackSurvey": false,
   "trustedWorkspaces": [
