@@ -69,8 +69,8 @@ fi
 # macOS の /etc/zshrc (~/.zprofile の後・~/.zshrc の前に読まれる) が HISTFILE を
 # ~/.zsh_history へ上書きするため、zsh の履歴ファイルは ~/.zshrc 側で設定する
 HISTFILE="$HOME/.local/state/zsh_history"
-# zsh は SAVEHIST > 0 でないと HISTFILE へ書き込まない (/etc/zshrc を持たない素の
-# Linux では未設定 = 履歴が永続化されない)。サイズは bash (.bash_profile) と揃える
+# zsh は SAVEHIST > 0 でないと HISTFILE へ書き込まない
+# サイズは bash (.bash_profile) と揃える
 HISTSIZE=10000
 SAVEHIST=10000
 # <<< dotfiles zsh init <<<

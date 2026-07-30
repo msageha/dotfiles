@@ -14,8 +14,6 @@ repos:
         # 含み JSON として不正なため除外する
         exclude: ^home/(\.chezmoitemplates/|modify_)
       - id: check-toml
-        # modify-template / .chezmoiexternal.toml / .chezmoitemplates は Go テンプレート構文を
-        # 含み TOML として不正なため除外する (chezmoi 側でテンプレートとして処理される)
         exclude: ^home/((dot_codex|dot_grok)/modify_private_config\.toml|\.chezmoiexternal\.toml|\.chezmoitemplates/)
       - id: check-added-large-files
         args: [--maxkb=1000]

@@ -1,10 +1,6 @@
 #!/usr/bin/env bats
 
 # bats file_tags=files
-# フォントは .chezmoitemplates/external-fonts.toml (=.chezmoiexternal.toml が include) の
-# archive external として chezmoi apply で導入元ごとのサブディレクトリへ展開される。
-# skip_gui_tools=true の環境では導入されない (external 側のガードと同条件) ため、
-# その場合はスキップする。
 function gui_tools_skipped() {
     [ "$(chezmoi execute-template '{{ dig "skip_gui_tools" false . }}' 2>/dev/null)" = "true" ]
 }

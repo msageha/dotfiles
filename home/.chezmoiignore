@@ -39,10 +39,6 @@
 .config/ripgrep
 {{ end }}
 
-# gh は OS keyring が使えない環境 (ヘッドレス Linux 等) で oauth_token を hosts.yml に
-# 平文保存する (cli/cli internal/config/config.go の Login() フォールバック)。
-# テンプレートはトークンを含まないため、そのような環境で管理すると apply のたびに
-# ログイン状態を消去してしまう。Keychain 常用で定常状態が template と一致する macOS のみ管理する
 {{ if ne .chezmoi.os "darwin" }}
 .config/gh/hosts.yml
 {{ end }}
@@ -62,9 +58,6 @@
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 
 .claude/*
-# CLAUDE-FABLE-5.md は廃止済み。ignore された target には .chezmoiremove が効かないため、
-# 全マシンで削除が済むまで whitelist に残して remove を発火させる (掃除用の暫定エントリ。
-# skipCodingAgent=true の環境でも remove を発火させるため、ガードの外に置く)
 !.claude/CLAUDE-FABLE-5.md
 {{ if not $skipCodingAgent }}
 # Manage only these files
@@ -104,8 +97,6 @@
 .config/agents/**
 {{ end }}
 .codex/*
-# owl-alpha.json は廃止済み。上の CLAUDE-FABLE-5.md と同じく .chezmoiremove 発火用の
-# 暫定エントリ (skipCodingAgent=true の環境でも発火させるためガードの外に置く)
 !.codex/owl-alpha.json
 {{ if not $skipCodingAgent }}
 !.codex/AGENTS.md

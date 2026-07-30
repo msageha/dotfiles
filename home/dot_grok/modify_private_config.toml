@@ -37,9 +37,7 @@ args = ["-y", "chrome-devtools-mcp@%s"]
 command = "npx"
 args = ["-y", "@playwright/mcp@%s"]
 ` .mcp.context7 .mcp.chromeDevtools .mcp.playwright | fromToml -}}
-{{- /* dart (flutter 同梱) は mise が darwin + skip_cli_tools=false でのみ導入し、この config 自体が
-      skip_cli_tools=false のときだけ管理されるため、darwin 固定で決定的になる
-      (lookPath は apply 時の PATH に依存して結果が揺れるため使わない) */ -}}
+{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
 [mcp_servers.dart]
@@ -59,8 +57,6 @@ args = ["mcpbridge"]
 {{- if $stdin -}}
 {{-   $current = fromToml $stdin -}}
 {{- end -}}
-{{- /* 旧 lookPath ガード時代に darwin 以外で登録された dart / xcode の stale エントリを掃除する
-      (mergeOverwrite は desired に無いキーを削除しないため明示的に unset する) */ -}}
 {{- if and (ne .chezmoi.os "darwin") (hasKey $current "mcp_servers") -}}
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}

@@ -7,9 +7,7 @@
 */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}
-{{- /* codex の trust 照合キーは Windows でもパス区切りを変換しない (小文字化のみ。
-      codex-rs/config/src/loader/mod.rs の normalize_project_trust_lookup_key)。
-      実行時キーはバックスラッシュ区切りになるため、joinPath のスラッシュ結合を変換して揃える */ -}}
+{{- /* codex の trust 照合キーは Windows でもパス区切りを変換しない */ -}}
 {{- if eq .chezmoi.os "windows" -}}
 {{-   $worksSrc = replace "/" "\\" $worksSrc -}}
 {{-   $chezmoiSrc = replace "/" "\\" $chezmoiSrc -}}
@@ -72,9 +70,7 @@ trust_level = "trusted"
 [projects.%q]
 trust_level = "trusted"
 ` .mcp.context7 $worksSrc $chezmoiSrc | fromToml -}}
-{{- /* dart (flutter 同梱) は mise が darwin + skip_cli_tools=false でのみ導入し、この config 自体が
-      skip_cli_tools=false のときだけ管理されるため、darwin 固定で決定的になる
-      (lookPath は apply 時の PATH に依存して結果が揺れるため使わない) */ -}}
+{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
 [mcp_servers.dart]
@@ -102,8 +98,6 @@ startup_timeout_ms = 20_000
 {{-   $_ := unset (get $current "mcp_servers") "playwright" -}}
 {{-   $_ := unset (get $current "mcp_servers") "chrome-devtools" -}}
 {{- end -}}
-{{- /* 旧 lookPath ガード時代に darwin 以外で登録された dart / xcode の stale エントリを掃除する
-      (mergeOverwrite は desired に無いキーを削除しないため明示的に unset する) */ -}}
 {{- if and (ne .chezmoi.os "darwin") (hasKey $current "mcp_servers") -}}
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}

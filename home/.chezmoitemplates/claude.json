@@ -61,8 +61,7 @@
       ],
       "env": {}
     },
-{{- /* dart (flutter 同梱) は mise が darwin + skip_cli_tools=false でのみ導入する。
-       lookPath は apply 時の PATH に依存して非決定的なため OS 条件で固定する */}}
+{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
 {{- if eq .chezmoi.os "darwin" }}
     "dart": {
       "type": "stdio",
@@ -85,7 +84,6 @@
         "@drawio/mcp@1.5.0"
       ]
     },
-{{- /* xcrun mcpbridge は macOS 専用 */}}
 {{- if eq .chezmoi.os "darwin" }}
     "xcode": {
       "type": "stdio",

@@ -50,5 +50,4 @@ url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f
 {{ end }}
 
 # フォント群は .chezmoitemplates/external-fonts.toml で定義する
-# (run_onchange_after_93_fonts.sh.tmpl がフォント定義のみの hash で発火できるよう分離)。
 {{ includeTemplate "external-fonts.toml" . }}

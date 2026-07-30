@@ -111,10 +111,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $HOME '.config\chezmoi') | Out-Null
           @'
           [data]
-          # Linux の skip_cli_tools=false 相当。コーディングエージェント CLI の
-          # インストール (coding_agent.ps1 / claude_plugins.ps1) とエージェント設定の
-          # 展開まで CI で検証する。GUI アプリ導入 (apps.ps1) とシステム設定
-          # (system_settings.ps1) は各スクリプトの $env:CI ガードが CI でのみスキップする
+          # インストールとエージェント設定の展開まで CI で検証する。
+          # GUI アプリ導入とシステム設定は各スクリプトの $env:CI ガードが CI でのみスキップする
           skip_windows_extras = false
 
           [data.github]

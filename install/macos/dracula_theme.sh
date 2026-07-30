@@ -66,9 +66,6 @@ plist_path = Foundation.NSString.stringWithString_(
 )
 prefs = Foundation.NSMutableDictionary.dictionaryWithContentsOfFile_(plist_path)
 if prefs and "Window Settings" in prefs and "Dracula" in prefs["Window Settings"]:
-    # dictionaryWithContentsOfFile_ が返すネスト dict の可変性は文書化保証が無い
-    # (macOS 26 では mutable だが、歴史的仕様は nested immutable)。
-    # 保証されたセマンティクスだけに依存するよう mutableCopy して差し替える
     window_settings = prefs["Window Settings"].mutableCopy()
     dracula = window_settings["Dracula"].mutableCopy()
     dracula["Font"] = font_data
