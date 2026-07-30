@@ -49,57 +49,6 @@ type = "file"
 url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f14d3ee8a3b40788/Alucard.xccolortheme"
 {{ end }}
 
-# フォント群も pin + renovate 追従の archive external で導入する (旧 install/common/fonts.sh)。
-# フォントの描画はクライアント側 (端末エミュレータ) で行われるため、
-# ヘッドレス環境 (skip_gui_tools=true) では導入しない。Windows は
-# install/windows/setup_powershell.ps1 が別途 Nerd Font を導入する。
-# 導入元ごとのサブディレクトリへ exact = true で展開することで、版 bump 時に
-# 旧ファイルを残さず、かつ手動導入した他のフォントと共存できる
-# (macOS の CoreText / Linux の fontconfig はフォントディレクトリを再帰走査する)。
-# Linux は更新後に fc-cache の再実行が要るため run_onchange_after_93_fonts.sh.tmpl が発火する。
-{{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}
-{{ $fontDir := ".local/share/fonts" }}
-{{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
-# upstream の install.sh 相当 (フォントファイルのみコピー、install スクリプト等は除外)。
-# include はアーカイブ内のディレクトリエントリも除外してしまい、階層を保ったまま
-# 展開すると中間ディレクトリが作られず apply が失敗するため、stripComponents = 2 で
-# ファミリーディレクトリを剥がしてフラットに展開する (ファイル名は全ファミリーで一意)。
-# 深さ固定の include パターンにより、upstream が別階層にファイルを足しても
-# 取りこぼすだけで apply は壊れない。
-["{{ $fontDir }}/powerline-fonts"]
-type = "archive"
-url = "https://github.com/powerline/fonts/archive/a029626780dd4af32f15a3e708a5b00528c22f1d.tar.gz"
-exact = true
-stripComponents = 2
-include = ["*/*/*.ttf", "*/*/*.otf"]
-
-{{ if eq .chezmoi.os "linux" }}
-# Terminus (ビットマップフォント) のみ深さが違う。
-# PCF は fontconfig (Linux) 専用で macOS の CoreText は扱えないため Linux 限定。
-["{{ $fontDir }}/powerline-fonts-terminus-pcf"]
-type = "archive"
-url = "https://github.com/powerline/fonts/archive/a029626780dd4af32f15a3e708a5b00528c22f1d.tar.gz"
-exact = true
-stripComponents = 3
-include = ["*/Terminus/PCF/*.pcf.gz"]
-{{ end }}
-
-["{{ $fontDir }}/sauce-code-pro-nerd-font"]
-type = "archive"
-url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/SourceCodePro.zip"
-exact = true
-include = ["*.ttf"]
-
-["{{ $fontDir }}/nerd-fonts-symbols"]
-type = "archive"
-url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/NerdFontsSymbolsOnly.zip"
-exact = true
-include = ["*.ttf"]
-
-["{{ $fontDir }}/source-han-code-jp"]
-type = "archive"
-url = "https://github.com/adobe-fonts/source-han-code-jp/archive/refs/tags/2.012R.zip"
-exact = true
-stripComponents = 2
-include = ["*/OTF/*.otf"]
-{{ end }}
+# フォント群は .chezmoitemplates/external-fonts.toml で定義する
+# (run_onchange_after_93_fonts.sh.tmpl がフォント定義のみの hash で発火できるよう分離)。
+{{ includeTemplate "external-fonts.toml" . }}

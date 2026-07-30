@@ -1,7 +1,7 @@
 {{ if eq .chezmoi.os "linux" -}}
+{{   if or (eq (dig "id" "" .chezmoi.osRelease) "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
 #!/bin/bash
 set -e
-{{   if or (eq .chezmoi.osRelease.id "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
 # coding_agent.sh が claude 等を ~/.local/bin へ入れるため、後続の claude_plugins.sh が
 # probe できるよう include 群より前に PATH を通す (ログインシェルに無い初回マシン対策)
 export PATH="$HOME/.local/bin:$PATH"
@@ -11,7 +11,7 @@ export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
 {{       include "../install/debian/coding_agent.sh" }}
 {{       include "../install/common/claude_plugins.sh" }}
 {{     end -}}
-{{     if eq .chezmoi.osRelease.id "ubuntu" -}}
+{{     if eq (dig "id" "" .chezmoi.osRelease) "ubuntu" -}}
 {{       if not (dig "skip_gui_tools" false .) -}}
 {{         include "../install/ubuntu/apt_gui.sh" }}
 {{         include "../install/ubuntu/system_settings.sh" }}

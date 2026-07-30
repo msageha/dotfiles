@@ -12,7 +12,7 @@
 - 探索・テスト実行・ログ解析・大量ファイルのスキャンなど、ノイズの多い中間出力を伴う作業は main thread で行わずサブエージェントに委譲し、要約だけを受け取る (main thread の context 汚染・劣化を防ぐ)。
 - 委譲時は、作業の分割方法・全員の完了を待つか・返すべき要約の形式をプロンプトで明示する。
 - カスタムエージェント : `code_reviewer` / `security_reviewer` (誤りが高くつくレビュー用) / `debugger` (具体的な失敗の根本原因分析)、`test_runner` (検証コマンド実行) / `source_grounded_researcher` (調査) / `browser_debugger` (playwright / chrome-devtools MCP を内包)。
-- モデルを固定していない探索系サブエージェントには gpt-5.6-terra 級のモデルと低めの reasoning effort を指定し、レビュー・セキュリティなど誤りが高くつく作業には sol・high を使う。
+- モデルを固定していない探索系サブエージェントには gpt-5.6-terra 級のモデルと低めの reasoning effort を指定し、レビュー・セキュリティなど誤りが高くつく作業には sol・xhigh を使う。
 
 ## 応答スタイル
 

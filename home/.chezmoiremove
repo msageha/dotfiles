@@ -15,7 +15,12 @@
 .claude/commands/security.md
 .claude/commands/test.md
 
-{{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) -}}
+{{- /* 旧 fonts.sh / 旧 external が置いた残骸の掃除。導入したのが過去の設定 (当時 skip_gui_tools=false)
+       である以上、現在 skip_gui_tools=true に切り替えた環境でも掃除は必要なため、
+       skip_gui_tools ではゲートしない (パターンは旧 flat 配置固有名のみで副作用なし)。
+       ただし .config/ghostty は skip_gui_tools=true だと .chezmoiignore により ignore され
+       remove が効かない点は既知の制限 */ -}}
+{{ if ne .chezmoi.os "windows" -}}
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf

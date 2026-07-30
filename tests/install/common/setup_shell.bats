@@ -16,6 +16,8 @@ function setup() {
     grep -Fxq "# <<< dotfiles zsh init <<<" "${HOME}/.zshrc"
     grep -Fq 'if [[ ! -o login ]]; then' "${HOME}/.zshrc"
     grep -Fq 'HISTFILE="$HOME/.local/state/zsh_history"' "${HOME}/.zshrc"
+    grep -Fxq 'SAVEHIST=10000' "${HOME}/.zshrc"
+    grep -Fxq 'HISTSIZE=10000' "${HOME}/.zshrc"
     # 二重実行の原因だった無条件 source が含まれないこと
     run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
     [ "$status" -ne 0 ]

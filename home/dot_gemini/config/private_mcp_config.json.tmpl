@@ -17,11 +17,14 @@
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
-    }{{ if lookPath "dart" }},
+    }{{ if eq .chezmoi.os "darwin" }},
+    {{- /* dart (flutter 同梱) は mise が darwin + skip_cli_tools=false でのみ導入する。
+           lookPath は apply 時の PATH に依存して非決定的なため OS 条件で固定する
+           (codex / grok / claude と同じ裁定) */}}
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    }{{ end }}{{ if eq .chezmoi.os "darwin" }},
+    },
     "xcode": {
       "command": "xcrun",
       "args": ["mcpbridge"]
