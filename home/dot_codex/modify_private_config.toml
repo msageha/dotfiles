@@ -2,6 +2,8 @@
 {{- /*
   ~/.codex/config.toml の既存値を base として、下の desired TOML に書いた key だけ上書きする。
   Codex CLI が追加する projects や tui などのローカル状態は温存する。
+  approval_policy = "never" は承認プロンプトの全廃 (自律実行優先)。sandbox_mode は
+  workspace-write を維持するため、sandbox 外が必要なコマンドはエスカレーションせず失敗する。
   analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
   otel のログ・トレース exporter はデフォルト none のため設定不要。
 */ -}}
@@ -17,7 +19,7 @@ model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 model_reasoning_summary = "concise"
 personality = "pragmatic"
-approval_policy = "on-request"
+approval_policy = "never"
 approvals_reviewer = "auto_review"
 sandbox_mode = "workspace-write"
 project_doc_fallback_filenames = ["CLAUDE.md"]

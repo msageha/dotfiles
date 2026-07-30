@@ -13,7 +13,9 @@
   "general": {
     "vimMode": true,
     "previewFeatures": true,
-    "defaultApprovalMode": "default"
+{{- /* settings の enum は default / auto_edit / plan のみ。yolo は CLI フラグ (--approval-mode=yolo) 専用。
+       auto_edit = edit 系を自動承認 (settings で置ける最大緩和)。 */}}
+    "defaultApprovalMode": "auto_edit"
   },
   "privacy": {
     "usageStatisticsEnabled": false
