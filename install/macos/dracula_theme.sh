@@ -66,7 +66,11 @@ plist_path = Foundation.NSString.stringWithString_(
 )
 prefs = Foundation.NSMutableDictionary.dictionaryWithContentsOfFile_(plist_path)
 if prefs and "Window Settings" in prefs and "Dracula" in prefs["Window Settings"]:
-    prefs["Window Settings"]["Dracula"]["Font"] = font_data
+    window_settings = prefs["Window Settings"].mutableCopy()
+    dracula = window_settings["Dracula"].mutableCopy()
+    dracula["Font"] = font_data
+    window_settings["Dracula"] = dracula
+    prefs["Window Settings"] = window_settings
     prefs.writeToFile_atomically_(plist_path, True)
     print("  フォントを SauceCodePro Nerd Font 18pt に設定しました")
 PYTHON

@@ -39,6 +39,10 @@
 .config/ripgrep
 {{ end }}
 
+{{ if ne .chezmoi.os "darwin" }}
+.config/gh/hosts.yml
+{{ end }}
+
 # ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマを展開しない
 {{ if or (eq .chezmoi.os "windows") (dig "skip_gui_tools" false .) }}
 .config/ghostty
@@ -54,12 +58,10 @@
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 
 .claude/*
+!.claude/CLAUDE-FABLE-5.md
 {{ if not $skipCodingAgent }}
 # Manage only these files
 !.claude/CLAUDE.md
-# CLAUDE-FABLE-5.md は廃止済み。ignore された target には .chezmoiremove が効かないため、
-# 全マシンで削除が済むまで whitelist に残して remove を発火させる (掃除用の暫定エントリ)
-!.claude/CLAUDE-FABLE-5.md
 !.claude/settings.json
 !.claude/settings.fusion.json
 !.claude/statusline-command.sh
@@ -95,6 +97,7 @@
 .config/agents/**
 {{ end }}
 .codex/*
+!.codex/owl-alpha.json
 {{ if not $skipCodingAgent }}
 !.codex/AGENTS.md
 !.codex/config.toml
@@ -105,8 +108,6 @@
 !.codex/fugu.json
 !.codex/fugu-cyber.json
 !.codex/fusion.json
-# owl-alpha.json は廃止済み。上の CLAUDE-FABLE-5.md と同じく .chezmoiremove 発火用の暫定エントリ
-!.codex/owl-alpha.json
 !.codex/pareto-code.json
 !.codex/.env
 !.codex/agents

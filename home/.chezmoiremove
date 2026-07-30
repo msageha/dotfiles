@@ -15,7 +15,7 @@
 .claude/commands/security.md
 .claude/commands/test.md
 
-{{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) -}}
+{{ if ne .chezmoi.os "windows" -}}
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf

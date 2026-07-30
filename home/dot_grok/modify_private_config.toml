@@ -37,15 +37,13 @@ args = ["-y", "chrome-devtools-mcp@%s"]
 command = "npx"
 args = ["-y", "@playwright/mcp@%s"]
 ` .mcp.context7 .mcp.chromeDevtools .mcp.playwright | fromToml -}}
-{{- if lookPath "dart" -}}
+{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
+{{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
 [mcp_servers.dart]
 command = "dart"
 args = ["mcp-server"]
-`) -}}
-{{- end -}}
-{{- if eq .chezmoi.os "darwin" -}}
-{{-   $desired = mergeOverwrite $desired (fromToml `
+
 [mcp_servers.xcode]
 command = "xcrun"
 args = ["mcpbridge"]
@@ -58,5 +56,9 @@ args = ["mcpbridge"]
 {{- end -}}
 {{- if $stdin -}}
 {{-   $current = fromToml $stdin -}}
+{{- end -}}
+{{- if and (ne .chezmoi.os "darwin") (hasKey $current "mcp_servers") -}}
+{{-   $_ := unset (get $current "mcp_servers") "dart" -}}
+{{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
 {{- end -}}
 {{- mergeOverwrite $current $desired | toToml -}}

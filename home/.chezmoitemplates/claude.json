@@ -61,6 +61,8 @@
       ],
       "env": {}
     },
+{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
+{{- if eq .chezmoi.os "darwin" }}
     "dart": {
       "type": "stdio",
       "command": "dart",
@@ -69,6 +71,7 @@
       ],
       "env": {}
     },
+{{- end }}
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp"
@@ -81,6 +84,7 @@
         "@drawio/mcp@1.5.0"
       ]
     },
+{{- if eq .chezmoi.os "darwin" }}
     "xcode": {
       "type": "stdio",
       "command": "xcrun",
@@ -89,6 +93,7 @@
       ],
       "env": {}
     },
+{{- end }}
     "maps-grounding-lite": {
       "type": "http",
       "url": "https://mapstools.googleapis.com/mcp",

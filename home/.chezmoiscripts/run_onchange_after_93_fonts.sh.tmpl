@@ -2,8 +2,6 @@
 #!/bin/bash
 set -e
 
-# Linux はフォント更新後に fontconfig キャッシュの再構築が必要
-# .chezmoiexternal.toml hash: {{ include ".chezmoiexternal.toml" | sha256sum }}
 if command -v fc-cache &>/dev/null; then
     fc-cache -f
 fi

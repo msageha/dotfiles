@@ -17,11 +17,12 @@
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
-    }{{ if lookPath "dart" }},
+    }{{ if eq .chezmoi.os "darwin" }},
+    {{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
-    }{{ end }}{{ if eq .chezmoi.os "darwin" }},
+    },
     "xcode": {
       "command": "xcrun",
       "args": ["mcpbridge"]

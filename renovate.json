@@ -175,9 +175,10 @@
     },
     {
       "customType": "regex",
-      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd の base: / mise.toml の docker-build 引数 / cloudbuild.yaml の BASE_IMAGE と _GPU_BASE_IMAGE)",
+      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd / docker-debian の base: / mise.toml の docker-build 引数 / cloudbuild.yaml の BASE_IMAGE と _GPU_BASE_IMAGE)",
       "managerFilePatterns": [
         "/^\\.github/workflows/docker-image-cd\\.yaml$/",
+        "/^\\.github/workflows/docker-debian\\.yaml$/",
         "/^mise\\.toml$/",
         "/^cloudbuild\\.yaml$/"
       ],
@@ -204,7 +205,7 @@
       "customType": "regex",
       "description": "chezmoi external の Nerd Fonts release zip (SourceCodePro / NerdFontsSymbolsOnly) を github-releases で追従させる。2 URL が同一バージョンで一括更新される",
       "managerFilePatterns": [
-        "/^home/\\.chezmoiexternal\\.toml$/"
+        "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
       "matchStrings": [
         "nerd-fonts/releases/download/(?<currentValue>v[\\d.]+)/"
@@ -826,7 +827,7 @@
       "customType": "regex",
       "description": "chezmoi external (archive pin) の powerline/fonts commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
       "managerFilePatterns": [
-        "/^home/\\.chezmoiexternal\\.toml$/"
+        "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
       "matchStrings": [
         "github\\.com/powerline/fonts/archive/(?<currentDigest>[a-f0-9]{40})\\.tar\\.gz"
@@ -840,7 +841,7 @@
       "customType": "regex",
       "description": "chezmoi external の source-han-code-jp をタグ追従させる。R 付きタグのみがフォント成果物のリリースで無印はソースのリリースのため、extractVersion で R 付きに限定する (semver ではないので loose versioning)",
       "managerFilePatterns": [
-        "/^home/\\.chezmoiexternal\\.toml$/"
+        "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
       "matchStrings": [
         "source-han-code-jp/archive/refs/tags/(?<currentValue>[\\d.]+R)\\.zip"

@@ -111,9 +111,9 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $HOME '.config\chezmoi') | Out-Null
           @'
           [data]
-          # false にするとコーディングエージェント CLI のインストールも CI で実行される
-          # (Linux の skip_cli_tools=false 相当)
-          skip_windows_extras = true
+          # インストールとエージェント設定の展開まで CI で検証する。
+          # GUI アプリ導入とシステム設定は各スクリプトの $env:CI ガードが CI でのみスキップする
+          skip_windows_extras = false
 
           [data.github]
           user = "msageha"
