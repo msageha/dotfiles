@@ -5,36 +5,24 @@ paths:
 ---
 # Dart
 
-- Null Safety: Utilize sound null safety. Use nullable types only when necessary.
-- Classes: Implement proper constructors (default, named, factory). Use final for immutable fields.
-- Collections: Use collection literals and operators (spread, collection if/for).
-- Async: Implement async/await with Future and Stream classes appropriately.
-- Error Handling: Use try/catch with specific exception types.
+- Null Safety: Use nullable types only when necessary.
+- Immutability: Prefer final fields and const constructors. Use named parameters for functions with many arguments.
 - Code Organization: Follow feature-based structure with proper exports.
-- Extension Methods: Use extensions to add functionality to existing classes.
-- Mixins: Implement mixins for shared functionality between classes.
-- Parameters: Use named parameters for functions with many arguments.
-- Immutability: Prefer final variables and const constructors where possible.
-- Linting: Follow effective dart style guidelines with analysis_options.yaml.
-- Testing: Include test cases using the test package.
-- Include comprehensive type annotations for all variables and return types.
+- Type Annotations: Annotate public APIs and return types; locals may rely on inference (Effective Dart).
+- Linting: Follow Effective Dart via analysis_options.yaml.
 
 # Flutter for Mobile Apps
 
-- State Management: Use proper state management. Use Riverpod + hooks_riverpod whenever possible.
-- Widget Structure: Implement composition over inheritance. Break UI into small, reusable widgets.
-- Performance: Use const constructors. Implement ListView.builder for long lists.
-- Responsive Design: Use LayoutBuilder, MediaQuery, or FractionallySizedBox for responsive UIs.
-- Navigation/Routing: Implement Beamer for complex navigation.
-- API Integration: Use dio and Retrofit package for network requests.
-- Mobile Utility: Use freezed and json_serializable for data classes.
-- Asset Management: Use Flutter Gen for assets and images and proper asset organization with pubspec.yaml.
-- Theme: Implement ThemeData and ThemeExtensions using Material Design 3 for consistent styling.
-- Internationalization: Use Slang and flutter_localizations package for localization.
-- Platform-Specific Code: Handle iOS/Android differences with Platform.isIOS checks.
-- Error Handling: Implement ErrorWidget.builder for UI errors and try/catch for logic.
-- Animations: Use AnimationController with Tween for custom animations.
-- Gestures: Implement GestureDetector with proper feedback mechanisms.
-- Testing: Include mock test using Mocktail, widget tests, integration tests, and golden tests.
-- Logging: Use logger package for logging and Firebase Crashlytics for error reporting.
+- State Management: Use Riverpod + hooks_riverpod whenever possible.
+- Widget Structure: Composition over inheritance. Break UI into small, reusable widgets.
+- Performance: Use const constructors. Use ListView.builder for long lists.
+- Navigation/Routing: Use Beamer for complex navigation.
+- API Integration: Use dio and Retrofit for network requests.
+- Data Classes: Use freezed and json_serializable.
+- Asset Management: Use Flutter Gen with proper asset organization in pubspec.yaml.
+- Theme: Use ThemeData and ThemeExtensions on Material Design 3.
+- Internationalization: Use Slang and flutter_localizations.
+- Error Handling: Use ErrorWidget.builder for UI errors.
+- Logging: Use the logger package, and Firebase Crashlytics for error reporting.
 - Architecture: Follow clean architecture principles (domain, data, presentation layers).
+- Testing: Follow the project's existing test setup (Mocktail mocks, widget / integration / golden tests where established).

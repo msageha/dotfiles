@@ -36,7 +36,7 @@
 
 - 探索・テスト実行・ログ解析・大量ファイルのスキャンなど、ノイズの多い中間出力を伴う作業は main thread で行わずサブエージェントに委譲し、要約だけを受け取る (main thread の context 汚染・劣化を防ぐ)。
 - 委譲時は、作業の分割方法・全員の完了を待つか・返すべき要約の形式をプロンプトで明示する。
-- カスタムエージェント: `code-reviewer` / `security-reviewer` (誤りが高くつくレビュー用。fable + xhigh 固定) / `debugger` (具体的な失敗の根本原因分析。fable + xhigh 固定) / `test-runner` (検証コマンド実行。sonnet + medium 固定) / `source-grounded-researcher` (調査。sonnet + high 固定) / `browser-debugger` (playwright / chrome-devtools MCP を内包。sonnet + high 固定)。
+- カスタムエージェント: `code-reviewer` (誤りが高くつくレビュー用。fable + xhigh 固定) / `security-reviewer` (セキュリティレビュー。opus + xhigh 固定) / `debugger` (具体的な失敗の根本原因分析。opus + xhigh 固定) / `test-runner` (検証コマンド実行。sonnet + medium 固定) / `source-grounded-researcher` (調査。sonnet + high 固定) / `browser-debugger` (playwright / chrome-devtools MCP を内包。sonnet + high 固定)。
 - モデルを固定していない汎用サブエージェント (general-purpose / Explore など) に探索を委譲するときは sonnet 級のモデルと低めの effort を指定し、レビュー・セキュリティなど誤りが高くつく作業には fable + xhigh を使う。
 
 ## MCP servers (autonomous use)
