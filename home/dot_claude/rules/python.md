@@ -11,13 +11,7 @@ paths:
 - Type Hints: Use type annotations with mypy compatibility.
 - Data Models: Use pydantic for strict typing and validation, and StrEnum for enums. Write a description and a default value for every Field.
 - Documentation: Basically not need to generate docstrings. If specified, use Google style docstrings for functions and classes.
-- Error Handling: Use specific exception types with proper context managers.
-- OOP: Follow SOLID principles. Use dataclasses or named tuples for data containers.
-- Functional Features: Utilize list comprehensions, generators, and higher-order functions.
+- Error Handling: Use specific exception types, and context managers for resources.
 - Imports: Organize imports by standard library, third-party, and local modules.
-- Asynchronous Code: Use async/await with asyncio for I/O-bound operations.
-- Testing: Include pytest tests with fixtures and parameterization.
-- Logging: Implement proper logging instead of print statements.
-- Context Managers: Use with statements for resource management.
-- For Data Science: Follow pandas, numpy, and matplotlib best practices.
-- Include proper error messages and validation for user inputs.
+- Logging: Use logging instead of print for diagnostics.
+- Testing: Use pytest with fixtures and parameterization, following the project's existing test layout.
