@@ -16,7 +16,7 @@
 .alias
 .bash_profile
 .zprofile
-.tmux.conf
+.config/tmux
 .vimrc
 # .local/share/vim / .config/delta / .local/share/tmux / .config/dircolors は .chezmoiexternal.toml の
 # external (dracula テーマ) の展開先。
