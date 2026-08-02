@@ -11,9 +11,6 @@ function setup() {
     run create_directories
 
     directories_exists=(
-        "${HOME}/Downloads"
-        "${HOME}/Documents"
-        "${HOME}/Works/pkg"
         "${HOME}/.ssh"
         "${HOME}/.local/bin"
         "${HOME}/.local/state"

@@ -120,7 +120,7 @@ git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfi
 コンテナや他人のマシンなど、chezmoi の source (`~/.local/share/chezmoi`) や設定を残したくない環境では `--one-shot` を使う。適用後に source ディレクトリ・設定 (`~/.config/chezmoi`)・インストールした chezmoi バイナリまで自動で削除する（実質 `--apply --depth 1 --force --purge --purge-binary` 相当）。
 
 ```bash
-sh -c "$(curl -fsSL get.chezmoi.io)" -- init --one-shot https://github.com/msageha/dotfiles.git
+sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --one-shot https://github.com/msageha/dotfiles.git
 ```
 
 注意点:
