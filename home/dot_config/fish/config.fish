@@ -29,6 +29,11 @@ if test (uname) = "Darwin"
     # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
     set -gx GREP_COLOR "1;38;2;255;85;85"
 end
+# GREP_COLORS / GREP_COLOR は --color=auto を付けて実行しない限り効かない。
+# ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要
+if echo x | grep --color=auto -q x 2>/dev/null
+    alias grep='grep --color=auto'
+end
 
 # --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
 set -gx MANPAGER "less -s -M +Gg"
