@@ -18,15 +18,15 @@
 .zprofile
 .tmux.conf
 .vimrc
-# .local/share/vim / .config/delta / .tmux / .config/dircolors は .chezmoiexternal.toml の
+# .local/share/vim / .config/delta / .local/share/tmux / .config/dircolors は .chezmoiexternal.toml の
 # external (dracula テーマ) の展開先。
 # external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
 .local/share/vim
 .local/share/vim/**
 .config/delta
 .config/delta/**
-.tmux
-.tmux/**
+.local/share/tmux
+.local/share/tmux/**
 .config/dircolors
 .config/dircolors/**
 .config/fastfetch
