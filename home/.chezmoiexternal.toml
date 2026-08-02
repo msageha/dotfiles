@@ -1,6 +1,6 @@
 # dracula テーマ群は commit SHA で固定する
 # archive 型で pin し、更新は renovate で追従させる。
-[".vim/pack/themes/start/dracula"]
+[".local/share/vim/pack/themes/start/dracula"]
 type = "archive"
 url = "https://github.com/dracula/vim/archive/4f068752154e70ef8e03d6a70992033fff20a165.tar.gz"
 exact = true

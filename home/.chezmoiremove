@@ -16,6 +16,9 @@
 .claude/commands/test.md
 
 {{ if ne .chezmoi.os "windows" -}}
+{{- /* dracula テーマの展開先を ~/.vim から ~/.local/share/vim へ移行したため、
+       旧 external が置いた ~/.vim を掃除する */}}
+.vim
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf

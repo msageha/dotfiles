@@ -129,6 +129,9 @@ set scrolloff=3
 " Draculaカラースキームを使用
 " (+syntax が無い vim-tiny 等では if ごと未評価のブロックとしてスキップされ、E319 を出さない)
 if has('syntax')
+  " packadd はこの packpath を見てプラグインを探すため、~/.vim ではなく
+  " ~/.local/share/vim (chezmoiexternal の展開先) を追加しておく
+  set packpath^=~/.local/share/vim
   silent! packadd! dracula
   syntax enable
   silent! colorscheme dracula
