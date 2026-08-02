@@ -12,6 +12,7 @@ function create_directories() {
     mkdir -p "$HOME/.ssh"
     mkdir -p "$HOME/.local/bin"   # ローカルコマンド (git-open / GOBIN / uv / mise 等) の配置先
     mkdir -p "$HOME/.local/state" # シェル/REPL 履歴 (HISTFILE 等) の保存先
+    mkdir -p "$HOME/.cache/zsh"   # zsh補完キャッシュ (zcompdump) の保存先
 }
 
 function main() {

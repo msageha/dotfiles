@@ -86,7 +86,9 @@ export GOBIN="$HOME/.local/bin"
 # --- zsh補完システムの初期化 ---
 # completions.sh が生成した _<cmd> 形式の補完を compinit より前に fpath へ追加する
 fpath=("$HOME/.config/zsh/completions" $fpath)
-autoload -Uz compinit && compinit
+# ダンプファイル (zcompdump) はキャッシュのため XDG_CACHE_HOME 相当の ~/.cache/zsh へ置く
+# (保存先ディレクトリは setup_directory.sh が作成する)
+autoload -Uz compinit && compinit -d "$HOME/.cache/zsh/zcompdump"
 
 # --- AWS CLI / aws-sso-cli の補完初期化 ---
 # aws_completer は bash 形式の `complete -C` を前提とするため bashcompinit が必要。
