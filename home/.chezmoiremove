@@ -16,6 +16,13 @@
 .claude/commands/test.md
 
 {{ if ne .chezmoi.os "windows" -}}
+{{- /* dracula テーマの展開先を ~/.vim / ~/.tmux から ~/.local/share/{vim,tmux} へ移行したため、
+       旧 external が置いた ~/.vim / ~/.tmux を掃除する */}}
+.vim
+.tmux
+{{- /* tmux の設定ファイルを ~/.tmux.conf から ~/.config/tmux/tmux.conf へ移行したため、
+       旧 ~/.tmux.conf を掃除する (残したままだと tmux が両方読み込んでしまう) */}}
+.tmux.conf
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
 {{ $fontDir }}/SauceCodeProNerdFont*.ttf

@@ -54,7 +54,8 @@ set fileencodings=utf-8,iso-2022-jp,sjis,euc-jp
 " set directory=~/.local/state/vim/swaps
 " silent !mkdir -p ~/.local/state/vim/undo
 " set undodir=~/.local/state/vim/undo
-" set viminfo+=n~/.local/state/vim/viminfo
+silent !mkdir -p ~/.local/state/vim
+set viminfo+=n~/.local/state/vim/viminfo
 
 " 特定のディレクトリでファイルを編集する際にバックアップを作成しない
 set backupskip=/tmp/*,/private/tmp/*
@@ -128,6 +129,9 @@ set scrolloff=3
 " Draculaカラースキームを使用
 " (+syntax が無い vim-tiny 等では if ごと未評価のブロックとしてスキップされ、E319 を出さない)
 if has('syntax')
+  " packadd はこの packpath を見てプラグインを探すため、~/.vim ではなく
+  " ~/.local/share/vim (chezmoiexternal の展開先) を追加しておく
+  set packpath^=~/.local/share/vim
   silent! packadd! dracula
   syntax enable
   silent! colorscheme dracula

@@ -5,7 +5,7 @@
     files_exists=(
         "${HOME}/.config/git/config"
         "${HOME}/.vimrc"
-        "${HOME}/.tmux.conf"
+        "${HOME}/.config/tmux/tmux.conf"
         "${HOME}/.alias"
         "${HOME}/.bash_profile"
         "${HOME}/.zprofile"
