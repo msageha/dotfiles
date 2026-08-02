@@ -15,7 +15,7 @@
 [init]
     defaultBranch = main                  # 新規リポジトリのデフォルトブランチ名を設定
 {{- if $useGitSecrets }}
-    templatedir = ~/.git-templates/git-secrets
+    templatedir = ~/.config/git/templates/git-secrets
 
 [secrets]
     providers = git secrets --aws-provider

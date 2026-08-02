@@ -6,10 +6,10 @@ YELLOW="\033[0;33m"
 NC="\033[0m"
 
 # git-secrets のフックを git テンプレートディレクトリに導入する。
-# dot_config/git/config.tmpl の init.templatedir = ~/.git-templates/git-secrets と対応し、
+# dot_config/git/config.tmpl の init.templatedir = ~/.config/git/templates/git-secrets と対応し、
 # 以後 git init / clone したリポジトリに pre-commit / commit-msg フックが入る。
 # 検出パターンは chezmoi 管理の ~/.config/git/config [secrets] で設定済み。
-TEMPLATE_DIR="$HOME/.git-templates/git-secrets"
+TEMPLATE_DIR="$HOME/.config/git/templates/git-secrets"
 
 function main() {
     # macOS は brew、Debian/Ubuntu は apt で導入される。
