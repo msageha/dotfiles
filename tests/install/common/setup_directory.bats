@@ -17,6 +17,7 @@ function setup() {
         "${HOME}/.ssh"
         "${HOME}/.local/bin"
         "${HOME}/.local/state"
+        "${HOME}/.cache/zsh"
     )
     for directory in "${directories_exists[@]}"; do
         echo "Checking ${directory}"

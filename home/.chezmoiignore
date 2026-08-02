@@ -1,15 +1,13 @@
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
-# age 秘密鍵が無い環境では暗号化ファイルをignoreに設定
-{{ if not (stat $ageKey) }}
+# config.sakanaai.github / config.technoface.gitlab は age 秘密鍵が無いと復号できず、
+# config.tmpl 側の includeIf も darwin 限定のため、いずれかに該当すれば ignore する
+{{ if or (not (stat $ageKey)) (ne .chezmoi.os "darwin") }}
 .config/git/config.*
 !.config/git/config.github
+{{ end }}
+{{ if not (stat $ageKey) }}
 .ssh/*
 !.ssh/config
-{{ end }}
-
-{{ if ne .chezmoi.os "darwin" }}
-.config/git/config.*
-!.config/git/config.github
 {{ end }}
 
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
@@ -95,6 +93,14 @@
 {{ if $skipCodingAgent }}
 .config/agents
 .config/agents/**
+{{ end }}
+{{- /* X/* だけでは配下が全ignoreでもディレクトリ自体は空のまま作られてしまうため、
+     skip 時はディレクトリ自体も明示的に ignore する */}}
+{{ if $skipCodingAgent }}
+.claude
+.codex
+.gemini
+.grok
 {{ end }}
 .codex/*
 !.codex/owl-alpha.json
