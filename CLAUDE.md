@@ -14,7 +14,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 
 - `dot_foo` → `~/.foo`
 - `dot_config/` → `~/.config/`
-- `*.tmpl` → Go テンプレート (apply 時に展開。例: `dot_gitconfig.tmpl`, `dot_alias.tmpl`)
+- `*.tmpl` → Go テンプレート (apply 時に展開。例: `dot_config/git/config.tmpl`, `dot_alias.tmpl`)
 - `private_*` → パーミッション 600 で展開
 - `modify_private_dot_claude.json` → `~/.claude.json` を `.chezmoitemplates/claude.json` の内容へ
   置き換える chezmoi:modify-template (`.tmpl` を付けると二重テンプレート処理になるので付けない)。

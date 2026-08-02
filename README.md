@@ -45,13 +45,13 @@ winget 自体は前提条件ではない。winget が無い環境 (Windows Serve
 
 一部の設定ファイルは age で暗号化され、`encrypted_*.age` としてリポジトリに含まれている。
 
-| 暗号化ファイル                                       | 展開先                           | 内容                                                             |
-| ---------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------- |
-| `home/dot_ssh/encrypted_config.local.age`            | `~/.ssh/config.local`            | 非公開の SSH ホスト定義（`~/.ssh/config` から `Include` される） |
-| `home/encrypted_dot_gitconfig.technoface.gitlab.age` | `~/.gitconfig.technoface.gitlab` | 業務用 Git 設定                                                  |
-| `home/encrypted_dot_gitconfig.sakanaai.github.age`   | `~/.gitconfig.sakanaai.github`   | 業務用 Git 設定                                                  |
-| `settings/common/encrypted_google.ime.txt.age`       | （手動インポート用）             | Google 日本語入力のユーザー辞書                                  |
-| `settings/macos/btt/encrypted_licence.txt.age`       | （実行時に復号）                 | BetterTouchTool ライセンス                                       |
+| 暗号化ファイル                                               | 展開先                                   | 内容                                                             |
+| ------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------- |
+| `home/dot_ssh/encrypted_config.local.age`                    | `~/.ssh/config.local`                    | 非公開の SSH ホスト定義（`~/.ssh/config` から `Include` される） |
+| `home/dot_config/git/encrypted_config.technoface.gitlab.age` | `~/.config/git/config.technoface.gitlab` | 業務用 Git 設定                                                  |
+| `home/dot_config/git/encrypted_config.sakanaai.github.age`   | `~/.config/git/config.sakanaai.github`   | 業務用 Git 設定                                                  |
+| `settings/common/encrypted_google.ime.txt.age`               | （手動インポート用）                     | Google 日本語入力のユーザー辞書                                  |
+| `settings/macos/btt/encrypted_licence.txt.age`               | （実行時に復号）                         | BetterTouchTool ライセンス                                       |
 
 復号には age 秘密鍵が必要。**公開鍵 (recipient) は `home/.chezmoi.toml.tmpl` に記載してリポジトリに載せているが、秘密鍵はリポジトリに含めない。**
 
@@ -239,17 +239,15 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   ├── .chezmoiignore             # 鍵の有無で暗号化ファイルの適用を制御
 │   ├── .chezmoiscripts/           # chezmoi ライフサイクルスクリプト
 │   ├── dot_alias.tmpl             # シェルエイリアス
-│   ├── dot_gitconfig.tmpl         # Git 設定 (業務用は暗号化した include を条件付きで参照)
-│   ├── dot_gitconfig.github       # 個人 GitHub 用 Git 設定
 │   ├── dot_ssh/
 │   │   ├── config.tmpl            # 公開可の SSH 設定 (~/.ssh/config.local を Include)
 │   │   └── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
-│   ├── encrypted_dot_gitconfig.*.age    # 業務用 Git 設定 (age 暗号化)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules)
 │   ├── dot_codex/                 # OpenAI Codex 設定
 │   ├── dot_gemini/                # Antigravity (Gemini) 設定
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
-│   └── dot_config/                # fish / ghostty / mise / starship 等
+│   └── dot_config/                # fish / ghostty / mise / starship / git 等
+│       └── git/                   # Git 設定 (config.tmpl は業務用の暗号化 include を条件付きで参照、config.github は個人 GitHub 用、encrypted_config.*.age は業務用)
 ├── install/                       # インストールスクリプト
 │   ├── common/                    # 共通 (mise, fisher, completions 等)
 │   ├── macos/                     # macOS (brew, xcode, system/app settings)

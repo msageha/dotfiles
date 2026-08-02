@@ -28,7 +28,7 @@
 
 [core]
     editor = vim                          # デフォルトエディタをVimに設定
-    excludesFile = ~/.gitignore           # グローバルな.gitignoreファイルの指定
+    excludesFile = ~/.config/git/ignore   # グローバルな.gitignoreファイルの指定
 {{- if $useDelta }}
     pager = delta                         # diff/log等のページャにdeltaを使用
 {{- end }}
@@ -143,20 +143,20 @@
     directory = ~/.local/share/chezmoi
 
 [includeIf "gitdir:~/.local/share/chezmoi/"]
-    path = ~/.gitconfig.github
+    path = ~/.config/git/config.github
 
 [includeIf "gitdir:~/Works/src/github.com/"]
-    path = ~/.gitconfig.github
+    path = ~/.config/git/config.github
 
 {{- if eq .chezmoi.os "darwin" }}
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
 {{ if (stat $ageKey) }}
 [includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
-    path = ~/.gitconfig.technoface.gitlab # Technoface GitLab専用の設定
+    path = ~/.config/git/config.technoface.gitlab # Technoface GitLab専用の設定
 
 [includeIf "gitdir:~/Works/src/github.com/SakanaAIBusiness/"]
-    path = ~/.gitconfig.sakanaai.github   # SakanaAIBusiness Organization専用の設定
+    path = ~/.config/git/config.sakanaai.github   # SakanaAIBusiness Organization専用の設定
 [includeIf "gitdir:~/Works/src/github.com/SakanaAI/"]
-    path = ~/.gitconfig.sakanaai.github   # SakanaAI Organization専用の設定
+    path = ~/.config/git/config.sakanaai.github   # SakanaAI Organization専用の設定
 {{ end }}
 {{- end }}
