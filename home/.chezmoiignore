@@ -1,15 +1,15 @@
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
 # age 秘密鍵が無い環境では暗号化ファイルをignoreに設定
 {{ if not (stat $ageKey) }}
-.gitconfig.*
-!.gitconfig.github
+.config/git/config.*
+!.config/git/config.github
 .ssh/*
 !.ssh/config
 {{ end }}
 
 {{ if ne .chezmoi.os "darwin" }}
-.gitconfig.technoface.gitlab
-.gitconfig.sakanaai.github
+.config/git/config.*
+!.config/git/config.github
 {{ end }}
 
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
