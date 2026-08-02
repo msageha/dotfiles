@@ -94,6 +94,14 @@
 .config/agents
 .config/agents/**
 {{ end }}
+{{- /* X/* だけでは配下が全ignoreでもディレクトリ自体は空のまま作られてしまうため、
+     skip 時はディレクトリ自体も明示的に ignore する */}}
+{{ if $skipCodingAgent }}
+.claude
+.codex
+.gemini
+.grok
+{{ end }}
 .codex/*
 !.codex/owl-alpha.json
 {{ if not $skipCodingAgent }}
