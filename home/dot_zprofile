@@ -77,6 +77,18 @@ if [ -n "$_dircolors_bin" ] && [ -f "$HOME/.config/dircolors/dracula/.dircolors"
 fi
 unset _dircolors_bin
 
+# --- ls / grep のカラー出力 ---
+# LS_COLORS / GREP_COLORS は --color=auto を付けて実行しない限り効かない。
+# 古い BSD ls (macOS 12 以前など) は --color 非対応のため、動作確認してから張る。
+# macOS の Apple 製 ls は --color 対応でも LS_COLORS でなく LSCOLORS を見るため
+# dracula 配色にはならない (デフォルト配色になる)
+if ls --color=auto -d . &>/dev/null; then
+    alias ls='ls --color=auto'
+fi
+if echo x | grep --color=auto -q x &>/dev/null; then
+    alias grep='grep --color=auto'
+fi
+
 # --- Goの設定 ---
 export GOPATH="$HOME/Works"
 # go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
