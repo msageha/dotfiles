@@ -54,7 +54,8 @@ set fileencodings=utf-8,iso-2022-jp,sjis,euc-jp
 " set directory=~/.local/state/vim/swaps
 " silent !mkdir -p ~/.local/state/vim/undo
 " set undodir=~/.local/state/vim/undo
-" set viminfo+=n~/.local/state/vim/viminfo
+silent !mkdir -p ~/.local/state/vim
+set viminfo+=n~/.local/state/vim/viminfo
 
 " 特定のディレクトリでファイルを編集する際にバックアップを作成しない
 set backupskip=/tmp/*,/private/tmp/*
