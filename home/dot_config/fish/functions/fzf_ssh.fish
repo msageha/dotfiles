@@ -5,13 +5,13 @@ function fzf_ssh -d "List ssh"
     end
     test -z "$configs"; and return
 
-    # git 系ホスト (Host git 等) は ssh 接続対象から除外する。
+    # git 系ホスト (Host git / github.com / gitlab.* 等) は ssh 接続対象から除外する。
     # -w で単語境界を要求し、"digital" のような git を部分文字列に含むだけの
     # 無関係なホスト名まで除外してしまわないようにする
     set -l host (\
         grep -hiE '^[[:space:]]*Host[[:space:]]+' $configs \
         | grep -v '[*?]' \
-        | grep -vw "git" \
+        | grep -vwE 'git(hub|lab)?' \
         | awk '{ print $2 }' \
         | fzf --select-1
     )
