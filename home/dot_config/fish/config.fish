@@ -66,7 +66,7 @@ else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
     set brew_bin /usr/local/bin/brew
 end
 if test -n "$brew_bin"
-    __source_cached_init brew-shellenv "$brew_bin" "$brew_bin" shellenv fish
+    __source_cached_init brew-shellenv "$brew_bin" shellenv fish
 end
 
 # --- デフォルトエディタ ---
@@ -140,7 +140,7 @@ if status is-interactive
     end
     if test -n "$starship_bin"
         # `starship init fish` は full-init を都度生成する stub なので full-init 本体をキャッシュする
-        __source_cached_init starship-init "$starship_bin" "$starship_bin" init fish --print-full-init
+        __source_cached_init starship-init "$starship_bin" init fish --print-full-init
     end
 end
 
@@ -157,7 +157,7 @@ if test -z "$direnv_bin"; and type -q mise
     set direnv_bin (mise which direnv 2>/dev/null)
 end
 if test -n "$direnv_bin"
-    __source_cached_init direnv-hook "$direnv_bin" "$direnv_bin" hook fish
+    __source_cached_init direnv-hook "$direnv_bin" hook fish
 end
 
 # --- miseの初期化 ---
@@ -185,7 +185,7 @@ if status is-interactive
         set aws_sso_bin (mise which aws-sso 2>/dev/null)
     end
     if test -n "$aws_sso_bin"
-        __source_cached_init aws-sso-completions "$aws_sso_bin" "$aws_sso_bin" setup completions --source --shell fish
+        __source_cached_init aws-sso-completions "$aws_sso_bin" setup completions --source --shell fish
     end
 end
 
@@ -317,7 +317,7 @@ if status is-interactive
         set fzf_bin (mise which fzf 2>/dev/null)
     end
     if test -n "$fzf_bin"
-        __source_cached_init fzf-fish "$fzf_bin" "$fzf_bin" --fish
+        __source_cached_init fzf-fish "$fzf_bin" --fish
     end
 end
 
@@ -330,6 +330,6 @@ if status is-interactive
         set zoxide_bin (mise which zoxide 2>/dev/null)
     end
     if test -n "$zoxide_bin"
-        __source_cached_init zoxide-init "$zoxide_bin" "$zoxide_bin" init fish
+        __source_cached_init zoxide-init "$zoxide_bin" init fish
     end
 end
