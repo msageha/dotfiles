@@ -66,7 +66,7 @@ else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
     set brew_bin /usr/local/bin/brew
 end
 if test -n "$brew_bin"
-    "$brew_bin" shellenv fish | source
+    __source_cached_init brew-shellenv "$brew_bin" shellenv fish
 end
 
 # --- デフォルトエディタ ---
@@ -139,7 +139,8 @@ if status is-interactive
         set starship_bin (mise which starship 2>/dev/null)
     end
     if test -n "$starship_bin"
-        "$starship_bin" init fish | source
+        # `starship init fish` は full-init を都度生成する stub なので full-init 本体をキャッシュする
+        __source_cached_init starship-init "$starship_bin" init fish --print-full-init
     end
 end
 
@@ -156,7 +157,7 @@ if test -z "$direnv_bin"; and type -q mise
     set direnv_bin (mise which direnv 2>/dev/null)
 end
 if test -n "$direnv_bin"
-    "$direnv_bin" hook fish | source
+    __source_cached_init direnv-hook "$direnv_bin" hook fish
 end
 
 # --- miseの初期化 ---
@@ -184,7 +185,7 @@ if status is-interactive
         set aws_sso_bin (mise which aws-sso 2>/dev/null)
     end
     if test -n "$aws_sso_bin"
-        "$aws_sso_bin" setup completions --source --shell fish | source
+        __source_cached_init aws-sso-completions "$aws_sso_bin" setup completions --source --shell fish
     end
 end
 
@@ -213,22 +214,42 @@ if status is-interactive; and type -q fnox
         return 1
     end
 
+    # op whoami は ~70ms/回かかるためプロンプト毎に払わず結果を TTL キャッシュする。
+    # 別プロセスでの signin / signout の反映は最大 TTL 秒遅れる。
+    # 失効側の TTL は別タブでの signin を拾い直せるよう短めにする
+    set -g __fnox_op_session_status 1
+    set -g __fnox_op_session_expires 0
+    function __fnox_op_session_ok
+        set -l now (date +%s)
+        if test $now -lt $__fnox_op_session_expires
+            return $__fnox_op_session_status
+        end
+        if op whoami >/dev/null 2>&1
+            set -g __fnox_op_session_status 0
+            set -g __fnox_op_session_expires (math $now + 300)
+        else
+            set -g __fnox_op_session_status 1
+            set -g __fnox_op_session_expires (math $now + 60)
+        end
+        return $__fnox_op_session_status
+    end
+
+    # 起動時・プロンプト時は op signin を実行しない (Touch ID 待ちで数秒ブロックし
+    # タブを開く操作が固まるため)。失効は config 毎に一度だけ通知し、
+    # signin は fnox の明示実行時 (下の fnox wrapper) まで遅延する
     function __fnox_preauth_1password
         type -q op; or return 0
 
         set -l config_path (__fnox_find_1password_config)
         or return 0
 
-        op whoami >/dev/null 2>&1; and return 0
-        if set -q __FNOX_1PASSWORD_PREAUTH_FAILED_FOR; and test "$__FNOX_1PASSWORD_PREAUTH_FAILED_FOR" = "$config_path"
-            return 1
-        end
-
-        if op signin >/dev/null 2>&1
-            set -e __FNOX_1PASSWORD_PREAUTH_FAILED_FOR
+        if __fnox_op_session_ok
             return 0
         end
-        set -gx __FNOX_1PASSWORD_PREAUTH_FAILED_FOR "$config_path"
+        if not set -q __fnox_op_notified_for; or test "$__fnox_op_notified_for" != "$config_path"
+            set -g __fnox_op_notified_for "$config_path"
+            echo "fnox: 1Password セッション失効のため secret をスキップ中 (fnox 実行時に op signin します)" >&2
+        end
         return 1
     end
 
@@ -251,6 +272,29 @@ if status is-interactive; and type -q fnox
         end
     end
 
+    # fnox activate が定義する fnox wrapper を、1Password 再認証付きで置き換える。
+    # 明示実行時は Touch ID 待ちでブロックしてよいのでここで signin し、
+    # 成功したら env を反映してから本体を実行する。deactivate / shell の
+    # eval 分岐は activate 版と同じ挙動を維持する
+    functions -e fnox
+    function fnox
+        if type -q op; and __fnox_find_1password_config >/dev/null; and not __fnox_op_session_ok
+            if op signin >/dev/null 2>&1
+                set -g __fnox_op_session_status 0
+                set -g __fnox_op_session_expires (math (date +%s) + 300)
+                set -e __fnox_op_notified_for
+                __fnox_env_eval
+            end
+        end
+        set -l command $argv[1]
+        switch "$command"
+            case deactivate shell
+                eval (command fnox "$command" $argv[2..-1])
+            case '*'
+                command fnox "$command" $argv[2..-1]
+        end
+    end
+
     __fnox_env_eval
 end
 
@@ -261,18 +305,8 @@ set -g fish_cursor_insert block
 set -g fish_cursor_replace_one underscore
 set -g fish_cursor_visual block
 
-# --- GitHub トークンの動的注入 ---
-# GitHub MCP server (Claude Code の github plugin) が参照する。gh の OAuth トークンを
-# 都度取得することで PAT をファイルに置かない。gh 未導入・未ログイン時は設定しない。
-# トークンは回転しうるためキャッシュに書かず、毎回評価する。
-# コーディングエージェントは対話シェルから起動される前提。非対話シェルでは
-# gh の起動コスト (毎回の subprocess) を払わない
-if status is-interactive; and not set -q GITHUB_PERSONAL_ACCESS_TOKEN; and type -q gh
-    set -l gh_token (gh auth token 2>/dev/null)
-    if test -n "$gh_token"
-        set -gx GITHUB_PERSONAL_ACCESS_TOKEN $gh_token
-    end
-end
+# GitHub トークン (GITHUB_PERSONAL_ACCESS_TOKEN) の注入はシェル起動時ではなく
+# claude 起動時に行う (functions/claude.fish)。gh auth token が ~170ms かかるため
 
 # --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
 # mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする。
@@ -283,7 +317,7 @@ if status is-interactive
         set fzf_bin (mise which fzf 2>/dev/null)
     end
     if test -n "$fzf_bin"
-        "$fzf_bin" --fish | source
+        __source_cached_init fzf-fish "$fzf_bin" --fish
     end
 end
 
@@ -296,6 +330,6 @@ if status is-interactive
         set zoxide_bin (mise which zoxide 2>/dev/null)
     end
     if test -n "$zoxide_bin"
-        "$zoxide_bin" init fish | source
+        __source_cached_init zoxide-init "$zoxide_bin" init fish
     end
 end
