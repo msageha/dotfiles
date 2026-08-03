@@ -139,6 +139,9 @@
     helper = cache --timeout=3600
 {{- end }}
 
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/       # GitHubへのアクセスをHTTPSからSSHに書き換え
+
 [safe]
     directory = ~/.local/share/chezmoi
 
