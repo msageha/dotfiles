@@ -139,9 +139,12 @@
     helper = cache --timeout=3600
 {{- end }}
 
+{{- /* SSH 鍵の無い環境 (CI) では匿名 https clone (mise plugin 等) が
+     ssh 書き換えで Permission denied になるため CI では出力しない */ -}}
+{{- if not (env "CI") }}
 [url "ssh://git@github.com/"]
     insteadOf = https://github.com/       # GitHubへのアクセスをHTTPSからSSHに書き換え
-
+{{ end }}
 [safe]
     directory = ~/.local/share/chezmoi
 
