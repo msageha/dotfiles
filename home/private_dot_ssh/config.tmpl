@@ -16,6 +16,15 @@ Host github.com
   TCPKeepAlive yes
   IdentitiesOnly yes
   StrictHostKeyChecking accept-new
+
+Host gitlab.technoface.co.jp
+  User git
+  Port 22
+  HostName gitlab.technoface.co.jp
+  IdentityFile ~/.ssh/gitlab_technoface
+  TCPKeepAlive yes
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
 {{ if eq .chezmoi.os "darwin" }}
 # macOS: パスフレーズを Keychain に保存・参照し、使用した鍵を ssh-agent へ自動追加する
 # (毎回のパスフレーズ入力を無くす)。UseKeychain は Apple 版 OpenSSH の拡張のため、
