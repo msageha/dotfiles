@@ -81,7 +81,11 @@ unset _dircolors_bin
 # LS_COLORS / GREP_COLORS は --color=auto を付けて実行しない限り効かない。
 # 古い BSD ls (macOS 12 以前など) は --color 非対応のため、動作確認してから張る。
 # macOS の Apple 製 ls は --color 対応でも LS_COLORS でなく LSCOLORS を見るため
-# dracula 配色にはならない (デフォルト配色になる)
+# dracula 配色にはならない (デフォルト配色になる)。
+# さらに Apple 製 ls (FreeBSD 由来) は --color=auto でも COLORTERM / CLICOLOR が
+# 設定されていないと色を出さない (man ls) ため CLICOLOR を設定する
+# (GNU ls は CLICOLOR を無視するため他 OS でも無害)
+export CLICOLOR=1
 if ls --color=auto -d . &>/dev/null; then
     alias ls='ls --color=auto'
 fi

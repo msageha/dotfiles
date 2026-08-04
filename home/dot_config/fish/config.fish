@@ -30,7 +30,12 @@ if test (uname) = "Darwin"
     set -gx GREP_COLOR "1;38;2;255;85;85"
 end
 # GREP_COLORS / GREP_COLOR は --color=auto を付けて実行しない限り効かない。
-# ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要
+# ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要。
+# ただし macOS 13+ の Apple 製 ls (FreeBSD 由来) は --color=auto でも
+# COLORTERM / CLICOLOR が設定されていないと色を出さない (man ls)。fish の workaround は
+# Terminal.app 限定のため、COLORTERM を設定しないターミナルでも色が付くよう CLICOLOR を
+# 設定する (GNU ls は CLICOLOR を無視するため他 OS でも無害)
+set -gx CLICOLOR 1
 if echo x | grep --color=auto -q x 2>/dev/null
     alias grep='grep --color=auto'
 end
