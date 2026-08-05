@@ -3,9 +3,23 @@ set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
+YELLOW="\033[0;33m"
 NC="\033[0m" # No Color (リセット)
 CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
 CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
+
+# コンピュータ名・ユーザーアイコンの設定は root 権限が必要で、sudo を持たない
+# ユーザー (CI runner 等) ではパスワードプロンプトで失敗する。macOS の既定
+# sudoers は %admin のため admin グループ所属で判定し、グループ外への個別付与
+# (NOPASSWD 等) はプロンプトを出さない sudo -n で拾う (debian/ubuntu 側の
+# has_privilege と違い sudo -v を使わないのは、非 sudoer でも TTY にパスワード
+# プロンプトを出してしまうため)。
+function has_privilege() {
+    if [ "$(id -u)" -eq 0 ]; then
+        return 0
+    fi
+    id -Gn | grep -qw admin || sudo -n true 2>/dev/null
+}
 
 # 1. コンピュータ名の変更
 function computer_name() {
@@ -22,6 +36,11 @@ function computer_name() {
     current="$(scutil --get ComputerName 2>/dev/null || true)"
     if [[ "$current" == "$COMPUTER_NAME" ]]; then
         printf "%b\n" "${BLUE}コンピュータ名は既に '$COMPUTER_NAME' です。スキップ${NC}"
+        return 0
+    fi
+
+    if ! has_privilege; then
+        printf "%b\n" "${YELLOW}sudo が使えないためコンピュータ名の設定をスキップします。${NC}" >&2
         return 0
     fi
 
@@ -43,6 +62,11 @@ function user_icon() {
     current="$(dscl . -read "/Users/$USER" Picture 2>/dev/null | sed -n 's/^Picture: //p')"
     if [[ "$current" == "$icon" ]] && ! dscl . -read "/Users/$USER" JPEGPhoto 2>/dev/null | grep -q '^JPEGPhoto:'; then
         printf "%b\n" "${BLUE}ユーザーアイコンは既に '$icon' です。スキップ${NC}"
+        return 0
+    fi
+
+    if ! has_privilege; then
+        printf "%b\n" "${YELLOW}sudo が使えないためユーザーアイコンの設定をスキップします。${NC}" >&2
         return 0
     fi
 
