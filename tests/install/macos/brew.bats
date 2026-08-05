@@ -48,6 +48,23 @@ function setup() {
     [[ "$output" != *"Installing cask packages"* ]]
 }
 
+@test "[macos] brew - upgrade without sudo restricts to formulae" {
+    # sudo を持たないユーザーでは cask を upgrade 対象から外す
+    # (cask の upgrade は sudo を要求するものがあるため)。
+    # brew スタブは outdated の引数を stderr に出し、stdout は空 (= 更新対象なし)。
+    run env -u CI bash -c 'brew() { [ "$1" = "outdated" ] && echo "brew $*" >&2; true; }; source '"${SCRIPT_PATH}"'; can_sudo() { return 1; }; upgrade'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"cask の upgrade をスキップします"* ]]
+    [[ "$output" == *"brew outdated --formula --quiet"* ]]
+}
+
+@test "[macos] brew - upgrade with sudo covers casks" {
+    run env -u CI bash -c 'brew() { [ "$1" = "outdated" ] && echo "brew $*" >&2; true; }; source '"${SCRIPT_PATH}"'; can_sudo() { return 0; }; upgrade'
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"cask の upgrade をスキップします"* ]]
+    [[ "$output" == *"brew outdated --quiet"* ]]
+}
+
 @test "[macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
     # CLI あり GUI なし構成でも coding agent は Debian 側 (coding_agent.sh) と同様に導入する。
     # CI では cask 全体が early return するため、CI を外して gating 自体を検証する。

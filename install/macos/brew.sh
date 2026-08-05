@@ -139,6 +139,15 @@ upgrade_exclude=(
     antigravity-cli
 )
 
+# cask の upgrade は pkg installer や旧版の uninstall スクリプトを sudo で実行する
+# ものがある (例: git-credential-manager)。sudo を持たないユーザーではそこで失敗
+# するため、upgrade() は sudo が使えない場合 formula のみ更新する。
+# macOS の既定 sudoers は %admin のため admin グループ所属で判定し、
+# グループ外への個別付与 (NOPASSWD 等) は sudo -n で拾う。
+function can_sudo() {
+    id -Gn | grep -qw admin || sudo -n true 2>/dev/null
+}
+
 function upgrade() {
     # cask を含む全更新は時間がかかるため CI ではスキップする
     if [ -n "${CI:-}" ]; then
@@ -147,11 +156,16 @@ function upgrade() {
     fi
     printf "%b\n" "${BLUE}Upgrading packages...${NC}"
 
-    # 更新可能なパッケージ (formula/cask 両方) を列挙し、除外対象を取り除く。
+    # 更新可能なパッケージを列挙し、除外対象を取り除く。
     local exclude_pattern
     exclude_pattern="$(printf '%s\n' "${upgrade_exclude[@]}")"
     local outdated
-    outdated="$(brew outdated --quiet | grep -vxF "$exclude_pattern" || true)"
+    if can_sudo; then
+        outdated="$(brew outdated --quiet | grep -vxF "$exclude_pattern" || true)"
+    else
+        printf "%b\n" "${BLUE}sudo が使えないため cask の upgrade をスキップします (formula のみ更新)。${NC}"
+        outdated="$(brew outdated --formula --quiet | grep -vxF "$exclude_pattern" || true)"
+    fi
 
     if [ -z "$outdated" ]; then
         printf "%b\n" "${BLUE}更新対象のパッケージはありません。${NC}"
