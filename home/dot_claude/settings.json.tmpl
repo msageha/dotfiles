@@ -85,6 +85,7 @@
       "Bash(make:*)",
       "Bash(docker:*)",
       "Bash(gh:*)",
+      "Bash(glab:*)",
       "Bash(chezmoi:*)",
       "Bash(brew:*)",
       "Bash(mise:*)",
@@ -107,6 +108,7 @@
       "Bash(find:*)",
       "Bash(sed:*)",
       "Bash(awk:*)",
+      "Bash(perl:*)",
       "Bash(echo:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
@@ -142,6 +144,7 @@
       "Bash(marp:*)",
       "Bash(xcrun:*)",
       "Bash(gofmt:*)",
+      "Bash(golangci-lint:*)",
       "Bash(strings:*)",
       "Bash(sqlite3:*)",
       "Bash(ps:*)",
@@ -155,6 +158,8 @@
       "Bash(sleep:*)",
       "Bash(cd:*)",
       "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(nohup:*)",
       "Bash(codex:*)",
       "Bash(claude:*)",
       "Bash(defaults:*)",
@@ -194,11 +199,15 @@
       "Bash(just:*)",
       "Bash(task:*)",
       "Bash(pre-commit:*)",
+      "Bash(prek:*)",
+      "Bash(dprint:*)",
+      "Bash(actionlint:*)",
       "Bash(kubectl:*)",
       "Bash(helm:*)",
       "Bash(aws:*)",
       "Bash(az:*)",
       "Edit(.claude/verify.sh)",
+      "Bash(chmod +x .claude/verify.sh)",
       "Edit(.env.template)",
       "WebSearch",
       "WebFetch",
@@ -259,7 +268,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "CMD=$(cat | jq -r '.tool_input.command' | tr -d \"'\\\"\"); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(`])[[:space:]]*((sudo|env)[[:space:]]+)*(([^;&|[:space:]]*/)?rm[[:space:]]+(-{1,2}[[:alnum:]=-]+[[:space:]]+)*(-[[:alpha:]]*r[[:alpha:]]*|--recursive)([[:space:]]+-{1,2}[[:alnum:]=-]+)*[[:space:]]+(/|~|\\$HOME|\\*|\\.\\.?(/|[[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(-f|--force)([[:space:]]|$)|chmod[[:space:]]+(-[[:alpha:]]+[[:space:]]+)*0?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+table)' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
+            "command": "CMD=$(cat | jq -r '.tool_input.command' | tr -d \"'\\\"\"); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(`])[[:space:]]*((sudo|env)[[:space:]]+)*(([^;&|[:space:]]*/)?rm[[:space:]]+(-{1,2}[[:alnum:]=-]+[[:space:]]+)*(-[[:alpha:]]*r[[:alpha:]]*|--recursive)([[:space:]]+-{1,2}[[:alnum:]=-]+)*[[:space:]]+(/|~|\\$HOME|\\*|\\.\\.?(/|[[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(-f|--force)([[:space:]]|$)|git[[:space:]]+clean[[:space:]]+(-{1,2}[[:alnum:]-]+[[:space:]]+)*(-[[:alpha:]]*f[[:alpha:]]*|--force)|chmod[[:space:]]+(-[[:alpha:]]+[[:space:]]+)*0?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+(table|database)|dropdb([[:space:]]|$))' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
             "timeout": 5
           }
         ]
