@@ -21,6 +21,9 @@ function install() {
 function prune() {
     printf "%b\n" "${BLUE}Pruning unused tool versions...${NC}"
     mise prune --yes
+    # prune は config から外れたツールの stale shim を掃除しないため、
+    # インストール済みツールから shim を再生成して死んだ shim を除去する
+    mise reshim
 }
 
 function main() {
