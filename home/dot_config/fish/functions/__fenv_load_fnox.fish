@@ -29,19 +29,10 @@ function __fenv_load_fnox
         cp fnox.local.toml "$temp_dir/fnox.local.toml"
     end
 
-    set -l prompt_auth true
-    if functions -q __fnox_preauth_1password
-        if not __fnox_preauth_1password
-            set prompt_auth false
-        end
-    end
-
-    set -l fnox_output
-    if test "$prompt_auth" = true
-        set fnox_output (fnox -c "$temp_dir/fnox.toml" $profile_args export -f env 2>/dev/null)
-    else
-        set fnox_output (FNOX_PROMPT_AUTH=false fnox -c "$temp_dir/fnox.toml" $profile_args export -f env 2>/dev/null)
-    end
+    # 1Password の事前認証 (op signin 1 回) と失効時の中断は fnox wrapper
+    # (config.fish) が担う。失効したまま本体を実行すると op が secret ごとに
+    # 認証ダイアログを出すため、ここでフォールバック実行しない
+    set -l fnox_output (fnox -c "$temp_dir/fnox.toml" $profile_args export -f env 2>/dev/null)
     set -l fnox_status $status
     rm -rf "$temp_dir"
 

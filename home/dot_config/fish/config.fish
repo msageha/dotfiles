@@ -261,12 +261,13 @@ if status is-interactive; and type -q fnox
     functions -e __fnox_env_eval
     functions -e __fnox_cd_hook
 
+    # 失効時は hook-env を実行しない。FNOX_PROMPT_AUTH=false は fnox 自身の
+    # auth_command 確認プロンプトを抑止するだけで、secret ごとに並列 spawn される
+    # op プロセスの認証ダイアログは素通しになる (secret の数だけダイアログが出る)
     function __fnox_env_eval --on-event fish_prompt
         if test "$FNOX_SHELL" = fish
             if __fnox_preauth_1password
                 eval (command fnox hook-env -s fish | string collect)
-            else
-                eval (FNOX_PROMPT_AUTH=false command fnox hook-env -s fish | string collect)
             end
         end
     end
@@ -279,8 +280,9 @@ if status is-interactive; and type -q fnox
 
     # fnox activate が定義する fnox wrapper を、1Password 再認証付きで置き換える。
     # 明示実行時は Touch ID 待ちでブロックしてよいのでここで signin し、
-    # 成功したら env を反映してから本体を実行する。deactivate / shell の
-    # eval 分岐は activate 版と同じ挙動を維持する
+    # 成功したら env を反映してから本体を実行する。signin に失敗したまま本体を
+    # 実行すると op が secret ごとに認証ダイアログを出すため中断する。
+    # deactivate / shell の eval 分岐は activate 版と同じ挙動を維持する
     functions -e fnox
     function fnox
         if type -q op; and __fnox_find_1password_config >/dev/null; and not __fnox_op_session_ok
@@ -289,6 +291,9 @@ if status is-interactive; and type -q fnox
                 set -g __fnox_op_session_expires (math (date +%s) + 300)
                 set -e __fnox_op_notified_for
                 __fnox_env_eval
+            else
+                echo "fnox: op signin に失敗したため中断 (1Password 認証なしで実行するには command fnox)" >&2
+                return 1
             end
         end
         set -l command $argv[1]

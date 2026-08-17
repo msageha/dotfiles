@@ -224,16 +224,18 @@ if command -v fnox &>/dev/null; then
             return 0
         fi
         export __FNOX_1PASSWORD_PREAUTH_FAILED_FOR="$config_path"
+        echo "fnox: op signin に失敗したため secret をスキップ中 (op signin 成功後の cd で再読込されます)" >&2
         return 1
     }
 
+    # 失効時は hook-env を実行しない。FNOX_PROMPT_AUTH=false は fnox 自身の
+    # auth_command 確認プロンプトを抑止するだけで、secret ごとに並列 spawn される
+    # op プロセスの認証ダイアログは素通しになる (secret の数だけダイアログが出る)
     _fnox_hook() {
         local previous_exit_status=$?
         trap -- '' SIGINT
         if _fnox_preauth_1password; then
             eval "$(command fnox hook-env -s bash)"
-        else
-            eval "$(FNOX_PROMPT_AUTH=false command fnox hook-env -s bash)"
         fi
         trap - SIGINT
         return $previous_exit_status
