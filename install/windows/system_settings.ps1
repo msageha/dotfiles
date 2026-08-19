@@ -65,6 +65,32 @@ public class ChezmoiWallpaper {
     [ChezmoiWallpaper]::SystemParametersInfo(0x14, 0, $wallpaperPath, 3) | Out-Null
 }
 
+# UCPD.sys (User Choice Protection Driver) は保護対象の値名への書き込みをカーネルの
+# レジストリコールバックで傍受し、呼び出し元が deny-list (reg.exe / powershell.exe 等) の
+# 場合に ACCESS_DENIED を返す。TaskbarDa と ShellFeedsTaskbarViewMode がこれに該当し、
+# Microsoft 署名バイナリ (設定アプリ) 以外からは変更できないため、拒否は警告にして続行する。
+# 拒否以外の失敗は握りつぶさず再スローする。
+function Set-UcpdProtectedDword($path, $name, $value) {
+    try {
+        New-ItemProperty -Path $path -Name $name -Value $value -PropertyType DWord -Force -ErrorAction Stop | Out-Null
+    }
+    catch {
+        # $ErrorActionPreference = 'Stop' 経由で終了エラー化された場合に例外が
+        # 包まれることがあるため、例外チェーンと FullyQualifiedErrorId の両方で判定する
+        $unauthorized = $false
+        for ($ex = $_.Exception; $null -ne $ex; $ex = $ex.InnerException) {
+            if ($ex -is [System.UnauthorizedAccessException]) {
+                $unauthorized = $true
+                break
+            }
+        }
+        if (-not $unauthorized -and $_.FullyQualifiedErrorId -notlike 'System.UnauthorizedAccessException*') {
+            throw
+        }
+        Write-Warn "$name の書き込みが拒否されたためスキップします (UCPD.sys による保護。変更するには設定アプリから操作してください)。"
+    }
+}
+
 function Set-TaskbarSettings {
     Write-Step 'タスクバー・システムトレイの設定を行っています...'
     $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
@@ -73,9 +99,9 @@ function Set-TaskbarSettings {
 
     New-ItemProperty -Path $search -Name 'SearchboxTaskbarMode' -Value 0 -PropertyType DWord -Force | Out-Null # 検索ボックスを非表示
 
-    New-ItemProperty -Path $advanced -Name 'TaskbarDa' -Value 0 -PropertyType DWord -Force | Out-Null # ウィジェットを非表示 (Windows 11)
+    Set-UcpdProtectedDword $advanced 'TaskbarDa' 0 # ウィジェットを非表示 (Windows 11)
     New-Item -Path $feeds -Force -ErrorAction SilentlyContinue | Out-Null
-    New-ItemProperty -Path $feeds -Name 'ShellFeedsTaskbarViewMode' -Value 2 -PropertyType DWord -Force | Out-Null # ニュースと関心事項を非表示 (Windows 10)
+    Set-UcpdProtectedDword $feeds 'ShellFeedsTaskbarViewMode' 2 # ニュースと関心事項を非表示 (Windows 10)
 
     New-ItemProperty -Path $advanced -Name 'TaskbarMn' -Value 0 -PropertyType DWord -Force | Out-Null         # Chat アイコンを非表示
     New-ItemProperty -Path $advanced -Name 'ShowCopilotButton' -Value 0 -PropertyType DWord -Force | Out-Null # Copilot アイコンを非表示
