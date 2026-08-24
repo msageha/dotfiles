@@ -6,7 +6,6 @@
 {{- $useGitSecrets := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
 [ghq]
     root = ~/Works/src                    # GHQのルートディレクトリを指定
-    shallow = true
 
 [user]
     name = Mizuki Sango                   # Gitで使用するユーザー名
@@ -47,6 +46,9 @@
 
 [fetch]
     prune = true                          # リモートで削除されたブランチの追跡refをfetch時に掃除
+
+[submodule]
+    recurse = true                        # checkout/fetch/pull等で--recurse-submodulesを既定にする (cloneは対象外)
 
 [color]
     ui = auto                             # 色の自動設定
