@@ -138,8 +138,8 @@ provenance = "cosign"
 
 [tools.chezmoi."platforms.linux-x64"]
 checksum = "sha256:e1fb16c962644d57f4d451c324aa86163d00faf5d035500f41fb48943a66dfed"
-url = "https://github.com/twpayne/chezmoi/releases/download/v2.71.1/chezmoi_2.71.1_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/twpayne/chezmoi/releases/assets/483858082"
+url = "https://github.com/twpayne/chezmoi/releases/download/v2.71.1/chezmoi_2.71.1_linux-glibc_amd64.tar.gz"
+url_api = "https://api.github.com/repos/twpayne/chezmoi/releases/assets/483858088"
 provenance = "cosign"
 
 [tools.chezmoi."platforms.linux-x64-musl"]
@@ -171,9 +171,9 @@ version = "0.55.1"
 backend = "aqua:dprint/dprint"
 
 [tools.dprint."platforms.linux-arm64"]
-checksum = "sha256:2d414d659034650bc25b208a87ab427cd01a7ac6c21b3ed2191cf92e1b58f76c"
-url = "https://github.com/dprint/dprint/releases/download/0.55.1/dprint-aarch64-unknown-linux-musl.zip"
-url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/460010446"
+checksum = "sha256:f5ea3a5c196b0bcd91aa0af7b5ef7366dbf87e8315a6797c47bff081a8d4e398"
+url = "https://github.com/dprint/dprint/releases/download/0.55.1/dprint-aarch64-unknown-linux-gnu.zip"
+url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/460010453"
 
 [tools.dprint."platforms.linux-arm64-musl"]
 checksum = "sha256:2d414d659034650bc25b208a87ab427cd01a7ac6c21b3ed2191cf92e1b58f76c"
@@ -181,9 +181,9 @@ url = "https://github.com/dprint/dprint/releases/download/0.55.1/dprint-aarch64-
 url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/460010446"
 
 [tools.dprint."platforms.linux-x64"]
-checksum = "sha256:7ce856d5999585e58666701eab5e0291abfb63953884d5dd0268001c89d74b8d"
-url = "https://github.com/dprint/dprint/releases/download/0.55.1/dprint-x86_64-unknown-linux-musl.zip"
-url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/460010456"
+checksum = "sha256:14f40c47b2a1c79ced321b62bf177f88f064d7b11c41f1ee28488ee0d9391bb2"
+url = "https://github.com/dprint/dprint/releases/download/0.55.1/dprint-x86_64-unknown-linux-gnu.zip"
+url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/460010457"
 
 [tools.dprint."platforms.linux-x64-musl"]
 checksum = "sha256:7ce856d5999585e58666701eab5e0291abfb63953884d5dd0268001c89d74b8d"
@@ -360,9 +360,9 @@ version = "0.4.8"
 backend = "aqua:j178/prek"
 
 [tools.prek."platforms.linux-arm64"]
-checksum = "sha256:379108e6b2db7d49277ad2986446097f442b252ef27ff07bd0cbf716de982eb1"
-url = "https://github.com/j178/prek/releases/download/v0.4.8/prek-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/j178/prek/releases/assets/466303287"
+checksum = "sha256:4a4d6ee04ed8b9142548d52e9d1f3c22055a333af72022b52d3610a62ae084de"
+url = "https://github.com/j178/prek/releases/download/v0.4.8/prek-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/j178/prek/releases/assets/466303282"
 provenance = "github-attestations"
 
 [tools.prek."platforms.linux-arm64-musl"]
@@ -372,9 +372,9 @@ url_api = "https://api.github.com/repos/j178/prek/releases/assets/466303287"
 provenance = "github-attestations"
 
 [tools.prek."platforms.linux-x64"]
-checksum = "sha256:21df9ac0c3d3c047e424be612cc55f5b243546f9ef5cde12ed134752312bdf7b"
-url = "https://github.com/j178/prek/releases/download/v0.4.8/prek-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/j178/prek/releases/assets/466303341"
+checksum = "sha256:9b6a7c2e825c1b916ab3bb843505902c07f3937975f935294852643510d721db"
+url = "https://github.com/j178/prek/releases/download/v0.4.8/prek-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/j178/prek/releases/assets/466303335"
 provenance = "github-attestations"
 
 [tools.prek."platforms.linux-x64-musl"]
