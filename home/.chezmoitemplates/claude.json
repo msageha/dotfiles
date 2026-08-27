@@ -40,7 +40,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "ask-antigravity-mcp@0.4.1"
+        "@ask-llm/antigravity-mcp@0.7.2"
       ],
       "env": {}
     },
@@ -50,14 +50,6 @@
       "args": [
         "-y",
         "@playwright/mcp@{{ .mcp.playwright }}"
-      ],
-      "env": {}
-    },
-    "youtube": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-youtube-transcript@0.3.5"
       ],
       "env": {}
     },
@@ -110,10 +102,6 @@
       "env": {
         "GEMINI_API_KEY": "{{ dig "apiKeys" "gemini" "" . }}"
       }
-    },
-    "pycharm": {
-      "type": "sse",
-      "url": "http://127.0.0.1:64342/sse"
     }
   }
 }

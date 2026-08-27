@@ -107,7 +107,13 @@ $env:Path = "$HOME\.local\bin;$env:Path"
 chezmoi init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
-chezmoi が実行するセットアップスクリプトは `-ExecutionPolicy Bypass` 付きで起動されるため、実行ポリシーが既定の `Restricted` のままでも動作する。`install/windows/*.ps1` を手動で実行したい場合のみ `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` が必要になることがある。
+chezmoi が実行するセットアップスクリプトは `-ExecutionPolicy Bypass` 付きで起動されるため、apply 自体は実行ポリシーが既定の `Restricted` のままでも成功する。ただし apply では PowerShell プロファイルが配置され、`Restricted` は `.ps1` の読み込みを一律で禁止するため、以降シェルを起動するたびにプロファイルの読み込みが `PSSecurityException` で失敗する。apply 後に一度だけ以下を実行する。
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+`CurrentUser` スコープなので管理者権限は不要。プロファイルは chezmoi がローカルに生成したファイルで Zone.Identifier が付かないため、署名を要求されない `RemoteSigned` で足りる。`Get-ExecutionPolicy -List` で `MachinePolicy` / `UserPolicy` に値が入っている場合は GPO による強制で、ユーザースコープからは覆せない。`install/windows/*.ps1` を手動で実行する場合も同じ設定が必要になる。
 
 SSH URL (`git@github.com:msageha/dotfiles.git`) も利用できるが、その場合はそのマシンに GitHub 登録済みの SSH 鍵が既に必要（未設定の初回マシンでは clone に失敗する）。`autoCommit` / `autoPush` で push し返すオーナー環境では、鍵を配置してから remote を SSH に切り替えると push が楽になる。
 

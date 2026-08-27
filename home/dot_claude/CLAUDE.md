@@ -61,7 +61,5 @@
 - **drawio**: フローチャート、アーキテクチャ図、視覚的ドキュメントの生成。
 - **figma**: Figma URL/デザインからのコード生成、Code Connect 管理、FigJam 作成。
 - **xcode**: Xcode プロジェクトのビルド・テスト・デバッグ (macOS のみ)。
-- **pycharm**: JetBrains IDE 連携。IDE 起動中のみ接続できる。
 - **maps-grounding-lite**: 場所検索、経路計算。
 - **nano-banana**: テキストプロンプトからの画像生成・編集。
-- **youtube**: YouTube 動画のトランスクリプト取得。
