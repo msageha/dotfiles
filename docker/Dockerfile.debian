@@ -5,6 +5,9 @@ FROM ${BASE_IMAGE}
 ENV DOCKER_MACHINE_NAME="msageha-docker"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NOWARNINGS=yes
+# DL3064 は変数名に "username" を含むだけで機微情報とみなすため、
+# コンテナのログインユーザー名を渡すこの ARG では抑制する
+# hadolint ignore=DL3064
 ARG USERNAME=mzk
 ENV USER=${USERNAME}
 ENV TZ=Asia/Tokyo
@@ -48,7 +51,7 @@ COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
 USER ${USERNAME}
 
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
-  if [[ -f /run/secrets/github_token ]]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
+  if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.0 && \
   export PATH="$HOME/.local/bin:$PATH" && \
   mkdir -p $HOME/.config/chezmoi && \
