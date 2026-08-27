@@ -23,18 +23,44 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       # GITHUB_TOKEN は GitHub API を叩くステップ (ubi/aqua backend の rate limit 回避)
-      # だけに step-level で渡し、workflow レベルで全ステップへ露出させない
+      # だけに step-level で渡し、workflow レベルで全ステップへ露出させない。
+      # ツール導入の失敗は次ステップのリトライに委ねるため continue-on-error にする
+      # (mise-action は install を自分で行ったときだけ cache を保存するので、
+      #  install: false にはせず cache を温存する)。
       - name: Install mise
-        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        id: mise
+        uses: jdx/mise-action@3c2e0cf82a5b2e5249f0d3635a4d83d0ae861518 # v4.2.5
+        continue-on-error: true
         with:
           cache: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      # aqua backend の artifact attestation 検証は、GitHub の Immutable Releases が付ける
+      # attestation (certificate identity: dotcom.releases.github.com) が aqua registry の
+      # signer_workflow と一致せず、常に 2 つ目の sigstore 署名 attestation へフォールバック
+      # する。その検証は tuf-repo-cdn.sigstore.dev への到達性に依存し、mise の http_retries は
+      # attestation API にしか効かず TUF 取得には及ばない。mise 本体と PATH は前ステップで
+      # 設定済みなので、ここではツール導入だけをやり直す。
+      - name: Retry mise install
+        if: steps.mise.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if mise install --locked; then
+              exit 0
+            fi
+            echo "::warning::mise install failed (attempt ${attempt}/3)"
+            sleep "$((attempt * 10))"
+          done
+          echo "::error::mise install failed after 3 attempts"
+          exit 1
 
       - name: Run prek
         env:

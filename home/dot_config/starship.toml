@@ -1,4 +1,4 @@
-"$schema" = 'https://starship.rs/config-schema.json'
+"$schema" = "https://starship.rs/config-schema.json"
 add_newline = false
 palette = "dracula"
 scan_timeout = 50
@@ -74,7 +74,7 @@ RedHatEnterprise = "󱄛"
 show_always = true
 style_user = "bg:rose fg:on_rose bold"
 style_root = "bg:rose fg:on_rose bold"
-format = '[ $user]($style)[](bg:slate fg:rose)'
+format = "[ $user]($style)[](bg:slate fg:rose)"
 
 [directory]
 truncation_length = 2
@@ -107,61 +107,61 @@ format = "[$all_status$ahead_behind](bg:graphite fg:attention_graphite)"
 symbol = "󰙱 "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [cpp]
 symbol = "󰙲 "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [dart]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [golang]
 symbol = "󰟓 "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [haskell]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [java]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [kotlin]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [nodejs]
 symbol = "󰎙 "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [php]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [python]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2"
 version_format = "${major}.${minor}"
-format = '[$symbol]($style)[$version]($style italic)'
+format = "[$symbol]($style)[$version]($style italic)"
 
 [env_var.VIRTUAL_ENV]
 variable = "VIRTUAL_ENV"
@@ -173,19 +173,19 @@ format = "[ $symbol ]($style)"
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [swift]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [terraform]
 symbol = " "
 style = "bg:graphite2 fg:on_graphite2 bold italic"
 version_format = "${major}.${minor}"
-format = '[$symbol$version]($style)'
+format = "[$symbol$version]($style)"
 
 [direnv]
 disabled = false
@@ -195,7 +195,7 @@ allowed_msg = "󰗠 "
 not_allowed_msg = "󰀨 "
 loaded_msg = " "
 unloaded_msg = " "
-format = '[$symbol$env]($style)'
+format = "[$symbol$env]($style)"
 
 # [docker_context]
 # symbol = "󰡨 "

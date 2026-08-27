@@ -26,13 +26,13 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
       - name: Install chezmoi
         run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.0
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
@@ -63,14 +63,35 @@ jobs:
       # mise-action は chezmoi apply より後に置く。
       # また apply が書いた user 側 config (~/.config/mise/config.toml) は mise.lock に無い
       # ツールを含み lockfile 強制で解決に失敗するため、MISE_CONFIG_DIR を空の場所へ
-      # 退避して repo の mise.toml のみを対象にする
+      # 退避して repo の mise.toml のみを対象にする。
+      # ツール導入の失敗は次ステップのリトライに委ねるため continue-on-error にする
       - name: Install mise
-        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        id: mise
+        uses: jdx/mise-action@3c2e0cf82a5b2e5249f0d3635a4d83d0ae861518 # v4.2.5
+        continue-on-error: true
         with:
           cache: true
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
           GITHUB_TOKEN: ${{ github.token }}
+      # aqua backend の attestation 検証が sigstore の TUF (tuf-repo-cdn.sigstore.dev) への
+      # 到達性に依存するため、一時的な到達不能でジョブを落とさずリトライする
+      # (機序と continue-on-error を選ぶ理由は prek.yaml の同名ステップに記載)。
+      - name: Retry mise install
+        if: steps.mise.outcome == 'failure'
+        env:
+          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if mise install --locked; then
+              exit 0
+            fi
+            echo "::warning::mise install failed (attempt ${attempt}/3)"
+            sleep "$((attempt * 10))"
+          done
+          echo "::error::mise install failed after 3 attempts"
+          exit 1
       - name: Run bats tests
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
@@ -95,7 +116,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # unix job と同様、ローカル (mise.toml) と同一バージョンに -t で pin して導入する
@@ -103,7 +124,7 @@ jobs:
         shell: powershell
         run: |
           $chezmoiBin = Join-Path $HOME '.local\bin'
-          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.71.1'"
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.72.0'"
           Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
       - name: Pre-configure chezmoi
         shell: powershell
