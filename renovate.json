@@ -78,6 +78,13 @@
         "fnox"
       ],
       "enabled": false
+    },
+    {
+      "description": "flarectl (cmd/flarectl) は cloudflare-go の v0 系にのみ存在し、v0.117.0 が最後。v2 以降は Stainless 生成 SDK へ全面置換されて cmd/ ごと削除され、module path も /vN 付きに変わったため、go backend では v1.0.0 以上を install できない (unknown revision で失敗する)。リポジトリのタグを追う github-tags datasource では検知できないので、バージョン範囲で成立しない更新を除外する",
+      "matchDepNames": [
+        "cloudflare/cloudflare-go"
+      ],
+      "allowedVersions": "<1.0.0"
     }
   ],
   "customManagers": [
