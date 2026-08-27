@@ -30,7 +30,7 @@ function Update-SessionPath {
 }
 
 # home/.chezmoiexternal.toml の nerd-fonts external のバージョンと揃える
-$NerdFontsVersion = 'v3.4.0'
+$NerdFontsVersion = 'v3.5.0'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'
 

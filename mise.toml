@@ -1,14 +1,14 @@
 [tools]
 actionlint = "1.7.12"
 age = "1.3.1"
-bats = "1.13.0"
-chezmoi = "2.71.1"
-dprint = "0.55.1"
-fnox = "1.29.0"
-hadolint = "2.14.0"
+bats = "1.14.0"
+chezmoi = "2.72.0"
+dprint = "0.56.0"
+fnox = "1.33.1"
+hadolint = "2.15.1"
 op = "2.34.1"
-powershell = "7.6.4"
-prek = "0.4.8"
+powershell = "7.6.5"
+prek = "0.4.14"
 shellcheck = "0.11.0"
 
 [hooks]
@@ -115,7 +115,7 @@ run = "mise run docker-build debian-slim-min debian:trixie-slim true"
 
 [tasks.build-ubuntu-gpu]
 description = "Ubuntu + CUDA + CLI (amd64 のみ)"
-run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.3.0-base-ubuntu26.04 false"
+run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.3.1-base-ubuntu26.04 false"
 
 # Alpine は musl 環境のため最小構成 (skip_cli_tools=true) でビルドする。
 [tasks.build-alpine]

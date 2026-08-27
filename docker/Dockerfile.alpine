@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.26
 ARG BASE_IMAGE=alpine:latest
 FROM ${BASE_IMAGE}
 
@@ -55,7 +55,7 @@ USER ${USERNAME}
 # (GitHub のレート制限回避用トークン。未指定だと cat が権限拒否され匿名枠で 403 になる)。
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.71.1 && \
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.0 && \
   export PATH="$HOME/.local/bin:$PATH" && \
   mkdir -p "$HOME/.config/chezmoi" && \
   printf '%s\n' \
