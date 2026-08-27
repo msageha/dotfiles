@@ -5,9 +5,6 @@
     "helpers:pinGitHubActionDigests"
   ],
   "timezone": "Asia/Tokyo",
-  "schedule": [
-    "* 5 * * *"
-  ],
   "separateMajorMinor": true,
   "lockFileMaintenance": {
     "enabled": true
