@@ -13,6 +13,8 @@ paths:
 
 # Flutter for Mobile Apps
 
+The library and architecture choices below are defaults for new (greenfield) projects. In an existing project, follow the stack already in use; do not introduce or replace these dependencies unilaterally.
+
 - State Management: Use Riverpod + hooks_riverpod whenever possible.
 - Widget Structure: Composition over inheritance. Break UI into small, reusable widgets.
 - Performance: Use const constructors. Use ListView.builder for long lists.
