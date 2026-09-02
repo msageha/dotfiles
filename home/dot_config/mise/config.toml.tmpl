@@ -31,7 +31,7 @@ java = "temurin-26.0.1+8"
 kubectl = "1.36.4"
 {{ end -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
-node = "26.8.0"
+node = "26.8.1"
 pnpm = "11.24.0"
 {{/* LSP サーバー群 (Claude Code の LSP plugin が参照。go / node ランタイム前提) */ -}}
 "go:golang.org/x/tools/gopls" = "0.23.0"
