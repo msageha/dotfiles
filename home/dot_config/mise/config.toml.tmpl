@@ -11,7 +11,7 @@ show_tools = false
 {{/* 言語ランタイム は skip_cli_tools=false を明示した環境でのみ入れる */ -}}
 {{/* / クラウド CLIは、macos かつ skip_cli_tools=false の環境でのみ入れる */ -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-awscli = "2.36.31"
+awscli = "2.36.32"
 aws-sso = "2.3.2"
 {{ end -}}
 direnv = "2.37.1"
@@ -28,7 +28,7 @@ go = "1.27.0"
 java = "temurin-26.0.1+8"
 {{ end -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-kubectl = "1.36.4"
+kubectl = "1.37.0"
 {{ end -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
 node = "26.8.1"
@@ -43,7 +43,7 @@ pnpm = "11.24.0"
 starship = "1.26.0"
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 stern = "1.34.0"
-terraform = "1.15.9"
+terraform = "1.16.0"
 terragrunt = "1.1.3"
 {{ end -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
@@ -68,7 +68,7 @@ yq = "4.53.6"
 {{/* ServiceAccount ユーティリティ群 */ -}}
 gh = "2.98.0"
 glab = "1.115.0"
-fnox = "1.34.0"
+fnox = "1.34.1"
 # fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
 usage = "6.4.1"
 {{/* CLIツール ユーティリティ群 */ -}}
