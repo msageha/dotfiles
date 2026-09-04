@@ -3,7 +3,7 @@ user = "msageha"
 
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
-context7 = "4.0.3"
+context7 = "4.0.4"
 # renovate: datasource=npm depName=chrome-devtools-mcp
 chromeDevtools = "1.8.0"
 # renovate: datasource=npm depName=@playwright/mcp
