@@ -32,7 +32,7 @@ jobs:
       # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
       - name: Install chezmoi
         run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.0
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.1
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
@@ -124,7 +124,7 @@ jobs:
         shell: powershell
         run: |
           $chezmoiBin = Join-Path $HOME '.local\bin'
-          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.72.0'"
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.72.1'"
           Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
       - name: Pre-configure chezmoi
         shell: powershell
