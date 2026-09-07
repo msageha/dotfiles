@@ -1,0 +1,6 @@
+# self-repository audit (zizmor v1.30.0+) は同一リポジトリ参照に `$/` 構文を要求するが、
+# actionlint v1.7.12 は `$/` を reusable workflow の参照形式として認識せず `./` しか受け付けない。
+# actionlint が `$/` に対応したら、この disable を外して ci.yaml の `./` を `$/` に置き換える。
+rules:
+  self-repository:
+    disable: true
