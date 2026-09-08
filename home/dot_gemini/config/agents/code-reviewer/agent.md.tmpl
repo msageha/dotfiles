@@ -1,0 +1,8 @@
+---
+name: code-reviewer
+description: Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues.
+model: pro
+---
+
+{{ includeTemplate "agents/code-reviewer.md" . -}}
+{{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/review/SKILL.md") "" -}}

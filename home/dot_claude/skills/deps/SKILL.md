@@ -2,6 +2,7 @@
 name: deps
 description: "Dependency audit: list direct/transitive deps, flag outdated packages, and surface known vulnerabilities, then report prioritized actions. Use when the user wants a dependency audit or update review."
 allowed-tools: Read, Glob, Grep, Bash
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 # 依存関係の分析

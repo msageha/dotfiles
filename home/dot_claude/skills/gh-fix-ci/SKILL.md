@@ -7,7 +7,7 @@ argument-hint: [optional PR number or URL]
 
 # GitHub Actions CI Fix
 
-Locate failing PR checks, fetch GitHub Actions logs, summarize failures, propose a fix plan, and implement after explicit approval.
+Locate failing PR checks, fetch GitHub Actions logs, summarize failures, and -- when the request is a fix request -- fix the root cause and verify locally; push to the PR branch and confirm CI is green when the request includes pushing.
 
 ## Prerequisites
 
@@ -23,23 +23,21 @@ Locate failing PR checks, fetch GitHub Actions logs, summarize failures, propose
 ### Step 2: Inspect Failing Checks
 
 ```bash
+gh pr view <pr> --json mergeable,mergeStateStatus,headRefName,baseRefName
 gh pr checks <pr> --json name,state,bucket,link,startedAt,completedAt,workflow
 ```
 
-- If a field is rejected, rerun with available fields.
-- For each failing check, extract the run ID from `detailsUrl`:
+- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. Resolve the conflict against the freshly fetched base first (AGENTS.md git rules), then continue.
+- Checks still pending: `gh pr checks <pr> --watch` and wait; do not diagnose a partial run.
+- For each `bucket: fail` check, take the run ID from `link` (`.../actions/runs/<run_id>/...`):
   ```bash
   gh run view <run_id> --json name,workflowName,conclusion,status,url,event,headBranch,headSha
   gh run view <run_id> --log-failed
   ```
-- If the run is still in progress, fetch job logs directly:
-  ```bash
-  gh api "/repos/{owner}/{repo}/actions/jobs/{job_id}/logs"
-  ```
 
 ### Step 3: Scope Non-GitHub Actions Checks
 
-- If `detailsUrl` is not a GitHub Actions run (e.g., Buildkite), label it as **external** and only report the URL.
+- If `link` is not a GitHub Actions run (e.g., Buildkite), label it as **external** and only report the URL.
 - Do not attempt to debug external CI providers.
 
 ### Step 4: Summarize Failures
@@ -49,25 +47,24 @@ For each failing check, present:
 - Concise log snippet showing the failure
 - Missing logs noted explicitly
 
-### Step 5: Create a Fix Plan
+### Step 5: Decide Mode
 
-- Draft a concise plan listing the changes needed to fix each failure.
-- **Wait for user approval before making any changes.**
+- Question form ("原因分かる？", "どうして failed している？"): stop here and report the root cause and fix options. Do not change files.
+- Fix form ("failed しているから修正して"): continue without a plan-approval round. Pause only when the fix needs a decision outside the PR's scope (workflow permissions, dependency version bumps, deleting tests).
 
-### Step 6: Implement After Approval
+### Step 6: Fix the Root Cause
 
-- Apply the approved fixes.
-- Summarize diffs and suggest running relevant tests locally.
+- Fix what actually broke, within the PR's own scope; do not add files or config whose only purpose is to make the check pass.
+- If an existing test is wrong relative to the intended behavior, fix the test. Add new tests only when the user asks.
+- Pin a tool version only when the failure is caused by an upstream change you can cite (release notes / upstream PR); that pin is within the PR's scope, while any other dependency version change is a bump and pauses per Step 5. Do not mix unrelated pins or CI-config changes into the PR.
+- Run the failing job's commands locally (or the project's equivalents, e.g. `mise run lint` / `mise run test`) and report the results.
 
-### Step 7: Recheck
+### Step 7: Push and Recheck
 
-- After changes, suggest re-running checks:
-  ```bash
-  gh pr checks <pr>
-  ```
+- Commit and push to the PR branch only when the request includes it ("PR に積んで", "push して", "green にして"); otherwise stop at a commit-ready state and report the fix and the local verification. When pushing, update the PR body if the scope changed.
+- `gh pr checks <pr> --watch --fail-fast`, then report green / failed with the check names. On failure, loop back to Step 2.
+- Merge only when the user says so.
 
 ## Important Constraints
 
-- NEVER push changes without explicit user approval.
-- NEVER skip pre-commit hooks.
-- Always present the plan and get approval before implementing fixes.
+- Push only to the PR branch named in the request; never to the base branch.

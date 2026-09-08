@@ -21,6 +21,11 @@ gws slides <resource> <method> [flags]
 - `batchUpdate` — Apply updates (add slides, insert text, images, etc.).
 - `pages` — Get page/slide details (get, getThumbnail).
 
+## Writing Content
+
+- Keep decks short: one message per slide and as few slides as the content needs; move detail tables and architecture diagrams to appendix slides.
+- Convert Markdown to native text styles via `presentations.batchUpdate`; never paste Markdown syntax (`#`, `**`, `|`) as slide text.
+
 ## Discovering Commands
 
 ```bash

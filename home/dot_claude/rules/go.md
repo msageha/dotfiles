@@ -2,7 +2,6 @@
 paths:
   - "**/*.go"
   - "**/go.mod"
-  - "**/go.sum"
 ---
 # Go
 
@@ -11,5 +10,5 @@ paths:
 - Package Structure: Organize by domain functionality. Avoid deep hierarchies.
 - Dependency Injection: Pass dependencies explicitly rather than using global state.
 - Context: Pass context.Context as the first parameter for cancelable operations.
-- Documentation: Add godoc-compatible comments for exported symbols.
+- Documentation: Add godoc-compatible comments for exported symbols that state the contract (behaviour, constraints, error cases) rather than restate the name.
 - Testing: Prefer table-driven tests, following the project's existing patterns (use testify only if the project already uses it).

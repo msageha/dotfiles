@@ -10,16 +10,17 @@ argument-hint: [base-branch or title hint]
 
 You are a PR/MR assistant. Analyze all changes on the current branch and create a well-structured PR/MR.
 
-## Step 1: Gather Context (run all in parallel)
+## Step 1: Gather Context
 
-Run the following commands simultaneously:
-
-1. `git remote get-url origin` -- determine platform (GitHub vs GitLab).
-2. `git status --short --branch` -- branch and working tree status. NEVER use `-uall`.
-3. `git branch -vv --list $(git branch --show-current)` -- remote tracking status.
-4. `git log --oneline <base>..HEAD` -- all commits that will be in the PR (use detected default branch as base).
-5. `git diff --stat <base>..HEAD` -- file-level change summary.
-6. `git diff` -- check for uncommitted changes.
+1. `git remote get-url origin` -- determine platform (GitHub vs GitLab, see Step 2).
+2. Base branch: `$ARGUMENTS` if it names a branch; otherwise treat it as a title hint for Step 5 and use the repo default (`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; GitLab: `glab repo view -F json --jq .default_branch`). Then `git fetch origin <base>`.
+3. Run in parallel:
+   - `git status --short --branch` -- branch and working tree status. Do not use `-uall`.
+   - `git branch -vv --list $(git branch --show-current)` -- remote tracking status.
+   - `git log --oneline origin/<base>..HEAD` -- all commits that will be in the PR.
+   - `git diff --stat origin/<base>..HEAD` -- file-level change summary.
+   - `git diff` -- check for uncommitted changes.
+   - `gh pr list --head <branch> --json number,url` (GitLab: `glab mr list --source-branch <branch>`) -- existing PR/MR for this branch.
 
 ## Step 2: Platform Detection
 
@@ -29,59 +30,46 @@ Run the following commands simultaneously:
 
 ## Step 3: Pre-flight Checks
 
-- **Uncommitted changes**: If present, suggest committing first.
-- **On main/master**: If so, propose creating a new branch.
-- **Base branch**: Use `$ARGUMENTS` if provided, otherwise detect the default branch.
-- **Existing PR/MR**: Check if one already exists for this branch.
-  - GitHub: `gh pr list --head <branch>`
-  - GitLab: `glab mr list --source-branch <branch>`
-  - If exists, inform the user and ask whether to update or create new.
+- **On the base branch (main/master)**: before committing anything, move onto a work branch with `git checkout -b <name>` at the current HEAD (uncommitted changes carry over); rebase onto `origin/<base>` if the base has moved. If local `<base>` already had commits beyond `origin/<base>`, they are now on the work branch: when they all belong to this work, restore the local base with `git branch -f <base> origin/<base>`; otherwise ask which ones belong before continuing. Never push to the base branch.
+- **Uncommitted changes**: if the request included committing ("commit して PR 作って"), run the commit workflow first; otherwise stop and report -- committing needs its own instruction.
+- **Existing PR/MR for this branch**: push the new commits to it and update its title/body to match the full diff (Step 5). Do not open a second PR.
 
 ## Step 4: Analyze ALL Changes
 
 - Review ALL commits from base to HEAD (not just the latest commit).
-- Use `git diff <base>..HEAD` to understand the full scope of changes.
+- Use `git diff origin/<base>..HEAD` to understand the full scope of changes.
 - Read modified files as needed to understand intent and impact.
 - Identify: what changed, why it changed, and what risks exist.
 
 ## Step 5: Draft Title and Body
 
 ### Title
-- English, imperative mood.
-- Under 70 characters.
-- Captures the essence of the change.
+- Imperative mood, under 70 characters, captures the essence of the change.
+- Same language rule as commits: follow the language of recent PRs/commits in this repo; default to English.
 
 ### Body
 
+If the repository has a PR template (`.github/PULL_REQUEST_TEMPLATE.md` or `.github/PULL_REQUEST_TEMPLATE/`), fill that structure. Otherwise:
+
 ```markdown
 ## Summary
-- 1-3 bullet points explaining the changes
-- Include "why" this change is needed
+- 1-3 bullet points: what changed and why
 
 ## Changes
-- Major changes grouped by logical area
-- Not file-by-file, but by concept/feature
+- Major changes grouped by concept/feature, not file-by-file
 
-## Test plan
-- [ ] Testing steps or verification checklist
+## Verification
+- Commands actually run and their results (test counts, lint, manual checks). State explicitly what was not verified.
+
+## Follow-ups
+- Out-of-scope findings and residual risks (omit if none)
 ```
 
-Do NOT append any attribution footer (e.g. "Generated with Claude Code") -- attribution is
-deliberately disabled in settings.json.
+Do not append attribution footers ("Generated with ...", `Co-Authored-By`).
 
-## Step 6: Confirm with User
+## Step 6: Create PR/MR
 
-Present the following before creating:
-
-1. **Platform**: GitHub (PR) / GitLab (MR)
-2. **Base branch**: target branch name
-3. **Title**: generated title
-4. **Body**: generated body (full text)
-5. **Commits**: list of included commits
-
-Proceed only after user approval.
-
-## Step 7: Create PR/MR
+Push and open the PR without a confirmation round; ask only if the base branch cannot be determined or the diff mixes clearly unrelated work.
 
 Push to remote if not already pushed:
 ```bash
@@ -90,7 +78,7 @@ git push -u origin <branch>
 
 ### GitHub
 ```bash
-gh pr create --title "title" --body "$(cat <<'EOF'
+gh pr create --base <base> --title "title" --body "$(cat <<'EOF'
 body content
 EOF
 )"
@@ -98,18 +86,18 @@ EOF
 
 ### GitLab
 ```bash
-glab mr create --title "title" --description "$(cat <<'EOF'
+glab mr create --target-branch <base> --title "title" --description "$(cat <<'EOF'
 body content
 EOF
 )"
 ```
 
-Return the PR/MR URL to the user.
+## Step 7: Wait for CI and Report
+
+- GitHub: `gh pr checks <pr> --watch --fail-fast`, then `gh pr view <pr> --json mergeable,mergeStateStatus`. GitLab: `glab ci status --live`.
+- Report the PR/MR URL, title, included commits, CI result (green / failed with failing check names) and mergeable state.
+- If a check failed, diagnose and fix it before reporting completion.
 
 ## Safety Rules
 
-- NEVER force push to main/master.
-- NEVER use `--draft` unless the user explicitly requests it.
-- NEVER assign reviewers or labels unless the user requests it.
-- NEVER push if the user hasn't approved the PR content.
-- GitLab-specific options (`--squash-before-merge`, `--remove-source-branch`) only when explicitly requested.
+- Use `--draft`, reviewers, labels, and GitLab merge options (`--squash-before-merge`, `--remove-source-branch`) only when the user requests them.

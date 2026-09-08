@@ -1,61 +1,20 @@
 # 開発指針
 
-## 自律実行と検証
-
-- 実行指示を受けたタスクは、そのターン内で end-to-end に完遂する。
-- 変更後は、関連ファイルに対してリポジトリ標準の lint / test / build を実行し、結果を報告に含める。
-- 複雑な変更は Explore (対象コードと影響範囲の把握) → Plan (変更対象ファイルと手順の提示) → Execute (適用) の順で進める。
-- 検証が期待どおりに通らなくても、パッチ全体を安易に巻き戻して終わらない。原因の仮説を複数 (目安 3 つ) 立てて順に検証し、各試行の後に関連テストを回す。それでも解決しない場合に限り変更を巻き戻し、得られた知見と次に試すべき実験を要約して報告する。
-- 難しそうに見えるタスクを「不可能」と早期に結論づけない。スコープ内で bounded な前進を続け、不確実性は不確実と明記する。
-
-## 応答スタイル
-
-- 散文を優先し、フォーマットは必要最小限に。箇条書き・見出しは、依頼されたか内容が本質的に多面的なときだけ使う。
-- 自分の判断は実際の根拠 (file:line・実行ログ・一次情報 URL) で示す。
-
-## コード規約 (共通規約への追加)
-
-- 独立して実行可能な完全なコードを書く。`...` 等のプレースホルダで省略しない。
-- 自律的な変更にはテストを検証手段として用意する。純粋に表層的な変更 (整形・コメントのみ) か、ユーザーが明示的にオプトアウトした場合のみ省略する。
-
 ## 言語・ツール別 rules
 
-言語・ファイル種別固有の規約は `~/.claude/rules/*.md` に置いてある (各ファイル冒頭 frontmatter の `paths` glob が適用範囲)。
-該当する種別のファイルを編集する前に対応する rule を読んでから着手すること。
-
-- `bash.md`, `makefile.md` — \*.sh / \*.bash / Makefile / \*.mk
-- `fish.md` — \*.fish
-- `python.md` — \*.py / pyproject.toml / requirements.txt
-- `go.md` — \*.go / go.mod
-- `typescript.md`, `javascript.md`, `react.md` — \*.ts / \*.tsx / \*.js / \*.jsx
-- `html.md` — \*.html / \*.htm / \*.ejs / \*.hbs
-- `cpp.md` — \*.cpp / \*.cc / \*.hpp / CMakeLists.txt
-- `dart-flutter.md` — \*.dart / pubspec.yaml
-- `github-actions.md` — .github/workflows/ / action.yml
-- `gitignore.md` — .gitignore
-- `cli-tools.md` — CLI アプリケーション本体を実装・変更するとき
+該当する種別のファイルを編集する前に `ls ~/.claude/rules/` で対応する rule を読んでから着手する。
 
 ## MCP サーバー
 
-`~/.gemini/config/mcp_config.json` で有効。明示指示が無くてもタスク文脈に合致すれば使ってよい。
-
-- **context7** — ライブラリ・フレームワーク・SDK・CLI の最新ドキュメント参照。学習データが古い可能性があるため、ライブラリ仕様やバージョン依存の挙動を扱うときは回答・実装の前に参照する。
-- **playwright** — E2E テストとブラウザ自動化。フロントエンド変更の実地検証はこれで行う。
-- **chrome-devtools** — ブラウザのデバッグとパフォーマンス分析 (コンソール・ネットワーク・トレース・スクリーンショット)。
-- **maps-grounding-lite** — 場所検索、経路計算。
+- **playwright** — フロントエンド変更の実地検証 (「動くか」) に使う。
+- **chrome-devtools** — ブラウザのデバッグとパフォーマンス分析 (「なぜ遅い / 壊れるか」) に使う。
 - **dart** (macOS のみ) — Dart / Flutter 開発全般。`dart` / `flutter` の直叩きより優先する。
 - **xcode** (macOS のみ) — Xcode プロジェクトのビルド・テスト・デバッグ。`xcodebuild` の直叩きより優先する。
 
 ## Subagents
 
-`~/.gemini/config/agents/<name>/agent.md` に定義済み。`/agents` パネルで手動切り替え・監視ができるほか、背景タスクとして委譲してもよい。独立した検証・調査はタスク文脈に合致する agent へ委譲する。
-
-- **code-reviewer** — 変更後・コミット前・PR 前の read-only コードレビュー。
-- **security-reviewer** — 認証・認可・シークレット・依存関係・入力処理・危険コマンドに触れる変更の read-only セキュリティレビュー。
-- **debugger** — 失敗するテスト・ランタイムエラー・CI 失敗の根本原因分析と最小修正。
-- **test-runner** — テスト・lint・検証コマンドの実行と、失敗の根本原因ベースの要約。
-- **source-grounded-researcher** — ローカルリポジトリ・GitHub・ドキュメント・Web の根拠付き調査。
+`~/.gemini/config/agents/<name>/agent.md` に定義済み: code-reviewer / security-reviewer / debugger / test-runner / source-grounded-researcher。独立した検証・調査はタスク文脈に合致する agent へ委譲する。
 
 ## Skills
 
-`~/.gemini/config/skills/` に定義済み。`/skills` で一覧を確認できる。`commit` / `pr` はユーザーの明示要求時のみ使う。
+`~/.gemini/config/skills/` に定義済み。

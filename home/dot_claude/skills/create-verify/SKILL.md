@@ -7,7 +7,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 # .claude/verify.sh の作成 / 更新
 
-リポジトリに既存する検証手段を呼び出すだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新する。`.claude/verify.sh` は Claude Code の Stop hook (`~/.claude/settings.json` 経由) から自動実行され、セッション終了時の自己検証に使われる。
+リポジトリに既に存在する検証手段を呼び出すだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新する。
 
 ## Goal
 
@@ -16,9 +16,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ## Acceptance criteria
 
 - `.claude/verify.sh` が実行可能 (`chmod +x`) で、`set -euo pipefail` を含む。
-- 呼び出されるコマンドは **すべてリポジトリに既存** している (新規にテスト基盤や Makefile ターゲットを生やさない)。
+- 呼び出されるコマンドは **すべてリポジトリに既に存在する** (新規にテスト基盤や Makefile ターゲットを生やさない)。
 - いずれかの検証が落ちたら exit code 非ゼロで終了する。
-- 依存ツールが PATH に無い場合は明示的に warning を出してスキップする (verify.sh 自体は壊れない)。
+- 依存ツールが PATH に無い場合は明示的に warning を出してスキップする (verify.sh 自体は壊れない)。AGENTS.md コード規約 (暗黙のデフォルト・フォールバックでごまかさず停止する) の意図的な例外で、Stop hook を環境差で壊さないための設計。
 - 既に `.claude/verify.sh` が存在する場合は、検出した検証手段との差分を反映して **更新** する (上書きで既存ロジックを破壊しない)。
 - 検証手段が見つからない場合は **何も書かずユーザーに報告して終了** する。
 
@@ -29,6 +29,8 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 - 副作用の大きい操作 (deploy / push / migrate / 実機ビルド / 長時間 E2E) は **Stop hook で走らせない**。検出しても呼び出さず、報告にとどめる。
 - `.claude/` ディレクトリが無ければ作成する。`.gitignore` の状態は変更しない (ユーザー判断に委ねる)。
 - 引数は使用しない。
+- プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記している場合は、その記述を示して作成するか確認を取ってから進める。
+- secret を出力し得るコマンド (`chezmoi apply --dry-run --verbose`、`fnox exec -- env` 等。それらを内包する mise / make タスクも含む) は候補にしない。
 
 ## 手順
 
@@ -62,7 +64,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 ### 3. 分岐
 
-- **検証手段が 1 つも無い場合**: ユーザーにその旨を報告し、`.claude/verify.sh` は **作成しない**。「適切な検証基盤 (テスト / lint / dry-run 等) を整備した後に再度実行してください」と案内して終了。
+- **検証手段が 1 つも無い場合**: ユーザーにその旨を報告し、`.claude/verify.sh` は **作成しない**。「適切な検証基盤 (テスト / lint / dry-run 等) を整備した後に再度実行してください」と案内して終了する。
 - **既に `.claude/verify.sh` がある場合**: Edit で差分のみ反映する。既存の呼び出しを削除する場合は理由をユーザーに報告する。
 - **新規作成の場合**: 下記テンプレートを基に Write し、`chmod +x` で実行権限を付与する。
 
@@ -70,8 +72,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 ```bash
 #!/usr/bin/env bash
-# Claude Code Stop hook verifier.
-# Calls existing verification mechanisms in this repo.
+# Claude Code の Stop hook から実行される。リポジトリ既存の検証手段を呼ぶだけの wrapper で、検証ロジックはここに書かない。
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -89,7 +90,7 @@ warn() { echo "verify.sh: $*" >&2; }
 # fi
 ```
 
-呼び出し行は検出結果に応じて埋める。各ブロックは「ツール存在チェック → 実行 or warn でスキップ」の対称な形を保つ。
+呼び出し行は検出結果に応じて埋める。各ブロックは「ツール存在チェック → 実行 or warn でスキップ」の対称な形を保つ。埋めた後はテンプレートのプレースホルダ行と例コメント (`# --- ... ---`、`# 例:` 以下) を削除する。
 
 ### 5. 完了報告
 
@@ -98,4 +99,4 @@ warn() { echo "verify.sh: $*" >&2; }
 - 採用した検証コマンドの一覧
 - 除外した候補とその理由 (副作用 / 重い / 未整備)
 - 新規作成 or 更新の別
-- `bash .claude/verify.sh` をユーザーが手動で 1 回試すよう促す
+- 作成 / 更新後に自分で 1 回実行した `bash .claude/verify.sh` の結果 (exit code・所要時間・warn でスキップされた項目)

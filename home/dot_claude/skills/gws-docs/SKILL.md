@@ -26,6 +26,10 @@ gws docs <resource> <method> [flags]
 - `create` — Create a blank document with a title.
 - `batchUpdate` — Apply updates (insert text, formatting, etc.).
 
+## Writing Content
+
+- Convert Markdown to native Docs formatting (paragraph / heading styles, bullet lists, bold) via `documents.batchUpdate` requests; never insert raw Markdown syntax (`#`, `**`, `|`) as document text.
+
 ## Discovering Commands
 
 ```bash
