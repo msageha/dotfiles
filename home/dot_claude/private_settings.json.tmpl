@@ -31,11 +31,12 @@
   "fallbackModel": [],
   "switchModelsOnFlag": false,
   "skipDangerousModePermissionPrompt": true,
-  "model": "claude-fable-5",
+  "model": "fable",
   "includeGitInstructions": false,
   "language": "japanese",
   "env": {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "DISABLE_AUTOUPDATER": "1",
     "DISABLE_AUTO_COMPACT": "1",
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
@@ -43,6 +44,8 @@
     "SONATYPE_GUIDE_TOKEN": "{{ dig "apiKeys" "sonatypeGuide" "" . }}"
   },
   "skipWebFetchPreflight": true,
+  "skipWorkflowUsageWarning": true,
+  "tui": "fullscreen",
 {{- /* statusline-command.sh は bash 前提のため、ネイティブ Windows では statusLine を設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
   "statusLine": {
@@ -74,6 +77,16 @@
     }
   },
   "permissions": {
+{{- /* インタプリタ・ラッパー・削除・ネットワーク取得 (python / node / xargs / timeout / env / source / rm / curl) は
+       #43 で除去したが、許可プロンプトの大半を占めるため許可に戻した (危険度より効率を優先するユーザー判断。
+       rm は PreToolUse hook が / ~ $HOME * . .. を対象とする再帰削除を block する前提)。シェル本体
+       (sh / bash / zsh / fish) は `bash -c '…'` で hook を素通りさせるため、secret に触る fnox / security /
+       gpg / aws-vault とともに引き続き allow しない。auto mode では wildcarded interpreter の allow は
+       無視され classifier が判定する (default / acceptEdits モードでは効く)。
+       パスや環境変数の値のバリエーションは `*` でまとめる (`*` は空白を含む任意文字列に一致するので
+       `VAR=* cmd` は `VAR=x PATH=/evil cmd` も通す。承知の上で採用)。先頭 `*` はその文字列を含む
+       任意のコマンドに一致し、`bash` とスクリプトパスの間の `*` は `bash -c '…' path` を通すため、
+       どちらも使わない */}}
     "allow": [
       "Bash(git:*)",
       "Bash(npm:*)",
@@ -208,9 +221,119 @@
       "Bash(helm:*)",
       "Bash(aws:*)",
       "Bash(az:*)",
-      "Edit(.claude/verify.sh)",
-      "Bash(chmod +x .claude/verify.sh)",
+      "Bash(cut:*)",
+      "Bash(uniq:*)",
+      "Bash(tr:*)",
+      "Bash(paste:*)",
+      "Bash(seq:*)",
+      "Bash(stat:*)",
+      "Bash(comm:*)",
+      "Bash(readlink:*)",
+      "Bash(du:*)",
+      "Bash(bc:*)",
+      "Bash(shasum:*)",
+      "Bash(file:*)",
+      "Bash(od:*)",
+      "Bash(xxd:*)",
+      "Bash(man:*)",
+      "Bash(getconf:*)",
+      "Bash(pdftotext:*)",
+      "Bash(command -v *)",
+      "Bash(chmod:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(node:*)",
+      "Bash(xargs:*)",
+      "Bash(timeout:*)",
+      "Bash(env:*)",
+      "Bash(source:*)",
+{{- /* 複数行・制御構文は改行と `;` でサブコマンドに分割され各行が独立に照合される。
+       for/while/if の各断片を許可してループ単体の確認を消す。ヘッダ内の `$(…)` 等の
+       コマンド置換は別途照合されるため、これらの断片許可で任意コード実行は通らない */}}
+      "Bash(for *)",
+      "Bash(while *)",
+      "Bash(until *)",
+      "Bash(do *)",
+      "Bash(do)",
+      "Bash(done)",
+      "Bash(done:*)",
+      "Bash(if *)",
+      "Bash(elif *)",
+      "Bash(then *)",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(case *)",
+      "Bash(esac)",
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(curl:*)",
+      "Bash(ty:*)",
+      "Bash(typos:*)",
+      "Bash(zizmor:*)",
+      "Bash(lint-imports:*)",
+      "Bash(terragrunt:*)",
+      "Bash(tfenv:*)",
+      "Bash(kustomize:*)",
+      "Bash(bq:*)",
+      "Bash(gsutil:*)",
+      "Bash(alembic:*)",
+      "Bash(asdf:*)",
+      "Bash(xcodegen:*)",
+      "Bash(fastlane:*)",
+      "Bash(plutil:*)",
+      "Bash(convert:*)",
+      "Bash(dig:*)",
+      "Bash(node_modules/.bin/*)",
+      "Bash(.venv/bin/*)",
+      "Bash(./.venv/bin/*)",
+      "Bash(PYTHONPATH=* uv *)",
+      "Bash(PYTHONPATH=* python3 *)",
+      "Bash(PYTHONPATH=* python *)",
+      "Bash(PYTHONPATH=* .venv/bin/*)",
+      "Bash(PYTHONPATH=* ./.venv/bin/*)",
+      "Bash(SKIP=* git *)",
+      "Bash(SKIP=* mise *)",
+      "Bash(SKIP=* prek *)",
+      "Bash(SKIP=* pre-commit *)",
+      "Bash(MISE_*=* mise *)",
+      "Bash(DPRINT_CACHE_DIR=* dprint *)",
+      "Bash(GOCACHE=* go *)",
+      "Bash(GOLANGCI_LINT_CACHE=* golangci-lint *)",
+      "Bash(GOLANGCI_LINT_CACHE=* mise *)",
+      "Bash(GITLAB_HOST=* glab *)",
+      "Bash(AWS_PROFILE=* aws *)",
+      "Bash(PROJECT_ID=* uv *)",
+      "Bash(bash .claude/verify.sh *)",
+      "Bash(bash ./.claude/verify.sh *)",
+      "Bash(.claude/verify.sh *)",
+      "Bash(./.claude/verify.sh *)",
+      "Edit(**/.claude/verify.sh)",
       "Edit(.env.template)",
+{{- /* echo 等の出力を一時ディレクトリへ `>` リダイレクトする形は書き先が Edit 判定される。
+       Read 側と対称に一時領域への書き出しを許可する ($TMPDIR 展開先の macOS /var/folders と /tmp) */}}
+      "Edit(//tmp/**)",
+      "Edit(//private/tmp/**)",
+      "Edit(//var/folders/*/*/T/**)",
+      "Edit(//private/var/folders/*/*/T/**)",
+      "Read(~/.claude/**)",
+      "Read(//Library/Application Support/ClaudeCode/**)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Read(//var/folders/*/*/T/**)",
+      "Read(//private/var/folders/*/*/T/**)",
+      "Read(//opt/homebrew/**)",
+      "Read(//Applications/**)",
+      "Read(~/Desktop/**)",
+      "Read(~/Downloads/**)",
+      "Read(~/.local/share/mise/**)",
+      "Read(~/.local/state/mise/**)",
+      "Read(~/.config/mise/**)",
+      "Read(~/.config/fish/**)",
+      "Read(~/.cache/pre-commit/**)",
+      "Read(~/.pub-cache/**)",
+      "Read(~/.codex/**)",
+      "Skill",
       "WebSearch",
       "WebFetch",
       "mcp__context7__*",
@@ -224,7 +347,10 @@
       "mcp__figma__*",
       "mcp__maps-grounding-lite__*",
       "mcp__nano-banana__*",
-      "mcp__xcode__*"
+      "mcp__xcode__*",
+      "mcp__gemini-cli__*",
+      "mcp__github__*",
+      "mcp__plugin_sonatype-guide_sonatype-guide__*"
     ],
     "deny": [
       "Read(.env)",
@@ -247,7 +373,9 @@
       "Read(~/.netrc)",
       "Read(~/.npmrc)",
       "Read(~/.bash_history)",
-      "Read(~/.zsh_history)"
+      "Read(~/.zsh_history)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(~/.codex/auth.json)"
     ],
     "ask": [
       "Bash(ssh:*)",
@@ -268,7 +396,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "CMD=$(cat | jq -r '.tool_input.command' | tr -d \"'\\\"\"); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(`])[[:space:]]*((sudo|env)[[:space:]]+)*(([^;&|[:space:]]*/)?rm[[:space:]]+(-{1,2}[[:alnum:]=-]+[[:space:]]+)*(-[[:alpha:]]*r[[:alpha:]]*|--recursive)([[:space:]]+-{1,2}[[:alnum:]=-]+)*[[:space:]]+(/|~|\\$HOME|\\*|\\.\\.?(/|[[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(-f|--force)([[:space:]]|$)|git[[:space:]]+clean[[:space:]]+(-{1,2}[[:alnum:]-]+[[:space:]]+)*(-[[:alpha:]]*f[[:alpha:]]*|--force)|chmod[[:space:]]+(-[[:alpha:]]+[[:space:]]+)*0?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+(table|database)|dropdb([[:space:]]|$))' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
+            "command": "CMD=$(cat | jq -r '.tool_input.command' | tr -d \"'\\\"\"); if printf '%s\\n' \"$CMD\" | grep -qiE '(^|[;&|(`])[[:space:]]*(((sudo|env|nohup|time|nice|command|exec|xargs|timeout)([[:space:]]+(-{1,2}[^[:space:]]+|[0-9]+(\\.[0-9]+)?[smhd]?))*|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*)[[:space:]]+)*(([^;&|[:space:]]*/)?rm[[:space:]]+(-{1,2}[[:alnum:]=-]+[[:space:]]+)*(-[[:alpha:]]*r[[:alpha:]]*|--recursive)([[:space:]]+-{1,2}[[:alnum:]=-]+)*[[:space:]]+(/|~|\\$HOME|\\*|\\.\\.?(/|[[:space:]]|$))|git[[:space:]]+reset[[:space:]]+--hard|git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(-f|--force)([[:space:]]|$)|git[[:space:]]+clean[[:space:]]+(-{1,2}[[:alnum:]-]+[[:space:]]+)*(-[[:alpha:]]*f[[:alpha:]]*|--force)|chmod[[:space:]]+(-[[:alpha:]]+[[:space:]]+)*0?(777|000)([[:space:]]|/|$)|killall[[:space:]]+(finder|dock|systemuiserver|windowserver|loginwindow|kernel_task|launchd|cfprefsd)|(mysql|psql|mariadb|sqlite3|mysqlsh)[[:space:]].*drop[[:space:]]+(table|database)|dropdb([[:space:]]|$))' ; then echo \"BLOCKED: Dangerous command: $CMD\" >&2; exit 2; fi",
             "timeout": 5
           }
         ]
