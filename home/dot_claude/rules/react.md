@@ -15,4 +15,4 @@ paths:
 - Performance: Memoize (memo/useMemo/useCallback) only for measured bottlenecks. Reserve space for async content to avoid layout shifts (CLS).
 - Styling / UI: Follow the project's existing styling and component conventions (e.g. Tailwind, shadcn/ui, CSS Modules). Do not introduce a new styling approach unilaterally.
 - Routing: Use the project's established router and navigation patterns rather than ad-hoc conditional rendering.
-- Testing: Use React Testing Library; query by role/label and assert behavior, not implementation details.
+- Testing: When asked to write component tests, use React Testing Library only if the project already uses it; if no component test framework exists, report that and confirm before adding one; query by role/label and assert behavior, not implementation details.

@@ -1,0 +1,8 @@
+---
+name: security-reviewer
+description: Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes.
+model: pro
+---
+
+{{ includeTemplate "agents/security-reviewer.md" . -}}
+{{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/security/SKILL.md") "" -}}

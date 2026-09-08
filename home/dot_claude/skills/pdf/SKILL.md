@@ -28,9 +28,9 @@ argument-hint: [file path or description of PDF task]
 4. **Manipulate**: Use `pypdf` for merge/split/rotate, `qpdf` for advanced operations.
 5. **Validate**: After each meaningful update, re-render pages and verify alignment, spacing, and legibility.
 
-## Dependencies (install if missing)
+## Dependencies
 
-Prefer `uv` for dependency management.
+Check availability first. Install missing Python packages (with `uv`, in the project environment) or system packages (`brew`, `apt-get`) only after showing the command and getting the user's go-ahead.
 
 ```bash
 # Python packages
@@ -188,7 +188,7 @@ pdftoppm -png input.pdf output_prefix
 
 ## Output Conventions
 
-- Use `tmp/pdfs/` for intermediate files; clean up when done.
+- Use a temporary directory (`$TMPDIR` or the OS temp dir) for intermediate files, never the working tree; delete them when done.
 - Write final artifacts to the user-specified location or current directory.
 - Keep filenames stable and descriptive.
 

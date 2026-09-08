@@ -23,18 +23,40 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   Claude Code が実行時に書き込むその他のランタイム状態 (カウンタ・キャッシュ等) は
   apply のたびにリセットされる。
   chezmoi 内部で実行されるため外部 interpreter 不要で Windows でも動く
-- `~/.claude/settings.json` は通常テンプレート (`dot_claude/settings.json.tmpl`) で全量管理する。
+- `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。
   外部ツール (ローカルデーモン等) がランタイム注入する hooks は apply のたびに消える (意図的な裁定。
   hooks 配列の部分マージは脆いため、温存が必要になったら modify-template 化を検討する)
 
 ## ディレクトリ構成
 
 - `home/` — chezmoi source (展開対象の dotfiles 本体)
-- `home/dot_claude/` — Claude Code のユーザースコープ設定 (`settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
+- `home/dot_claude/` — Claude Code のユーザースコープ設定 (`private_settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
 - `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)
 - `settings/` — アプリ設定 (`common/`, `macos/`)
 - `tests/` — bats テスト (`tests/files`, `tests/install`)
 - `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) — Ubuntu / Debian / Alpine 検証用イメージのビルド (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)
+
+## LLM エージェント指示文の構成
+
+- 共通規約は `home/dot_config/agents/AGENTS.md` 1 箇所に書く。Claude Code は `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で import し、
+  Codex / Antigravity (Gemini) / Grok は各 `AGENTS.md.tmpl` が AGENTS.md + `.chezmoitemplates/<tool>/instructions.md` を連結して生成する。
+  各 `AGENTS.md.tmpl` 先頭の来歴コメントは chezmoi テンプレートコメントなので描画されない。
+  CLAUDE.md と各 instructions.md にはそのツール固有の機構だけを書き、共通ルールを複製しない
+  (Grok は `compat.claude` で `~/.claude/CLAUDE.md` と全 rules も常時読み込む。Grok は `@` import を展開しないため、
+  CLAUDE.md 経由で AGENTS.md が二重に載ることはない)。
+- サイズ予算: Antigravity は rules ファイルを 12,000 文字 (公式ドキュメントの単位は characters) で切るため、
+  `~/.gemini/config/AGENTS.md` の生成物 (AGENTS.md + gemini/instructions.md) を 11,700 文字以下に収める。
+  AGENTS.md か gemini/instructions.md を増やしたら
+  `chezmoi execute-template < home/dot_gemini/config/AGENTS.md.tmpl | python3 -c 'import sys; print(len(sys.stdin.read()))'`
+  で生成物そのものを再計測する (`wc -m` は LANG=C だとバイト数になる)。
+- サブエージェント定義の本文は `home/.chezmoitemplates/agents/<name>.md` が単一ソースで、Claude (`dot_claude/agents/*.md.tmpl`)・
+  Codex (`dot_codex/agents/*.toml.tmpl`、`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が include する。
+  Codex / Gemini の code-reviewer・security-reviewer は review / security skill 本文を frontmatter を剥いで追記する
+  (`regexReplaceAll` は明示引数形。パイプ形は空文字になる)。skill 本文に `'''` を含めると Codex の TOML が壊れる。
+  `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse するため、agents/*.md 本文に生の `{{` を書くと
+  全 chezmoi コマンドが失敗する (include / includeTemplate のどちらで参照しても同じ)。必要なら `{{ "{{" }}` でエスケープする。
+- `dot_claude/CLAUDE.md` の MCP 一覧は、ツール定義や server instructions に無い運用規範を持つサーバーだけを載せる (description の再掲はしない)。
+- 指示文ファイルを編集するときの規範は `dot_claude/rules/agent-config.md` (path-scoped rule) にある。
 
 ## data の skip_* フラグ
 

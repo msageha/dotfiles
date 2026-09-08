@@ -1,0 +1,9 @@
+name = "test_runner"
+description = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+# read-only は cwd・$TMPDIR への書き込みも拒否し、テストランナーのキャッシュ・成果物 (.pytest_cache / coverage 等) で失敗するため workspace-write。ファイル編集の禁止は developer_instructions のみで担保する。
+sandbox_mode = "workspace-write"
+developer_instructions = '''
+{{ includeTemplate "agents/test-runner.md" . -}}
+'''

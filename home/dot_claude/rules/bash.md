@@ -2,6 +2,7 @@
 paths:
   - "**/*.sh"
   - "**/*.bash"
+  - "**/*.sh.tmpl"
 ---
 # Bash Shell
 
@@ -10,4 +11,4 @@ paths:
 - Variables: Quote all variable expansions. Handle paths with spaces.
 - Ad-hoc / one-off scripts: keep them to the minimal structure the rules above require; add ceremony (getopts, logging frameworks, usage output, input validation) only when the script will be reused or shared.
 - Maintained scripts with a CLI surface: parse arguments with getopts and print usage on misuse.
-- Portability: Specify #!/bin/bash, and avoid bashisms only if POSIX compliance is needed.
+- Portability: Use `#!/usr/bin/env bash` (macOS ships bash 3.2 at /bin/bash). If the script must run under POSIX sh, use `#!/bin/sh` and avoid bashisms (check with `shellcheck -s sh`).

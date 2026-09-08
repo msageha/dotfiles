@@ -857,6 +857,21 @@
     },
     {
       "customType": "regex",
+      "description": "mise-action の mise 本体バージョン pin (\"latest\" 解決だと上流の release 作成直後の asset 未アップロード等で 404 になりうるため固定) を github-releases で追従させる",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/prek\\.yaml$/",
+        "/^\\.github/workflows/chezmoi\\.yaml$/",
+        "/^\\.github/workflows/mise-lock\\.yaml$/"
+      ],
+      "matchStrings": [
+        "version: \"(?<currentValue>[\\d.]+)\"\\n"
+      ],
+      "depNameTemplate": "jdx/mise",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)"
+    },
+    {
+      "customType": "regex",
       "description": "壁紙 URL の dracula/wallpaper commit SHA を git-refs datasource で master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^install/macos/system_settings\\.sh$/",

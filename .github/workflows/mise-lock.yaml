@@ -41,6 +41,9 @@ jobs:
       - name: Install mise
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
+          # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
+          # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
+          version: "2026.9.1"
           install: false
           cache: false
 

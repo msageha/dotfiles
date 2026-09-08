@@ -14,7 +14,7 @@ You are a git commit assistant. Follow these steps precisely to create a high-qu
 
 Run the following commands simultaneously:
 
-1. `git status` -- identify all staged, unstaged, and untracked files. NEVER use `-uall`.
+1. `git status` -- identify all staged, unstaged, and untracked files. Do not use `-uall`.
 2. `git diff --cached` -- view staged changes.
 3. `git diff` -- view unstaged changes.
 4. `git log --oneline -10` -- review recent commit style and conventions.
@@ -32,37 +32,15 @@ Run the following commands simultaneously:
 
 ## Step 3: Stage Files
 
-- If there are unstaged changes or untracked files that are relevant, ask the user whether to include them.
-- Stage files by specific name -- NEVER use `git add -A` or `git add .`.
+- Stage every change that belongs to the requested work, staged or not (new untracked files included); "commit して" means the whole work, not the staged subset.
+- Leave out the files flagged in Step 2 and changes that clearly belong to something else: another session's work in a different directory, agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files -- not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the requested work), screenshots, local settings (`.idea/`, `.envrc`, `*.local.json`), unrelated lock or CI changes. Report what you left out and why.
+- Ask only when you cannot tell whether a change belongs to the work.
+- Stage by pathspec (`git add <path>`); never `git add -A`, `git add .`, `git add -i`, or `git commit -a`.
 - If the user provided `$ARGUMENTS`, use it as guidance for which changes to include or as a hint for the commit message.
 
 ## Step 4: Craft the Commit Message
 
-Follow the **Conventional Commits** specification:
-
-```
-<type>[optional scope]: <subject>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Type Selection
-
-| Type | When to use |
-|---|---|
-| `feat` | New feature or capability |
-| `fix` | Bug fix |
-| `refactor` | Code restructuring without behavior change |
-| `docs` | Documentation only |
-| `style` | Formatting, whitespace, no logic change |
-| `test` | Adding or updating tests |
-| `chore` | Build process, tooling, dependencies |
-| `perf` | Performance improvement |
-| `ci` | CI configuration changes |
-| `build` | Build system or external dependency changes |
-| `revert` | Reverting a previous commit |
+Follow the **Conventional Commits** specification (`<type>[scope]: <subject>` + optional body and footers). Types: `feat` / `fix` / `refactor` / `docs` / `style` / `test` / `chore` / `perf` / `ci` / `build` / `revert`. Match the type and scope conventions visible in `git log`.
 
 ### Rules
 
@@ -91,19 +69,11 @@ EOF
 ## Step 6: Verify
 
 - Run `git status` after committing to confirm success.
-- If a pre-commit hook fails:
-  1. Read the hook output to understand the failure.
-  2. Fix the issue.
-  3. Re-stage the fixed files.
-  4. Create a NEW commit (do NOT amend -- the failed commit never happened).
+- If a pre-commit hook fails: read the hook output, fix the cause, re-stage, and create a new commit. Never `--amend` here: the failed commit did not happen, so `--amend` would rewrite the previous commit.
+- Fix the cause, not the check: do not add files or config whose only purpose is to make a hook pass (e.g. an empty `__init__.py` to satisfy an import check). If the fix needs a project decision, stop and report it.
 
 ## Git Safety Protocol
 
-- NEVER use `--no-verify` or skip pre-commit hooks.
-- NEVER amend the previous commit unless the user explicitly asks.
-- NEVER force push or run destructive git operations.
-- NEVER modify git config.
-- NEVER push to remote unless the user explicitly requests it.
-- NEVER use `git add -A`, `git add .`, or `git add -i` (interactive).
-- If uncertain about what to include, ask the user before committing.
-- If a hook fails, the commit did NOT happen -- so `--amend` would modify the PREVIOUS commit, destroying work. Always create a NEW commit after fixing hook issues.
+- No `--amend` unless the user asks. No changes to git config.
+- No destructive operations (`reset --hard`, `clean -f`, `stash drop`, `checkout -- .`). No force push; the only exception is `--force-with-lease` onto a PR branch you just rebased under the AGENTS.md git rules.
+- Do not add `Co-Authored-By` or other attribution trailers.

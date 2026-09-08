@@ -1,0 +1,37 @@
+---
+paths:
+  - "**/CLAUDE.md"
+  - "**/CLAUDE.local.md"
+  - "**/AGENTS.md"
+  - "**/AGENTS.md.tmpl"
+  - "**/.claude/rules/**"
+  - "**/.claude/skills/**"
+  - "**/.claude/agents/**"
+  - "**/dot_claude/**/*.md"
+  - "**/dot_claude/**/*.md.tmpl"
+  - "**/dot_config/agents/**"
+  - "**/.chezmoitemplates/**/*.md"
+  - "**/dot_codex/agents/**"
+  - "**/dot_gemini/config/**/*.md"
+  - "**/dot_gemini/config/**/*.md.tmpl"
+  - "**/dot_grok/**/*.md.tmpl"
+  - "**/.claude/settings.json"
+  - "**/.claude/settings.local.json"
+  - "**/dot_claude/*settings*.json.tmpl"
+---
+# LLM Agent Instruction Files (CLAUDE.md / AGENTS.md / rules / skills / agents / settings)
+
+- Budget: Always-loaded files (CLAUDE.md, AGENTS.md, rules without `paths`) are read on every session of every consumer that loads them, including subagent spawns, so the combined set must stay short; move procedures, reference tables and checklists into skills or reference files that are read only when needed.
+- Progressive disclosure: Multi-file procedures (custom skills, multi-stage agent designs) load each file at the step that needs it, never all files up front. Keep reference files one level below SKILL.md and state for each what it contains and when to read it.
+- Reader: The reader is an LLM. Prefer short bullets; use a table only when rows are genuinely comparable records.
+- Harness: Do not restate what tool definitions or the harness already provide (tool descriptions, default behaviour, MCP server instructions). Write only the "when to use" that they do not contain.
+- Capability over instruction: To keep a skill or agent away from dangerous operations, remove the capability itself (`tools` allowlist / `disallowedTools` for agents, `disallowed-tools` for skills) instead of relying on "do not" instructions; `allowed-tools` only pre-approves listed tools and never restricts unlisted ones. Prompt injection can defeat an instruction but not a missing capability.
+- Grounding: Add or change a rule only on the basis of the user's actual instruction history or official documentation, never on speculation.
+- Research: Before writing a new skill or agent definition, survey the reference implementations the user names, the harness vendors' official skills repositories (e.g. anthropics/skills, openai/skills), and current primary sources for the domain (e.g. OWASP for security assets).
+- Preservation: When fixing an instruction file, keep its structure and length; move or append existing know-how rather than deleting it by replacement.
+- Placement: When adding to an existing instruction file, put the new rule under the section that already owns that topic instead of appending a new section or a trailing list.
+- Scope: User-scope skills and agents (`~/.claude/`, `~/.codex/`, `~/.gemini/config/`, `~/.grok/`) must not embed repository-specific knowledge; write only instructions that hold in any repository.
+- Project scope: AGENTS.md, skills and agents inside a repository must describe that code's actual design, architecture and implementation as verified by reading it, and follow the target tool's current official guidance. When revising a prompt from run results, locate the exact prompt text recorded in the execution logs that produced the defect instead of guessing which wording caused it.
+- Target-agnostic: Prompt assets of an agent harness you build (its AGENTS.md / skills / agent prompts) must hold for any target repository: embed no knowledge of a particular target and do not assume the launched agent knows the harness exists. When target knowledge is needed, add or fix the preceding discovery step instead of hardcoding it.
+- Reader simulation: After writing or editing prompt assets, check them against each other for contradictions and confirm the task is achievable with only what the reader receives at runtime (its own files, tools and inputs), not with context only the author has.
+- Permissions: In Claude Code `settings.json` `permissions.allow`, collapse every entry a wildcard covers into `Bash(tool:*)` form instead of listing individual subcommands. When the user asks to generate `permissions.allow` from their execution history, keep every command they repeatedly approved (interpreters, shells, delete and network commands included) instead of excluding them on your own safety judgement; state the residual risk as a note and leave the trade-off to the user.

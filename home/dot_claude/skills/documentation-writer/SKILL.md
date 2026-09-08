@@ -30,7 +30,7 @@ Before writing, determine:
 4. **Scope**: What to include and, crucially, what to exclude.
 5. **Context**: Is there existing documentation to build on or align with?
 
-If the user hasn't specified these, ask targeted questions. Don't proceed with assumptions on audience or scope.
+If the user hasn't specified these, ask targeted questions in one message together with the proposed outline (Phase 2). Under a full delegation (Goal / Constraints / Acceptance criteria, or 'すべて書いて'), do not ask: state your assumptions on audience and scope inline and proceed.
 
 ### Phase 2: Outline
 
@@ -42,7 +42,7 @@ Propose a structure before writing full content:
 - For reference: list the entities/APIs/concepts to cover.
 - For explanations: list the key concepts and their relationships.
 
-Wait for user feedback on the outline before proceeding.
+Include the outline in the same confirmation message as the Phase 1 questions and wait once; under a full delegation, skip the wait.
 
 ### Phase 3: Write
 
@@ -56,7 +56,7 @@ Generate content in Markdown following these principles:
 
 #### Accuracy
 - Base content on actual code, APIs, or configurations -- read source files.
-- Include working code examples. Test them mentally or actually run them.
+- Include working code examples. Run every example and command that can run in this environment and record the observed output / exit code; mark the rest as unverified instead of testing them mentally.
 - Version-pin dependencies and tools when relevant.
 
 #### Structure
@@ -78,7 +78,7 @@ After writing, self-check:
 
 - [ ] Does it match the intended Diataxis type? (Not mixing tutorial with reference.)
 - [ ] Is the audience appropriate? (Not too basic, not too advanced.)
-- [ ] Are all code examples correct and complete?
+- [ ] Are all code examples correct and complete (verified by running them, or explicitly marked unverified)?
 - [ ] Are prerequisites clearly stated?
 - [ ] Is there unnecessary content that should be cut?
 - [ ] Does it follow the existing documentation's style/conventions?
