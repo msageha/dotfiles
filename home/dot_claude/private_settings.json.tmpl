@@ -41,6 +41,11 @@
     "DISABLE_AUTO_COMPACT": "1",
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
+{{- /* 空文字の ANTHROPIC_API_KEY は「キー設定済み」と解釈され authMethod: none で認証が落ちるため、
+       鍵未配置の環境ではキー自体を出力しない (出力すると /login の OAuth にフォールバックできない) */}}
+{{- if dig "apiKeys" "anthropic" "" . }}
+    "ANTHROPIC_API_KEY": "{{ dig "apiKeys" "anthropic" "" . }}",
+{{- end }}
     "SONATYPE_GUIDE_TOKEN": "{{ dig "apiKeys" "sonatypeGuide" "" . }}"
   },
   "skipWebFetchPreflight": true,

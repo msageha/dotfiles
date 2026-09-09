@@ -60,7 +60,7 @@ formulae=(
 # coding agent casks — 配布形態が cask なだけで実体は CLI ツールのため
 casks_coding_agents=(
     antigravity-cli
-    claude-code
+    claude-code@latest
     codex
 )
 
