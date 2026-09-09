@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.26
+# syntax=docker/dockerfile:1.27
 ARG BASE_IMAGE=alpine:latest
 FROM ${BASE_IMAGE}
 
