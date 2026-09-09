@@ -81,13 +81,14 @@ fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --ini
 API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secrets を復号して環境変数に注入し、`home/.chezmoi.toml.tmpl` がそれを `data.apiKeys` に反映する。未注入の環境変数は空文字で展開されるため、鍵未配置の初回 bootstrap では空のまま進み、1Password 認証後に上記の手順を再実行することで実値に更新される。
 `data.apiKeys` が生成されるのは、コーディングエージェント設定を管理する環境（macOS / Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）のみ。
 
-| 環境変数             | データキー           | 説明                                                                                                             |
-| -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `GEMINI_API_KEY`     | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用        |
-| `GOOGLE_MAP_API_KEY` | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用 |
-| `FUGU_API_KEY`       | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                 |
-| `FUGU_PAYG_API_KEY`  | `apiKeys.fuguCyber`  | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ) で使用                                               |
-| `OPENROUTER_API_KEY` | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                               |
+| 環境変数             | データキー           | 説明                                                                                                                                                                                                                               |
+| -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`  | `apiKeys.anthropic`  | [Claude Console](https://platform.claude.com/settings/keys) で発行。Claude Code を API 従量課金で使う場合に設定する。未設定なら `~/.claude/settings.json` にキー自体が出力されず `/login` の OAuth (サブスクリプション) が使われる |
+| `GEMINI_API_KEY`     | `apiKeys.gemini`     | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用                                                                                                                          |
+| `GOOGLE_MAP_API_KEY` | `apiKeys.googleMaps` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用                                                                                                                   |
+| `FUGU_API_KEY`       | `apiKeys.fugu`       | Codex の Sakana プロバイダで使用                                                                                                                                                                                                   |
+| `FUGU_PAYG_API_KEY`  | `apiKeys.fuguCyber`  | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ) で使用                                                                                                                                                                 |
+| `OPENROUTER_API_KEY` | `apiKeys.openRouter` | Codex / Claude Code の OpenRouter プロバイダで使用                                                                                                                                                                                 |
 
 API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
 

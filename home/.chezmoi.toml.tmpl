@@ -58,6 +58,7 @@ skip_windows_extras = {{ $skipWindowsExtras }}
 [data.apiKeys]
 # API keys are injected by fnox. Missing env values intentionally expand to
 # empty strings so the first bootstrap run can install fnox/1Password.
+anthropic = {{ env "ANTHROPIC_API_KEY" | quote }}
 gemini = {{ env "GEMINI_API_KEY" | quote }}
 googleMaps = {{ env "GOOGLE_MAP_API_KEY" | quote }}
 fugu = {{ env "FUGU_API_KEY" | quote }}
