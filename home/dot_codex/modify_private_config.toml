@@ -15,7 +15,7 @@
 {{-   $chezmoiSrc = replace "/" "\\" $chezmoiSrc -}}
 {{- end -}}
 {{- $desired := printf `
-model = "gpt-5.6-terra"
+model = "gpt-6-astra"
 model_reasoning_effort = "high"
 model_reasoning_summary = "concise"
 personality = "pragmatic"
