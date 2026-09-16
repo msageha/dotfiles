@@ -4,7 +4,7 @@
 
 `~/.claude/rules/*.md` (言語・ツール別規約) は Claude 互換モードにより全件が常時読み込まれている。編集対象のファイル種別に対応する rule だけを適用し、他の rule は無視する。
 
-`~/.claude/CLAUDE.md` も同じ互換モードで読み込まれるが、そこに書かれた Claude Code 固有の機構 (Stop hook と `.claude/verify.sh`・`/create-verify`・codex / github / nano-banana MCP・sandbox の解除・Agent tool の `subagent_type` 等) は Grok に無い。無い機構は使わず提案もせず、既存の lint / test と本書の Subagents / Skills を使う。CLAUDE.md 冒頭の `@~/.config/agents/AGENTS.md` は Claude Code の import 記法で、指している先の内容は本書の「開発指針」より前と同一である。
+`~/.claude/CLAUDE.md` も同じ互換モードで読み込まれるが、そこに書かれた Claude Code 固有の機構 (Stop hook と `.claude/verify.sh`・`/create-verify`・codex plugin・github / nano-banana MCP・sandbox の解除・Agent tool の `subagent_type` 等) は Grok に無い。無い機構は使わず提案もせず、既存の lint / test と本書の Subagents / Skills を使う。CLAUDE.md 冒頭の `@~/.config/agents/AGENTS.md` は Claude Code の import 記法で、指している先の内容は本書の「開発指針」より前と同一である。
 
 ## MCP サーバー
 
