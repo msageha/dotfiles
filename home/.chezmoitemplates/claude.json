@@ -78,24 +78,27 @@
       "env": {}
     },
 {{- end }}
+{{- if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
+{{- /* gemini-cli-extensions/nanobanana 同梱の MCP server。.chezmoiexternal.toml が source を展開し、
+      .chezmoiscripts/run_onchange_after_95_nanobanana-mcp.sh.tmpl が build した dist を起動する。
+      gate は build に必要な node の導入条件 (mise config の node と同じ式) に揃える。
+      GEMINI_API_KEY は server 側で NANOBANANA_API_KEY 不在時の fallback として読まれる */}}
+    "nano-banana": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "{{ .chezmoi.homeDir }}/.local/share/nanobanana-mcp/mcp-server/dist/index.js"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "{{ dig "apiKeys" "gemini" "" . }}"
+      }
+    },
+{{- end }}
     "maps-grounding-lite": {
       "type": "http",
       "url": "https://mapstools.googleapis.com/mcp",
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
-      }
-    },
-{{- /* nanobanana-mcp-server 0.4.5 は fastmcp>=2.11.0 と上限なしで宣言しており、fastmcp 4 で削除された fastmcp.tools.tool に依存して起動に失敗するため <3 に制約する。 */}}
-    "nano-banana": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "--with",
-        "fastmcp<3",
-        "nanobanana-mcp-server@0.4.5"
-      ],
-      "env": {
-        "GEMINI_API_KEY": "{{ dig "apiKeys" "gemini" "" . }}"
       }
     }
   }
