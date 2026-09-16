@@ -85,10 +85,13 @@
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
     },
+{{- /* nanobanana-mcp-server 0.4.5 は fastmcp>=2.11.0 と上限なしで宣言しており、fastmcp 4 で削除された fastmcp.tools.tool に依存して起動に失敗するため <3 に制約する。 */}}
     "nano-banana": {
       "type": "stdio",
       "command": "uvx",
       "args": [
+        "--with",
+        "fastmcp<3",
         "nanobanana-mcp-server@0.4.5"
       ],
       "env": {
