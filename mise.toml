@@ -7,7 +7,7 @@ dprint = "0.57.4"
 fnox = "1.35.1"
 hadolint = "2.15.1"
 op = "2.34.1"
-powershell = "7.6.5"
+powershell = "7.6.6"
 prek = "0.5.2"
 shellcheck = "0.11.0"
 
