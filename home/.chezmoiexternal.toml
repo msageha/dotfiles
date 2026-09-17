@@ -29,6 +29,20 @@ stripComponents = 1
 type = "file"
 url = "https://raw.githubusercontent.com/paulirish/git-open/63c0e77aaf18b72c839b1113c1e2f9514413643b/git-open"
 executable = true
+
+{{ end }}
+
+{{- /* Claude Code の nano-banana MCP server。gemini-cli-extensions/nanobanana 同梱の実装だが
+      npm 未公開のため release tag の source archive を展開し、
+      .chezmoiscripts/run_onchange_after_95_nanobanana-mcp.sh.tmpl で build する。
+      pin は .chezmoidata.toml (renovate 追従)。build 生成物 (dist / node_modules) を
+      apply で消さないよう exact は付けない。
+      gate は build に必要な node / npm の導入条件 (mise config の node と同じ式) に揃える */}}
+{{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
+[".local/share/nanobanana-mcp"]
+type = "archive"
+url = "https://github.com/gemini-cli-extensions/nanobanana/archive/refs/tags/{{ .mcp.nanobanana }}.tar.gz"
+stripComponents = 1
 {{ end }}
 
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}

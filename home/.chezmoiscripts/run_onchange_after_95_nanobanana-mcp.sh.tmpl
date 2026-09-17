@@ -1,0 +1,21 @@
+{{- /* gate は node / npm の導入条件 (mise config の node と同じ式) に揃える。
+      dig 既定 true = skip_cli_tools=false を明示した環境でのみ build する */}}
+{{- if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) -}}
+#!/bin/bash
+set -e
+
+# nanobanana MCP server {{ .mcp.nanobanana }} の build。
+# pin (.chezmoidata.toml) の更新でこの内容が変わり、再実行される。
+{{ if eq .chezmoi.os "linux" -}}
+export PATH="$HOME/.local/bin:$PATH"
+{{ end -}}
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv)"
+{{ end -}}
+
+eval "$(mise activate bash --shims)"
+
+cd "$HOME/.local/share/nanobanana-mcp/mcp-server"
+npm ci
+npm run build
+{{ end -}}

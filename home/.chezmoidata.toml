@@ -8,3 +8,5 @@ context7 = "4.0.7"
 chromeDevtools = "1.9.0"
 # renovate: datasource=npm depName=@playwright/mcp
 playwright = "0.0.80"
+# renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
+nanobanana = "v1.0.12"
