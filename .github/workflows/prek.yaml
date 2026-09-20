@@ -39,7 +39,7 @@ jobs:
         with:
           # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
           # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-          version: "2026.9.5"
+          version: "2026.9.6"
           cache: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
