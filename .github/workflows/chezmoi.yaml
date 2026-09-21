@@ -32,7 +32,7 @@ jobs:
       # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
       - name: Install chezmoi
         run: |
-          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.1
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.2
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Pre-configure chezmoi
         run: |
@@ -72,7 +72,7 @@ jobs:
         with:
           # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
           # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-          version: "2026.9.6"
+          version: "2026.9.7"
           cache: true
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
@@ -127,7 +127,7 @@ jobs:
         shell: powershell
         run: |
           $chezmoiBin = Join-Path $HOME '.local\bin'
-          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.72.1'"
+          iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$chezmoiBin' -t 'v2.72.2'"
           Add-Content -Path $env:GITHUB_PATH -Value $chezmoiBin
       - name: Pre-configure chezmoi
         shell: powershell
