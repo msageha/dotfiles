@@ -131,17 +131,6 @@
     },
     {
       "customType": "regex",
-      "description": "uvx で起動する MCP サーバーを pypi datasource で更新する",
-      "managerFilePatterns": [
-        "/^home/\\.chezmoitemplates/claude\\.json$/"
-      ],
-      "matchStrings": [
-        "\"(?<depName>nanobanana-mcp-server|mcp-youtube-transcript)@(?<currentValue>[\\w.-]+)\""
-      ],
-      "datasourceTemplate": "pypi"
-    },
-    {
-      "customType": "regex",
       "description": "workflow の container.image (digest pin + バージョンコメント) を docker datasource で更新する。ネイティブのgithub-actions managerはdigestのみ追従し、末尾のバージョンコメントを更新しないため必要",
       "managerFilePatterns": [
         "/^\\.github/workflows/.+\\.ya?ml$/"
