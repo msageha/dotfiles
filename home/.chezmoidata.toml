@@ -3,10 +3,10 @@ user = "msageha"
 
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
-context7 = "4.1.0"
+context7 = "4.1.1"
 # renovate: datasource=npm depName=chrome-devtools-mcp
 chromeDevtools = "1.9.0"
 # renovate: datasource=npm depName=@playwright/mcp
-playwright = "0.0.80"
+playwright = "0.0.81"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
 nanobanana = "v1.0.12"
