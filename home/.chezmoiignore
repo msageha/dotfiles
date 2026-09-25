@@ -116,6 +116,11 @@
 !.codex/fusion.json
 !.codex/pareto-code.json
 !.codex/.env
+{{- /* auth.json は Codex CLI の credential store。OpenAI API key が注入された環境だけ管理し、
+       鍵が空なら既存の login 状態を消したり空鍵で上書きしたりしないよう管理外にする */}}
+{{ if dig "apiKeys" "openai" "" . }}
+!.codex/auth.json
+{{ end }}
 !.codex/agents
 !.codex/agents/**
 !.codex/rules

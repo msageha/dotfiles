@@ -1,0 +1,9 @@
+{{- /* Codex CLI の API key ログイン状態 (codex login --with-api-key の保存先)。
+       鍵が空の環境では .chezmoiignore が管理外にするので、既存の login 状態 (ChatGPT 認証等) には触れない。
+       Codex CLI は serde_json::to_string_pretty で末尾改行なしに書くため、同じ鍵なら CLI が書いたファイルと
+       byte 一致して drift が出ないよう、キー順・インデント・末尾改行なしを揃える */ -}}
+{
+  "auth_mode": "apikey",
+  "OPENAI_API_KEY": {{ dig "apiKeys" "openai" "" . | toJson }}
+}
+{{- /* 末尾改行を出さない (上記の byte 一致のため) */ -}}

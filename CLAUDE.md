@@ -99,7 +99,7 @@ terraform / terragrunt) は dig 既定 true で、`skip_cli_tools=false` を明�
 - `chezmoi execute-template --init` — `home/.chezmoi.toml.tmpl` が fnox 注入の API キー
   (`GEMINI_API_KEY` 等) を `data.apiKeys` に平文展開する。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env` — secret を実際に復号した値を返す。
-- `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env` や
+- `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env`・`.codex/auth.json` や
   `~/.config/chezmoi/chezmoi.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
 - `cat` / `git diff` で secret ファイルを直接読む。
 
