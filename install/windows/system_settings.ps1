@@ -4,20 +4,17 @@
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-# Windows PowerShell 5.1 の Invoke-WebRequest はプログレスバー描画で
-# ダウンロードが極端に遅くなるため無効化する
-$ProgressPreference = 'SilentlyContinue'
+if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-function Write-Step($msg) { Write-Host $msg -ForegroundColor Blue }
-function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
+$ExplorerAdvancedKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+$SearchKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
 
 function Set-ExplorerSettings {
     Write-Step 'エクスプローラーの設定を行っています...'
-    $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    New-ItemProperty -Path $advanced -Name 'Hidden' -Value 1 -PropertyType DWord -Force | Out-Null        # 隠しファイルを表示
-    New-ItemProperty -Path $advanced -Name 'HideFileExt' -Value 0 -PropertyType DWord -Force | Out-Null   # ファイルの拡張子を表示
-    New-ItemProperty -Path $advanced -Name 'ShowStatusBar' -Value 1 -PropertyType DWord -Force | Out-Null # ステータスバーを表示
-    New-ItemProperty -Path $advanced -Name 'LaunchTo' -Value 1 -PropertyType DWord -Force | Out-Null      # 起動時にクイックアクセスではなく PC を表示
+    Set-RegistryDword $ExplorerAdvancedKey 'Hidden' 1        # 隠しファイルを表示
+    Set-RegistryDword $ExplorerAdvancedKey 'HideFileExt' 0   # ファイルの拡張子を表示
+    Set-RegistryDword $ExplorerAdvancedKey 'ShowStatusBar' 1 # ステータスバーを表示
+    Set-RegistryDword $ExplorerAdvancedKey 'LaunchTo' 1      # 起動時にクイックアクセスではなく PC を表示
 }
 
 function Set-ContextMenuSettings {
@@ -38,8 +35,6 @@ function Set-WallpaperSettings {
 
     # 取得失敗時に壊れた本文を壁紙にしないよう、失敗したらここで打ち切ってスキップする
     try {
-        # -UseBasicParsing: 5.1 は IE エンジン未初期化のクリーン環境だと
-        # これ無しで失敗する (pwsh では既定動作なので無害)
         Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/windows.png' -OutFile $wallpaperPath -UseBasicParsing
     }
     catch {
@@ -72,7 +67,7 @@ public class ChezmoiWallpaper {
 # 拒否以外の失敗は握りつぶさず再スローする。
 function Set-UcpdProtectedDword($path, $name, $value) {
     try {
-        New-ItemProperty -Path $path -Name $name -Value $value -PropertyType DWord -Force -ErrorAction Stop | Out-Null
+        Set-RegistryDword $path $name $value
     }
     catch {
         # $ErrorActionPreference = 'Stop' 経由で終了エラー化された場合に例外が
@@ -93,21 +88,19 @@ function Set-UcpdProtectedDword($path, $name, $value) {
 
 function Set-TaskbarSettings {
     Write-Step 'タスクバー・システムトレイの設定を行っています...'
-    $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    $search = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
     $feeds = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds'
 
-    New-ItemProperty -Path $search -Name 'SearchboxTaskbarMode' -Value 0 -PropertyType DWord -Force | Out-Null # 検索ボックスを非表示
+    Set-RegistryDword $SearchKey 'SearchboxTaskbarMode' 0 # 検索ボックスを非表示
 
-    Set-UcpdProtectedDword $advanced 'TaskbarDa' 0 # ウィジェットを非表示 (Windows 11)
+    Set-UcpdProtectedDword $ExplorerAdvancedKey 'TaskbarDa' 0 # ウィジェットを非表示 (Windows 11)
     New-Item -Path $feeds -Force -ErrorAction SilentlyContinue | Out-Null
     Set-UcpdProtectedDword $feeds 'ShellFeedsTaskbarViewMode' 2 # ニュースと関心事項を非表示 (Windows 10)
 
-    New-ItemProperty -Path $advanced -Name 'TaskbarMn' -Value 0 -PropertyType DWord -Force | Out-Null         # Chat アイコンを非表示
-    New-ItemProperty -Path $advanced -Name 'ShowCopilotButton' -Value 0 -PropertyType DWord -Force | Out-Null # Copilot アイコンを非表示
+    Set-RegistryDword $ExplorerAdvancedKey 'TaskbarMn' 0         # Chat アイコンを非表示
+    Set-RegistryDword $ExplorerAdvancedKey 'ShowCopilotButton' 0 # Copilot アイコンを非表示
 
-    New-ItemProperty -Path $advanced -Name 'IsBatteryPercentageEnabled' -Value 1 -PropertyType DWord -Force | Out-Null # バッテリー残量%を表示
-    New-ItemProperty -Path $advanced -Name 'ShowSecondsInSystemClock' -Value 1 -PropertyType DWord -Force | Out-Null   # 時計に秒を表示
+    Set-RegistryDword $ExplorerAdvancedKey 'IsBatteryPercentageEnabled' 1 # バッテリー残量%を表示
+    Set-RegistryDword $ExplorerAdvancedKey 'ShowSecondsInSystemClock' 1   # 時計に秒を表示
 }
 
 function Set-PowerSettings {
@@ -127,7 +120,7 @@ function Set-ClipboardSettings {
     Write-Step 'クリップボード履歴を有効化しています...'
     $clipboard = 'HKCU:\Software\Microsoft\Clipboard'
     New-Item -Path $clipboard -Force -ErrorAction SilentlyContinue | Out-Null
-    New-ItemProperty -Path $clipboard -Name 'EnableClipboardHistory' -Value 1 -PropertyType DWord -Force | Out-Null # Win+V の履歴を有効化
+    Set-RegistryDword $clipboard 'EnableClipboardHistory' 1 # Win+V の履歴を有効化
 }
 
 function Set-KeyboardSettings {
@@ -142,35 +135,21 @@ function Enable-DeveloperMode {
     # HKLM への書き込みが必要なため、既に有効なら何もせず、未昇格なら UAC 昇格して 1 回だけ設定する
     # (毎回 UAC ダイアログが出ると煩わしいため、まず現在値を読み取って判定する)。
     $path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
-    # StrictMode ではキー/値が無いときの $null へのプロパティ参照が throw するため、
-    # Get-ItemPropertyValue の失敗を「未設定」として扱う
-    try {
-        $current = Get-ItemPropertyValue -Path $path -Name 'AllowDevelopmentWithoutDevLicense' -ErrorAction Stop
-    }
-    catch {
-        $current = $null
-    }
-    if ($current -eq 1) {
+    if ((Get-RegistryValueOrNull $path 'AllowDevelopmentWithoutDevLicense') -eq 1) {
         Write-Step '開発者モードは既に有効なため、スキップします。'
         return
     }
 
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ($isAdmin) {
+    if (Test-IsAdmin) {
         Write-Step '開発者モードを有効化しています...'
         New-Item -Path $path -Force | Out-Null
-        New-ItemProperty -Path $path -Name 'AllowDevelopmentWithoutDevLicense' -Value 1 -PropertyType DWord -Force | Out-Null
+        Set-RegistryDword $path 'AllowDevelopmentWithoutDevLicense' 1
         return
     }
 
-    Write-Step '開発者モードの有効化には管理者権限が必要なため、UAC 昇格して設定します...'
-    try {
-        $command = "New-Item -Path '$path' -Force | Out-Null; New-ItemProperty -Path '$path' -Name AllowDevelopmentWithoutDevLicense -Value 1 -PropertyType DWord -Force | Out-Null"
-        Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-Command', $command) -Verb RunAs -Wait
+    $command = "New-Item -Path '$path' -Force | Out-Null; New-ItemProperty -Path '$path' -Name AllowDevelopmentWithoutDevLicense -Value 1 -PropertyType DWord -Force | Out-Null"
+    if (Invoke-ElevatedPowerShell $command '開発者モードの有効化') {
         Write-Step '開発者モードを有効化しました。'
-    }
-    catch {
-        Write-Warn "開発者モードの有効化に失敗しました (UAC がキャンセルされた可能性があります): $($_.Exception.Message)"
     }
 }
 
@@ -193,8 +172,7 @@ function Disable-BitLockerProtection {
     }
 
     # Disable-BitLocker は復号をバックグラウンドで開始して即座に戻るため、-Wait しても apply は長時間ブロックされない
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ($isAdmin) {
+    if (Test-IsAdmin) {
         if (-not (Get-Command Disable-BitLocker -ErrorAction SilentlyContinue)) {
             Write-Warn 'Disable-BitLocker が見つかりません (Home エディション等)。設定アプリの「デバイスの暗号化」から手動で無効化してください。'
             return
@@ -205,27 +183,20 @@ function Disable-BitLockerProtection {
         return
     }
 
-    Write-Step 'BitLocker の無効化には管理者権限が必要なため、UAC 昇格して実行します...'
-    try {
-        $command = 'Get-BitLockerVolume | Where-Object { $_.VolumeStatus -ne ''FullyDecrypted'' } | Disable-BitLocker | Out-Null'
-        Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-Command', $command) -Verb RunAs -Wait
+    $command = 'Get-BitLockerVolume | Where-Object { $_.VolumeStatus -ne ''FullyDecrypted'' } | Disable-BitLocker | Out-Null'
+    if (Invoke-ElevatedPowerShell $command 'BitLocker の無効化') {
         Write-Step 'BitLocker の無効化を開始しました (復号はバックグラウンドで継続されます)。'
-    }
-    catch {
-        Write-Warn "BitLocker の無効化に失敗しました (UAC がキャンセルされた可能性があります): $($_.Exception.Message)"
     }
 }
 
 function Set-StartMenuSettings {
     Write-Step 'スタートメニューの設定を行っています...'
-    $search = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
-    $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
     $start = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start'
 
-    New-ItemProperty -Path $search -Name 'BingSearchEnabled' -Value 0 -PropertyType DWord -Force | Out-Null           # 検索での Web 結果を無効化
-    New-ItemProperty -Path $advanced -Name 'Start_IrisRecommendations' -Value 0 -PropertyType DWord -Force | Out-Null # 「おすすめ」表示を無効化
+    Set-RegistryDword $SearchKey 'BingSearchEnabled' 0                    # 検索での Web 結果を無効化
+    Set-RegistryDword $ExplorerAdvancedKey 'Start_IrisRecommendations' 0 # 「おすすめ」表示を無効化
     New-Item -Path $start -Force -ErrorAction SilentlyContinue | Out-Null
-    New-ItemProperty -Path $start -Name 'ShowRecentList' -Value 0 -PropertyType DWord -Force | Out-Null               # 最近追加したアプリの表示を無効化
+    Set-RegistryDword $start 'ShowRecentList' 0                          # 最近追加したアプリの表示を無効化
 }
 
 function Restart-Explorer {

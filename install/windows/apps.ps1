@@ -3,9 +3,7 @@
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
-function Write-Step($msg) { Write-Host $msg -ForegroundColor Blue }
-function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
+if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
 # winget のパッケージ ID (`winget search <name>` で確認できる)。
 # 既定のソースは community リポジトリ (winget)。ChatGPT のように winget-pkgs に
@@ -23,11 +21,6 @@ $Apps = @(
 )
 
 function Install-GuiApps {
-    # GUI アプリは mac (brew.sh の cask) と同様、時間がかかり対話を伴いうるため CI ではスキップする
-    if ($env:CI) {
-        Write-Step 'CI 環境のため GUI アプリのインストールをスキップします。'
-        return
-    }
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Write-Warn 'winget が見つかりません。GUI アプリを手動で導入してください。'
         return
@@ -53,9 +46,6 @@ function Install-GuiApps {
 
 function Uninstall-OneDrive {
     # プリインストールされている OneDrive は使わないため削除する
-    if ($env:CI) {
-        return
-    }
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Write-Warn 'winget が見つかりません。OneDrive のアンインストールをスキップします。'
         return
@@ -80,9 +70,6 @@ function Set-PowerToysSettings {
     # バージョン間でスキーマが変わりうる上、PowerToys が一度も実行されていないとファイル自体が
     # 存在しない等、レジストリほど安定した対象ではない。そのため生の JSON を直接書き換えるのではなく、
     # PowerToys 公式の設定 CLI (PowerToys.DSC.exe, v0.95.0 以降同梱) を経由して行う。
-    if ($env:CI) {
-        return
-    }
     $dscExe = @(
         (Join-Path $env:LOCALAPPDATA 'PowerToys\PowerToys.DSC.exe')
         (Join-Path $env:ProgramFiles 'PowerToys\PowerToys.DSC.exe')
@@ -115,36 +102,20 @@ function Set-PowerToysSettings {
     # そのままだと子プロセス側で引用符が剥がれて JSON として不正になる
     $config = $config -replace '"', '\"'
 
-    try {
-        & $dscExe set --resource 'settings' --module App --input $config
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warn "PowerToys の設定適用が終了コード $LASTEXITCODE を返しました。PowerToys の設定画面から手動で有効化してください。"
-            return
-        }
-        Write-Step 'PowerToys の FancyZones / PowerToys Run / Hosts File Editor / Environment Variables を有効化しました。'
+    & $dscExe set --resource 'settings' --module App --input $config
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "PowerToys の設定適用が終了コード $LASTEXITCODE を返しました。PowerToys の設定画面から手動で有効化してください。"
+        return
     }
-    catch {
-        Write-Warn "PowerToys の設定適用に失敗しました。PowerToys の設定画面から手動で有効化してください: $($_.Exception.Message)"
-    }
-}
-
-function Get-UserChoiceProgId([string]$Path) {
-    # StrictMode ではキー/値が無いときの $null へのプロパティ参照が throw するため、
-    # Get-ItemPropertyValue の失敗を「未設定 ($null)」として扱う
-    try {
-        return Get-ItemPropertyValue -Path $Path -Name 'ProgId' -ErrorAction Stop
-    }
-    catch {
-        return $null
-    }
+    Write-Step 'PowerToys の FancyZones / PowerToys Run / Hosts File Editor / Environment Variables を有効化しました。'
 }
 
 function Test-DefaultAppsAlreadySet {
     # UserChoice は「書き込み」はハッシュ保護されるが「読み取り」は誰でもできるため、
     # 既に望む状態になっているかはここで判定できる。7-Zip は拡張子ごとに ProgId を持つが、
     # .zip を代表として確認する (全拡張子を厳密に見るのはやり過ぎなので簡易判定とする)。
-    $browserProgId = Get-UserChoiceProgId 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice'
-    $zipProgId = Get-UserChoiceProgId 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice'
+    $browserProgId = Get-RegistryValueOrNull 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' 'ProgId'
+    $zipProgId = Get-RegistryValueOrNull 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice' 'ProgId'
 
     $browserIsChrome = $browserProgId -like 'ChromeHTML*'
     $zipIs7Zip = $zipProgId -like '7-Zip.*'
@@ -158,9 +129,6 @@ function Open-DefaultAppsSettings {
     # スクリプトから安全に自動設定する方法が無い。設定アプリの該当ページを開き、
     # ユーザーが選ぶだけの状態にする。実行のたびにポップアップが出ると煩わしいため、
     # 既に両方とも設定済みなら開かない。
-    if ($env:CI) {
-        return
-    }
     if (Test-DefaultAppsAlreadySet) {
         Write-Step '既定のブラウザ (Chrome) と展開ツール (7-Zip) は設定済みのため、既定アプリ設定はスキップします。'
         return
@@ -215,9 +183,6 @@ function Set-DefaultInputMethod {
     # 公式コマンドレット (International モジュール) で正規にスクリプト化できる。
     # ただし Google 側の内部 CLSID をインストール後に動的に探す必要があり、インストール直後は
     # セッションに反映されず見つからないことがあるため best-effort (失敗時は警告のみ) とする。
-    if ($env:CI) {
-        return
-    }
     if (-not (Get-Command Set-WinDefaultInputMethodOverride -ErrorAction SilentlyContinue)) {
         Write-Warn 'Set-WinDefaultInputMethodOverride が見つかりません (International モジュール無し)。IME の既定化をスキップします。'
         return
@@ -247,6 +212,11 @@ function Set-DefaultInputMethod {
 }
 
 function Main {
+    # GUI アプリは mac (brew.sh の cask) と同様、時間がかかり対話を伴いうるため CI ではスキップする
+    if ($env:CI) {
+        Write-Step 'CI 環境のため GUI アプリ導入・設定をスキップします。'
+        return
+    }
     Uninstall-OneDrive
     Install-GuiApps
     Set-PowerToysSettings
