@@ -1,19 +1,11 @@
-# 過去に配布していたが廃止したファイルを適用先から削除する。
-# - .claude/commands/*.md は .claude/skills/ へ移行済みの legacy slash command
-# - CLAUDE-FABLE-5.md は廃止した claude-fable5 alias 用のシステムプロンプト
-# - owl-alpha.json はどの codex profile からも参照されない model catalog
-.claude/CLAUDE-FABLE-5.md
-.codex/owl-alpha.json
-.claude/commands/commit.md
-.claude/commands/create-verify.md
-.claude/commands/deps.md
-.claude/commands/diagram.md
-.claude/commands/explain.md
-.claude/commands/pr.md
-.claude/commands/refactor.md
-.claude/commands/review.md
-.claude/commands/security.md
-.claude/commands/test.md
+# 過去に配布していたが廃止・移動したファイルを適用先から削除する。
+{{- /* fish 関数の rename / 統合と、履歴上使われていない関数の廃止で source から消えた旧ファイル */}}
+.config/fish/functions/__git_all_repos.fish
+.config/fish/functions/__repo_search_with_chezmoi.fish
+.config/fish/conf.d/zz_repo_search.fish
+.config/fish/functions/faws.fish
+.config/fish/functions/fzf_load_env.fish
+.config/fish/functions/rm_cache.fish
 
 {{ if ne .chezmoi.os "windows" -}}
 {{- /* dracula テーマの展開先を ~/.vim / ~/.tmux から ~/.local/share/{vim,tmux} へ移行したため、
