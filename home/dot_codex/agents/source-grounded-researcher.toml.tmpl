@@ -1,5 +1,5 @@
 name = "source_grounded_researcher"
-description = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
+description = {{ index .agents "source-grounded-researcher" | quote }}
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"

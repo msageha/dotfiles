@@ -18,7 +18,7 @@
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
     }{{ if eq .chezmoi.os "darwin" }},
-    {{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
+    {{- /* dart / xcode MCP は macOS 専用バイナリ (dart, xcrun) に依存する */}}
     "dart": {
       "command": "dart",
       "args": ["mcp-server"]
