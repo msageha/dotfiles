@@ -45,7 +45,6 @@ EOF
 
 function main() {
     require_command zsh
-    require_command fish
     create_bashrc
     create_zshrc
 }

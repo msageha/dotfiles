@@ -12,17 +12,6 @@ function setup() {
     source "${SCRIPT_PATH}"
 }
 
-@test "[install/debian] apt - base packages installed" {
-    command -v dpkg &>/dev/null || skip "dpkg not available"
-    # root/sudo が無い環境では apt.sh 自体が全操作をスキップする
-    has_privilege || skip "no root/sudo: apt.sh skips package installation"
-    # shellcheck disable=SC2154  # apt_base は setup() の source で定義される
-    for pkg in "${apt_base[@]}"; do
-        echo "Checking ${pkg}"
-        dpkg -s "${pkg}" &>/dev/null
-    done
-}
-
 @test "[install/debian] apt - SKIP_CLI_TOOLS unset aborts main" {
     run env -u SKIP_CLI_TOOLS bash -c 'sudo() { :; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 1 ]

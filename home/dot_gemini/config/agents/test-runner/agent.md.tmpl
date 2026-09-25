@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: {{ index .agents "test-runner" | quote }}
+description: {{ .agents.test_runner | quote }}
 tools:
   - view_file
   - list_dir

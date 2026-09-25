@@ -29,9 +29,6 @@
 
 {{ if ne .chezmoi.os "darwin" }}
 .config/gh/hosts.yml
-# pmset (macOS) を呼ぶ関数
-.config/fish/functions/enablesleep.fish
-.config/fish/functions/disablesleep.fish
 {{ end }}
 
 # ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマ (external) を展開しない。

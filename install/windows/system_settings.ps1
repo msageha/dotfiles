@@ -9,6 +9,28 @@ if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyCont
 $ExplorerAdvancedKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 $SearchKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
 
+function Set-RegistryDword([string]$Path, [string]$Name, [int]$Value) {
+    New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType DWord -Force | Out-Null
+}
+
+# UAC 昇格した別プロセスの powershell で $Command を実行し、完了を待って成否を返す。
+# Start-Process -Wait は子の非 0 終了では throw しないため、終了コードも見る
+function Invoke-ElevatedPowerShell([string]$Command, [string]$Subject) {
+    Write-Step "${Subject}には管理者権限が必要なため、UAC 昇格して実行します..."
+    try {
+        $process = Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-Command', $Command) -Verb RunAs -Wait -PassThru
+    }
+    catch {
+        Write-Warn "${Subject}に失敗しました (UAC がキャンセルされた可能性があります): $($_.Exception.Message)"
+        return $false
+    }
+    if ($process.ExitCode -ne 0) {
+        Write-Warn "${Subject}に失敗しました (昇格先の終了コード $($process.ExitCode))。"
+        return $false
+    }
+    return $true
+}
+
 function Set-ExplorerSettings {
     Write-Step 'エクスプローラーの設定を行っています...'
     Set-RegistryDword $ExplorerAdvancedKey 'Hidden' 1        # 隠しファイルを表示

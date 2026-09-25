@@ -33,9 +33,9 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `home/dot_claude/` — Claude Code のユーザースコープ設定 (`private_settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
 - `home/dot_config/shell/` — bash / zsh 共有の `env.sh` (環境変数・PATH) と `integrations.sh` (ツールのシェル統合)。`dot_bash_profile` / `dot_zprofile` はこれを source する薄い入口
 - `home/.chezmoidata.toml` — テンプレート共有データ。MCP の版 pin (`mcp`)、Claude plugin の marketplace (`claude.marketplaces`) と plugin 一覧 + 有効フラグ (`claude.plugins`。install スクリプトは有効なものだけ導入し、settings.json の extraKnownMarketplaces / enabledPlugins はここから描画する単一ソース)、サブエージェントの description (`agents`)
-- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)。`lib.sh` (bash) / `windows/lib.ps1` が共通 helper で、`.chezmoiscripts` の各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。スクリプト同士は `main` 等の名前が重複するため subshell `( ... )` で隔離して include する。Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS` 環境変数、macOS の CLI / GUI 導入は `SKIP_CLI_TOOLS` / `SKIP_GUI_TOOLS` としてテンプレートが export する契約
+- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)。`lib.sh` (bash) / `windows/lib.ps1` が共通 helper で、`.chezmoiscripts` の各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。スクリプト同士は `main` 等の名前が重複するため subshell `( ... )` で隔離して include する。Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS` 環境変数、CLI / GUI 導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS) としてテンプレートが export する契約。`lib.sh` は各テンプレートに展開されるため、その変更はこれを include する `run_once_*` / `run_onchange_*` を全て再実行させる
 - `settings/` — アプリ設定 (`common/`, `macos/`)
-- `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトを source して検査、`tests/docker` = `docker/build.sh`)。skip_* による skip 判定は `tests/test_helper.bash`
+- `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトの関数をスタブで検査 (apply 済みの環境に依存しないため pre-push hook で回す)、`tests/docker` = `docker/build.sh`)。skip_* による skip 判定は `tests/test_helper.bash`
 - `docker/` (`Dockerfile.debian` / `Dockerfile.alpine` / `build.sh` / `provision.sh`) — Ubuntu / Debian / Alpine 検証用イメージのビルド (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)。バリアント表は `build.sh`、両 Dockerfile 共通の chezmoi provisioning は `provision.sh`
 
 ## LLM エージェント指示文の構成
@@ -52,7 +52,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   `chezmoi execute-template < home/dot_gemini/config/AGENTS.md.tmpl | python3 -c 'import sys; print(len(sys.stdin.read()))'`
   で生成物そのものを再計測する (`wc -m` は LANG=C だとバイト数になる)。
 - サブエージェント定義の本文は `home/.chezmoitemplates/agents/<name>.md`、description は `home/.chezmoidata.toml` の `[agents]` が単一ソースで、Claude (`dot_claude/agents/*.md.tmpl`)・
-  Codex (`dot_codex/agents/*.toml.tmpl`、`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が include / `index .agents "<name>"` で参照する。
+  Codex (`dot_codex/agents/*.toml.tmpl`、`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が include / `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
   Codex / Gemini の code-reviewer・security-reviewer は review / security skill 本文を frontmatter を剥いで追記する
   (`regexReplaceAll` は明示引数形。パイプ形は空文字になる)。skill 本文に `'''` を含めると Codex の TOML が壊れる。
   `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse するため、agents/*.md 本文に生の `{{` を書くと
@@ -82,7 +82,7 @@ terraform / terragrunt)、および node に依存する nanobanana MCP (`.chezm
 - `mise run apply` — `chezmoi apply --verbose` (実際に適用)
 - `mise run dry-run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
 - `mise run pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
-- `mise run pre-push` — `prek run --hook-stage pre-push` (テンプレート描画 dry-run + `tests/install` / `tests/docker` の bats)
+- `mise run pre-push` — `prek run --all-files --hook-stage pre-push` (テンプレート描画 dry-run + `tests/install` / `tests/docker` の bats)
 - `mise run test` — `bats -r tests/`
 - `mise run docker-build <tag> [--push]` (`docker/build.sh`) — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)。`mise run build-<tag>` は同じものの alias、`--push` は multi-arch build + push
 - `mise run decrypt-google-ime` / `encrypt-google-ime` — Google IME 辞書の復号・再暗号化。

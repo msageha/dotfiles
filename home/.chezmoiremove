@@ -2,7 +2,6 @@
 {{- /* fish 関数の rename / 統合と、履歴上使われていない関数の廃止で source から消えた旧ファイル */}}
 .config/fish/functions/__git_all_repos.fish
 .config/fish/functions/__repo_search_with_chezmoi.fish
-.config/fish/conf.d/zz_repo_search.fish
 .config/fish/functions/faws.fish
 .config/fish/functions/fzf_load_env.fish
 .config/fish/functions/rm_cache.fish

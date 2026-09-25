@@ -1,6 +1,6 @@
 ---
 name: source-grounded-researcher
-description: {{ index .agents "source-grounded-researcher" | quote }}
+description: {{ .agents.source_grounded_researcher | quote }}
 ---
 
 {{ includeTemplate "agents/source-grounded-researcher.md" . -}}

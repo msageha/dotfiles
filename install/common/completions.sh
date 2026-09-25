@@ -34,10 +34,11 @@ function print_completion() {
     esac
 }
 
-# 生成途中の失敗で壊れたファイルや空ファイルを残さないよう、一時ファイルへ書いてから置き換える
+# 生成途中の失敗で壊れたファイルや空ファイルを残さないよう、一時ファイルへ書いてから置き換える。
+# mv は既存の symlink (kubectl.fish が symlink だった環境がある) もリンク先へ書き込まず実体ファイルで置き換える
 function write_completion() {
     local tool="$1" shell="$2" out="$3"
-    if print_completion "$tool" "$shell" > "$out.tmp"; then
+    if print_completion "$tool" "$shell" > "$out.tmp" && [ -s "$out.tmp" ]; then
         mv "$out.tmp" "$out"
     else
         rm -f "$out.tmp"
@@ -60,10 +61,6 @@ function generate_completions() {
             zsh) out="$comp_dir/_$tool" ;;
             bash) out="$comp_dir/$tool" ;;
         esac
-        # kubectl.fish が symlink で置かれていた環境があり、リンク先へ書き込まないよう実体ファイルに置き換える
-        if [[ "$tool" == kubectl && "$shell" == fish && -L "$out" ]]; then
-            rm -f "$out"
-        fi
         write_completion "$tool" "$shell" "$out" &
         pids+=($!)
         names+=("$tool")

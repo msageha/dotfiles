@@ -1,18 +1,10 @@
 #!/usr/bin/env bats
 
-readonly SCRIPT_PATH="./install/common/mise.sh"
-
-function setup() {
-    # shellcheck source=install/common/mise.sh
-    source "${SCRIPT_PATH}"
+@test "[files] mise - installed" {
+    command -v mise
 }
 
-@test "[install/common] mise - installed" {
-    run require_command mise
-    [ "$status" -eq 0 ]
-}
-
-@test "[install/common] mise - every tool in the deployed config is installed" {
+@test "[files] mise - every tool in the deployed config is installed" {
     # 期待ツールは展開済み mise 設定の [tools] から動的取得し、config との乖離を防ぐ
     local config="$HOME/.config/mise/config.toml"
     [ -f "$config" ] || skip "mise config not found: $config"

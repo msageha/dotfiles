@@ -4,10 +4,11 @@ declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/..
 
 function main() {
     # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
-    # run_once_before テンプレートが .chezmoidata.toml の claude.* から必ず export する契約。
-    # 未設定は設定ミスとして落とす (有効な plugin が 0 件の空文字は正常)
-    if [ -z "${CLAUDE_MARKETPLACES+x}" ] || [ -z "${CLAUDE_PLUGINS+x}" ]; then
-        log_error "CLAUDE_MARKETPLACES / CLAUDE_PLUGINS are not set; they must be exported by the caller."
+    # run_once_before テンプレートが .chezmoidata.toml の claude.* から export する契約。
+    # marketplace の未設定は設定ミスとして落とす。CLAUDE_PLUGINS は未設定・空文字を 0 件として扱う
+    # (PowerShell は空文字を代入した環境変数を削除するため両者を区別できず、Windows 版 claude_plugins.ps1 と契約を揃える)
+    if [ -z "${CLAUDE_MARKETPLACES+x}" ]; then
+        log_error "CLAUDE_MARKETPLACES is not set; it must be exported by the caller."
         exit 1
     fi
     if ! command -v claude &>/dev/null; then
@@ -22,7 +23,7 @@ function main() {
         claude plugin marketplace add "${marketplace#*=}"
         claude plugin marketplace update "${marketplace%%=*}"
     done
-    for plugin in $CLAUDE_PLUGINS; do
+    for plugin in ${CLAUDE_PLUGINS:-}; do
         log_step "Installing ${plugin}..."
         claude plugin install "$plugin"
         claude plugin update "$plugin"

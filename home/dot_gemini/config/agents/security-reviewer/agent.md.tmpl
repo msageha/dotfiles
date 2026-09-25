@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: {{ index .agents "security-reviewer" | quote }}
+description: {{ .agents.security_reviewer | quote }}
 model: pro
 tools:
   - view_file

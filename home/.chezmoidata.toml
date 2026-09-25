@@ -39,11 +39,11 @@ openai-codex = "openai/codex-plugin-cc"
 "typescript-lsp@claude-plugins-official" = true
 
 # サブエージェントの description。本文は .chezmoitemplates/agents/<name>.md、
-# Claude / Codex / Gemini の各 wrapper template がここから description を読む
+# Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
 [agents]
-browser-debugger = "Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues."
-code-reviewer = "Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues."
+browser_debugger = "Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues."
+code_reviewer = "Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues."
 debugger = "Debugging specialist for failing tests, runtime errors, and CI failures. Use when a concrete failure needs root-cause analysis and a minimal fix."
-security-reviewer = "Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
-source-grounded-researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
-test-runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
+security_reviewer = "Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
+source_grounded_researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
+test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."

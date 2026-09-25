@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: {{ index .agents "code-reviewer" | quote }}
+description: {{ .agents.code_reviewer | quote }}
 model: pro
 tools:
   - view_file

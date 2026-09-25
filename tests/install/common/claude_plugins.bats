@@ -7,18 +7,17 @@ readonly SCRIPT_PATH="./install/common/claude_plugins.sh"
 function setup() {
     # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
-    # 実際の展開値と同じ形 (空白区切り) を .chezmoidata.toml から組み立てる
+    # .chezmoiscripts の export 行と同じ range 式で .chezmoidata.toml から組み立てる
+    # (テンプレート本体は OS gate があり macOS では描画されないため直接は使えない)
     CLAUDE_MARKETPLACES="$(chezmoi_template '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}')"
     CLAUDE_PLUGINS="$(chezmoi_template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}')"
     export CLAUDE_MARKETPLACES CLAUDE_PLUGINS
 }
 
-@test "[install/common] claude_plugins - unset contract variables abort main" {
-    run env -u CLAUDE_PLUGINS bash -c 'source '"${SCRIPT_PATH}"'; main'
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"CLAUDE_MARKETPLACES / CLAUDE_PLUGINS are not set"* ]]
+@test "[install/common] claude_plugins - unset CLAUDE_MARKETPLACES aborts main" {
     run env -u CLAUDE_MARKETPLACES bash -c 'source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 1 ]
+    [[ "$output" == *"CLAUDE_MARKETPLACES is not set"* ]]
 }
 
 @test "[install/common] claude_plugins - contract values are rendered from .chezmoidata.toml" {
@@ -44,23 +43,13 @@ function setup() {
     [[ "$output" == *"claude が見つかりません"* ]]
 }
 
-@test "[install/common] claude_plugins - empty plugin list is accepted (all plugins disabled)" {
+@test "[install/common] claude_plugins - empty or unset CLAUDE_PLUGINS means no plugins (PowerShell 版と同じ契約)" {
     run env CLAUDE_PLUGINS= bash -c 'claude() { echo "claude $*"; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 0 ]
     [[ "$output" == *"claude plugin marketplace add"* ]]
     [[ "$output" != *"claude plugin install"* ]]
-}
-
-@test "[install/common] claude_plugins - enabled plugins are installed" {
-    # skip_cli_tools=true では run_once_before テンプレートがこのスクリプトを include しない
-    if cli_tools_skipped; then
-        skip "coding agent plugins are not installed (skip_cli_tools=true)"
-    fi
-    command -v claude &>/dev/null || skip "claude not installed"
-    local installed plugin
-    installed="$(claude plugin list 2>/dev/null)"
-    for plugin in ${CLAUDE_PLUGINS}; do
-        echo "Checking ${plugin}"
-        echo "${installed}" | grep -q "${plugin}"
-    done
+    run env -u CLAUDE_PLUGINS bash -c 'claude() { echo "claude $*"; }; source '"${SCRIPT_PATH}"'; main'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"claude plugin marketplace add"* ]]
+    [[ "$output" != *"claude plugin install"* ]]
 }

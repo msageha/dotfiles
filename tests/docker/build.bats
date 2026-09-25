@@ -28,11 +28,13 @@ readonly SCRIPT_PATH="./docker/build.sh"
 }
 
 @test "[docker] CI workflows mirror the variants known to build.sh" {
-    # docker-image-cd.yaml / docker.yaml の matrix は build.sh の表を写す (GitHub Actions は静的 matrix しか持てない)
+    # docker-image-cd.yaml / docker.yaml の matrix は build.sh の表を写す
+    # (fromJSON で動的 matrix にもできるが、build-push-action の with: へ渡す値を静的に読めるよう写しにしている)
     local tag
     for tag in $("${SCRIPT_PATH}" --list); do
-        echo "Checking ${tag} in docker-image-cd.yaml"
+        echo "Checking ${tag} in docker-image-cd.yaml (build matrix and merge job)"
         grep -q "tag: ${tag}$" .github/workflows/docker-image-cd.yaml
+        grep -qE "^\s+- ${tag}$" .github/workflows/docker-image-cd.yaml
     done
     for tag in ubuntu-min debian-min alpine; do
         echo "Checking ${tag} in docker.yaml"

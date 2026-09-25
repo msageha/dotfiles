@@ -8,6 +8,7 @@ activate_tool_paths
 (
 {{   include "../install/common/setup_shell.sh" }}
 )
+require_command fish
 fish "$CHEZMOI_REPO_ROOT/install/common/fisher.fish"
 (
 {{   include "../install/common/mise.sh" }}

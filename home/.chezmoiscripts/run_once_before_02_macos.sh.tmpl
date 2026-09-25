@@ -3,6 +3,7 @@
 set -euo pipefail
 
 {{ include "../install/lib.sh" }}
+activate_tool_paths
 (
 {{   include "../install/macos/xcode_select.sh" }}
 )

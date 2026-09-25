@@ -41,6 +41,13 @@ function assert_valid_json() {
     done
 }
 
+@test "[files] coding agents - codex model catalogs are valid JSON" {
+    for catalog in "${HOME}/.codex/"*.json; do
+        echo "Checking ${catalog}"
+        assert_valid_json "${catalog}"
+    done
+}
+
 @test "[files] coding agents - grok config.toml is valid TOML" {
     assert_valid_toml "${HOME}/.grok/config.toml"
 }
@@ -54,4 +61,15 @@ function assert_valid_json() {
     assert_valid_json "${HOME}/.gemini/settings.json"
     assert_valid_json "${HOME}/.gemini/config/mcp_config.json"
     assert_valid_json "${HOME}/.gemini/antigravity-cli/settings.json"
+}
+
+@test "[files] coding agents - enabled claude plugins are installed" {
+    command -v claude &>/dev/null || skip "claude not installed"
+    local installed plugin
+    installed="$(claude plugin list 2>/dev/null)"
+    # 有効な plugin の一覧は .chezmoidata.toml (install スクリプトへの export と同じ range 式)
+    for plugin in $(chezmoi_template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'); do
+        echo "Checking ${plugin}"
+        echo "${installed}" | grep -q "${plugin}"
+    done
 }

@@ -102,12 +102,18 @@ function Set-PowerToysSettings {
     # そのままだと子プロセス側で引用符が剥がれて JSON として不正になる
     $config = $config -replace '"', '\"'
 
-    & $dscExe set --resource 'settings' --module App --input $config
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warn "PowerToys の設定適用が終了コード $LASTEXITCODE を返しました。PowerToys の設定画面から手動で有効化してください。"
-        return
+    # DSC exe の起動失敗 (AppLocker 等) も best-effort として警告に留め、後続のセットアップを止めない
+    try {
+        & $dscExe set --resource 'settings' --module App --input $config
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "PowerToys の設定適用が終了コード $LASTEXITCODE を返しました。PowerToys の設定画面から手動で有効化してください。"
+            return
+        }
+        Write-Step 'PowerToys の FancyZones / PowerToys Run / Hosts File Editor / Environment Variables を有効化しました。'
     }
-    Write-Step 'PowerToys の FancyZones / PowerToys Run / Hosts File Editor / Environment Variables を有効化しました。'
+    catch {
+        Write-Warn "PowerToys の設定適用に失敗しました。PowerToys の設定画面から手動で有効化してください: $($_.Exception.Message)"
+    }
 }
 
 function Test-DefaultAppsAlreadySet {

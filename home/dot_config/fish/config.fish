@@ -136,8 +136,7 @@ if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
 end
 
 # --- direnvのフック設定 ---
-# mise 由来のツールは mise activate (fish) の PATH 反映が fish_prompt 時のため、fresh シェルでは
-# command -v が失敗しうる。以降のツール検出は mise which でフォールバックする __tool_path で行う
+# 以降のツール検出は mise 由来のツールも解決できる __tool_path で行う
 set -l direnv_bin (__tool_path direnv)
 if test -n "$direnv_bin"
     __source_cached_init direnv-hook "$direnv_bin" hook fish

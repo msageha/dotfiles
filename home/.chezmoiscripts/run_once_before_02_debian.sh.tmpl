@@ -28,5 +28,5 @@ export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enable
 {{   include "../install/ubuntu/system_settings.sh" }}
 )
 {{ end -}}
-command -v mise &>/dev/null || curl -fsSL https://mise.run | sh
+curl -fsSL https://mise.run | sh
 {{ end -}}

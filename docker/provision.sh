@@ -6,8 +6,9 @@ set -euo pipefail
 # secret は BuildKit 既定で root 所有 0400 のため、Dockerfile 側の mount で非 root ユーザーが
 # 読めるよう mode=0444 を指定している (GitHub のレート制限回避用トークン。
 # 未指定だと cat が権限拒否され匿名枠で 403 になる)。
-# 汎用の GITHUB_TOKEN ではなく mise 専用変数で渡し、apply 中に実行される第三者の
-# インストーラ (curl | sh) に gh のフルスコープ token を見せない
+# 汎用の GITHUB_TOKEN ではなく mise 専用変数で渡し、GITHUB_TOKEN を参照する第三者の
+# インストーラ (curl | sh) や gh が gh のフルスコープ token を使わないようにする
+# (環境変数自体は子プロセスへ継承されるため、隔離ではない)
 if [ -f /run/secrets/github_token ]; then
     MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)"
     export MISE_GITHUB_TOKEN

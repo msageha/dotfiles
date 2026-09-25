@@ -184,7 +184,7 @@ docker/build.sh --list                 # タグ一覧 (--multi-arch で GPU を�
 
 マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` (`docker/build.sh <tag> --push` で multi-arch manifest を直接 push) / `mise run push` (単一 arch のローカルビルド済みタグを push)。CD は `.github/workflows/docker-image-cd.yaml` が main への push を契機に 7 バリアントを multi-arch (GPU は amd64 のみ) でビルドして DockerHub へ push する (matrix は `docker/build.sh` の表を写す)。`latest` は更新しない。両 Dockerfile は共通の provisioning (chezmoi 導入 → apply → 掃除) を `docker/provision.sh` で行う。
 
-ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。GitHub のレート制限回避用に `gh auth token` を BuildKit secret で渡すが、イメージ内では mise 専用の `MISE_GITHUB_TOKEN` としてのみ export し、apply 中に実行される第三者インストーラ (`curl | sh`) には見せない。
+ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。GitHub のレート制限回避用に `gh auth token` を BuildKit secret で渡すが、イメージ内では mise 専用の `MISE_GITHUB_TOKEN` としてのみ export し、`GITHUB_TOKEN` を参照する第三者インストーラ (`curl | sh`) や汎用ツールが gh のフルスコープ token を使わないようにする（環境変数自体は子プロセスへ継承されるため、隔離ではない）。
 
 ### 外付けキーボードのキーリマップ (macOS, 任意)
 
@@ -225,7 +225,7 @@ prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer�
 
 ```bash
 mise run pre-commit  # prek run --all-files (commit 時と同じ lint / format)
-mise run pre-push    # prek run --hook-stage pre-push (テンプレート描画 dry-run + bats -r tests/install tests/docker)
+mise run pre-push    # prek run --all-files --hook-stage pre-push (テンプレート描画 dry-run + bats -r tests/install tests/docker)
 mise run test        # bats -r tests/ (apply 後の $HOME を検査する tests/files も含む)
 mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ```
@@ -254,7 +254,7 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   ├── .chezmoiignore             # 鍵の有無・OS・skip_* フラグで適用対象を制御
 │   ├── .chezmoiremove             # 廃止したファイルの適用先からの削除
 │   ├── .chezmoiscripts/           # chezmoi ライフサイクルスクリプト (install/ を include)
-│   ├── .chezmoitemplates/         # 共有テンプレート (サブエージェント本文・各ツール固有指示・claude.json・フォント external)
+│   ├── .chezmoitemplates/         # 共有テンプレート (サブエージェント本文・各ツール固有指示・claude.json・Codex model catalog・フォント external)
 │   ├── dot_alias.tmpl             # シェルエイリアス (bash / zsh / fish 共有)
 │   ├── dot_bash_profile, dot_zprofile   # 薄い入口。本体は dot_config/shell/
 │   ├── private_dot_ssh/
@@ -278,9 +278,10 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
 │   ├── common/                    # IME 辞書(暗号化) / ユーザーアイコン / vscode/styles.css (VS Code の Custom CSS 拡張から手動で参照)
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化) / Stream Deck
-├── tests/                         # BATS テスト (files = apply 後の $HOME / install = スクリプト単体 / docker = build.sh)
+├── tests/                         # BATS テスト (files = apply 後の $HOME と導入結果 / install = スクリプト単体をスタブで / docker = build.sh)
 ├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine) とビルド表 (build.sh)・共通 provisioning (provision.sh)
-├── .github/workflows/             # CI/CD (ci = prek + gitleaks + chezmoi + docker の集約 / mise-lock / claude / docker-image-cd)。actions/setup-mise は共通の mise 導入
+├── .github/workflows/             # CI/CD (ci = prek + gitleaks + chezmoi + docker の集約 / mise-lock / claude / docker-image-cd)
+├── .github/actions/setup-mise/    # 共通の mise 導入 (リトライ付き composite action)
 ├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
 ├── renovate.json                  # 依存関係の自動更新設定
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # install/**/*.sh が共有する helper。
-# chezmoi の各 .chezmoiscripts/*.sh.tmpl が先頭で 1 回 include し (後続の subshell に継承される)、
+# install スクリプトを include する各 .chezmoiscripts/*.sh.tmpl が先頭で 1 回 include し (後続の subshell に継承される)、
 # スクリプトを単体で実行・source するときは各スクリプト冒頭の
 # `declare -F log_step >/dev/null 2>&1 || source .../lib.sh` がこのファイルを読み込む。
 # macOS 標準の bash 3.2 でも動く構文に限定する。
+# 各テンプレートに展開されるため、このファイルを変えるとこれを include する run_once_* / run_onchange_* が全て再実行される (変更はまとめて行う)。
 
 RED="\033[0;31m"
 BLUE="\033[0;34m"
@@ -48,12 +49,12 @@ function run_privileged() {
 
 # chezmoi はスクリプト実行時に CHEZMOI_SOURCE_DIR (= <repo>/home) を渡す。
 # 単体実行・source 時 (bats・CI の checkout 先など配置は任意) はこのファイルの位置から求める
+# shellcheck disable=SC2034  # include 先の各スクリプトが参照する
 if [ -n "${CHEZMOI_SOURCE_DIR:-}" ]; then
     CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
 else
     CHEZMOI_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-export CHEZMOI_REPO_ROOT
 
 # ログインシェルを経ずに実行される chezmoi スクリプトへ、導入済みツールの PATH を通す
 function activate_tool_paths() {

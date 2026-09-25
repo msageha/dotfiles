@@ -1,5 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
-# OrbStack の Include は最初の Host ブロックより前に置かないと効かない
+# Added by OrbStack: 'orb' SSH host for Linux machines
+# This only works if it's at the top of ssh_config (before any Host blocks).
+# This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
 {{ end -}}

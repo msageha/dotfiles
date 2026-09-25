@@ -29,26 +29,4 @@ function Get-RegistryValueOrNull([string]$Path, [string]$Name) {
     }
 }
 
-function Set-RegistryDword([string]$Path, [string]$Name, [int]$Value) {
-    New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType DWord -Force | Out-Null
-}
-
-# UAC 昇格した別プロセスの powershell で $Command を実行し、完了を待って成否を返す。
-# Start-Process -Wait は子の非 0 終了では throw しないため、終了コードも見る
-function Invoke-ElevatedPowerShell([string]$Command, [string]$Subject) {
-    Write-Step "$Subject には管理者権限が必要なため、UAC 昇格して実行します..."
-    try {
-        $process = Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-Command', $Command) -Verb RunAs -Wait -PassThru
-    }
-    catch {
-        Write-Warn "$Subject に失敗しました (UAC がキャンセルされた可能性があります): $($_.Exception.Message)"
-        return $false
-    }
-    if ($process.ExitCode -ne 0) {
-        Write-Warn "$Subject に失敗しました (昇格先の終了コード $($process.ExitCode))。"
-        return $false
-    }
-    return $true
-}
-
 $script:DotfilesLibLoaded = $true

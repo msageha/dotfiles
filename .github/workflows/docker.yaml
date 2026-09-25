@@ -24,6 +24,8 @@ permissions:
 
 jobs:
   build:
+    # check 名に base image の tag を含めない (Renovate の bump で check 名が変わらないようにする)
+    name: build (${{ matrix.variant.tag }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:

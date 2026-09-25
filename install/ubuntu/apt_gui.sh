@@ -88,6 +88,7 @@ function install_chrome() {
 }
 
 function main() {
+    log_step "=== Installing Ubuntu GUI apps ==="
     if ! has_privilege; then
         log_warn "root/sudo 権限が無いため GUI アプリのインストールをすべてスキップします。"
         return 0
@@ -97,6 +98,7 @@ function main() {
     install_apt_apps
     install_chrome
     install_snap_apps
+    log_step "=== All Ubuntu GUI apps installed! ==="
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
