@@ -32,7 +32,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@ask-llm/antigravity-mcp@0.7.5"
+        "@ask-llm/antigravity-mcp@0.7.6"
       ],
       "env": {}
     },
