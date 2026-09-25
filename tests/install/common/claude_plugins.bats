@@ -1,75 +1,66 @@
 #!/usr/bin/env bats
 
+load ../../test_helper
+
 readonly SCRIPT_PATH="./install/common/claude_plugins.sh"
 
 function setup() {
     # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
-
-    # lsp_plugins は SCRIPT_PATH の source で定義される (shellcheck は -x 無しで追跡できない)
-    # shellcheck disable=SC2154
-    plugin_names=(
-        cloudflare
-        github
-        agent-sdk-dev
-        plugin-dev
-        claude-md-management
-        skill-creator
-        sonatype-guide
-        "${lsp_plugins[@]}"
-    )
+    # 実際の展開値と同じ形 (空白区切り) を .chezmoidata.toml から組み立てる
+    CLAUDE_MARKETPLACES="$(chezmoi execute-template '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}')"
+    CLAUDE_PLUGINS="$(chezmoi execute-template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}')"
+    export CLAUDE_MARKETPLACES CLAUDE_PLUGINS
 }
 
-@test "[common] claude_plugins - functions defined" {
-    [ -e "${SCRIPT_PATH}" ]
-    declare -F cloudflare >/dev/null
-    declare -F github >/dev/null
-    declare -F agent_sdk_dev >/dev/null
-    declare -F plugin_dev >/dev/null
-    declare -F claude_md_management >/dev/null
-    declare -F skill_creator >/dev/null
-    declare -F sonatype_guide >/dev/null
-    declare -F lsp >/dev/null
-    [ "${#lsp_plugins[@]}" -gt 0 ]
+@test "[install/common] claude_plugins - unset contract variables abort main" {
+    run env -u CLAUDE_PLUGINS bash -c 'source '"${SCRIPT_PATH}"'; main'
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"CLAUDE_MARKETPLACES / CLAUDE_PLUGINS are not set"* ]]
+    run env -u CLAUDE_MARKETPLACES bash -c 'source '"${SCRIPT_PATH}"'; main'
+    [ "$status" -eq 1 ]
 }
 
-@test "[common] claude_plugins - plugin list is in sync with claude_plugins.ps1" {
-    # install/windows/claude_plugins.ps1 は同じ plugin 一覧の手動コピーを持つため、
-    # 片方だけ更新される drift をここで検出する。
-    local ps1_path="./install/windows/claude_plugins.ps1"
-    [ -e "${ps1_path}" ]
-
-    local sh_list ps1_list
-    sh_list="$(
-        {
-            grep -oE 'install_plugin [a-z0-9-]+@claude-plugins-official' "${SCRIPT_PATH}" | awk '{print $2}'
-            printf '%s@claude-plugins-official\n' "${lsp_plugins[@]}"
-        } | sort
-    )"
-    ps1_list="$(grep -oE "'[a-z0-9-]+@claude-plugins-official'" "${ps1_path}" | tr -d "'" | sort)"
-
-    diff <(printf '%s\n' "${sh_list}") <(printf '%s\n' "${ps1_list}")
+@test "[install/common] claude_plugins - contract values are rendered from .chezmoidata.toml" {
+    [ -n "${CLAUDE_MARKETPLACES}" ]
+    [ -n "${CLAUDE_PLUGINS}" ]
+    local marketplace plugin
+    for marketplace in ${CLAUDE_MARKETPLACES}; do
+        [[ "${marketplace}" == *=*/* ]]
+    done
+    for plugin in ${CLAUDE_PLUGINS}; do
+        # plugin id は <name>@<marketplace> で、marketplace は登録対象に含まれる
+        [[ "${plugin}" == *@* ]]
+        [[ " ${CLAUDE_MARKETPLACES} " == *" ${plugin#*@}="* ]]
+    done
 }
 
-@test "[common] claude_plugins - main skips cleanly without claude" {
+@test "[install/common] claude_plugins - main skips cleanly without claude" {
     if command -v claude &>/dev/null; then
         skip "claude is installed on this machine"
     fi
     run main
     [ "$status" -eq 0 ]
+    [[ "$output" == *"claude が見つかりません"* ]]
 }
 
-@test "[common] claude_plugins - plugins installed" {
-    command -v claude &>/dev/null || skip "claude not installed"
-    local installed
-    installed="$(claude plugin list 2>/dev/null)"
+@test "[install/common] claude_plugins - empty plugin list is accepted (all plugins disabled)" {
+    run env CLAUDE_PLUGINS= bash -c 'claude() { echo "claude $*"; }; source '"${SCRIPT_PATH}"'; main'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"claude plugin marketplace add"* ]]
+    [[ "$output" != *"claude plugin install"* ]]
+}
 
-    local missing=()
-    local name
-    for name in "${plugin_names[@]}"; do
-        echo "${installed}" | grep -q "${name}@claude-plugins-official" || missing+=("${name}")
-    done
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        skip "Missing plugins: ${missing[*]}"
+@test "[install/common] claude_plugins - enabled plugins are installed" {
+    # skip_cli_tools=true では run_once_before テンプレートがこのスクリプトを include しない
+    if cli_tools_skipped; then
+        skip "coding agent plugins are not installed (skip_cli_tools=true)"
     fi
+    command -v claude &>/dev/null || skip "claude not installed"
+    local installed plugin
+    installed="$(claude plugin list 2>/dev/null)"
+    for plugin in ${CLAUDE_PLUGINS}; do
+        echo "Checking ${plugin}"
+        echo "${installed}" | grep -q "${plugin}"
+    done
 }

@@ -1,21 +1,7 @@
 #!/usr/bin/env bats
 
-readonly SCRIPT_PATH="./install/common/fisher.sh"
-
-function setup() {
-    # shellcheck source=install/common/fisher.sh
-    source "${SCRIPT_PATH}"
-}
-
-@test "[common] fisher - validate" {
-    [ -e "${SCRIPT_PATH}" ]
-    run validate_fish
-    [ "$status" -eq 0 ]
-}
-
-@test "[common] fisher - install" {
+@test "[install/common] fisher - installed by run_once_after_91_common" {
     command -v fish >/dev/null 2>&1 || skip "fish not installed"
-    fish -c "type -q fisher" || skip "fisher not installed"
-    run fish -c "fisher --version"
+    run fish -c "type -q fisher; and fisher --version"
     [ "$status" -eq 0 ]
 }

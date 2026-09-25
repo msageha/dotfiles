@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load ../../test_helper
+
 readonly SCRIPT_PATH="./install/macos/brew.sh"
 
 function setup() {
@@ -10,37 +12,54 @@ function setup() {
     source "${SCRIPT_PATH}"
 }
 
-@test "[macos] brew - install homebrew" {
+function assert_brew_installed() {
+    local installed="$1"
+    shift
+    local package name
+    for package in "$@"; do
+        # tap 付き名 ("satococoa/tap/wtp" -> "wtp") は末尾要素で照合する
+        name="${package##*/}"
+        echo "Checking ${package}"
+        echo "${installed}" | grep -qx "${name}"
+    done
+}
+
+@test "[install/macos] brew - install homebrew" {
     [ -x "$(command -v brew)" ]
 }
 
-@test "[macos] brew - check basic packages" {
+@test "[install/macos] brew - packages installed according to the skip flags" {
     local installed
     installed="$(brew list --formula -1 2>/dev/null; brew list --cask -1 2>/dev/null)"
 
-    local missing=()
-    local packages=("${formulae_base[@]}" "${formulae[@]}" "${casks_coding_agents[@]}" "${casks[@]}")
-    for package in "${packages[@]}"; do
-        # Handle tap prefix (e.g. "satococoa/tap/wtp" -> "wtp")
-        local name="${package##*/}"
-        if ! echo "${installed}" | grep -qx "${name}"; then
-            missing+=("${package}")
-        fi
-    done
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        skip "Missing brew packages: ${missing[*]}"
+    # shellcheck disable=SC2154  # 配列は setup() の source で定義される
+    assert_brew_installed "${installed}" "${formulae_base[@]}"
+    if cli_tools_skipped; then
+        skip "skip_cli_tools=true: formula tools and casks are not installed"
     fi
+    # shellcheck disable=SC2154
+    assert_brew_installed "${installed}" "${formulae[@]}"
+    # cask は CI では導入されない (brew.sh の CI ガード)
+    if [ -n "${CI:-}" ]; then
+        skip "casks are not installed in CI"
+    fi
+    # shellcheck disable=SC2154
+    assert_brew_installed "${installed}" "${casks_coding_agents[@]}"
+    if gui_tools_skipped; then
+        skip "skip_gui_tools=true: GUI casks are not installed"
+    fi
+    # shellcheck disable=SC2154
+    assert_brew_installed "${installed}" "${casks[@]}"
 }
 
-@test "[macos] brew - SKIP_CLI_TOOLS / SKIP_GUI_TOOLS unset aborts main" {
-    # 呼び出し側 (run_once_before) が両変数を必ず渡す契約。未設定なら exit 1。
+@test "[install/macos] brew - SKIP_CLI_TOOLS / SKIP_GUI_TOOLS unset aborts main" {
     run env -u SKIP_CLI_TOOLS -u SKIP_GUI_TOOLS bash -c 'source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 1 ]
 }
 
-@test "[macos] brew - SKIP_CLI_TOOLS=true / SKIP_GUI_TOOLS=true skips tools and casks" {
+@test "[install/macos] brew - SKIP_CLI_TOOLS=true / SKIP_GUI_TOOLS=true skips tools and casks" {
     # base のみ実行し、追加ツール群・cask はスキップする (brew はスタブで無害化)。
-    run env SKIP_CLI_TOOLS=true SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install'
+    run env SKIP_CLI_TOOLS=true SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install_packages'
     [ "$status" -eq 0 ]
     [[ "$output" == *"Skipping formula tools"* ]]
     [[ "$output" != *"Installing formula packages"* ]]
@@ -48,10 +67,10 @@ function setup() {
     [[ "$output" != *"Installing cask packages"* ]]
 }
 
-@test "[macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
+@test "[install/macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
     # CLI あり GUI なし構成でも coding agent は Debian 側 (coding_agent.sh) と同様に導入する。
     # CI では cask 全体が early return するため、CI を外して gating 自体を検証する。
-    run env -u CI SKIP_CLI_TOOLS=false SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install'
+    run env -u CI SKIP_CLI_TOOLS=false SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install_packages'
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installing coding agent casks"* ]]
     [[ "$output" == *"Skipping cask packages"* ]]
