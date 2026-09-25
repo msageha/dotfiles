@@ -1,119 +1,102 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail  # エラー処理と未定義変数の扱いを強化
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-RED="\033[0;31m"
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m" # No Color (リセット)
-CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
-CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
-
-# コンピュータ名・ユーザーアイコンの設定は root 権限が必要で、sudo を持たない
-# ユーザー (CI runner 等) ではパスワードプロンプトで失敗する。macOS の既定
-# sudoers は %admin のため admin グループ所属で判定し、グループ外への個別付与
-# (NOPASSWD 等) はプロンプトを出さない sudo -n で拾う (debian/ubuntu 側の
-# has_privilege と違い sudo -v を使わないのは、非 sudoer でも TTY にパスワード
-# プロンプトを出してしまうため)。
-function has_privilege() {
+# macOS の既定 sudoers は %admin なので admin 所属で判定し、NOPASSWD 等の個別付与は sudo -n で拾う。
+# lib.sh の has_privilege (sudo -v) を使わないのは、非 sudoer にも TTY パスワードプロンプトを出してしまうため
+function has_admin_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
     fi
     id -Gn | grep -qw admin || sudo -n true 2>/dev/null
 }
 
-# 1. コンピュータ名の変更
 function computer_name() {
-    printf "%b\n" "${BLUE}Setting computer name...${NC}"
+    log_step "Setting computer name..."
 
     # config に computer_name が無い場合は空で渡ってくる。空名を scutil に設定しない
     if [ -z "${COMPUTER_NAME:-}" ]; then
-        printf "%b\n" "${BLUE}COMPUTER_NAME が未設定のためスキップ${NC}"
+        log_step "COMPUTER_NAME が未設定のためスキップ"
         return 0
     fi
 
-    # すでに目的の名前ならスキップする
     local current
     current="$(scutil --get ComputerName 2>/dev/null || true)"
     if [[ "$current" == "$COMPUTER_NAME" ]]; then
-        printf "%b\n" "${BLUE}コンピュータ名は既に '$COMPUTER_NAME' です。スキップ${NC}"
+        log_step "コンピュータ名は既に '$COMPUTER_NAME' です。スキップ"
         return 0
     fi
 
-    if ! has_privilege; then
-        printf "%b\n" "${YELLOW}sudo が使えないためコンピュータ名の設定をスキップします。${NC}" >&2
+    if ! has_admin_privilege; then
+        log_warn "sudo が使えないためコンピュータ名の設定をスキップします。"
         return 0
     fi
 
-    # コンピュータのネットワーク名を変更し、DNSキャッシュをクリア
-    printf "%b\n" "${BLUE}コンピュータ名を設定しています... ($COMPUTER_NAME)${NC}"
-    sudo scutil --set ComputerName "$COMPUTER_NAME"  # 環境変数を使用
-    sudo scutil --set HostName "$COMPUTER_NAME"  # ホスト名を変更
-    sudo scutil --set LocalHostName "$COMPUTER_NAME"  # Bonjour名
-    sudo dscacheutil -flushcache  # DNSキャッシュをクリア
+    log_step "コンピュータ名を設定しています... ($COMPUTER_NAME)"
+    sudo scutil --set ComputerName "$COMPUTER_NAME"
+    sudo scutil --set HostName "$COMPUTER_NAME"
+    sudo scutil --set LocalHostName "$COMPUTER_NAME" # Bonjour 名
+    sudo dscacheutil -flushcache
 }
 
-# 2. ユーザーアイコンの設定
 function user_icon() {
     local icon="$CHEZMOI_REPO_ROOT/settings/common/icon.png"
 
-    # Picture が同じパスで、JPEGPhoto (System Settings による上書き) が無ければスキップ
+    # Picture が同じパスで、JPEGPhoto (System Settings による上書き) が無ければスキップ。
     # dscl -read は属性が無くても exit 0 で "No such key" を返すため、出力で存在判定する
     local current
     current="$(dscl . -read "/Users/$USER" Picture 2>/dev/null | sed -n 's/^Picture: //p')"
     if [[ "$current" == "$icon" ]] && ! dscl . -read "/Users/$USER" JPEGPhoto 2>/dev/null | grep -q '^JPEGPhoto:'; then
-        printf "%b\n" "${BLUE}ユーザーアイコンは既に '$icon' です。スキップ${NC}"
+        log_step "ユーザーアイコンは既に '$icon' です。スキップ"
         return 0
     fi
 
-    if ! has_privilege; then
-        printf "%b\n" "${YELLOW}sudo が使えないためユーザーアイコンの設定をスキップします。${NC}" >&2
+    if ! has_admin_privilege; then
+        log_warn "sudo が使えないためユーザーアイコンの設定をスキップします。"
         return 0
     fi
 
-    printf "%b\n" "${BLUE}ユーザーアイコンを設定しています...${NC}"
+    log_step "ユーザーアイコンを設定しています..."
     sudo sh -c 'dscl . -delete "/Users/$1" JPEGPhoto 2>/dev/null; dscl . -create "/Users/$1" Picture "$2"' _ "$USER" "$icon"
 }
 
-# 3. システムの基本設定
 function system_settings() {
-    printf "%b\n" "${BLUE}システムの基本設定を行っています...${NC}"
+    log_step "システムの基本設定を行っています..."
     defaults write NSGlobalDomain AppleLanguages -array "ja-JP"
     defaults write NSGlobalDomain AppleLocale -string "ja_JP"
-    defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"  # ダークモード
-    defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false  # ダブルクリックで最小化を無効化
-    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false  # 自動大文字機能を無効化
-    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false  # 自動ピリオド挿入を無効化
-    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false  # 自動スペルチェックを無効化
-    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false  # スマートクォートを無効化
-    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false  # スマートダッシュを無効化
+    defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+    defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false
+    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
     defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true  # 保存ダイアログを常に展開
     defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true  # 印刷ダイアログを常に展開
-    defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false  # iCloudへの自動保存を無効化
-    defaults write NSGlobalDomain AppleShowAllExtensions -bool true  # 全ファイルの拡張子を表示
+    defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false  # iCloud への自動保存を無効化
+    defaults write NSGlobalDomain AppleShowAllExtensions -bool true
     defaults write NSGlobalDomain NSWindowResizeTime -float 0.1  # ウィンドウリサイズアニメーション高速化
     defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true  # 印刷完了後にプリンタアプリを自動終了
 }
 
-# 4. Dockの設定
 function dock_settings() {
-    printf "%b\n" "${BLUE}Dockの設定を行っています...${NC}"
-    defaults write com.apple.dock orientation -string "right"  # 右にDockを配置
-    defaults write com.apple.dock tilesize -int 50  # Dockアイコンのサイズを50に設定
-    defaults write com.apple.dock show-recents -bool false  # 最近のアプリを非表示
-    defaults write com.apple.dock autohide -bool true  # Dockを自動で隠す
-    defaults write com.apple.dock magnification -bool false  # 拡大機能を無効化
-    defaults write com.apple.dock mru-spaces -bool false  # Spacesの自動並べ替えを無効化
-    defaults write com.apple.dock expose-group-apps -bool true  # Mission Controlでアプリごとにウィンドウをグループ化
-    defaults write com.apple.dock autohide-delay -float 0  # Dock表示の遅延をなくす
-    defaults write com.apple.dock autohide-time-modifier -float 0.5  # Dockアニメーション高速化
+    log_step "Dock の設定を行っています..."
+    defaults write com.apple.dock orientation -string "right"
+    defaults write com.apple.dock tilesize -int 50
+    defaults write com.apple.dock show-recents -bool false
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock magnification -bool false
+    defaults write com.apple.dock mru-spaces -bool false  # Spaces の自動並べ替えを無効化
+    defaults write com.apple.dock expose-group-apps -bool true  # Mission Control でアプリごとにウィンドウをグループ化
+    defaults write com.apple.dock autohide-delay -float 0
+    defaults write com.apple.dock autohide-time-modifier -float 0.5
 }
 
-# 5. Dockに固定するアプリを追加
 function dock_apps() {
-    printf "%b\n" "${BLUE}Dockにアプリを追加しています...${NC}"
+    log_step "Dock にアプリを追加しています..."
     if ! command -v dockutil &>/dev/null; then
-        printf "%b\n" "${RED}dockutil が見つかりません。brew install dockutil を実行してください。${NC}"
-        exit 1
+        log_error "dockutil が見つかりません。brew install dockutil を実行してください。"
+        return 1
     fi
     dockutil --remove all --no-restart
     local -a apps=(
@@ -129,120 +112,102 @@ function dock_apps() {
         if [[ -d "$app" ]]; then
             dockutil --add "$app" --no-restart
         else
-            printf "%b\n" "${BLUE}  '$app' が見つかりません。スキップ${NC}"
+            log_step "  '$app' が見つかりません。スキップ"
         fi
     done
-
-    # Dockにフォルダを追加
     dockutil --add "$HOME/Downloads" --view grid --display folder --sort dateadded --no-restart
 }
 
-# 6. メニューバーの設定
 function menu_bar_settings() {
-    printf "%b\n" "${BLUE}メニューバーの設定を行っています...${NC}"
-    # Bluetoothアイコン表示、バッテリーのパーセント表示、音量アイコンを有効化
-    defaults write com.apple.controlcenter.plist Bluetooth -int 18  # Bluetoothアイコン表示
-    defaults write com.apple.controlcenter.plist BatteryShowPercentage -bool true  # バッテリーパーセント表示
-    defaults write com.apple.controlcenter.plist Sound -int 18  # 音量アイコン表示
+    log_step "メニューバーの設定を行っています..."
+    defaults write com.apple.controlcenter.plist Bluetooth -int 18  # 18 = メニューバーに表示
+    defaults write com.apple.controlcenter.plist BatteryShowPercentage -bool true
+    defaults write com.apple.controlcenter.plist Sound -int 18
 }
 
-# 7. Finderの設定
 function finder_settings() {
-    printf "%b\n" "${BLUE}Finderの設定を行っています...${NC}"
-    # 隠しファイル表示、パスバー、ステータスバーの表示を有効化
-    defaults write com.apple.finder AppleShowAllFiles true  # 隠しファイルを表示
-    defaults write com.apple.finder ShowPathbar -bool true  # パスバーを表示
-    defaults write com.apple.finder ShowStatusBar -bool true  # ステータスバーを表示
-    defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # デフォルト表示をリスト表示に設定
-    defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false  # 拡張子変更の警告を無効化
+    log_step "Finder の設定を行っています..."
+    defaults write com.apple.finder AppleShowAllFiles -bool true
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.finder ShowStatusBar -bool true
+    defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # リスト表示
+    defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
     defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"  # 検索時にカレントフォルダを対象
-    defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true  # ネットワーク上に.DS_Storeを作成しない
-    defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true  # USB上に.DS_Storeを作成しない
-    # _FXShowPosixPathInTitle は macOS Ventura (13) 以降で無効化されたため削除
+    defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true  # ネットワーク上に .DS_Store を作成しない
+    defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true  # USB 上に .DS_Store を作成しない
 }
 
-# 8. ホットコーナーの設定
 function hot_corners_settings() {
-    printf "%b\n" "${BLUE}ホットコーナーの設定を行っています...${NC}"
-    defaults write com.apple.dock wvous-tr-corner -int 5  # 右上で、スクリーンセイバー開始
-    defaults write com.apple.dock wvous-br-corner -int 13  # 右下で、ロック画面
-    defaults write com.apple.dock wvous-tl-corner -int 5  # 左上で、スクリーンセイバー開始
-    defaults write com.apple.dock wvous-bl-corner -int 13  # 左下で、ロック画面
+    log_step "ホットコーナーの設定を行っています..."
+    defaults write com.apple.dock wvous-tr-corner -int 5  # 右上: スクリーンセーバー開始
+    defaults write com.apple.dock wvous-br-corner -int 13  # 右下: ロック画面
+    defaults write com.apple.dock wvous-tl-corner -int 5  # 左上: スクリーンセーバー開始
+    defaults write com.apple.dock wvous-bl-corner -int 13  # 左下: ロック画面
 }
 
-# 9. スクリーンセーバーの設定
 function screensaver_settings() {
-    printf "%b\n" "${BLUE}スクリーンセーバーの設定を行っています...${NC}"
-    # 5分後にスクリーンセーバーを起動
+    log_step "スクリーンセーバーの設定を行っています..."
     defaults -currentHost write com.apple.screensaver idleTime -int 300
 }
 
-# 10. 壁紙の設定
 function wallpaper_settings() {
-    printf "%b\n" "${BLUE}壁紙の設定を行っています...${NC}"
-    # Draculaテーマの壁紙をダウンロードして設定
+    log_step "壁紙の設定を行っています..."
     mkdir -p "$HOME/Pictures"
     # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
     if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/macos.png" --output "$HOME/Pictures/wallpaper.png"; then
-        printf "%b\n" "${RED}壁紙のダウンロードに失敗しました。スキップします。${NC}"
+        log_warn "壁紙のダウンロードに失敗しました。スキップします。"
         return 0
     fi
-    # macOS Sonoma (14) 以降では Finder の AppleScript が壁紙設定に対応しなくなったため System Events を使用
+    # macOS Sonoma (14) 以降では Finder の AppleScript が壁紙設定に対応しなくなったため System Events を使う
     osascript -e "tell application \"System Events\" to tell every desktop to set picture to POSIX file \"$HOME/Pictures/wallpaper.png\"" || \
-        printf "%b\n" "${RED}壁紙の設定に失敗しました (オートメーション許可が必要な場合があります)。${NC}"
+        log_warn "壁紙の設定に失敗しました (オートメーション許可が必要な場合があります)。"
 }
 
-# 11. スクリーンショットの設定
 function screenshot_settings() {
-    printf "%b\n" "${BLUE}スクリーンショットの設定を行っています...${NC}"
+    log_step "スクリーンショットの設定を行っています..."
     mkdir -p "$HOME/Pictures/Screenshots"
     defaults write com.apple.screencapture location "$HOME/Pictures/Screenshots"
-    defaults write com.apple.screencapture show-thumbnail -bool false  # 撮影後のサムネイルを非表示
-    defaults write com.apple.screencapture style -string "window"  # ウィンドウキャプチャモード
+    defaults write com.apple.screencapture show-thumbnail -bool false
+    defaults write com.apple.screencapture style -string "window"
 }
 
-# 12. キーボード設定
 function keyboard_settings() {
-    printf "%b\n" "${BLUE}キーボード設定を行っています...${NC}"
-    # キーリピート速度を調整
-    defaults write -g InitialKeyRepeat -int 15  # 最初のリピートまでの時間
-    defaults write -g KeyRepeat -int 2  # リピート速度
-    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない（キーリピート優先）
+    log_step "キーボード設定を行っています..."
+    defaults write -g InitialKeyRepeat -int 15
+    defaults write -g KeyRepeat -int 2
+    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない (キーリピート優先)
 }
 
-# 13. トラックパッドの設定
 function trackpad_settings() {
-    printf "%b\n" "${BLUE}トラックパッドの設定を行っています...${NC}"
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true  # 2本指で右クリック
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false  # 3本指ドラッグ無効
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadPinch -bool true  # ピンチズーム有効
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadRotate -bool true  # 回転ジェスチャー有効
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerDoubleTapGesture -int 1  # スマートズーム有効
+    log_step "トラックパッドの設定を行っています..."
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadPinch -bool true
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadRotate -bool true
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerDoubleTapGesture -int 1  # スマートズーム
     defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerFromRightEdgeSwipeGesture -int 3  # 右端スワイプで通知センター
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerHorizSwipeGesture -int 2  # 4本指横スワイプでデスクトップ切替
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerVertSwipeGesture -int 2  # 4本指縦スワイプでMission Control
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadFiveFingerPinchGesture -int 2  # 5本指ピンチでLaunchpad
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerPinchGesture -int 2  # 4本指ピンチでLaunchpad
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 2  # 3本指横スワイプでページ切替
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 0  # 3本指縦スワイプ無効 (BTTの新規タブ/タブを閉じるジェスチャを優先。Mission Control/App Exposéは4本指)
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerTapGesture -int 0  # 3本指タップ無効 (BTTのミドルクリックジェスチャを優先)
-    defaults write com.apple.dock showAppExposeGestureEnabled -bool true  # App Exposéジェスチャ有効 (4本指下スワイプ)
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadMomentumScroll -bool true  # 慣性スクロール有効
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerHorizSwipeGesture -int 2  # 4 本指横スワイプでデスクトップ切替
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerVertSwipeGesture -int 2  # 4 本指縦スワイプで Mission Control
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadFiveFingerPinchGesture -int 2  # 5 本指ピンチで Launchpad
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerPinchGesture -int 2  # 4 本指ピンチで Launchpad
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture -int 2  # 3 本指横スワイプでページ切替
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerVertSwipeGesture -int 0  # 3 本指縦スワイプ無効 (BTT の新規タブ / タブを閉じるジェスチャを優先)
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerTapGesture -int 0  # 3 本指タップ無効 (BTT のミドルクリックを優先)
+    defaults write com.apple.dock showAppExposeGestureEnabled -bool true  # 4 本指下スワイプで App Exposé
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadMomentumScroll -bool true
 }
 
-# 14. ウィンドウ管理の設定
 function window_manager_settings() {
-    printf "%b\n" "${BLUE}ウィンドウ管理の設定を行っています...${NC}"
-    defaults write com.apple.WindowManager GloballyEnabled -bool false  # Stage Managerを無効化
-    defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false  # タイルウィンドウのマージンを無効化
+    log_step "ウィンドウ管理の設定を行っています..."
+    defaults write com.apple.WindowManager GloballyEnabled -bool false  # Stage Manager を無効化
+    defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
     defaults write com.apple.WindowManager HideDesktop -bool true  # デスクトップクリックでウィンドウを隠す
-    defaults write com.apple.WindowManager StageManagerHideWidgets -bool false  # ウィジェットを表示
-    defaults write com.apple.WindowManager StandardHideWidgets -bool false  # 標準モードでもウィジェットを表示
+    defaults write com.apple.WindowManager StageManagerHideWidgets -bool false
+    defaults write com.apple.WindowManager StandardHideWidgets -bool false
 }
 
-# 15. Finder、SystemUIServer、Dockの再起動
 function restart_services() {
-    printf "%b\n" "${BLUE}Finder、SystemUIServer、Dockを再起動しています...${NC}"
+    log_step "Finder、SystemUIServer、Dock を再起動しています..."
     killall Finder || true
     killall SystemUIServer || true
     killall Dock || true

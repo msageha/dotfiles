@@ -1,29 +1,46 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
-set -e
-export CHEZMOI_SOURCE_DIR={{ .chezmoi.sourceDir | replace "'" "'\\''" | squote }}
+set -euo pipefail
+
+{{ include "../install/lib.sh" }}
+(
 {{   include "../install/macos/xcode_select.sh" }}
+)
 
 export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
 export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
+(
 {{   include "../install/macos/brew.sh" }}
-{{   if not (dig "skip_cli_tools" false .) -}}
-{{     include "../install/common/claude_plugins.sh" }}
-{{   end -}}
+)
+# 初回は brew.sh が Homebrew を入れた直後で PATH に無いため、後続の claude / dockutil の probe の前に通す
+activate_tool_paths
+{{ if not (dig "skip_cli_tools" false .) -}}
+export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
+export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
+(
+{{   include "../install/common/claude_plugins.sh" }}
+)
+{{ end -}}
 
-# GUI アプリ設定・システム設定・softwareupdate は GUI/対話を伴うため CI ではスキップする
+# GUI アプリ設定・システム設定・softwareupdate は GUI / 対話を伴うため CI ではスキップする
 if [ -z "${CI:-}" ]; then
 export COMPUTER_NAME={{ dig "computer_name" "" . | replace "'" "'\\''" | squote }}
+(
 {{   include "../install/macos/system_settings.sh" }}
-{{   if not (dig "skip_gui_tools" false .) -}}
+)
+{{ if not (dig "skip_gui_tools" false .) -}}
+(
 {{   include "../install/macos/app_settings.sh" }}
+)
+(
 {{   include "../install/macos/dracula_theme.sh" }}
-  if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
-    echo "Software Update が見つかりました。インストールします..."
+)
+if softwareupdate --list 2>&1 | grep -qE '^[[:space:]]*\* (Label|Title):'; then
+    log_step "Software Update が見つかりました。インストールします..."
     softwareupdate --install --all
-  else
-    echo "利用可能な Software Update はありません。スキップします。"
-  fi
-{{   end -}}
+else
+    log_step "利用可能な Software Update はありません。スキップします。"
+fi
+{{ end -}}
 fi
 {{ end -}}

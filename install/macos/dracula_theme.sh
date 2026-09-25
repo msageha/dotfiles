@@ -1,29 +1,25 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-
-BLUE="\033[0;34m"
-NC="\033[0m"
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 # Xcode の Dracula テーマ (*.xccolortheme) は .chezmoiexternal.toml の external が配置する
 
 # https://draculatheme.com/terminal-app
 function terminal_app_dracula() {
-    printf "%b\n" "${BLUE}Terminal.app Draculaテーマをインストール中...${NC}"
-
-    local repo_url="https://github.com/dracula/terminal-app.git"
+    log_step "Terminal.app Dracula テーマをインストール中..."
 
     if defaults read com.apple.Terminal "Window Settings" 2>/dev/null | grep -q '"Dracula"'; then
-        printf "%b\n" "${BLUE}  Draculaテーマは既にインストールされています。スキップ${NC}"
+        log_step "  Dracula テーマは既にインストールされています。スキップ"
         return 0
     fi
 
     local tmp_dir
     tmp_dir="$(mktemp -d)"
-    # shellcheck disable=SC2064
+    # shellcheck disable=SC2064  # $tmp_dir を今展開して trap に固定する
     trap "rm -rf '$tmp_dir'" RETURN
 
-    if ! git clone --depth 1 "$repo_url" "$tmp_dir" 2>/dev/null; then
-        printf "%b\n" "${BLUE}  リポジトリのクローンに失敗しました。スキップ${NC}"
+    if ! git clone --depth 1 https://github.com/dracula/terminal-app.git "$tmp_dir" 2>/dev/null; then
+        log_step "  リポジトリのクローンに失敗しました。スキップ"
         return 0
     fi
 
@@ -32,7 +28,7 @@ function terminal_app_dracula() {
     local waited=0
     until defaults read com.apple.Terminal "Window Settings" 2>/dev/null | grep -q '"Dracula"'; do
         if [ "$waited" -ge 30 ]; then
-            printf "%b\n" "${BLUE}  Dracula プロファイルの登録を確認できませんでした。続行します${NC}"
+            log_step "  Dracula プロファイルの登録を確認できませんでした。続行します"
             break
         fi
         sleep 1
@@ -41,17 +37,10 @@ function terminal_app_dracula() {
     defaults write com.apple.Terminal "Default Window Settings" -string "Dracula"
     defaults write com.apple.Terminal "Startup Window Settings" -string "Dracula"
 
-    # フォントを SauceCodePro Nerd Font 18pt に設定（Ghostty と統一）
-    # PyObjC (AppKit) は CLT の python3 に含まれない場合があるため、無ければ
-    # フォント設定だけスキップする
-    if ! python3 -c 'import AppKit, Foundation' 2>/dev/null; then
-        printf "%b\n" "${BLUE}  PyObjC が無いためフォント設定をスキップします${NC}"
-        trap - RETURN
-        rm -rf "$tmp_dir"
-        printf "%b\n" "${BLUE}  Draculaテーマをインストールしデフォルトに設定しました${NC}"
-        return 0
-    fi
-    python3 - <<'PYTHON'
+    # フォントを SauceCodePro Nerd Font 18pt に設定する (Ghostty と統一)。
+    # PyObjC (AppKit) は CLT の python3 に含まれない場合があるため、無ければフォント設定だけスキップする
+    if python3 -c 'import AppKit, Foundation' 2>/dev/null; then
+        python3 - <<'PYTHON'
 import AppKit, Foundation
 
 font = AppKit.NSFont.fontWithName_size_("SauceCodeProNFM-Regular", 18)
@@ -74,17 +63,13 @@ if prefs and "Window Settings" in prefs and "Dracula" in prefs["Window Settings"
     prefs.writeToFile_atomically_(plist_path, True)
     print("  フォントを SauceCodePro Nerd Font 18pt に設定しました")
 PYTHON
+    else
+        log_step "  PyObjC が無いためフォント設定をスキップします"
+    fi
 
-    trap - RETURN
-    rm -rf "$tmp_dir"
-
-    printf "%b\n" "${BLUE}  Draculaテーマをインストールしデフォルトに設定しました${NC}"
-}
-
-function main() {
-    terminal_app_dracula
+    log_step "  Dracula テーマをインストールしデフォルトに設定しました"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main
+    terminal_app_dracula
 fi

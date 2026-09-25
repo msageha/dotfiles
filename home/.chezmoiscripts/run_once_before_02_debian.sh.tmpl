@@ -1,22 +1,32 @@
-{{ if eq .chezmoi.os "linux" -}}
-{{   if or (eq (dig "id" "" .chezmoi.osRelease) "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian") -}}
+{{ if and (eq .chezmoi.os "linux") (or (eq (dig "id" "" .chezmoi.osRelease) "debian") (eq (dig "idLike" "" .chezmoi.osRelease) "debian")) -}}
 #!/bin/bash
-set -e
-# coding_agent.sh が claude 等を ~/.local/bin へ入れるため、後続の claude_plugins.sh が
-# probe できるよう include 群より前に PATH を通す (ログインシェルに無い初回マシン対策)
-export PATH="$HOME/.local/bin:$PATH"
+set -euo pipefail
+
+{{ include "../install/lib.sh" }}
+# coding_agent.sh が claude 等を ~/.local/bin へ入れるため、後続の claude_plugins.sh が probe できるよう先に PATH を通す
+activate_tool_paths
+
 export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
-{{     include "../install/debian/apt.sh" }}
-{{     if not (dig "skip_cli_tools" false .) -}}
-{{       include "../install/debian/coding_agent.sh" }}
-{{       include "../install/common/claude_plugins.sh" }}
-{{     end -}}
-{{     if eq (dig "id" "" .chezmoi.osRelease) "ubuntu" -}}
-{{       if not (dig "skip_gui_tools" false .) -}}
-{{         include "../install/ubuntu/apt_gui.sh" }}
-{{         include "../install/ubuntu/system_settings.sh" }}
-{{       end -}}
-{{     end -}}
-curl -fsSL https://mise.run | sh
-{{   end -}}
+(
+{{   include "../install/debian/apt.sh" }}
+)
+{{ if not (dig "skip_cli_tools" false .) -}}
+(
+{{   include "../install/debian/coding_agent.sh" }}
+)
+export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
+export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
+(
+{{   include "../install/common/claude_plugins.sh" }}
+)
+{{ end -}}
+{{ if and (eq (dig "id" "" .chezmoi.osRelease) "ubuntu") (not (dig "skip_gui_tools" false .)) -}}
+(
+{{   include "../install/ubuntu/apt_gui.sh" }}
+)
+(
+{{   include "../install/ubuntu/system_settings.sh" }}
+)
+{{ end -}}
+command -v mise &>/dev/null || curl -fsSL https://mise.run | sh
 {{ end -}}

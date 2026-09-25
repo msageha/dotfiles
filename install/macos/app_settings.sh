@@ -1,103 +1,66 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-RED="\033[0;31m"
-BLUE="\033[0;34m"
-NC="\033[0m"
-CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi/home}"
-CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"
+state_dir="$HOME/.local/state/chezmoi"
+
+# 設定ファイルは内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
+# 強制的に再 import したい場合は $state_dir/<name>.sha256 を削除する
+function open_if_changed() {
+    local label="$1" file="$2" hash_file="$state_dir/$3.sha256" current_hash
+    current_hash="$(shasum -a 256 "$file" | awk '{print $1}')"
+    if [ -f "$hash_file" ] && [ "$(cat "$hash_file")" = "$current_hash" ]; then
+        log_step "${label} 設定に変更なし。import をスキップします。"
+        return 0
+    fi
+    log_step "${label} 設定ファイルを開いています..."
+    open "$file"
+    mkdir -p "$state_dir"
+    printf '%s\n' "$current_hash" > "$hash_file"
+}
 
 function vscode() {
-    printf "%b\n" "${BLUE}VS Codeの設定を適用中...${NC}"
-    # ウィンドウ状態の保存を無効化は VS Code の Settings Sync で管理されない
+    log_step "VS Code の設定を適用中..."
+    # ApplePersistenceIgnoreState は Settings Sync の対象外なのでここで設定する
     defaults write com.microsoft.VSCode ApplePersistenceIgnoreState -bool true
 }
 
 function bettertouchtool() {
-    # cask の導入失敗などでアプリが無い場合は fail-fast (open の不明瞭なエラーで止まる前に原因を明示する)
+    # cask の導入失敗などでアプリが無い場合は open の不明瞭なエラーで止まる前に原因を明示する
     if [ ! -d "/Applications/BetterTouchTool.app" ]; then
-        printf "%b\n" "${RED}BetterTouchTool.app が見つかりません。brew install --cask bettertouchtool で導入してから再実行してください。${NC}" >&2
+        log_error "BetterTouchTool.app が見つかりません。brew install --cask bettertouchtool で導入してから再実行してください。"
         return 1
     fi
 
     # BTT はアクティベート状態を CLI から確実に判定する手段が無いため、初回に
     # アクティベートリンクを開いたらマーカーを作り、以降はリンクを開かない。
-    # 再アクティベートしたい場合はこのマーカーを削除する。
-    local marker="$HOME/.local/state/chezmoi/btt-activated"
+    # 再アクティベートしたい場合はこのマーカーを削除する
+    local marker="$state_dir/btt-activated"
     if [ -f "$marker" ]; then
-        printf "%b\n" "${BLUE}BetterTouchTool は既にアクティベート済み (マーカーあり)。アクティベートをスキップします。${NC}"
+        log_step "BetterTouchTool は既にアクティベート済み (マーカーあり)。アクティベートをスキップします。"
     else
-        printf "%b\n" "${BLUE}BetterTouchToolのライセンスをActivateします...${NC}"
+        log_step "BetterTouchTool のライセンスを Activate します..."
         open /Applications/BetterTouchTool.app
         # ライセンスの btt://license/... ディープリンクは age 暗号化して保管している。
-        # 平文をディスクに残さないよう、その場で復号して開く。復号には chezmoi.toml に
-        # 設定済みの age 鍵 (~/.config/chezmoi/key.txt) を使う。
-        local encrypted_license="$CHEZMOI_REPO_ROOT/settings/macos/btt/encrypted_licence.txt.age"
+        # 平文をディスクに残さないよう、その場で復号して開く (chezmoi.toml の age 鍵を使う)
         local license_url
-        if license_url="$(chezmoi decrypt "$encrypted_license" 2>/dev/null)" && [ -n "$license_url" ]; then
+        if license_url="$(chezmoi decrypt "$CHEZMOI_REPO_ROOT/settings/macos/btt/encrypted_licence.txt.age" 2>/dev/null)" && [ -n "$license_url" ]; then
             open "$license_url"
-            mkdir -p "$(dirname "$marker")"
+            mkdir -p "$state_dir"
             touch "$marker"
         else
-            printf "%b\n" "${BLUE}ライセンスの復号に失敗しました (age 鍵が未設定の可能性)。アクティベートをスキップします。${NC}"
+            log_step "ライセンスの復号に失敗しました (age 鍵が未設定の可能性)。アクティベートをスキップします。"
         fi
     fi
 
-    # 設定 preset は内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
-    # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
-    local preset="$CHEZMOI_REPO_ROOT/settings/macos/btt/dotfiles.bttpreset"
-    local preset_hash_file="$HOME/.local/state/chezmoi/btt-preset.sha256"
-    local current_hash
-    current_hash="$(shasum -a 256 "$preset" | awk '{print $1}')"
-    if [ -f "$preset_hash_file" ] && [ "$(cat "$preset_hash_file")" = "$current_hash" ]; then
-        printf "%b\n" "${BLUE}BetterTouchTool 設定に変更なし。import をスキップします。${NC}"
-    else
-        printf "%b\n" "${BLUE}BetterTouchTool設定ファイルを開いています...${NC}"
-        open "$preset"
-        mkdir -p "$(dirname "$preset_hash_file")"
-        printf '%s\n' "$current_hash" > "$preset_hash_file"
-    fi
-}
-
-function raycast() {
-    # 設定ファイルは内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
-    # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
-    local config="$CHEZMOI_REPO_ROOT/settings/macos/Raycast.rayconfig"
-    local config_hash_file="$HOME/.local/state/chezmoi/raycast-config.sha256"
-    local current_hash
-    current_hash="$(shasum -a 256 "$config" | awk '{print $1}')"
-    if [ -f "$config_hash_file" ] && [ "$(cat "$config_hash_file")" = "$current_hash" ]; then
-        printf "%b\n" "${BLUE}Raycast 設定に変更なし。import をスキップします。${NC}"
-    else
-        printf "%b\n" "${BLUE}Raycast設定ファイルを開いています...${NC}"
-        open "$config"
-        mkdir -p "$(dirname "$config_hash_file")"
-        printf '%s\n' "$current_hash" > "$config_hash_file"
-    fi
-}
-
-function streamdeck() {
-    # 設定 profile は内容が前回 import 時から変わった場合のみ開く (不要な import を回避)。
-    # 強制的に再 import したい場合はハッシュ記録ファイルを削除する。
-    local profile="$CHEZMOI_REPO_ROOT/settings/macos/dotfiles.streamDeckProfile"
-    local profile_hash_file="$HOME/.local/state/chezmoi/streamdeck-profile.sha256"
-    local current_hash
-    current_hash="$(shasum -a 256 "$profile" | awk '{print $1}')"
-    if [ -f "$profile_hash_file" ] && [ "$(cat "$profile_hash_file")" = "$current_hash" ]; then
-        printf "%b\n" "${BLUE}Stream Deck 設定に変更なし。import をスキップします。${NC}"
-    else
-        printf "%b\n" "${BLUE}Stream Deck設定ファイルを開いています...${NC}"
-        open "$profile"
-        mkdir -p "$(dirname "$profile_hash_file")"
-        printf '%s\n' "$current_hash" > "$profile_hash_file"
-    fi
+    open_if_changed "BetterTouchTool" "$CHEZMOI_REPO_ROOT/settings/macos/btt/dotfiles.bttpreset" btt-preset
 }
 
 function main() {
     vscode
     bettertouchtool
-    raycast
-    streamdeck
+    open_if_changed "Raycast" "$CHEZMOI_REPO_ROOT/settings/macos/Raycast.rayconfig" raycast-config
+    open_if_changed "Stream Deck" "$CHEZMOI_REPO_ROOT/settings/macos/dotfiles.streamDeckProfile" streamdeck-profile
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

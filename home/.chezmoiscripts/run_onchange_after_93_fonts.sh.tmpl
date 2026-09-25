@@ -1,7 +1,8 @@
 {{ if and (eq .chezmoi.os "linux") (not (dig "skip_gui_tools" false .)) -}}
 #!/bin/bash
-set -e
+set -euo pipefail
 
+# フォント定義 (external) が変わったときだけ再実行する。external-fonts.toml hash: {{ include ".chezmoitemplates/external-fonts.toml" | sha256sum }}
 if command -v fc-cache &>/dev/null; then
     fc-cache -f
 fi
