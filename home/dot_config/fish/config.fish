@@ -1,21 +1,14 @@
-# --- fish 本体の Dracula テーマ (https://github.com/dracula/fish) ---
-# テーマファイルは fisher (fish_plugins の dracula/fish) が themes/ に配置する。
-# fish >= 3.4 はプラグイン導入だけでは適用されないため明示的に choose する
-if status is-interactive; and test -f $HOME/.config/fish/themes/"Dracula Official.theme"
-    fish_config theme choose "Dracula Official"
-end
-
 # --- エイリアスの読み込み ---
 if test -f $HOME/.alias
     source $HOME/.alias
 end
 
 # --- ヒストリーファイルの設定 ---
-set -x NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
-set -x SQL_HISTORY $HOME/.local/state/sql_history
-set -x MYSQL_HISTFILE $HOME/.local/state/mysql_history
-set -x PSQL_HISTFILE $HOME/.local/state/psql_history
-set -x PYTHON_HISTORY $HOME/.local/state/python_history
+set -gx NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
+set -gx SQL_HISTORY $HOME/.local/state/sql_history
+set -gx MYSQL_HISTFILE $HOME/.local/state/mysql_history
+set -gx PSQL_HISTFILE $HOME/.local/state/psql_history
+set -gx PYTHON_HISTORY $HOME/.local/state/python_history
 
 # --- fzf Dracula Theme ---
 set -gx FZF_DEFAULT_OPTS "--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
@@ -95,10 +88,10 @@ if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircol
 end
 
 # --- Goの設定 ---
-set -x GOPATH "$HOME/Works"
+set -gx GOPATH "$HOME/Works"
 # go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
 # mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
-set -x GOBIN "$HOME/.local/bin"
+set -gx GOBIN "$HOME/.local/bin"
 
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
@@ -111,12 +104,12 @@ set -gx CLOUDSDK_PYTHON (type -p python3)
 
 # --- Docker環境設定 ---
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
-    set -x DOCKER_MACHINE_NAME "docker"
+    set -gx DOCKER_MACHINE_NAME "docker"
 end
 
 # --- MySQLクライアントのパス追加 ---
 if test -d /opt/homebrew/opt/mysql-client/bin/
-    set -x MYSQL_CLIENT_PATH /opt/homebrew/opt/mysql-client
+    set -gx MYSQL_CLIENT_PATH /opt/homebrew/opt/mysql-client
     fish_add_path $MYSQL_CLIENT_PATH/bin
 end
 
@@ -125,28 +118,14 @@ if test (uname) = "Darwin"
     contains -- /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     or set -gx PKG_CONFIG_PATH /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     string match -q "*-L/opt/homebrew/lib*" -- "$LDFLAGS"
-    or set -x LDFLAGS "-L/opt/homebrew/lib $LDFLAGS"
+    or set -gx LDFLAGS "-L/opt/homebrew/lib $LDFLAGS"
     string match -q "*-I/opt/homebrew/include*" -- "$CPPFLAGS"
-    or set -x CPPFLAGS "-I/opt/homebrew/include $CPPFLAGS"
+    or set -gx CPPFLAGS "-I/opt/homebrew/include $CPPFLAGS"
 end
 
 # --- orbstackの設定 ---
 if test -d $HOME/.orbstack/shell
     source $HOME/.orbstack/shell/init2.fish
-end
-
-# --- Starshipの設定 ---
-# mise activate (fish) の PATH 反映は fish_prompt 時のため、fresh シェルでは
-# type -q が失敗しうる。direnv と同様に mise which でフォールバックする
-if status is-interactive
-    set -l starship_bin (command -v starship 2>/dev/null)
-    if test -z "$starship_bin"; and type -q mise
-        set starship_bin (mise which starship 2>/dev/null)
-    end
-    if test -n "$starship_bin"
-        # `starship init fish` は full-init を都度生成する stub なので full-init 本体をキャッシュする
-        __source_cached_init starship-init "$starship_bin" init fish --print-full-init
-    end
 end
 
 # --- Xcodeの設定 ---
@@ -157,10 +136,9 @@ if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
 end
 
 # --- direnvのフック設定 ---
-set -l direnv_bin (command -v direnv 2>/dev/null)
-if test -z "$direnv_bin"; and type -q mise
-    set direnv_bin (mise which direnv 2>/dev/null)
-end
+# mise 由来のツールは mise activate (fish) の PATH 反映が fish_prompt 時のため、fresh シェルでは
+# command -v が失敗しうる。以降のツール検出は mise which でフォールバックする __tool_path で行う
+set -l direnv_bin (__tool_path direnv)
 if test -n "$direnv_bin"
     __source_cached_init direnv-hook "$direnv_bin" hook fish
 end
@@ -170,32 +148,57 @@ if type -q mise
     mise activate fish | source
 end
 
-# --- AWS CLI / aws-sso-cliの補完初期化 ---
-# aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fish の
-# completions/*.fish 自動ロード (コマンド名一致が必須) には乗せず直接 source する。
-# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする。
-# aws_completer は補完実行時 (プロンプト表示後 = PATH 反映済み) に名前解決されるので、
-# 登録判定のみフォールバックし、補完本体はコマンド名のまま呼び出す。
-# 補完は対話シェル専用
+# --- 1Password CLI のデフォルトアカウント ---
+set -gx OP_ACCOUNT my.1password.com
+
 if status is-interactive
-    set -l aws_completer_bin (command -v aws_completer 2>/dev/null)
-    if test -z "$aws_completer_bin"; and type -q mise
-        set aws_completer_bin (mise which aws_completer 2>/dev/null)
+    # --- fish 本体の Dracula テーマ (https://github.com/dracula/fish) ---
+    # テーマファイルは fisher (fish_plugins の dracula/fish) が themes/ に配置する。
+    # fish >= 3.4 はプラグイン導入だけでは適用されないため明示的に choose する
+    if test -f $HOME/.config/fish/themes/"Dracula Official.theme"
+        fish_config theme choose "Dracula Official"
     end
+
+    # --- カーソルスタイルの設定 ---
+    # Ghosttyの cursor-style = block に合わせて、常にblockカーソルを使用
+    set -g fish_cursor_default block
+    set -g fish_cursor_insert block
+    set -g fish_cursor_replace_one underscore
+    set -g fish_cursor_visual block
+
+    # --- Starshipの設定 ---
+    set -l starship_bin (__tool_path starship)
+    if test -n "$starship_bin"
+        # `starship init fish` は full-init を都度生成する stub なので full-init 本体をキャッシュする
+        __source_cached_init starship-init "$starship_bin" init fish --print-full-init
+    end
+
+    # --- AWS CLI / aws-sso-cliの補完初期化 ---
+    # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fish の
+    # completions/*.fish 自動ロード (コマンド名一致が必須) には乗せず直接 source する。
+    # aws_completer は補完実行時 (プロンプト表示後 = PATH 反映済み) に名前解決されるので、
+    # 登録判定のみフォールバックし、補完本体はコマンド名のまま呼び出す
+    set -l aws_completer_bin (__tool_path aws_completer)
     if test -n "$aws_completer_bin"
         complete --command aws --no-files --arguments '(begin; set --local --export COMP_SHELL fish; set --local --export COMP_LINE (commandline); aws_completer | string trim --right; end)'
     end
-    set -l aws_sso_bin (command -v aws-sso 2>/dev/null)
-    if test -z "$aws_sso_bin"; and type -q mise
-        set aws_sso_bin (mise which aws-sso 2>/dev/null)
-    end
+    set -l aws_sso_bin (__tool_path aws-sso)
     if test -n "$aws_sso_bin"
         __source_cached_init aws-sso-completions "$aws_sso_bin" setup completions --source --shell fish
     end
-end
 
-# --- 1Password CLI のデフォルトアカウント ---
-set -gx OP_ACCOUNT my.1password.com
+    # --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
+    set -l fzf_bin (__tool_path fzf)
+    if test -n "$fzf_bin"
+        __source_cached_init fzf-fish "$fzf_bin" --fish
+    end
+
+    # --- zoxideの初期化 (z / zi コマンド) ---
+    set -l zoxide_bin (__tool_path zoxide)
+    if test -n "$zoxide_bin"
+        __source_cached_init zoxide-init "$zoxide_bin" init fish
+    end
+end
 
 # --- fnoxの初期化 ---
 if status is-interactive; and type -q fnox
@@ -306,40 +309,4 @@ if status is-interactive; and type -q fnox
     end
 
     __fnox_env_eval
-end
-
-# --- カーソルスタイルの設定 ---
-# Ghosttyの cursor-style = block に合わせて、常にblockカーソルを使用
-set -g fish_cursor_default block
-set -g fish_cursor_insert block
-set -g fish_cursor_replace_one underscore
-set -g fish_cursor_visual block
-
-# GitHub トークン (GITHUB_PERSONAL_ACCESS_TOKEN) の注入はシェル起動時ではなく
-# claude 起動時に行う (functions/claude.fish)。gh auth token が ~170ms かかるため
-
-# --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
-# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする。
-# キーバインドは対話シェル専用
-if status is-interactive
-    set -l fzf_bin (command -v fzf 2>/dev/null)
-    if test -z "$fzf_bin"; and type -q mise
-        set fzf_bin (mise which fzf 2>/dev/null)
-    end
-    if test -n "$fzf_bin"
-        __source_cached_init fzf-fish "$fzf_bin" --fish
-    end
-end
-
-# --- zoxideの初期化 (z / zi コマンド) ---
-# mise 由来の場合は PATH 反映が fish_prompt 時のため mise which でフォールバックする。
-# z / zi は対話シェル専用
-if status is-interactive
-    set -l zoxide_bin (command -v zoxide 2>/dev/null)
-    if test -z "$zoxide_bin"; and type -q mise
-        set zoxide_bin (mise which zoxide 2>/dev/null)
-    end
-    if test -n "$zoxide_bin"
-        __source_cached_init zoxide-init "$zoxide_bin" init fish
-    end
 end

@@ -1,4 +1,4 @@
-function __repo_search_with_chezmoi -d 'Repository search (ghq + chezmoi source dir)'
+function __repo_search -d 'Repository search (ghq + chezmoi source dir)'
     set -l selector
     [ -n "$GHQ_SELECTOR" ]; and set selector $GHQ_SELECTOR; or set selector fzf
     set -l selector_options
@@ -13,11 +13,7 @@ function __repo_search_with_chezmoi -d 'Repository search (ghq + chezmoi source 
     [ -n "$query" ]; and set flags --query="$query"; or set flags
     switch "$selector"
         case fzf fzf-tmux peco percol fzy sk
-            # ghq root の外にある chezmoi のソースディレクトリを一覧に足す
-            begin
-                ghq list --full-path
-                test -d $HOME/.local/share/chezmoi; and echo $HOME/.local/share/chezmoi
-            end | "$selector" $selector_options $flags | read select
+            __repo_list | "$selector" $selector_options $flags | read select
         case \*
             printf "\nERROR: selector '$selector' is not supported.\n"
     end

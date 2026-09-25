@@ -43,11 +43,10 @@ function __fenv_load_fnox
 
     for line in $fnox_output
         string match -qr '^[A-Za-z_][A-Za-z0-9_]*=' -- "$line"; or continue
-        set -l key (string split -m1 '=' -- "$line")[1]
-        set -l val (string split -m1 '=' -- "$line")[2]
+        set -l kv (string split -m1 '=' -- "$line")
         # KEY="value" / KEY='value' 形式で出力された場合に備えてクォートを除去する
-        set val (string trim -c '"' -- $val)
+        set -l val (string trim -c '"' -- $kv[2])
         set val (string trim -c "'" -- $val)
-        set -gx $key "$val"
+        set -gx $kv[1] "$val"
     end
 end

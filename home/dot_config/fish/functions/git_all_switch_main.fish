@@ -1,11 +1,9 @@
 function git_all_switch_main
-    for repo in (__git_all_repos)
-        if git -C $repo show-ref --verify --quiet refs/heads/main
-            echo "$repo: switching to 'main'"
-            git -C $repo switch main
-        else if git -C $repo show-ref --verify --quiet refs/heads/master
-            echo "$repo: switching to 'master'"
-            git -C $repo switch master
+    for repo in (__repo_list)
+        set -l branch (__git_main_branch $repo)
+        if test -n "$branch"
+            echo "$repo: switching to '$branch'"
+            git -C $repo switch $branch
         else
             echo "$repo: neither 'main' nor 'master' found, skipping"
         end
