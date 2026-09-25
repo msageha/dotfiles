@@ -12,7 +12,7 @@ playwright = "0.0.81"
 # renovate: datasource=npm depName=@ask-llm/antigravity-mcp
 antigravity = "0.7.5"
 # renovate: datasource=npm depName=@drawio/mcp
-drawio = "1.5.0"
+drawio = "1.6.0"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
 nanobanana = "v1.0.12"
 
