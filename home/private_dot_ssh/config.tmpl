@@ -1,7 +1,5 @@
 {{ if eq .chezmoi.os "darwin" -}}
-# Added by OrbStack: 'orb' SSH host for Linux machines
-# This only works if it's at the top of ssh_config (before any Host blocks).
-# This won't be added again if you remove it.
+# OrbStack の Include は最初の Host ブロックより前に置かないと効かない
 Include ~/.orbstack/ssh/config
 
 {{ end -}}
@@ -9,9 +7,7 @@ Include ~/.orbstack/ssh/config
 Include ~/.ssh/config.local
 
 Host github.com
-  HostName github.com
   User msageha
-  Port 22
   IdentityFile ~/.ssh/git_msageha
   TCPKeepAlive yes
   IdentitiesOnly yes
@@ -19,8 +15,6 @@ Host github.com
 
 Host gitlab.technoface.co.jp
   User git
-  Port 22
-  HostName gitlab.technoface.co.jp
   IdentityFile ~/.ssh/gitlab_technoface
   TCPKeepAlive yes
   IdentitiesOnly yes

@@ -1,19 +1,17 @@
-{{- /* delta は mise のモダンCLI群 (config.toml.tmpl) で導入される。
-     Windows は .config/mise を展開しないため、delta が存在しない環境で
-     core.pager が壊れないよう mise 側と同じ条件で gate する */ -}}
-{{- $useDelta := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
-{{- /* git-secrets は run_once_after_91_common.sh.tmpl → install/common/git_secrets.sh で導入される。 */ -}}
-{{- $useGitSecrets := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
+{{- /* delta は mise のモダン CLI 群 (config.toml.tmpl)、git-secrets は
+     run_once_after_91_common.sh.tmpl で導入され、Windows はどちらも展開しない。
+     存在しない環境で core.pager / init.templatedir が壊れないよう導入側と同じ条件で gate する */ -}}
+{{- $hasCliTools := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
 [ghq]
-    root = ~/Works/src                    # GHQのルートディレクトリを指定
+    root = ~/Works/src
 
 [user]
-    name = Mizuki Sango                   # Gitで使用するユーザー名
-    email = msageha+git@gmail.com         # Gitで使用するメールアドレス
+    name = Mizuki Sango
+    email = msageha+git@gmail.com
 
 [init]
-    defaultBranch = main                  # 新規リポジトリのデフォルトブランチ名を設定
-{{- if $useGitSecrets }}
+    defaultBranch = main
+{{- if $hasCliTools }}
     templatedir = ~/.config/git/templates/git-secrets
 
 [secrets]
@@ -26,32 +24,34 @@
 {{- end }}
 
 [core]
-    editor = vim                          # デフォルトエディタをVimに設定
-    excludesFile = ~/.config/git/ignore   # グローバルな.gitignoreファイルの指定
-{{- if $useDelta }}
-    pager = delta                         # diff/log等のページャにdeltaを使用
+    editor = vim
+    excludesFile = ~/.config/git/ignore
+{{- if $hasCliTools }}
+    pager = delta
 {{- end }}
 
 [filter "lfs"]
-    smudge = git-lfs smudge -- %f         # LFSファイルの読み込み時の処理
-    process = git-lfs filter-process      # LFSファイルのフィルタ処理
-    required = true                       # LFSを必須に設定
-    clean = git-lfs clean -- %f           # LFSファイルの保存時の処理
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
 
 [grep]
-    lineNumber = true                     # grep結果に行番号を表示
+    lineNumber = true
 
 [pull]
-    ff = only                             # fast-forward可能なときのみpullを許可
+    ff = only
 
 [fetch]
-    prune = true                          # リモートで削除されたブランチの追跡refをfetch時に掃除
+    # リモートで削除されたブランチの追跡 ref を fetch 時に掃除する
+    prune = true
 
 [submodule]
-    recurse = true                        # checkout/fetch/pull等で--recurse-submodulesを既定にする (cloneは対象外)
+    # checkout/fetch/pull 等で --recurse-submodules を既定にする (clone は対象外)
+    recurse = true
 
 [color]
-    ui = auto                             # 色の自動設定
+    ui = auto
 
 # Dracula theme for Git (https://github.com/dracula/git の config/gitconfig をマージ。
 # upstream の配布形式が「内容を自分の gitconfig へコピー」のため include ではなく直書き)
@@ -98,45 +98,47 @@
     updated = green bold
 
 [alias]
-    co = checkout                         # checkoutコマンドのエイリアス
-    br = branch                           # branchコマンドのエイリアス
-    ci = commit                           # commitコマンドのエイリアス
-    st = status                           # statusコマンドのエイリアス
-    lg = log --oneline --graph --decorate # 簡潔なログ表示
-    lga = log --oneline --graph --decorate --all # 全ブランチのログ表示
-    ls = ls-files                         # トラッキングしているファイルを表示
-    cp = cherry-pick                      # cherry-pickコマンドのエイリアス
-    rb = rebase                           # rebaseコマンドのエイリアス
-    rbi = rebase -i                       # インタラクティブなrebaseコマンドのエイリアス
-    rbc = rebase --continue               # rebaseの続行コマンドのエイリアス
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    lg = log --oneline --graph --decorate
+    lga = log --oneline --graph --decorate --all
+    ls = ls-files
+    cp = cherry-pick
+    rb = rebase
+    rbi = rebase -i
+    rbc = rebase --continue
 
 [diff]
-    tool = vimdiff                        # 差分表示ツールにVimdiffを指定
+    tool = vimdiff
 
 [merge]
-    tool = vimdiff                        # マージツールにVimdiffを指定
-    conflictstyle = diff3                 # コンフリクト表示スタイルを設定
-{{- if $useDelta }}
+    tool = vimdiff
+    conflictstyle = diff3
+{{- if $hasCliTools }}
 
 [interactive]
-    diffFilter = delta --color-only      # add -p 等の対話diffもdeltaで表示
+    diffFilter = delta --color-only
 
+# dracula.gitconfig は .chezmoiexternal.toml が取得し、[delta "dracula"] を定義する
 [include]
-    path = ~/.config/delta/dracula/dracula.gitconfig # Draculaテーマ定義 (.chezmoiexternal.tomlで取得)
+    path = ~/.config/delta/dracula/dracula.gitconfig
 
 [delta]
-    features = dracula                    # dracula.gitconfigの [delta "dracula"] を有効化
-    side-by-side = true                   # 左右分割表示
+    features = dracula
+    side-by-side = true
 {{- end }}
 
 [push]
-    default = current                     # プッシュのデフォルト設定
+    default = current
 
 [credential]
 {{- if eq .chezmoi.os "darwin" }}
     helper = osxkeychain
 {{- else if eq .chezmoi.os "windows" }}
-    helper = manager                      # Git Credential Manager (Git for Windows 標準。cache は unix ソケット前提で動かない)
+    # Git Credential Manager (Git for Windows 標準)。cache は unix ソケット前提で動かない
+    helper = manager
 {{- else }}
     helper = cache --timeout=3600
 {{- end }}
@@ -149,16 +151,15 @@
 
 [includeIf "gitdir:~/Works/src/github.com/"]
     path = ~/.config/git/config.github
-
-{{- if eq .chezmoi.os "darwin" }}
+{{- /* 以下の include 先は age 鍵が無いと復号できないため、.chezmoiignore が同じ条件の否定で ignore する */ -}}
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
-{{ if (stat $ageKey) }}
+{{- if and (eq .chezmoi.os "darwin") (stat $ageKey) }}
+
 [includeIf "gitdir:~/Works/src/gitlab.technoface.co.jp/"]
-    path = ~/.config/git/config.technoface.gitlab # Technoface GitLab専用の設定
+    path = ~/.config/git/config.technoface.gitlab
 
 [includeIf "gitdir:~/Works/src/github.com/SakanaAIBusiness/"]
-    path = ~/.config/git/config.sakanaai.github   # SakanaAIBusiness Organization専用の設定
+    path = ~/.config/git/config.sakanaai.github
 [includeIf "gitdir:~/Works/src/github.com/SakanaAI/"]
-    path = ~/.config/git/config.sakanaai.github   # SakanaAI Organization専用の設定
-{{ end }}
+    path = ~/.config/git/config.sakanaai.github
 {{- end }}
