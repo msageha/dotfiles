@@ -43,7 +43,7 @@ function setup() {
     [[ "$output" == *"claude が見つかりません"* ]]
 }
 
-@test "[install/common] claude_plugins - empty or unset CLAUDE_PLUGINS means no plugins (PowerShell 版と同じ契約)" {
+@test "[install/common] claude_plugins - empty or unset CLAUDE_PLUGINS means no plugins (same contract as claude_plugins.ps1)" {
     run env CLAUDE_PLUGINS= bash -c 'claude() { echo "claude $*"; }; source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 0 ]
     [[ "$output" == *"claude plugin marketplace add"* ]]
