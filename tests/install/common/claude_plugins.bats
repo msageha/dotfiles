@@ -8,8 +8,8 @@ function setup() {
     # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
     # 実際の展開値と同じ形 (空白区切り) を .chezmoidata.toml から組み立てる
-    CLAUDE_MARKETPLACES="$(chezmoi execute-template '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}')"
-    CLAUDE_PLUGINS="$(chezmoi execute-template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}')"
+    CLAUDE_MARKETPLACES="$(chezmoi_template '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}')"
+    CLAUDE_PLUGINS="$(chezmoi_template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}')"
     export CLAUDE_MARKETPLACES CLAUDE_PLUGINS
 }
 
