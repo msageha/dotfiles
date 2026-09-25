@@ -6,6 +6,9 @@
   workspace-write を維持するため、sandbox 外が必要なコマンドはエスカレーションせず失敗する。
   analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
   otel のログ・トレース exporter はデフォルト none のため設定不要。
+  OpenAI API key が注入された環境では cli_auth_credentials_store = "file" で、chezmoi 管理の
+  ~/.codex/auth.json (private_auth.json.tmpl) を Codex が実際に読む保存先に固定する
+  (keyring / auto だと管理ファイルが読まれない)。鍵なし環境では既存の保存先設定に触れない。
 */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}
@@ -84,6 +87,11 @@ startup_timeout_ms = 20_000
 command = "xcrun"
 args = ["mcpbridge"]
 startup_timeout_ms = 20_000
+`) -}}
+{{- end -}}
+{{- if dig "apiKeys" "openai" "" . -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+cli_auth_credentials_store = "file"
 `) -}}
 {{- end -}}
 {{- $current := dict -}}
