@@ -3,14 +3,17 @@
 readonly SCRIPT_PATH="./install/debian/apt.sh"
 
 function setup() {
+    # apt.sh は Linux 専用で、macOS 標準の bash 3.2 では set -u 下の空配列展開 (apt_install_opts) が
+    # unbound variable になるため、スタブを使うテストも含めて Linux 以外では実行しない
+    if [[ "$(uname)" != "Linux" ]]; then
+        skip "This test is only for Debian/Ubuntu"
+    fi
     # shellcheck source=install/debian/apt.sh
     source "${SCRIPT_PATH}"
 }
 
 @test "[install/debian] apt - base packages installed" {
-    if [[ "$(uname)" != "Linux" ]] || ! command -v dpkg &>/dev/null; then
-        skip "This test is only for Debian/Ubuntu"
-    fi
+    command -v dpkg &>/dev/null || skip "dpkg not available"
     # root/sudo が無い環境では apt.sh 自体が全操作をスキップする
     has_privilege || skip "no root/sudo: apt.sh skips package installation"
     # shellcheck disable=SC2154  # apt_base は setup() の source で定義される
