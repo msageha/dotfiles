@@ -65,7 +65,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@drawio/mcp@1.5.0"
+        "@drawio/mcp@1.6.0"
       ]
     },
 {{- if eq .chezmoi.os "darwin" }}
