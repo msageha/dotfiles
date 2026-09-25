@@ -3,7 +3,7 @@
 extend-exclude = ["*.age"]
 
 [default.extend-words]
-# PNG file format (typos treats "PN" as a typo for "ON")
+# "PNGs" (home/dot_claude/skills/pdf/SKILL.md) の PN を typos が ON の typo と判定するため
 PN = "PN"
 # BetterTouchTool's own misspelled key name
 Fom = "Fom"

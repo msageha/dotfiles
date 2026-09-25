@@ -11,6 +11,10 @@
 !install
 !install/**
 
+# Dockerfile の最終 RUN が実行する provisioning スクリプト
+!docker
+!docker/provision.sh
+
 # 共通設定ファイル
 !settings
 !settings/common

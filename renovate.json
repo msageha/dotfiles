@@ -4,8 +4,6 @@
     "config:recommended",
     "helpers:pinGitHubActionDigests"
   ],
-  "timezone": "Asia/Tokyo",
-  "separateMajorMinor": true,
   "lockFileMaintenance": {
     "enabled": true
   },
@@ -35,8 +33,7 @@
         "patch",
         "minor"
       ],
-      "automerge": true,
-      "automergeType": "pr"
+      "automerge": true
     },
     {
       "description": "gcloud は calver 的にほぼ毎週 major が上がるため、major 更新も non-major と同じグループ PR + automerge で扱う",
@@ -48,8 +45,7 @@
       ],
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch",
-      "automerge": true,
-      "automergeType": "pr"
+      "automerge": true
     },
     {
       "matchDatasources": [
@@ -59,21 +55,12 @@
       "versioning": "semver"
     },
     {
-      "description": "op は GitHub に公開リポジトリが存在せず組み込み mise manager では lookup 不能 (no-result 警告の抑止)。更新は custom.onepassword-cli datasource の regex manager が担う",
+      "description": "op / age / fnox は mise.toml の annotation (regex manager) 側で更新するため、組み込み mise manager との二重検出 (重複 PR) を防いで片側に寄せる。op は GitHub に公開リポジトリが無く組み込み manager では lookup 不能 (no-result 警告) でもある",
       "matchManagers": [
         "mise"
       ],
       "matchDepNames": [
-        "op"
-      ],
-      "enabled": false
-    },
-    {
-      "description": "age / fnox は custom regex manager 側で更新するため、組み込み mise manager との二重検出 (重複 PR) を防いで片側に寄せる",
-      "matchManagers": [
-        "mise"
-      ],
-      "matchDepNames": [
+        "op",
         "age",
         "fnox"
       ],
@@ -85,16 +72,25 @@
         "cloudflare/cloudflare-go"
       ],
       "allowedVersions": "<1.0.0"
+    },
+    {
+      "description": "typescript-language-server は JS 版 tsserver 前提のため、typescript は 5 系に留める (mise config.toml.tmpl の pin コメントと同じ理由)",
+      "matchDatasources": [
+        "npm"
+      ],
+      "matchDepNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<6"
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "chezmoi workflow (sh / ps1) と Dockerfile のインストーラ tag を mise.toml の chezmoi pin と同じグループ PR で追従させる",
+      "description": "chezmoi workflow (sh / ps1) と docker/provision.sh のインストーラ tag を mise.toml の chezmoi pin と同じグループ PR で追従させる",
       "managerFilePatterns": [
         "/^\\.github/workflows/chezmoi\\.yaml$/",
-        "/^docker/Dockerfile\\.debian$/",
-        "/^docker/Dockerfile\\.alpine$/"
+        "/^docker/provision\\.sh$/"
       ],
       "matchStrings": [
         "get\\.chezmoi\\.io\\)\" -- -b \"\\$HOME/\\.local/bin\" -t v(?<currentValue>[\\d.]+)",
@@ -106,27 +102,14 @@
     },
     {
       "customType": "regex",
-      "description": "コーディングエージェント設定内の MCP サーバー (npx -y <pkg>@<version>) を npm datasource で更新する。context7 / chrome-devtools / playwright の pin は home/.chezmoidata.toml へ一元化済みで、ここは claude.json に残る個別 pin (antigravity / drawio 等) と、誤って再インライン化された pin の追従用",
+      "description": "annotation コメント (# renovate: datasource= depName= [packageName=] [versioning=] [extractVersion=]) 直下の `key = \"version\"` 行を追従する。対象は home/.chezmoidata.toml の MCP pin (単一ソース) と mise.toml / mise config.toml.tmpl のツール pin。versioning / extractVersion は annotation に書いたときだけ効き、無ければ Renovate 既定のまま。java は java-version datasource が temurin- prefix なしの版を返すため prefix を currentValue の外に置く",
       "managerFilePatterns": [
-        "/^home/\\.chezmoitemplates/claude\\.json$/",
-        "/^home/dot_gemini/private_settings\\.json\\.tmpl$/",
-        "/^home/dot_gemini/config/private_mcp_config\\.json\\.tmpl$/",
-        "/^home/dot_codex/modify_private_config\\.toml$/",
-        "/^home/dot_grok/modify_private_config\\.toml$/"
+        "/^home/\\.chezmoidata\\.toml$/",
+        "/^mise\\.toml$/",
+        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
       ],
       "matchStrings": [
-        "\"-y\",\\s*\"(?<depName>(?:@[a-z0-9._-]+/)?[a-z0-9._-]+)@(?<currentValue>\\d[\\w.-]*)\""
-      ],
-      "datasourceTemplate": "npm"
-    },
-    {
-      "customType": "regex",
-      "description": "home/.chezmoidata.toml の MCP バージョン pin (単一ソース) を annotation コメントで追従する",
-      "managerFilePatterns": [
-        "/^home/\\.chezmoidata\\.toml$/"
-      ],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\n[A-Za-z0-9_]+ = \"(?<currentValue>[\\w.-]+)\""
+        "# renovate: datasource=(?<datasource>[a-z.-]+) depName=(?<depName>\\S+)(?: packageName=(?<packageName>\\S+))?(?: versioning=(?<versioning>\\S+))?(?: extractVersion=(?<extractVersion>\\S+))?\\n\"?[A-Za-z0-9_.:/@-]+\"? = \"(?:temurin-)?(?<currentValue>[^\"]+)\""
       ]
     },
     {
@@ -168,31 +151,20 @@
     },
     {
       "customType": "regex",
-      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd / docker-debian の base: / mise.toml の docker-build 引数 / cloudbuild.yaml の BASE_IMAGE と _GPU_BASE_IMAGE)",
+      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd / docker workflow の base: / docker/build.sh の variant 表 / Dockerfile の ARG BASE_IMAGE 既定値)",
       "managerFilePatterns": [
         "/^\\.github/workflows/docker-image-cd\\.yaml$/",
-        "/^\\.github/workflows/docker-debian\\.yaml$/",
-        "/^mise\\.toml$/",
-        "/^cloudbuild\\.yaml$/"
+        "/^\\.github/workflows/docker\\.yaml$/",
+        "/^docker/build\\.sh$/",
+        "/^docker/Dockerfile\\.debian$/",
+        "/^docker/Dockerfile\\.alpine$/"
       ],
       "matchStrings": [
         "base: (?<depName>[^:]+):(?<currentValue>[^\\s]+)\\n",
-        "mise run docker-build(?:-multi)? [\\w-]+ (?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)",
-        "--build-arg=BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n",
-        "_GPU_BASE_IMAGE: \"(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\""
+        "base_image=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)",
+        "ARG BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n"
       ],
       "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^mise\\.toml$/"
-      ],
-      "matchStrings": [
-        "op = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "1password-cli",
-      "datasourceTemplate": "custom.onepassword-cli"
     },
     {
       "customType": "regex",
@@ -219,484 +191,6 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "awscli = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "aws/aws-cli",
-      "datasourceTemplate": "github-tags"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "aws-sso = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "synfinatic/aws-sso-cli",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "direnv = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "direnv/direnv",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>\\S+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "flutter = \"(?<currentValue>\\d[^\"]*)\"\\n"
-      ],
-      "depNameTemplate": "flutter",
-      "datasourceTemplate": "flutter-version"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "fzf = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "junegunn/fzf",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "description": "gcloud は GitHub にバージョンタグを持たないため、SDK バージョンと同一タグが付く Docker Hub の google/cloud-sdk イメージで追従する",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "gcloud = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "google/cloud-sdk",
-      "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "ghq = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "x-motemen/ghq",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "go = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "golang/go",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^go(?<version>\\S+)"
-    },
-    {
-      "customType": "regex",
-      "description": "java-version datasource は temurin- prefix なしの semver (例: 26.0.1+8) を返すため、prefix は currentValue の外に置いて照合する (Renovate 本体の asdf manager と同じ扱い)",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "java = \"temurin-(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "java-jdk",
-      "datasourceTemplate": "java-version"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "kubectl = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "kubernetes/kubernetes",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^v(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "node = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "nodejs",
-      "datasourceTemplate": "node-version"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "pnpm = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "pnpm",
-      "datasourceTemplate": "npm",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "peco = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "peco/peco",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "starship = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "starship/starship",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "stern = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "stern/stern",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "terraform = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "hashicorp/terraform",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>\\S+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "terragrunt = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "gruntwork-io/terragrunt",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>\\S+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^mise\\.toml$/"
-      ],
-      "matchStrings": [
-        "age = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "FiloSottile/age",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "bat = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "sharkdp/bat",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "delta = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "dandavison/delta",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "duf = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "muesli/duf",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "dust = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "bootandy/dust",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "eza = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "eza-community/eza",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "fastfetch = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "fastfetch-cli/fastfetch",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "fd = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "sharkdp/fd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^mise\\.toml$/",
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "fnox = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "jdx/fnox",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "gh = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "cli/cli",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "glab = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "gitlab-org/cli",
-      "datasourceTemplate": "gitlab-releases",
-      "extractVersionTemplate": "^v(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "hexyl = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "sharkdp/hexyl",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "jq = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "jqlang/jq",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^(jq-)?v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "ripgrep = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "BurntSushi/ripgrep",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "tmux = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "tmux/tmux-builds",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "usage = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "jdx/usage",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "uv = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "astral-sh/uv",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "websocat = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "vi/websocat",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "yq = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "mikefarah/yq",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>\\S+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "zoxide = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "ajeetdsouza/zoxide",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "\"ubi:boyter/scc\" = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "boyter/scc",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "\"ubi:dalance/procs\" = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "dalance/procs",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^home/dot_config/mise/config\\.toml\\.tmpl$/"
-      ],
-      "matchStrings": [
-        "\"go:github\\.com/cloudflare/cloudflare-go/cmd/flarectl\" = \"(?<currentValue>[^\"]+)\"\\n"
-      ],
-      "depNameTemplate": "cloudflare/cloudflare-go",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^v?(?<version>.+)"
-    },
-    {
-      "customType": "regex",
       "description": "pre-commit hook の rev (autoupdate --freeze 形式の SHA pin + frozen コメント) を github-tags で更新する。組み込みの pre-commit manager は frozen 形式に未対応 (renovate#22567) のため必要",
       "managerFilePatterns": [
         "/^\\.pre-commit-config\\.yaml$/"
@@ -706,17 +200,6 @@
       ],
       "datasourceTemplate": "github-tags",
       "versioningTemplate": "loose"
-    },
-    {
-      "customType": "regex",
-      "description": "docker-alpine workflow のビルド引数のベースイメージを docker datasource で追従する (docker-image-cd の alpine variant と同期)",
-      "managerFilePatterns": [
-        "/^\\.github/workflows/docker-alpine\\.yaml$/"
-      ],
-      "matchStrings": [
-        "BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n"
-      ],
-      "datasourceTemplate": "docker"
     },
     {
       "customType": "regex",
@@ -846,14 +329,12 @@
     },
     {
       "customType": "regex",
-      "description": "mise-action の mise 本体バージョン pin (\"latest\" 解決だと上流の release 作成直後の asset 未アップロード等で 404 になりうるため固定) を github-releases で追従させる",
+      "description": "setup-mise composite action が mise-action に渡す mise 本体バージョン pin (\"latest\" 解決だと上流の release 作成直後の asset 未アップロード等で 404 になりうるため固定) を github-releases で追従させる",
       "managerFilePatterns": [
-        "/^\\.github/workflows/prek\\.yaml$/",
-        "/^\\.github/workflows/chezmoi\\.yaml$/",
-        "/^\\.github/workflows/mise-lock\\.yaml$/"
+        "/^\\.github/actions/setup-mise/action\\.yml$/"
       ],
       "matchStrings": [
-        "version: \"(?<currentValue>[\\d.]+)\"\\n"
+        "default: \"(?<currentValue>[\\d.]+)\"\\n"
       ],
       "depNameTemplate": "jdx/mise",
       "datasourceTemplate": "github-releases",

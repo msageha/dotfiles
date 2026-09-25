@@ -51,30 +51,6 @@ COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
 USER ${USERNAME}
 
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
-  if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.2 && \
-  export PATH="$HOME/.local/bin:$PATH" && \
-  mkdir -p $HOME/.config/chezmoi && \
-  printf '%s\n' \
-  '[data]' \
-  'computer_name = "msageha-docker"' \
-  "skip_cli_tools = ${SKIP_CLI_TOOLS}" \
-  "skip_gui_tools = ${SKIP_GUI_TOOLS}" \
-  > $HOME/.config/chezmoi/chezmoi.toml && \
-  chezmoi apply --source=$HOME/dotfiles && \
-  rm -rf $HOME/dotfiles && \
-  rm -rf "$HOME/.cache" && \
-  rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
-  # chezmoi は provisioning 専用でランタイム不要
-  rm -f "$HOME/.local/bin/chezmoi" && \
-  # mise.run が入れるバイナリは strip されておらず ~83MB ある。binutils を一時導入して
-  # strip し、binutils はランタイムに残さず削除する (Dockerfile.alpine と同じ掃除)
-  sudo apt-get update && \
-  sudo apt-get install -y --no-install-recommends binutils && \
-  strip "$HOME/.local/bin/mise" && \
-  sudo apt-get purge -y binutils && \
-  sudo apt-get autoremove -y && \
-  sudo apt-get clean && \
-  sudo rm -rf /var/lib/apt/lists/*
+  SKIP_CLI_TOOLS=${SKIP_CLI_TOOLS} SKIP_GUI_TOOLS=${SKIP_GUI_TOOLS} bash ./dotfiles/docker/provision.sh
 
 CMD ["/usr/bin/fish"]

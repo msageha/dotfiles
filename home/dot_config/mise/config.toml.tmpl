@@ -1,4 +1,4 @@
-{{ if eq .chezmoi.os "darwin" -}}
+{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 [plugins]
 flutter = "https://github.com/mise-plugins/mise-flutter.git"
 {{ end -}}
@@ -8,71 +8,103 @@ show_env = true
 show_tools = false
 
 [tools]
-{{/* 言語ランタイム は skip_cli_tools=false を明示した環境でのみ入れる */ -}}
-{{/* / クラウド CLIは、macos かつ skip_cli_tools=false の環境でのみ入れる */ -}}
-{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-awscli = "2.36.49"
-aws-sso = "2.3.2"
-{{ end -}}
+# renovate: datasource=github-releases depName=direnv/direnv extractVersion=^v(?<version>\S+)
 direnv = "2.37.1"
-{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-flutter = "3.47.5"
-{{ end -}}
+# renovate: datasource=github-releases depName=junegunn/fzf extractVersion=^v?(?<version>.+)
 fzf = "0.74.4"
-{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-gcloud = "585.0.0"
-{{ end -}}
+# renovate: datasource=github-releases depName=x-motemen/ghq extractVersion=^v?(?<version>.+)
 ghq = "1.10.1"
+# renovate: datasource=github-releases depName=starship/starship extractVersion=^v?(?<version>.+)
+starship = "1.26.0"
+{{/* CLI ユーティリティ群 (dig 既定 false = キー未定義の旧 config でも入れる) */ -}}
+{{ if not (dig "skip_cli_tools" false .) -}}
+# renovate: datasource=github-releases depName=astral-sh/uv extractVersion=^v?(?<version>.+)
+uv = "0.12.16"
+{{/* モダンCLI ユーティリティ群 */ -}}
+# renovate: datasource=github-releases depName=sharkdp/bat extractVersion=^v?(?<version>.+)
+bat = "0.26.1"
+# renovate: datasource=github-releases depName=dandavison/delta extractVersion=^v?(?<version>.+)
+delta = "0.19.2"
+# renovate: datasource=github-releases depName=muesli/duf extractVersion=^v?(?<version>.+)
+duf = "0.9.1"
+# renovate: datasource=github-releases depName=bootandy/dust extractVersion=^v?(?<version>.+)
+dust = "1.2.6"
+# renovate: datasource=github-releases depName=eza-community/eza extractVersion=^v?(?<version>.+)
+eza = "0.23.5"
+# renovate: datasource=github-releases depName=fastfetch-cli/fastfetch extractVersion=^v?(?<version>.+)
+fastfetch = "2.68.1"
+# renovate: datasource=github-releases depName=sharkdp/fd extractVersion=^v?(?<version>.+)
+fd = "10.5.0"
+# renovate: datasource=github-releases depName=sharkdp/hexyl extractVersion=^v?(?<version>.+)
+hexyl = "0.17.0"
+# renovate: datasource=github-releases depName=dalance/procs extractVersion=^v?(?<version>.+)
+"ubi:dalance/procs" = "0.14.12"
+# renovate: datasource=github-releases depName=BurntSushi/ripgrep extractVersion=^v?(?<version>.+)
+ripgrep = "15.2.0"
+# renovate: datasource=github-releases depName=boyter/scc extractVersion=^v?(?<version>.+)
+"ubi:boyter/scc" = "4.1.0"
+# renovate: datasource=github-releases depName=tmux/tmux-builds extractVersion=^v?(?<version>.+)
+tmux = "3.7b"
+# renovate: datasource=github-releases depName=vi/websocat extractVersion=^v?(?<version>.+)
+websocat = "1.14.1"
+# renovate: datasource=github-releases depName=ajeetdsouza/zoxide extractVersion=^v?(?<version>.+)
+zoxide = "0.10.0"
+{{/* データ処理 ユーティリティ群 */ -}}
+# renovate: datasource=github-releases depName=jqlang/jq extractVersion=^(jq-)?v?(?<version>.+)
+jq = "1.8.2"
+# renovate: datasource=github-releases depName=mikefarah/yq extractVersion=^v(?<version>\S+)
+yq = "4.53.6"
+{{/* Git ホスティング / secret 管理 / Cloudflare CLI */ -}}
+# renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
+"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.118.0"
+# renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
+fnox = "1.35.2"
+# renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
+gh = "2.101.0"
+# renovate: datasource=gitlab-releases depName=gitlab-org/cli extractVersion=^v(?<version>.+)
+glab = "1.118.0"
+# fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
+# renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
+usage = "6.9.1"
+{{ end -}}
+{{/* 言語ランタイム / LSP サーバー群は skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true = キー未定義の旧 config に重いツールを入れない) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
+# renovate: datasource=github-tags depName=golang/go extractVersion=^go(?<version>\S+)
 go = "1.27.1"
+# renovate: datasource=java-version depName=java-jdk
 java = "temurin-26.0.1+8"
-{{ end -}}
-{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-kubectl = "1.37.0"
-{{ end -}}
-{{ if not (dig "skip_cli_tools" true .) -}}
+# renovate: datasource=node-version depName=nodejs
 node = "26.9.0"
-pnpm = "12.5.1"
+# renovate: datasource=npm depName=pnpm versioning=semver
+pnpm = "12.4.2"
 {{/* LSP サーバー群 (Claude Code の LSP plugin が参照。go / node ランタイム前提) */ -}}
+# renovate: datasource=go depName=golang.org/x/tools/gopls extractVersion=^v(?<version>.+)
 "go:golang.org/x/tools/gopls" = "0.23.0"
+# renovate: datasource=npm depName=pyright
 "npm:pyright" = "1.1.411"
 # typescript-language-server は JS 版 tsserver 前提のため typescript 7 (native) ではなく 5 系に固定
+# renovate: datasource=npm depName=typescript
 "npm:typescript" = "5.9.3"
+# renovate: datasource=npm depName=typescript-language-server
 "npm:typescript-language-server" = "5.3.0"
 {{ end -}}
-starship = "1.26.0"
+{{/* クラウド / 開発 CLI 群は macOS かつ skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true の理由は上と同じ) */ -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
+# renovate: datasource=github-tags depName=aws/aws-cli
+awscli = "2.36.47"
+# renovate: datasource=github-releases depName=synfinatic/aws-sso-cli extractVersion=^v?(?<version>.+)
+aws-sso = "2.3.2"
+# renovate: datasource=flutter-version depName=flutter
+flutter = "3.47.4"
+# gcloud は GitHub にバージョンタグを持たないため、SDK バージョンと同一タグが付く Docker Hub の google/cloud-sdk イメージで追従する
+# renovate: datasource=docker depName=google/cloud-sdk
+gcloud = "585.0.0"
+# renovate: datasource=github-tags depName=kubernetes/kubernetes extractVersion=^v(?<version>.+)
+kubectl = "1.37.0"
+# renovate: datasource=github-releases depName=stern/stern extractVersion=^v?(?<version>.+)
 stern = "1.34.0"
+# renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>\S+)
 terraform = "1.16.3"
+# renovate: datasource=github-releases depName=gruntwork-io/terragrunt extractVersion=^v(?<version>\S+)
 terragrunt = "1.1.5"
-{{ end -}}
-{{ if not (dig "skip_cli_tools" false .) -}}
-uv = "0.12.17"
-{{/* モダンCLI ユーティリティ群 */ -}}
-bat = "0.26.1"
-delta = "0.19.2"
-eza = "0.23.5"
-fd = "10.5.0"
-ripgrep = "15.2.0"
-zoxide = "0.10.0"
-
-duf = "0.9.1"
-dust = "1.2.6"
-"ubi:dalance/procs" = "0.14.12"
-hexyl = "0.17.0"
-fastfetch = "2.68.1"
-tmux = "3.7b"
-{{/* データ処理 ユーティリティ群 */ -}}
-jq = "1.8.2"
-yq = "4.53.6"
-{{/* ServiceAccount ユーティリティ群 */ -}}
-gh = "2.101.0"
-glab = "1.118.0"
-fnox = "1.35.2"
-# fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
-usage = "6.9.1"
-{{/* CLIツール ユーティリティ群 */ -}}
-websocat = "1.14.1"
-"ubi:boyter/scc" = "4.1.0"
-"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.118.0"
 {{ end -}}
