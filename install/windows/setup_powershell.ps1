@@ -1,9 +1,7 @@
 #!/usr/bin/env pwsh
 # Windows 向けセットアップ: Starship + SauceCodePro Nerd Font + PowerShell プロファイル。
 # 通常は chezmoi apply (home/.chezmoiscripts/run_once_before_02_windows.ps1.tmpl) から
-# 自動実行される。chezmoi の config (.chezmoi.toml.tmpl の [interpreters.ps1]) で実行ホストを
-# Windows 標準搭載の Windows PowerShell 5.1 に固定しているため、5.1 互換の
-# 構文のみを使うこと (pwsh 専用の演算子・cmdlet は使わない)。
+# 自動実行される。Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 # 手動実行する場合は pwsh を使う:
 #   pwsh -File install/windows/setup_powershell.ps1
 # (このファイルは BOM 無し UTF-8 のため、Windows PowerShell 5.1 で直接実行すると
@@ -11,12 +9,7 @@
 #  .chezmoiscripts テンプレートが先頭に BOM を付与するため 5.1 でも問題ない)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-# Windows PowerShell 5.1 の Invoke-WebRequest / Expand-Archive はプログレスバー描画で
-# 処理が極端に遅くなるため無効化する
-$ProgressPreference = 'SilentlyContinue'
-
-function Write-Step($msg) { Write-Host $msg -ForegroundColor Blue }
-function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
+if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
 # winget/Store でインストールしたコマンドを現在のセッションの PATH に反映する。
 # 置換ではなく追記マージにする (置換するとプロセス固有の PATH 追加分、
@@ -29,13 +22,13 @@ function Update-SessionPath {
     $env:Path = ($current + $added) -join ';'
 }
 
-# home/.chezmoiexternal.toml の nerd-fonts external のバージョンと揃える
+# home/.chezmoitemplates/external-fonts.toml の nerd-fonts external と同一バージョン (renovate が両方を更新する)
 $NerdFontsVersion = 'v3.5.1'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'
 
 # chezmoi 経由の実行では一時ファイルにコピーされ $PSScriptRoot がリポジトリ外を指すため、
-# 呼び出し元 (.chezmoiscripts) が設定する CHEZMOI_SOURCE_DIR を優先して使う。
+# chezmoi がスクリプト実行時に渡す CHEZMOI_SOURCE_DIR (= <repo>/home) を優先して使う。
 $RepoRoot = if ($env:CHEZMOI_SOURCE_DIR) {
     (Resolve-Path (Join-Path $env:CHEZMOI_SOURCE_DIR '..')).Path
 } else {
@@ -74,8 +67,6 @@ function Install-NerdFont {
     $zip = "$tmp.zip"
     $url = "https://github.com/ryanoasis/nerd-fonts/releases/download/$NerdFontsVersion/SourceCodePro.zip"
     try {
-        # -UseBasicParsing: 5.1 は IE エンジン未初期化のクリーン環境だと
-        # これ無しで失敗する (pwsh では既定動作なので無害)
         Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
         Expand-Archive -Path $zip -DestinationPath $tmp -Force
 
@@ -105,9 +96,40 @@ function Install-StarshipConfig {
     Write-Step "Installed starship.toml -> $dest"
 }
 
-function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$End, [string[]]$Lines) {
+# PowerShell プロファイルへ書き込む管理ブロック (キーがマーカー名になる)
+$ProfileBlocks = [ordered]@{
+    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
+    starship = @(
+        '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
+        '$OutputEncoding           = [System.Text.Encoding]::UTF8'
+        'if (Get-Command starship -ErrorAction SilentlyContinue) {'
+        '    Invoke-Expression (&starship init powershell)'
+        '}'
+    )
+    # PSReadLine トークン色の Dracula テーマ (https://github.com/dracula/powershell の
+    # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
+    # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
+    dracula = @(
+        'if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {'
+        '    Set-PSReadLineOption -Colors @{'
+        '        "Command"   = [ConsoleColor]::Green'
+        '        "Parameter" = [ConsoleColor]::Gray'
+        '        "Operator"  = [ConsoleColor]::Magenta'
+        '        "Variable"  = [ConsoleColor]::White'
+        '        "String"    = [ConsoleColor]::Yellow'
+        '        "Number"    = [ConsoleColor]::Blue'
+        '        "Type"      = [ConsoleColor]::Cyan'
+        '        "Comment"   = [ConsoleColor]::DarkCyan'
+        '    }'
+        '}'
+    )
+}
+
+function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]$Lines) {
     # マーカーで囲んだ管理ブロックをプロファイルへ冪等に書き込む
-    $block = (@($Begin) + $Lines + @($End)) -join "`n"
+    $begin = "# >>> chezmoi $Name (managed) >>>"
+    $end   = "# <<< chezmoi $Name (managed) <<<"
+    $block = (@($begin) + $Lines + @($end)) -join "`n"
 
     if (-not (Test-Path $ProfilePath)) {
         New-Item -ItemType File -Path $ProfilePath -Force | Out-Null
@@ -115,7 +137,7 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$
     $current = Get-Content -Path $ProfilePath -Raw -ErrorAction SilentlyContinue
     if ($null -eq $current) { $current = '' }
 
-    $pattern = [regex]::Escape($Begin) + '[\s\S]*?' + [regex]::Escape($End)
+    $pattern = [regex]::Escape($begin) + '[\s\S]*?' + [regex]::Escape($end)
     if ($current -match $pattern) {
         # .NET regex の置換文字列で特別扱いされるのは $ のみ。$$ へエスケープして literal 置換にする
         # (\ は置換文字列では特別な意味を持たない)
@@ -131,43 +153,6 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Begin, [string]$
     Write-Step "Configured PowerShell profile -> $ProfilePath"
 }
 
-function Set-ProfileStarshipBlock([string]$ProfilePath) {
-    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
-    Set-ProfileManagedBlock $ProfilePath `
-        '# >>> chezmoi starship (managed) >>>' `
-        '# <<< chezmoi starship (managed) <<<' `
-        @(
-            '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
-            '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-            'if (Get-Command starship -ErrorAction SilentlyContinue) {'
-            '    Invoke-Expression (&starship init powershell)'
-            '}'
-        )
-}
-
-function Set-ProfileDraculaBlock([string]$ProfilePath) {
-    # PSReadLine トークン色の Dracula テーマ (https://github.com/dracula/powershell の
-    # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
-    # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
-    Set-ProfileManagedBlock $ProfilePath `
-        '# >>> chezmoi dracula (managed) >>>' `
-        '# <<< chezmoi dracula (managed) <<<' `
-        @(
-            'if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {'
-            '    Set-PSReadLineOption -Colors @{'
-            '        "Command"   = [ConsoleColor]::Green'
-            '        "Parameter" = [ConsoleColor]::Gray'
-            '        "Operator"  = [ConsoleColor]::Magenta'
-            '        "Variable"  = [ConsoleColor]::White'
-            '        "String"    = [ConsoleColor]::Yellow'
-            '        "Number"    = [ConsoleColor]::Blue'
-            '        "Type"      = [ConsoleColor]::Cyan'
-            '        "Comment"   = [ConsoleColor]::DarkCyan'
-            '    }'
-            '}'
-        )
-}
-
 function Set-PowerShellProfile {
     # $PROFILE は実行ホスト依存 (5.1 と pwsh でパスが異なる) のため、ユーザーが
     # どちらのシェルを使っても設定が有効になるよう両方のプロファイルに書く。
@@ -177,8 +162,9 @@ function Set-PowerShellProfile {
         (Join-Path $documents 'PowerShell\Microsoft.PowerShell_profile.ps1')        # PowerShell 7+ (pwsh)
     )
     foreach ($profilePath in $profilePaths) {
-        Set-ProfileStarshipBlock $profilePath
-        Set-ProfileDraculaBlock $profilePath
+        foreach ($name in $ProfileBlocks.Keys) {
+            Set-ProfileManagedBlock $profilePath $name $ProfileBlocks[$name]
+        }
     }
 }
 

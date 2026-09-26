@@ -5,10 +5,7 @@
   は既存ファイルの値を温存する。
 */ -}}
 {{- $desired := includeTemplate "claude.json" . | fromJson -}}
-{{- $stdin := "" -}}
-{{- if hasKey .chezmoi "stdin" -}}
-{{-   $stdin = trim .chezmoi.stdin -}}
-{{- end -}}
+{{- $stdin := trim (dig "stdin" "" .chezmoi) -}}
 {{- if $stdin -}}
 {{-   $current := fromJson $stdin -}}
 {{-   range $key := list "oauthAccount" "projects" "userID" "machineID" "officialMarketplaceAutoInstallAttempted" "officialMarketplaceAutoInstalled" -}}

@@ -1,7 +1,13 @@
 ---
 name: code-reviewer
-description: Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues.
+description: {{ .agents.code_reviewer | quote }}
 model: pro
+tools:
+  - view_file
+  - list_dir
+  - find_by_name
+  - grep_search
+  - run_command
 ---
 
 {{ includeTemplate "agents/code-reviewer.md" . -}}

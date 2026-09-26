@@ -1,63 +1,43 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-function has_privilege() {
-    if [ "$(id -u)" -eq 0 ]; then
-        return 0
-    fi
-    sudo -v 2>/dev/null || sudo -n true 2>/dev/null
-}
-
-function run_privileged() {
-    if [ "$(id -u)" -eq 0 ]; then
-        "$@"
-    else
-        sudo "$@"
-    fi
-}
-
-function update() {
-    printf "%b\n" "${BLUE}Updating APK package index...${NC}"
-    run_privileged apk update
-}
-
+# Alpine (musl) は最小構成のみのため、後続の chezmoi スクリプトが前提とするツールだけを入れる
 apk_base=(
-    # base / infra
     ca-certificates
     curl
-    # shells / vcs
     fish
     zsh
     git
 )
 
+function update() {
+    log_step "Updating APK package index..."
+    run_privileged apk update
+}
+
 function install_base() {
-    printf "%b\n" "${BLUE}Installing base APK packages...${NC}"
+    log_step "Installing base APK packages..."
     run_privileged apk add "${apk_base[@]}"
 }
 
 function upgrade() {
     if [ -n "${CI:-}" ]; then
-        printf "%b\n" "${BLUE}CI 環境のため APK upgrade をスキップします。${NC}"
+        log_step "CI 環境のため APK upgrade をスキップします。"
         return 0
     fi
-
-    printf "%b\n" "${BLUE}Upgrading APK packages...${NC}"
+    log_step "Upgrading APK packages..."
     run_privileged apk upgrade
 }
 
 function clean() {
-    printf "%b\n" "${BLUE}Cleaning up APK cache...${NC}"
+    log_step "Cleaning up APK cache..."
     run_privileged rm -rf /var/cache/apk/*
 }
 
 function main() {
     if ! has_privilege; then
-        printf "%b\n" "${YELLOW}root/sudo 権限が無いため APK 関連の操作をすべてスキップします。${NC}" >&2
+        log_warn "root/sudo 権限が無いため APK 関連の操作をすべてスキップします。"
         return 0
     fi
 

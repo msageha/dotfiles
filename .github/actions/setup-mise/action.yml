@@ -1,0 +1,50 @@
+name: Setup mise
+description: mise 本体と mise.toml のツールを導入する (ツール導入はリトライつき)
+
+# GITHUB_TOKEN / MISE_CONFIG_DIR 等は呼び出し側 step の env で渡す (composite の各 step に引き継がれる)。
+inputs:
+  install:
+    description: "mise.toml のツールを導入するか (false なら mise 本体のみ)"
+    required: false
+    default: "true"
+  version:
+    description: "導入する mise のバージョン"
+    required: false
+    # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
+    # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
+    default: "2026.9.11"
+
+runs:
+  using: composite
+  steps:
+    # ツール導入の失敗は次ステップのリトライに委ねるため continue-on-error にする
+    # (mise-action は install を自分で行ったときだけ cache を保存するので、
+    #  install: false にはせず cache を温存する)。mise 本体のみ導入するときはリトライ先が無いので失敗させる
+    - name: Install mise
+      id: mise
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      continue-on-error: ${{ inputs.install == 'true' }}
+      with:
+        version: ${{ inputs.version }}
+        install: ${{ inputs.install }}
+        cache: ${{ inputs.install == 'true' }}
+
+    # aqua backend の artifact attestation 検証は、GitHub の Immutable Releases が付ける
+    # attestation (certificate identity: dotcom.releases.github.com) が aqua registry の
+    # signer_workflow と一致せず、常に 2 つ目の sigstore 署名 attestation へフォールバック
+    # する。その検証は tuf-repo-cdn.sigstore.dev への到達性に依存し、mise の http_retries は
+    # attestation API にしか効かず TUF 取得には及ばない。mise 本体と PATH は前ステップで
+    # 設定済みなので、ここではツール導入だけをやり直す。
+    - name: Retry mise install
+      if: inputs.install == 'true' && steps.mise.outcome == 'failure'
+      shell: bash
+      run: |
+        for attempt in 1 2 3; do
+          if mise install --locked; then
+            exit 0
+          fi
+          echo "::warning::mise install failed (attempt ${attempt}/3)"
+          sleep "$((attempt * 10))"
+        done
+        echo "::error::mise install failed after 3 attempts"
+        exit 1

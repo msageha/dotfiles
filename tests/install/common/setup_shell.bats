@@ -9,7 +9,7 @@ function setup() {
     export HOME="${BATS_TEST_TMPDIR}"
 }
 
-@test "[common] setup_shell - create_zshrc creates guarded block on fresh home" {
+@test "[install/common] setup_shell - create_zshrc creates guarded block on fresh home" {
     create_zshrc
 
     grep -Fxq "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc"
@@ -23,7 +23,7 @@ function setup() {
     [ "$status" -ne 0 ]
 }
 
-@test "[common] setup_shell - create_zshrc migrates legacy unconditional source" {
+@test "[install/common] setup_shell - create_zshrc migrates legacy unconditional source" {
     printf '%s\n' "source \$HOME/.zprofile" "# machine local line" > "${HOME}/.zshrc"
 
     create_zshrc
@@ -35,7 +35,7 @@ function setup() {
     [ "$(head -n 1 "${HOME}/.zshrc")" = "# >>> dotfiles zsh init >>>" ]
 }
 
-@test "[common] setup_shell - create_zshrc is idempotent" {
+@test "[install/common] setup_shell - create_zshrc is idempotent" {
     create_zshrc
     create_zshrc
 
@@ -43,7 +43,7 @@ function setup() {
     [ "$(grep -Fxc "# <<< dotfiles zsh init <<<" "${HOME}/.zshrc")" -eq 1 ]
 }
 
-@test "[common] setup_shell - create_zshrc keeps file intact when end marker is missing" {
+@test "[install/common] setup_shell - create_zshrc keeps file intact when end marker is missing" {
     # 終了マーカー欠損時にブロック開始以降のユーザー行を巻き込み削除しないこと
     printf '%s\n' "# >>> dotfiles zsh init >>>" "# stale managed line" "# user line" > "${HOME}/.zshrc"
 
@@ -55,7 +55,7 @@ function setup() {
     [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc")" -eq 1 ]
 }
 
-@test "[common] setup_shell - create_bashrc appends source line once" {
+@test "[install/common] setup_shell - create_bashrc appends source line once" {
     create_bashrc
     create_bashrc
 

@@ -11,18 +11,10 @@
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-# Windows PowerShell 5.1 はプログレスバー描画で処理が極端に遅くなるため無効化する
-$ProgressPreference = 'SilentlyContinue'
-
-function Write-Step($msg) { Write-Host $msg -ForegroundColor Blue }
-function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
+if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
 function Test-WinGetAvailable {
     return [bool](Get-Command winget -ErrorAction SilentlyContinue)
-}
-
-function Test-IsAdmin {
-    return ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 function Update-WinGetSessionPath {
@@ -39,13 +31,13 @@ function Register-ExistingAppInstaller {
     # 済んでいないだけのケースがある。登録はネットワーク不要で数秒で終わるため先に試す
     try {
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
-        Update-WinGetSessionPath
     }
     catch {
         # App Installer 自体が無い環境 (Windows Server 等) では失敗する。
-        # その場合は呼び出し元が GitHub リリースからの導入に進む (best-effort)
-        Write-Verbose "App Installer の Store 登録に失敗しました: $($_.Exception.Message)"
+        # その場合は呼び出し元が GitHub リリースからの導入に進むため、ここでは何も出力しない
+        return
     }
+    Update-WinGetSessionPath
 }
 
 function Install-WinGetFromGitHubRelease {

@@ -39,13 +39,9 @@ jobs:
       # install: false — 古い mise.lock のまま mise install すると checksum 不一致で
       # 失敗しうるため、mise 本体のみ導入して lock の再生成だけを行う。
       - name: Install mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        uses: ./.github/actions/setup-mise
         with:
-          # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
-          # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-          version: "2026.9.11"
-          install: false
-          cache: false
+          install: "false"
 
       # mise.toml のバージョン更新は Renovate に任せる。
       # ここでは pin されたバージョンのまま mise.lock の checksum / URL だけを再生成する。
@@ -65,6 +61,12 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Configure git author
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       # Renovate 等が mise.toml を変更した既存 PR には、
       # 同じブランチに直接 commit して mise.lock を追従させる。
       # fork からの PR は GITHUB_TOKEN で push できないためスキップする。
@@ -74,8 +76,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add mise.lock
           git commit -m "chore: update mise.lock"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$HEAD_REF"
@@ -85,8 +85,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -B chore/mise-lock
           git add mise.lock
           git commit -m "chore: update mise.lock"
@@ -100,7 +98,7 @@ jobs:
       # GITHUB_TOKEN による push / PR 作成からは新しい workflow run が発火しない
       # (再帰実行防止の GitHub 仕様)。workflow_dispatch はその例外なので、
       # 更新したブランチへ CI 系 workflow を明示的に起動して required check を付ける。
-      # CI 系チェック (prek / gitleaks / chezmoi / docker-alpine / docker-debian) は
+      # CI 系チェック (prek / gitleaks / chezmoi / docker) は
       # ci.yaml に集約されているため ci.yaml のみ起動する。
       - name: Dispatch CI workflows for the updated branch
         if: steps.diff.outputs.changed == 'true'

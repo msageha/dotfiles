@@ -1,49 +1,21 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-
-RED="\033[0;31m"
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-function has_privilege() {
-    if [ "$(id -u)" -eq 0 ]; then
-        return 0
-    fi
-    sudo -v 2>/dev/null || sudo -n true 2>/dev/null
-}
-
-function run_privileged() {
-    if [ "$(id -u)" -eq 0 ]; then
-        "$@"
-    else
-        sudo "$@"
-    fi
-}
-
-function update() {
-    printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
-    run_privileged apt -yq update
-}
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 # Docker など非ネイティブ環境では推奨パッケージを入れずイメージを軽量化する
-# (imagemagick/graphviz の推奨で opencv/vtk/gdal/rocm 等が芋づる導入されるのを防ぐ)。
-# native Ubuntu (デスクトップ等) では従来どおり推奨込みでインストールする。
+# (imagemagick / graphviz の推奨で opencv / vtk / gdal / rocm 等が芋づる導入されるのを防ぐ)
 apt_install_opts=()
 if [ -f /.dockerenv ]; then
     apt_install_opts=(--no-install-recommends)
 fi
 
+# SKIP_CLI_TOOLS=true でも導入する最小セット
 apt_base=(
-    # base / infra
     ca-certificates
     curl
-
-    # shells / vcs
     fish
     zsh
-    # chezmoi apply が .chezmoiexternal.toml (type = "git-repo") の取得に使うため、
-    # SKIP_CLI_TOOLS の値に関係なく base に必要 (apk_base と同じ扱い)
+    # chezmoi apply が .chezmoiexternal.toml の取得に使うため SKIP_CLI_TOOLS の値に関係なく必要
     git
 )
 
@@ -53,7 +25,6 @@ apt_tools=(
     pkgconf
     unzip
     wget
-    # CLI tools
     exiv2
     git-secrets
     graphviz
@@ -70,46 +41,50 @@ apt_tools=(
     vbindiff
 )
 
+function update() {
+    log_step "Updating APT package lists..."
+    run_privileged apt -yq update
+}
+
 function install_base() {
-    printf "%b\n" "${BLUE}Installing base APT packages...${NC}"
+    log_step "Installing base APT packages..."
     run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_base[@]}"
 }
 
 function install_tools() {
-    printf "%b\n" "${BLUE}Installing APT tool packages...${NC}"
+    log_step "Installing APT tool packages..."
     run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
 }
 
 function install_chezmoi() {
-    printf "%b\n" "${BLUE}Installing chezmoi...${NC}"
-    if ! command -v chezmoi &>/dev/null; then
-        # インストール先を明示する (未指定だと ./bin に落ちる)。docker/Dockerfile.debian と同形式
-        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-    else
-        printf "%b\n" "${BLUE}chezmoi is already installed.${NC}"
+    log_step "Installing chezmoi..."
+    if command -v chezmoi &>/dev/null; then
+        log_step "chezmoi is already installed."
+        return 0
     fi
+    # インストール先を明示する (未指定だと ./bin に落ちる)
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 }
-
 
 # get.docker.com の curl | sh は未検証スクリプトの root 実行になるため使わず、
 # 公式 apt リポジトリから GPG 署名検証付きで導入する
 # (https://docs.docker.com/engine/install/debian/#install-using-the-repository)
 function install_docker() {
     if [ -f /.dockerenv ]; then
-        printf "%b\n" "${BLUE}Running inside Docker, skipping Docker installation.${NC}"
-        return
+        log_step "Running inside Docker, skipping Docker installation."
+        return 0
     fi
-    printf "%b\n" "${BLUE}Installing Docker...${NC}"
+    log_step "Installing Docker..."
     if command -v docker &>/dev/null; then
-        printf "%b\n" "${BLUE}Docker is already installed.${NC}"
-        return
+        log_step "Docker is already installed."
+        return 0
     fi
 
     local os_id codename
     os_id="$(. /etc/os-release && echo "$ID")"
     codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
     if [ "$os_id" != "ubuntu" ] && [ "$os_id" != "debian" ]; then
-        printf "%b\n" "${YELLOW}Docker の apt リポジトリは ubuntu/debian のみ対応です (ID=${os_id})。スキップします。${NC}" >&2
+        log_warn "Docker の apt リポジトリは ubuntu/debian のみ対応です (ID=${os_id})。スキップします。"
         return 0
     fi
 
@@ -126,17 +101,17 @@ function install_docker() {
 }
 
 function upgrade() {
+    # GitHub runner 上の apt upgrade は snap refresh を誘発し、外部 download に長時間依存する
     if [ -n "${CI:-}" ]; then
-        printf "%b\n" "${BLUE}Skipping APT upgrade in CI.${NC}"
-        return
+        log_step "Skipping APT upgrade in CI."
+        return 0
     fi
-
-    printf "%b\n" "${BLUE}Upgrading APT packages...${NC}"
+    log_step "Upgrading APT packages..."
     run_privileged apt -yq upgrade
 }
 
 function clean() {
-    printf "%b\n" "${BLUE}Cleaning up APT...${NC}"
+    log_step "Cleaning up APT..."
     run_privileged apt -yq autoremove
     run_privileged apt -yq autoclean
     run_privileged apt -yq clean
@@ -144,23 +119,21 @@ function clean() {
 }
 
 function main() {
-    # 呼び出し側 (run_once_before の chezmoi テンプレート) が SKIP_CLI_TOOLS を必ず渡す契約。
-    # 未設定は設定ミスとみなして落とす ("false" へ暗黙フォールバックしない)。
+    # SKIP_CLI_TOOLS は run_once_before テンプレートが必ず export する契約。未設定は設定ミスとして落とす
     if [ -z "${SKIP_CLI_TOOLS+x}" ]; then
-        printf "%b\n" "${RED}SKIP_CLI_TOOLS is not set; it must be exported by the caller.${NC}" >&2
+        log_error "SKIP_CLI_TOOLS is not set; it must be exported by the caller."
         exit 1
     fi
 
     if ! has_privilege; then
-        printf "%b\n" "${YELLOW}root/sudo 権限が無いため APT 関連の操作をすべてスキップします。${NC}" >&2
+        log_warn "root/sudo 権限が無いため APT 関連の操作をすべてスキップします。"
         return 0
     fi
 
     update
     install_base
-    # apt_tools と chezmoi/docker は base に対する追加分。SKIP_CLI_TOOLS=true でまとめてスキップする。
     if [ "$SKIP_CLI_TOOLS" = "true" ]; then
-        printf "%b\n" "${BLUE}Skipping apt tools and chezmoi/docker (SKIP_CLI_TOOLS=true).${NC}"
+        log_step "Skipping apt tools and chezmoi/docker (SKIP_CLI_TOOLS=true)."
     else
         install_tools
         install_chezmoi

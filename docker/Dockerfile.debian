@@ -50,25 +50,32 @@ COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
 
 USER ${USERNAME}
 
+# secret は BuildKit 既定で root 所有 0400 のため、非 root ユーザーが読めるよう mode=0444 を指定する
+# (GitHub のレート制限回避用トークン。未指定だと cat が権限拒否され匿名枠で 403 になる)。
+# 汎用の GITHUB_TOKEN ではなく mise 専用変数で渡し、GITHUB_TOKEN を参照する第三者の
+# インストーラ (curl | sh) や gh が gh のフルスコープ token を使わないようにする
+# (環境変数自体は子プロセスへ継承されるため、隔離ではない)。
+# DL3004: USER 切替後の掃除 (strip 用 binutils の出し入れ) にだけ sudo を使う
+# hadolint ignore=DL3004
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
-  if [ -f /run/secrets/github_token ]; then GITHUB_TOKEN="$(cat /run/secrets/github_token)"; export GITHUB_TOKEN; fi && \
+  if [ -f /run/secrets/github_token ]; then MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)" && export MISE_GITHUB_TOKEN; fi && \
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.2 && \
   export PATH="$HOME/.local/bin:$PATH" && \
-  mkdir -p $HOME/.config/chezmoi && \
+  mkdir -p "$HOME/.config/chezmoi" && \
   printf '%s\n' \
   '[data]' \
-  'computer_name = "msageha-docker"' \
   "skip_cli_tools = ${SKIP_CLI_TOOLS}" \
   "skip_gui_tools = ${SKIP_GUI_TOOLS}" \
-  > $HOME/.config/chezmoi/chezmoi.toml && \
-  chezmoi apply --source=$HOME/dotfiles && \
-  rm -rf $HOME/dotfiles && \
-  rm -rf "$HOME/.cache" && \
+  > "$HOME/.config/chezmoi/chezmoi.toml" && \
+  chezmoi apply --source="$HOME/dotfiles" && \
+  rm -rf "$HOME/dotfiles" "$HOME/.cache" && \
+  # java が導入されるビルド変種では src.zip を落とす
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
-  # chezmoi は provisioning 専用でランタイム不要
+  # chezmoi は provisioning 専用でランタイム不要。~42MB あるため apply 後に削除する
+  # (再適用が必要なら curl get.chezmoi.io で都度入れ直す)。
   rm -f "$HOME/.local/bin/chezmoi" && \
   # mise.run が入れるバイナリは strip されておらず ~83MB ある。binutils を一時導入して
-  # strip し、binutils はランタイムに残さず削除する (Dockerfile.alpine と同じ掃除)
+  # strip し (~70MB に縮む)、binutils はランタイムに残さず削除する。
   sudo apt-get update && \
   sudo apt-get install -y --no-install-recommends binutils && \
   strip "$HOME/.local/bin/mise" && \

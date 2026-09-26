@@ -4,7 +4,6 @@ palette = "dracula"
 scan_timeout = 50
 command_timeout = 500
 
-# $env_var\
 format = """
 $hostname\
 $os\
@@ -39,10 +38,6 @@ right_format = "$time"
 [hostname]
 ssh_only = true
 format = "[$hostname](bg:amber fg:on_amber bold)[](bg:rose fg:amber)"
-
-# [container]
-# disabled = false
-# format = '[](bg:#585858 fg:#d0d0d0)[$container](bg:#585858 fg:#d0d0d0)'
 
 [os]
 disabled = false
@@ -197,18 +192,11 @@ loaded_msg = " "
 unloaded_msg = " "
 format = "[$symbol$env]($style)"
 
-# [docker_context]
-# symbol = "󰡨 "
-# style = "bg:sky fg:on_sky bold"
-# format = '[$symbol$context]($style)'
-
-# last_pipe_status
 [status]
 disabled = false
 style = "bg:burgundy fg:on_burgundy bold"
-format = "[ $status ]($style)[](fg:burgundy bg:surface0)"
+format = "[ $status ]($style)[](fg:burgundy bg:graphite2)"
 
-# time (right side)
 [time]
 disabled = false
 style = "fg:on_slate"
@@ -235,5 +223,3 @@ sky = "#8be9fd" # Dracula cyan
 on_sky = "#282a36" # Dracula background
 burgundy = "#ff5555" # Dracula red
 on_burgundy = "#f8f8f2" # Dracula foreground
-
-surface0 = "#282a36" # Dracula background
