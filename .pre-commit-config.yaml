@@ -1,6 +1,6 @@
 # Claude Code へそのまま渡されるファイルのため formatter に書き換えさせない
 exclude: ^home/dot_claude/CLAUDE\.md$
-# stages 未指定の hook は commit 時に走る。push 時は下の local hooks (テンプレート描画・install / docker スクリプトの bats) だけを追加で回す
+# stages 未指定の hook は commit 時に走る。push 時は下の local hooks (テンプレート描画・install スクリプト・Docker バリアント表の bats) だけを追加で回す
 default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -62,7 +62,7 @@ repos:
         always_run: true
         stages: [pre-push]
       - id: bats-install
-        name: Run bats tests for install / docker scripts
+        name: Run bats tests for install scripts and Docker variants
         language: system
         entry: mise exec -- bats -r tests/install tests/docker
         pass_filenames: false

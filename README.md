@@ -164,12 +164,11 @@ Windows は最小構成（chezmoi 管理の dotfiles + winget によるアプリ
 
 ### Docker
 
-開発環境イメージをローカルでビルドできる（ベース OS / ツール構成別の 7 バリアント）。バリアント表（タグ・ベースイメージ・`skip_cli_tools`・Dockerfile）は `docker/build.sh` が単一ソースで、`mise run build-<tag>` はその薄い alias。イメージ名は既定で `msageha/dotfiles:<tag>`（`DOCKER_REPOSITORY` で上書き可）。
+開発環境イメージをローカルでビルドできる（ベース OS / ツール構成別の 7 バリアント）。バリアント表（タグ・ベースイメージ・`skip_cli_tools`・Dockerfile）は `mise.toml` の `build-<tag>` タスクが単一ソースで、各タスクはその値を内部レシピ `docker-build` に渡す。イメージ名は既定で `msageha/dotfiles:<tag>`（`DOCKER_REPOSITORY` で上書き可）。
 
 ```bash
-mise run docker-build ubuntu           # 標準構成 (Ubuntu + CLI)。mise run build-ubuntu と同じ
+mise run build-ubuntu                  # 標準構成 (Ubuntu + CLI)
 docker container run -it msageha/dotfiles:ubuntu
-docker/build.sh --list                 # タグ一覧 (--multi-arch で GPU を除く 6 種)
 ```
 
 | ターゲット                       | タグ              | 構成                             |
@@ -182,7 +181,7 @@ docker/build.sh --list                 # タグ一覧 (--multi-arch で GPU を�
 | `mise run build-alpine`          | `alpine`          | Alpine / 最小                    |
 | `mise run build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
 
-マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` (`docker/build.sh <tag> --push` で multi-arch manifest を直接 push) / `mise run push` (単一 arch のローカルビルド済みタグを push)。CD は `.github/workflows/docker-image-cd.yaml` が main への push を契機に 7 バリアントを multi-arch (GPU は amd64 のみ) でビルドして DockerHub へ push する (matrix は `docker/build.sh` の表を写す)。`latest` は更新しない。両 Dockerfile は共通の provisioning (chezmoi 導入 → apply → 掃除) を `docker/provision.sh` で行う。
+マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` (`mise run build-<tag> --push` で multi-arch manifest を直接 push) / `mise run push` (単一 arch のローカルビルド済みタグを push)。CD は `.github/workflows/docker-image-cd.yaml` が main への push を契機に 7 バリアントを multi-arch (GPU は amd64 のみ) でビルドして DockerHub へ push する (matrix は `mise.toml` の表を写す)。`latest` は更新しない。両 Dockerfile は最終 RUN で provisioning (chezmoi 導入 → apply → 掃除) を行う。
 
 ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。GitHub のレート制限回避用に `gh auth token` を BuildKit secret で渡すが、イメージ内では mise 専用の `MISE_GITHUB_TOKEN` としてのみ export し、`GITHUB_TOKEN` を参照する第三者インストーラ (`curl | sh`) や汎用ツールが gh のフルスコープ token を使わないようにする（環境変数自体は子プロセスへ継承されるため、隔離ではない）。
 
@@ -221,7 +220,7 @@ mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
 mise install  # ツールを導入し、git hook (pre-commit / pre-push) を自動登録する
 ```
 
-prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer・dprint・typos・actionlint・zizmor 等) を、push 時に全テンプレートの描画 (`chezmoi apply --dry-run --force`) と install / docker スクリプトの bats を回す。同じものを手で回すには次を使う。
+prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer・dprint・typos・actionlint・zizmor 等) を、push 時に全テンプレートの描画 (`chezmoi apply --dry-run --force`) と install スクリプト・Docker バリアント表の bats を回す。同じものを手で回すには次を使う。
 
 ```bash
 mise run pre-commit  # prek run --all-files (commit 時と同じ lint / format)
@@ -278,8 +277,8 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
 │   ├── common/                    # IME 辞書(暗号化) / ユーザーアイコン / vscode/styles.css (VS Code の Custom CSS 拡張から手動で参照)
 │   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化) / Stream Deck
-├── tests/                         # BATS テスト (files = apply 後の $HOME と導入結果 / install = スクリプト単体をスタブで / docker = build.sh)
-├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine) とビルド表 (build.sh)・共通 provisioning (provision.sh)
+├── tests/                         # BATS テスト (files = apply 後の $HOME と導入結果 / install = スクリプト単体をスタブで / docker = mise.toml のバリアント表と CI matrix の一致)
+├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine。最終 RUN で chezmoi provisioning)
 ├── .github/workflows/             # CI/CD (ci = prek + gitleaks + chezmoi + docker の集約 / mise-lock / claude / docker-image-cd)
 ├── .github/actions/setup-mise/    # 共通の mise 導入 (リトライ付き composite action)
 ├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)

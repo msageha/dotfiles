@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # バリアント表の単一ソースは docker/build.sh。このマトリクスはそれと一致させること。
+        # バリアント表の単一ソースは mise.toml の build-<tag> タスク。このマトリクスはそれと一致させること。
         # GPU は arm64 を持たないため下の exclude で arm64 の組み合わせを除外する。
         variant:
           - tag: ubuntu-min

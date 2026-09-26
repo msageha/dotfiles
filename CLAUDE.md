@@ -35,8 +35,8 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `home/.chezmoidata.toml` — テンプレート共有データ。MCP の版 pin (`mcp`)、Claude plugin の marketplace (`claude.marketplaces`) と plugin 一覧 + 有効フラグ (`claude.plugins`。install スクリプトは有効なものだけ導入し、settings.json の extraKnownMarketplaces / enabledPlugins はここから描画する単一ソース)、サブエージェントの description (`agents`)
 - `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)。`lib.sh` (bash) / `windows/lib.ps1` が共通 helper で、`.chezmoiscripts` の各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。スクリプト同士は `main` 等の名前が重複するため subshell `( ... )` で隔離して include する。Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS` 環境変数、CLI / GUI 導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS) としてテンプレートが export する契約。`lib.sh` は各テンプレートに展開されるため、その変更はこれを include する `run_once_*` / `run_onchange_*` を全て再実行させる
 - `settings/` — アプリ設定 (`common/`, `macos/`)
-- `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトの関数をスタブで検査 (apply 済みの環境に依存しないため pre-push hook で回す)、`tests/docker` = `docker/build.sh`)。skip_* による skip 判定は `tests/test_helper.bash`
-- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine` / `build.sh` / `provision.sh`) — Ubuntu / Debian / Alpine 検証用イメージのビルド (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)。バリアント表は `build.sh`、両 Dockerfile 共通の chezmoi provisioning は `provision.sh`
+- `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトの関数をスタブで検査 (apply 済みの環境に依存しないため pre-push hook で回す)、`tests/docker` = `mise.toml` のバリアント表と CI matrix の一致)。skip_* による skip 判定は `tests/test_helper.bash`
+- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) — Ubuntu / Debian / Alpine 検証用イメージの定義 (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)。バリアント表は `mise.toml` の `build-<tag>` タスク、chezmoi provisioning (導入 → apply → 掃除) は各 Dockerfile の最終 RUN
 
 ## LLM エージェント指示文の構成
 
@@ -84,7 +84,7 @@ terraform / terragrunt)、および node に依存する nanobanana MCP (`.chezm
 - `mise run pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
 - `mise run pre-push` — `prek run --all-files --hook-stage pre-push` (テンプレート描画 dry-run + `tests/install` / `tests/docker` の bats)
 - `mise run test` — `bats -r tests/`
-- `mise run docker-build <tag> [--push]` (`docker/build.sh`) — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)。`mise run build-<tag>` は同じものの alias、`--push` は multi-arch build + push
+- `mise run build-<tag> [--push]` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント。バリアント表はこのタスク群)。各タスクは内部レシピ `docker-build` を呼び、`--push` は multi-arch build + push
 - `mise run decrypt-google-ime` / `encrypt-google-ime` — Google IME 辞書の復号・再暗号化。
   リポジトリは age 暗号化 (単一共有鍵、`home/.chezmoi.toml.tmpl`) を使い、辞書は
   `settings/common/encrypted_google.ime.txt.age` で管理。平文 `google.ime.txt` は gitignore 済みで、
