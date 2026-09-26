@@ -48,7 +48,7 @@ jobs:
             skip_cli_tools: "true"
             file: docker/Dockerfile.alpine
           - tag: ubuntu-gpu
-            base: nvidia/cuda:13.3.1-base-ubuntu26.04
+            base: nvidia/cuda:13.4.1-base-ubuntu26.04
             skip_cli_tools: "false"
             file: docker/Dockerfile.debian
         platform:
@@ -60,7 +60,7 @@ jobs:
         exclude:
           - variant:
               tag: ubuntu-gpu
-              base: nvidia/cuda:13.3.1-base-ubuntu26.04
+              base: nvidia/cuda:13.4.1-base-ubuntu26.04
               skip_cli_tools: "false"
               file: docker/Dockerfile.debian
             platform:
