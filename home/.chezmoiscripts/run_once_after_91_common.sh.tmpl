@@ -5,17 +5,11 @@ set -euo pipefail
 {{ include "../install/lib.sh" }}
 activate_tool_paths
 
-(
 {{   include "../install/common/setup_shell.sh" }}
-)
 require_command fish
 fish "$CHEZMOI_REPO_ROOT/install/common/fisher.fish"
-(
 {{   include "../install/common/mise.sh" }}
-)
 {{ if not (dig "skip_cli_tools" false .) -}}
-(
 {{   include "../install/common/git_secrets.sh" }}
-)
 {{ end -}}
 {{ end -}}

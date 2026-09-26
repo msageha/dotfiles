@@ -7,26 +7,16 @@ set -euo pipefail
 activate_tool_paths
 
 export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
-(
 {{   include "../install/debian/apt.sh" }}
-)
 {{ if not (dig "skip_cli_tools" false .) -}}
-(
 {{   include "../install/debian/coding_agent.sh" }}
-)
 export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
 export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
-(
 {{   include "../install/common/claude_plugins.sh" }}
-)
 {{ end -}}
 {{ if and (eq (dig "id" "" .chezmoi.osRelease) "ubuntu") (not (dig "skip_gui_tools" false .)) -}}
-(
 {{   include "../install/ubuntu/apt_gui.sh" }}
-)
-(
 {{   include "../install/ubuntu/system_settings.sh" }}
-)
 {{ end -}}
 curl -fsSL https://mise.run | sh
 {{ end -}}

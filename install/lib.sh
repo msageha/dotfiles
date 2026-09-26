@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # install/**/*.sh が共有する helper。
-# install スクリプトを include する各 .chezmoiscripts/*.sh.tmpl が先頭で 1 回 include し (後続の subshell に継承される)、
+# install スクリプトを include する各 .chezmoiscripts/*.sh.tmpl が先頭で 1 回 include し (同じプロセスに連結される後続のスクリプトから使える)、
 # スクリプトを単体で実行・source するときは各スクリプト冒頭の
 # `declare -F log_step >/dev/null 2>&1 || source .../lib.sh` がこのファイルを読み込む。
 # macOS 標準の bash 3.2 でも動く構文に限定する。
