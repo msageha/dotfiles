@@ -8,9 +8,9 @@ context7 = "4.1.1"
 # renovate: datasource=npm depName=chrome-devtools-mcp
 chromeDevtools = "1.9.0"
 # renovate: datasource=npm depName=@playwright/mcp
-playwright = "0.0.81"
+playwright = "0.0.82"
 # renovate: datasource=npm depName=@ask-llm/antigravity-mcp
-antigravity = "0.7.5"
+antigravity = "0.7.6"
 # renovate: datasource=npm depName=@drawio/mcp
 drawio = "1.6.0"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
