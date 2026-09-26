@@ -1,5 +1,8 @@
 function fenv -d "Select and load mise/fnox environment for the current directory"
-    type -q fzf; or begin; echo "fenv: fzf not found" >&2; return 1; end
+    if not type -q fzf
+        echo "fenv: fzf not found" >&2
+        return 1
+    end
 
     set -l candidates default
 

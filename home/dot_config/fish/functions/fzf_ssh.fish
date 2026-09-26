@@ -1,5 +1,8 @@
 function fzf_ssh -d "Select an ssh host from ~/.ssh/config* and connect"
-    type -q fzf; or begin; echo "fzf_ssh: fzf not found" >&2; return 1; end
+    if not type -q fzf
+        echo "fzf_ssh: fzf not found" >&2
+        return 1
+    end
 
     set -l configs
     for f in $HOME/.ssh/config $HOME/.ssh/config.local
