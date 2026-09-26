@@ -65,7 +65,7 @@ gh = "2.101.0"
 glab = "1.118.0"
 # fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "6.9.1"
+usage = "6.10.0"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバー群は skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true = キー未定義の旧 config に重いツールを入れない) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
