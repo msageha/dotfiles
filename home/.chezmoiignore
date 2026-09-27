@@ -11,10 +11,12 @@
 {{ end }}
 
 # 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で
-# onepasswordRead (op read) が走らないよう、DOTFILES_SSH_KEYS=1 を付けた実行 (mise run apply-ssh-keys) 以外では
-# 秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する (ディレクトリは子が全て ignore でも作成されるため明示する)。
+# onepasswordRead (op read) が走らないよう、data の apply_ssh_keys を --override-data で true にした実行
+# (mise run apply-ssh-keys) 以外では秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する
+# (ディレクトリは子が全て ignore でも作成されるため明示する)。apply_ssh_keys は config には書かない前提で dig の既定は false。
+# bool true と厳密に比較し、文字列 ("true" / "false") が渡されたら template error で止める (非空文字列を truthy と扱わない)。
 # Windows は private_ 属性が効かず NTFS ACL を制御できないため常に ignore する
-{{ if or (eq .chezmoi.os "windows") (ne (env "DOTFILES_SSH_KEYS") "1") }}
+{{ if or (eq .chezmoi.os "windows") (ne (dig "apply_ssh_keys" false .) true) }}
 {{-   range .ssh_keys.items }}
 {{-     if ne (dir .path) "." }}
 .ssh/{{ dir .path }}

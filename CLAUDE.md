@@ -74,6 +74,9 @@ Windows は `skip_windows_extras`。
 macOS 限定のクラウド / 開発 CLI 群 (awscli / aws-sso / flutter / gcloud / kubectl / stern /
 terraform / terragrunt)、および node に依存する nanobanana MCP (`.chezmoiexternal.toml` / `run_onchange_after_95` /
 `.chezmoitemplates/claude.json`) は dig 既定 true で、`skip_cli_tools=false` を明示した環境でのみインストールする。
+`apply_ssh_keys` は `mise run apply-ssh-keys` が `--override-data` でその invocation だけ true にする data キーで、
+`.chezmoi.toml.tmpl` には置かず config にも書かない (書くとそのマシンでは通常の `status` / `diff` でも 1Password から鍵を取得する)。
+参照は `dig "apply_ssh_keys" false .`。
 
 ## コマンド (mise tasks)
 
@@ -106,8 +109,8 @@ prek の git hook が commit 時に lint / format、push 時にテンプレー�
 - `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env`・`.codex/auth.json` や
   `~/.config/chezmoi/chezmoi.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
 - `cat` / `git diff` で secret ファイルを直接読む。
-- `DOTFILES_SSH_KEYS=1` を付けた `chezmoi diff` / `chezmoi apply --verbose` — `.chezmoiignore` の除外が外れ、1Password から取得した
-  SSH 秘密鍵が平文で出る。この変数は `mise run apply-ssh-keys` の中でだけ立て、検証コマンド (dry-run / pre-push / test) には渡さない。
+- `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose` — `.chezmoiignore` の除外が外れ、
+  1Password から取得した SSH 秘密鍵が平文で出る。この data は `mise run apply-ssh-keys` の中でだけ渡し、検証コマンド (dry-run / pre-push / test) には渡さない。
 
 値を `sed -E 's/= ".+"/= "***"/'` 等でマスクするか、キー名のみ grep で抜き出すか、`wc -c` 等で
 有無・長さだけを確認する。secret ファイルが対象範囲に入るスコープで `chezmoi apply` / `diff` を

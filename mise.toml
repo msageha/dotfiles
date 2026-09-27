@@ -21,11 +21,6 @@ postinstall = "prek install --hook-type pre-commit --hook-type pre-push"
 [settings]
 lockfile = true
 
-# DOTFILES_SSH_KEYS は apply-ssh-keys の task env だけが "1" にする。親 shell で export されていても、--verbose 付きの
-# apply / dry-run など他の task で鍵 template が描画 (= 平文表示) されないよう、ファイルレベルでは無効値に固定する
-[env]
-DOTFILES_SSH_KEYS = "0"
-
 [tasks.apply]
 description = "chezmoi apply --verbose (実際に適用)"
 run = "chezmoi apply --verbose"
@@ -47,13 +42,13 @@ run = "prek run --all-files --hook-stage pre-push"
 description = "bats -r tests/"
 run = "bats -r tests/"
 
-# 鍵の template は DOTFILES_SSH_KEYS=1 のときだけ .chezmoiignore の除外が外れて 1Password から取得される (README「SSH 秘密鍵」)。
+# 鍵の template は data の apply_ssh_keys が true の実行だけ .chezmoiignore の除外が外れて 1Password から取得される
+# (README「SSH 秘密鍵」)。--override-data でこの実行に限って true にし、config には書かない。
 # --less-interactive --error-on-conflict は chezmoi 未管理の既存鍵と内容が違うとき黙って上書きせず exit 1 にする
 # (確認後に上書きするなら `mise run apply-ssh-keys -- --force`)。--verbose は秘密鍵を平文で表示するため付けない
 [tasks.apply-ssh-keys]
 description = "1Password の SSH Key item から秘密鍵と公開鍵を取得して ~/.ssh 配下へ配置する"
-env = { DOTFILES_SSH_KEYS = "1" }
-run = "chezmoi apply --less-interactive --error-on-conflict ~/.ssh"
+run = '''chezmoi apply --override-data '{"apply_ssh_keys": true}' --less-interactive --error-on-conflict ~/.ssh'''
 
 [tasks.encrypt-google-ime]
 description = "平文の IME 辞書を編集後に再暗号化する"
