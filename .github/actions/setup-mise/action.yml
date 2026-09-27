@@ -12,7 +12,7 @@ inputs:
     required: false
     # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
     # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-    default: "2026.9.11"
+    default: "2026.9.12"
 
 runs:
   using: composite
