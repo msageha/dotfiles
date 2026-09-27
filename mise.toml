@@ -42,8 +42,7 @@ run = "prek run --all-files --hook-stage pre-push"
 description = "bats -r tests/"
 run = "bats -r tests/"
 
-# 鍵の template は data の apply_ssh_keys が true の実行だけ .chezmoiignore の除外が外れて 1Password から取得される
-# (README「SSH 秘密鍵」)。--override-data でこの実行に限って true にし、config には書かない。
+# 鍵の template は data の apply_ssh_keys が true の実行だけ .chezmoiignore の除外が外れる (README「SSH 秘密鍵」)。
 # --less-interactive --error-on-conflict は chezmoi 未管理の既存鍵と内容が違うとき黙って上書きせず exit 1 にする
 # (確認後に上書きするなら `mise run apply-ssh-keys -- --force`)。--verbose は秘密鍵を平文で表示するため付けない
 [tasks.apply-ssh-keys]

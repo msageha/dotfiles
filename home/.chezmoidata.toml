@@ -49,12 +49,9 @@ source_grounded_researcher = "Researches local repositories, GitHub, documentati
 test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
 
 # 1Password から chezmoi apply 時に取得する SSH 鍵 (README「SSH 秘密鍵」)。
-# path は ~/.ssh からの相対 target path で、source の private_dot_ssh/private_<dir>/private_<name>.tmpl (秘密鍵) と
-# private_<dir>/<name>.pub.tmpl (公開鍵。どちらも .chezmoitemplates/onepassword-ssh-key を include) の位置と手で一致させる
-# (ズレると ignore が外れ、通常の status / apply で op read が走る)。
-# item は vault 内の SSH Key item 名で、"ssh-" + path の "/" を "-" に置換したもの。
-# .chezmoiignore は data の apply_ssh_keys が true の実行 (mise run apply-ssh-keys) 以外でこの一覧の target を ignore し、
-# 各 template は .ssh_keys.items.<key>.item で自分の item を参照する (無いキーは描画時に fail する)
+# path は ~/.ssh からの相対 target path。source の private_dot_ssh/private_<dir>/private_<name>.tmpl (秘密鍵) と
+# private_<dir>/<name>.pub.tmpl (公開鍵) の位置と手で一致させる (ズレると .chezmoiignore の除外が外れ、通常の status / apply で op read が走る)。
+# item は vault 内の SSH Key item 名。各 template は .ssh_keys.items.<key>.item で参照する (無いキーは描画時に fail する)
 [ssh_keys]
 vault = "Private"
 

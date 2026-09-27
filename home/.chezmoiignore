@@ -10,11 +10,10 @@
 !.ssh/config
 {{ end }}
 
-# 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で
-# onepasswordRead (op read) が走らないよう、data の apply_ssh_keys を --override-data で true にした実行
-# (mise run apply-ssh-keys) 以外では秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する
-# (ディレクトリは子が全て ignore でも作成されるため明示する)。apply_ssh_keys は config には書かない前提で dig の既定は false。
-# bool true と厳密に比較し、文字列 ("true" / "false") が渡されたら template error で止める (非空文字列を truthy と扱わない)。
+# 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で op read が走らないよう、
+# data の apply_ssh_keys が true の実行 (mise run apply-ssh-keys が --override-data で渡す) 以外では
+# 秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する (子が全て ignore でもディレクトリは作成されるため明示する)。
+# apply_ssh_keys は config には書かない前提で dig の既定を false にし、bool true と厳密に比較する (文字列を渡すと template error)。
 # Windows は private_ 属性が効かず NTFS ACL を制御できないため常に ignore する
 {{ if or (eq .chezmoi.os "windows") (ne (dig "apply_ssh_keys" false .) true) }}
 {{-   range .ssh_keys.items }}
