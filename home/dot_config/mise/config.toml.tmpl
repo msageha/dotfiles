@@ -1,8 +1,3 @@
-{{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
-[plugins]
-flutter = "https://github.com/mise-plugins/mise-flutter.git"
-{{ end -}}
-
 [settings.status]
 show_env = true
 show_tools = false
