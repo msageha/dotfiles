@@ -1,9 +1,12 @@
 function git_checkout_main
-    set -l branch (__git_main_branch .)
-    if test -z "$branch"
+    if git show-ref --verify --quiet refs/heads/main
+        echo "Checking out to the 'main' branch."
+        git checkout main
+    else if git show-ref --verify --quiet refs/heads/master
+        echo "Checking out to the 'master' branch."
+        git checkout master
+    else
         echo "Neither 'main' nor 'master' branch found."
         return 1
     end
-    echo "Checking out to the '$branch' branch."
-    git checkout $branch
 end
