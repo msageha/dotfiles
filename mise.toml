@@ -8,7 +8,7 @@ dprint = "0.57.4"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.35.2"
 hadolint = "2.15.1"
-# fnox.toml の 1Password provider が README の bootstrap 手順で op を呼び出すためここで pin する。
+# fnox.toml の 1Password provider (README の bootstrap 手順) と apply-ssh-keys (chezmoi の onepasswordRead) が op を呼び出すためここで pin する。
 # renovate: datasource=custom.onepassword-cli depName=1password-cli
 op = "2.34.1"
 powershell = "7.6.6"
@@ -20,6 +20,11 @@ postinstall = "prek install --hook-type pre-commit --hook-type pre-push"
 
 [settings]
 lockfile = true
+
+# DOTFILES_SSH_KEYS は apply-ssh-keys の task env だけが "1" にする。親 shell で export されていても、--verbose 付きの
+# apply / dry-run など他の task で鍵 template が描画 (= 平文表示) されないよう、ファイルレベルでは無効値に固定する
+[env]
+DOTFILES_SSH_KEYS = "0"
 
 [tasks.apply]
 description = "chezmoi apply --verbose (実際に適用)"
@@ -41,6 +46,14 @@ run = "prek run --all-files --hook-stage pre-push"
 [tasks.test]
 description = "bats -r tests/"
 run = "bats -r tests/"
+
+# 鍵の template は DOTFILES_SSH_KEYS=1 のときだけ .chezmoiignore の除外が外れて 1Password から取得される (README「SSH 秘密鍵」)。
+# --less-interactive --error-on-conflict は chezmoi 未管理の既存鍵と内容が違うとき黙って上書きせず exit 1 にする
+# (確認後に上書きするなら `mise run apply-ssh-keys -- --force`)。--verbose は秘密鍵を平文で表示するため付けない
+[tasks.apply-ssh-keys]
+description = "1Password の SSH Key item から秘密鍵と公開鍵を取得して ~/.ssh 配下へ配置する"
+env = { DOTFILES_SSH_KEYS = "1" }
+run = "chezmoi apply --less-interactive --error-on-conflict ~/.ssh"
 
 [tasks.encrypt-google-ime]
 description = "平文の IME 辞書を編集後に再暗号化する"

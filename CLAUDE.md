@@ -32,7 +32,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `home/` — chezmoi source (展開対象の dotfiles 本体)
 - `home/dot_claude/` — Claude Code のユーザースコープ設定 (`private_settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
 - `home/dot_config/shell/` — bash / zsh 共有の `env.sh` (環境変数・PATH) と `integrations.sh` (ツールのシェル統合)。`dot_bash_profile` / `dot_zprofile` はこれを source する薄い入口
-- `home/.chezmoidata.toml` — テンプレート共有データ。MCP の版 pin (`mcp`)、Claude plugin の marketplace (`claude.marketplaces`) と plugin 一覧 + 有効フラグ (`claude.plugins`。install スクリプトは有効なものだけ導入し、settings.json の extraKnownMarketplaces / enabledPlugins はここから描画する単一ソース)、サブエージェントの description (`agents`)
+- `home/.chezmoidata.toml` — テンプレート共有データ。MCP の版 pin (`mcp`)、Claude plugin の marketplace (`claude.marketplaces`) と plugin 一覧 + 有効フラグ (`claude.plugins`。install スクリプトは有効なものだけ導入し、settings.json の extraKnownMarketplaces / enabledPlugins はここから描画する単一ソース)、サブエージェントの description (`agents`)、1Password から取得する SSH 鍵の一覧 (`ssh_keys`。`.chezmoiignore` の除外対象と `private_dot_ssh/**/private_<name>.tmpl` / `<name>.pub.tmpl` の item 参照の単一ソース)
 - `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)。`lib.sh` (bash) / `windows/lib.ps1` が共通 helper で、`.chezmoiscripts` の各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。include したスクリプトは 1 つの bash プロセスに順に連結されるため、各スクリプトは関数を定義したうえで末尾の `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから自分の entry (`main` 等) を呼び終える構造にする。同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無く、prefix での rename はしない。一方、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は後続スクリプトに波及するため書かない。Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS` 環境変数、CLI / GUI 導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS) としてテンプレートが export する契約。`lib.sh` は各テンプレートに展開されるため、その変更はこれを include する `run_once_*` / `run_onchange_*` を全て再実行させる
 - `settings/` — アプリ設定 (`common/`, `macos/`)
 - `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトの関数をスタブで検査 (apply 済みの環境に依存しないため pre-push hook で回す)、`tests/docker` = `mise.toml` のバリアント表と CI matrix の一致)。skip_* による skip 判定は `tests/test_helper.bash`
@@ -106,6 +106,8 @@ prek の git hook が commit 時に lint / format、push 時にテンプレー�
 - `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env`・`.codex/auth.json` や
   `~/.config/chezmoi/chezmoi.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
 - `cat` / `git diff` で secret ファイルを直接読む。
+- `DOTFILES_SSH_KEYS=1` を付けた `chezmoi diff` / `chezmoi apply --verbose` — `.chezmoiignore` の除外が外れ、1Password から取得した
+  SSH 秘密鍵が平文で出る。この変数は `mise run apply-ssh-keys` の中でだけ立て、検証コマンド (dry-run / pre-push / test) には渡さない。
 
 値を `sed -E 's/= ".+"/= "***"/'` 等でマスクするか、キー名のみ grep で抜き出すか、`wc -c` 等で
 有無・長さだけを確認する。secret ファイルが対象範囲に入るスコープで `chezmoi apply` / `diff` を

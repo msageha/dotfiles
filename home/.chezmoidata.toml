@@ -47,3 +47,23 @@ debugger = "Debugging specialist for failing tests, runtime errors, and CI failu
 security_reviewer = "Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
 source_grounded_researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
 test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
+
+# 1Password から chezmoi apply 時に取得する SSH 鍵 (README「SSH 秘密鍵」)。
+# path は ~/.ssh からの相対 target path で、source の private_dot_ssh/private_<dir>/private_<name>.tmpl (秘密鍵) と
+# private_<dir>/<name>.pub.tmpl (公開鍵。どちらも .chezmoitemplates/onepassword-ssh-key を include) の位置と手で一致させる
+# (ズレると ignore が外れ、通常の status / apply で op read が走る)。
+# item は vault 内の SSH Key item 名で、"ssh-" + path の "/" を "-" に置換したもの。
+# .chezmoiignore は DOTFILES_SSH_KEYS=1 以外の実行でこの一覧の target を ignore し、
+# 各 template は .ssh_keys.items.<key>.item で自分の item を参照する (無いキーは描画時に fail する)
+[ssh_keys]
+vault = "Private"
+
+[ssh_keys.items]
+git_msageha = { path = "git_msageha", item = "ssh-git_msageha" }
+ocloud_instance = { path = "ocloud-instance", item = "ssh-ocloud-instance" }
+mzk_openclaw = { path = "mzk/openclaw", item = "ssh-mzk-openclaw" }
+mzk_proxmox = { path = "mzk/proxmox", item = "ssh-mzk-proxmox" }
+parents_freshtomato = { path = "parents/freshtomato", item = "ssh-parents-freshtomato" }
+parents_proxmox = { path = "parents/proxmox", item = "ssh-parents-proxmox" }
+technoface_gitlab = { path = "technoface/gitlab", item = "ssh-technoface-gitlab" }
+technoface_server = { path = "technoface/server", item = "ssh-technoface-server" }

@@ -3,6 +3,7 @@
 macOS / Ubuntu / Debian / Windows 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理する。
 機微な設定（一部の SSH ホスト定義・業務用 Git 設定・IME 辞書など）は
 [age](https://age-encryption.org/) で暗号化してリポジトリに載せているため、公開しても安全な構成になっている。
+SSH 秘密鍵はリポジトリに置かず、1Password から apply 時に取得する（後述「SSH 秘密鍵」）。
 
 `.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
 
@@ -75,6 +76,7 @@ fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --ini
 ```
 
 なお、一度上記の手順を実行した後は、secrets に変更がない限り、通常の `chezmoi apply` を実行するだけで良い。
+SSH 鍵は上記の apply では配置されず、後述「SSH 秘密鍵」の手順で別に配置する。
 
 #### API キー
 
@@ -93,6 +95,27 @@ API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secr
 | `SONATYPE_GUIDE_TOKEN` | `apiKeys.sonatypeGuide` | Claude Code の sonatype-guide plugin (Sonatype Guide MCP) で使用                                                                                                                                                                                                                                                                      |
 
 API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
+
+#### SSH 秘密鍵
+
+`~/.ssh/config` / `config.local` が参照する SSH 鍵はリポジトリに置かず、1Password の SSH Key item から `chezmoi apply` 時に `onepasswordRead` で取得する。秘密鍵は `home/private_dot_ssh/**/private_<name>.tmpl` が item の `private key` を、公開鍵は `<name>.pub.tmpl` が同じ item の `public key` を描く。
+取得する鍵と item 名は `home/.chezmoidata.toml` の `[ssh_keys]` が単一ソースで、各 template はそこから item を参照し、`.chezmoiignore` はそこから除外対象を描く。
+ファイルとして配置するのは、1Password SSH agent が使えない headless Linux や、承認ダイアログを待てないバックグラウンドの ssh / git でも鍵を使うため。
+
+通常の `chezmoi status` / `diff` / `apply` では鍵とそのサブディレクトリが `.chezmoiignore` で除外されるため `op read` は走らず、配置済みの鍵にも触れない。鍵の配置・更新は `DOTFILES_SSH_KEYS=1` を付けて `~/.ssh` 配下だけを apply するタスクで行う（リポジトリ直下で実行する。他のディレクトリからは `mise -C ~/.local/share/chezmoi run apply-ssh-keys`）。
+
+```bash
+mise run apply-ssh-keys   # DOTFILES_SSH_KEYS=1 chezmoi apply --less-interactive --error-on-conflict ~/.ssh
+```
+
+- 各鍵は事前に 1Password アプリで `[ssh_keys]` の `vault` に SSH Key item として取り込む（New Item → SSH Key → Import a Key File。item 名は `[ssh_keys.items]` の `item`）。1Password は取り込み時に passphrase を外して独自に暗号化するため、配置される秘密鍵ファイルは passphrase 無しになる。
+- age 秘密鍵が無い環境では `.ssh/config` 以外が ignore されるため、鍵の配置には `~/.config/chezmoi/key.txt` も必要（上記手順の順序どおり）。
+- `op` の認証は 1Password アプリ統合なら apply 中にダイアログが出る。手動 signin の環境では事前に `eval $(op signin)` でセッションを環境に入れておく。
+- chezmoi が管理していない既存の鍵ファイルと内容が違うと、`--less-interactive --error-on-conflict` により黙って上書きせず exit 1 で止まる（メッセージは出ない）。`DOTFILES_SSH_KEYS=1 chezmoi status ~/.ssh` で対象を確認し（状態コードとパスだけを表示し鍵本文は出ない）、上書きしてよければ `mise run apply-ssh-keys -- --force` で再実行する。
+- item が無い・未サインイン・値が空など取得に失敗すると apply はその鍵で exit 1 で止まる（target path 順で手前の鍵は配置済み。既存の鍵ファイルは消えない）。原因を直して再実行する。
+- 通常の `status` は鍵の欠損や 1Password 側の更新を検知しない。鍵を rotation したら item を更新して `mise run apply-ssh-keys` を再実行する（秘密鍵と公開鍵が同時に更新される）。
+- `DOTFILES_SSH_KEYS=1` を付けた `chezmoi diff` / `apply --verbose` は秘密鍵を平文で表示するため使わない。
+- Windows には配置しない（`.chezmoiignore` で除外。chezmoi の `private_` 属性が効かず NTFS ACL を制御できないため。必要になったら ACL 設定と併せて有効化する）。
 
 ### 実行
 
@@ -213,7 +236,7 @@ mise run encrypt-google-ime   # 平文を編集後に再暗号化
 
 ## 開発
 
-このリポジトリ自体の開発ツール (`prek` / `dprint` / `shellcheck` / `hadolint` / `actionlint` / `bats` / `powershell` / `chezmoi` / `age` / `fnox` / `op`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`op` は `fnox.toml` の 1Password provider が bootstrap 手順で呼び出す。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
+このリポジトリ自体の開発ツール (`prek` / `dprint` / `shellcheck` / `hadolint` / `actionlint` / `bats` / `powershell` / `chezmoi` / `age` / `fnox` / `op`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`op` は `fnox.toml` の 1Password provider と `mise run apply-ssh-keys` (`onepasswordRead`) が呼び出す。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
 
 ```bash
 mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
@@ -248,17 +271,19 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 .
 ├── home/                          # chezmoi 管理対象の dotfiles (source root)
 │   ├── .chezmoi.toml.tmpl         # 初期設定テンプレート (プロンプト・age recipient)
-│   ├── .chezmoidata.toml          # テンプレート共有データ (MCP の版 pin・Claude plugin 一覧・サブエージェント description)
+│   ├── .chezmoidata.toml          # テンプレート共有データ (MCP の版 pin・Claude plugin 一覧・サブエージェント description・1Password から取得する SSH 鍵の一覧)
 │   ├── .chezmoiexternal.toml      # 外部取得物 (dracula テーマ・git-open・nanobanana・フォント)
-│   ├── .chezmoiignore             # 鍵の有無・OS・skip_* フラグで適用対象を制御
+│   ├── .chezmoiignore             # age 鍵の有無・OS・skip_* フラグ・DOTFILES_SSH_KEYS で適用対象を制御
 │   ├── .chezmoiremove             # 廃止したファイルの適用先からの削除
 │   ├── .chezmoiscripts/           # chezmoi ライフサイクルスクリプト (install/ を include)
-│   ├── .chezmoitemplates/         # 共有テンプレート (サブエージェント本文・各ツール固有指示・claude.json・Codex model catalog・フォント external)
+│   ├── .chezmoitemplates/         # 共有テンプレート (サブエージェント本文・各ツール固有指示・claude.json・Codex model catalog・フォント external・1Password からの SSH 鍵取得)
 │   ├── dot_alias.tmpl             # シェルエイリアス (bash / zsh / fish 共有)
 │   ├── dot_bash_profile, dot_zprofile   # 薄い入口。本体は dot_config/shell/
 │   ├── private_dot_ssh/
 │   │   ├── config.tmpl            # 公開可の SSH 設定 (~/.ssh/config.local を Include)
-│   │   └── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
+│   │   ├── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
+│   │   ├── **/private_<name>.tmpl # 秘密鍵 (1Password の SSH Key item から onepasswordRead で取得。DOTFILES_SSH_KEYS=1 のときだけ適用)
+│   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public key。同上)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)
 │   ├── dot_codex/                 # OpenAI Codex 設定
 │   ├── dot_gemini/                # Antigravity (Gemini) 設定

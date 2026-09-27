@@ -10,6 +10,20 @@
 !.ssh/config
 {{ end }}
 
+# 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で
+# onepasswordRead (op read) が走らないよう、DOTFILES_SSH_KEYS=1 を付けた実行 (mise run apply-ssh-keys) 以外では
+# 秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する (ディレクトリは子が全て ignore でも作成されるため明示する)。
+# Windows は private_ 属性が効かず NTFS ACL を制御できないため常に ignore する
+{{ if or (eq .chezmoi.os "windows") (ne (env "DOTFILES_SSH_KEYS") "1") }}
+{{-   range .ssh_keys.items }}
+{{-     if ne (dir .path) "." }}
+.ssh/{{ dir .path }}
+{{-     end }}
+.ssh/{{ .path }}
+.ssh/{{ .path }}.pub
+{{-   end }}
+{{ end }}
+
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
 # git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける
 {{ if eq .chezmoi.os "windows" }}
