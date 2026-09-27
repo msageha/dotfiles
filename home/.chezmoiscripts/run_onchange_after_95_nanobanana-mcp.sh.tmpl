@@ -9,5 +9,8 @@ activate_tool_paths
 # nanobanana MCP server {{ .mcp.nanobanana }} の build。pin (.chezmoidata.toml) の更新でこの内容が変わり、再実行される
 cd "$HOME/.local/share/nanobanana-mcp/mcp-server"
 npm ci
+# upstream の package-lock.json が既知の脆弱性を含んだままリリースされているため、
+# semver 範囲内 (--force なし) でローカルに追従させる
+npm audit fix
 npm run build
 {{ end -}}
