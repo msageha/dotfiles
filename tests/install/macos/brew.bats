@@ -10,37 +10,14 @@ function setup() {
     source "${SCRIPT_PATH}"
 }
 
-@test "[macos] brew - install homebrew" {
-    [ -x "$(command -v brew)" ]
-}
-
-@test "[macos] brew - check basic packages" {
-    local installed
-    installed="$(brew list --formula -1 2>/dev/null; brew list --cask -1 2>/dev/null)"
-
-    local missing=()
-    local packages=("${formulae_base[@]}" "${formulae[@]}" "${casks_coding_agents[@]}" "${casks[@]}")
-    for package in "${packages[@]}"; do
-        # Handle tap prefix (e.g. "satococoa/tap/wtp" -> "wtp")
-        local name="${package##*/}"
-        if ! echo "${installed}" | grep -qx "${name}"; then
-            missing+=("${package}")
-        fi
-    done
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        skip "Missing brew packages: ${missing[*]}"
-    fi
-}
-
-@test "[macos] brew - SKIP_CLI_TOOLS / SKIP_GUI_TOOLS unset aborts main" {
-    # 呼び出し側 (run_once_before) が両変数を必ず渡す契約。未設定なら exit 1。
+@test "[install/macos] brew - SKIP_CLI_TOOLS / SKIP_GUI_TOOLS unset aborts main" {
     run env -u SKIP_CLI_TOOLS -u SKIP_GUI_TOOLS bash -c 'source '"${SCRIPT_PATH}"'; main'
     [ "$status" -eq 1 ]
 }
 
-@test "[macos] brew - SKIP_CLI_TOOLS=true / SKIP_GUI_TOOLS=true skips tools and casks" {
+@test "[install/macos] brew - SKIP_CLI_TOOLS=true / SKIP_GUI_TOOLS=true skips tools and casks" {
     # base のみ実行し、追加ツール群・cask はスキップする (brew はスタブで無害化)。
-    run env SKIP_CLI_TOOLS=true SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install'
+    run env SKIP_CLI_TOOLS=true SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install_packages'
     [ "$status" -eq 0 ]
     [[ "$output" == *"Skipping formula tools"* ]]
     [[ "$output" != *"Installing formula packages"* ]]
@@ -48,10 +25,10 @@ function setup() {
     [[ "$output" != *"Installing cask packages"* ]]
 }
 
-@test "[macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
+@test "[install/macos] brew - SKIP_CLI_TOOLS=false / SKIP_GUI_TOOLS=true installs coding agent casks" {
     # CLI あり GUI なし構成でも coding agent は Debian 側 (coding_agent.sh) と同様に導入する。
     # CI では cask 全体が early return するため、CI を外して gating 自体を検証する。
-    run env -u CI SKIP_CLI_TOOLS=false SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install'
+    run env -u CI SKIP_CLI_TOOLS=false SKIP_GUI_TOOLS=true bash -c 'brew() { :; }; source '"${SCRIPT_PATH}"'; install_packages'
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installing coding agent casks"* ]]
     [[ "$output" == *"Skipping cask packages"* ]]

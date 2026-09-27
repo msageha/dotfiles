@@ -1,4 +1,4 @@
-{{/* 単一共有鍵 */ -}}
+{{/* age は単一共有鍵で全マシン共通 (秘密鍵の配置手順は README) */ -}}
 encryption = "age"
 [age]
     identity = {{ (joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt") | quote }}
@@ -9,11 +9,10 @@ autoCommit = true
 autoPush = true
 
 {{ if eq .chezmoi.os "windows" -}}
-# chezmoi の既定は pwsh 優先 (無ければ powershell にフォールバック) のため、
-# pwsh の有無で .ps1 スクリプトの実行ホストが変わらないよう、標準搭載の
-# Windows PowerShell 5.1 に固定する (スクリプトは 5.1 互換で書かれている)。
+# chezmoi の既定は pwsh 優先 (無ければ powershell にフォールバック) のため、pwsh の有無で
+# .ps1 スクリプトの実行ホストが変わらないよう、標準搭載の Windows PowerShell 5.1 に固定する。
 # -NoProfile: プロファイル (starship 初期化等) をスクリプト実行のたびに読ませない。
-# -ExecutionPolicy Bypass: 既定が Restricted のマシンでも apply が失敗しないようにする。
+# -ExecutionPolicy Bypass: 既定が Restricted のマシンでも apply が失敗しないようにする
 [interpreters.ps1]
 command = "powershell"
 args = ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
@@ -21,19 +20,12 @@ args = ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
 {{ end -}}
 [data]
 {{- if eq .chezmoi.os "darwin" }}
-# mac OS specific configuration
-{{/* 現在の ComputerName を stderr へ表示し、promptStringOnce の入力の参考にする (値自体は使わない) */}}
-{{-   $_ := output "sh" "-c" "name=$(scutil --get ComputerName 2>/dev/null || true); echo \"current computer_name: $name\" >&2; printf '%s' \"$name\"" | trim }}
+{{/* 現在の ComputerName を stderr へ表示し、promptStringOnce の入力の参考にする */}}
+{{-   $_ := output "sh" "-c" "echo \"current computer_name: $(scutil --get ComputerName 2>/dev/null)\" >&2" }}
 {{-   $model := output "sh" "-c" "system_profiler SPHardwareDataType | awk -F': ' '/Model Name/ { print $2 }'" | trim }}
-{{-   $computerName := "" }}
-{{-   if eq $model "MacBook Pro" }}
-{{-     $computerName = promptStringOnce . "computer_name" "e.g.: MacBookPro***-<user>" }}
-{{-   else if eq $model "MacBook Air" }}
-{{-     $computerName = promptStringOnce . "computer_name" "e.g.: MacBookAir***-<user>" }}
-{{-   else }}
-{{-     $computerName = promptStringOnce . "computer_name" "e.g.: Mac***-<user>" }}
-{{-   end }}
-computer_name = {{ $computerName | quote }}
+{{-   $prefix := "Mac" }}
+{{-   if hasPrefix "MacBook" $model }}{{ $prefix = replace " " "" $model }}{{ end }}
+computer_name = {{ promptStringOnce . "computer_name" (printf "e.g.: %s***-<user>" $prefix) | quote }}
 {{- end }}
 
 {{ $skipCliTools := false -}}
@@ -49,15 +41,14 @@ skip_gui_tools = {{ $skipGuiTools }}
 
 {{ $skipWindowsExtras := false -}}
 {{- if eq .chezmoi.os "windows" }}
-# Windows specific configuration
 {{-   $skipWindowsExtras = promptBoolOnce . "skip_windows_extras" "Skip coding agent / GUI apps / system settings setup? (default: yes)" true }}
 skip_windows_extras = {{ $skipWindowsExtras }}
 {{- end }}
 
 {{- if and (not $skipCliTools) (not $skipWindowsExtras) }}
+# API キーは fnox が環境変数として注入する (README)。fnox / 1Password 未導入の初回 bootstrap でも
+# 通るよう、未注入の変数は空文字で展開する
 [data.apiKeys]
-# API keys are injected by fnox. Missing env values intentionally expand to
-# empty strings so the first bootstrap run can install fnox/1Password.
 anthropic = {{ env "ANTHROPIC_API_KEY" | quote }}
 openai = {{ env "OPENAI_API_KEY" | quote }}
 gemini = {{ env "GEMINI_API_KEY" | quote }}

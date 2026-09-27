@@ -2,9 +2,7 @@
 {{- /* Windows PowerShell 5.1 は BOM 無しの .ps1 を ANSI として読み、日本語コメントが
        UTF-8 のまま化けて構文を破壊する。先頭に BOM を出力して UTF-8 として読ませる */ -}}
 {{- "\ufeff" -}}
-{{- /* PowerShell の single quote 内は ' を '' に二重化してエスケープする (bash 版と対称) */ -}}
-$env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir | replace "'" "''" }}'
-
+{{   include "../install/windows/lib.ps1" }}
 {{   include "../install/windows/winget.ps1" }}
 {{   include "../install/windows/setup_powershell.ps1" }}
 {{ if not (dig "skip_windows_extras" false .) -}}
@@ -13,7 +11,9 @@ $env:CHEZMOI_SOURCE_DIR = '{{ .chezmoi.sourceDir | replace "'" "''" }}'
 {{   include "../install/windows/coding_agent.ps1" }}
 # coding_agent.ps1 が claude を %USERPROFILE%\.local\bin へ入れるため、後続の
 # claude_plugins.ps1 が probe できるよう PATH を通す (ログインシェルに無い初回マシン対策)
-$env:Path = (Join-Path $HOME '.local\bin') + ';' + $env:Path
+$env:Path = (Join-Path $env:USERPROFILE '.local\bin') + ';' + $env:Path
+$env:CLAUDE_MARKETPLACES = '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
+$env:CLAUDE_PLUGINS = '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
 {{   include "../install/windows/claude_plugins.ps1" }}
 {{ end -}}
 {{ end -}}

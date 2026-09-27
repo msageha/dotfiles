@@ -1,21 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-BLUE="\033[0;34m"
-NC="\033[0m"
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 function create_directories() {
-    printf "%b\n" "${BLUE}Creating directories...${NC}"
-    mkdir -p "$HOME/.ssh"
+    log_step "Creating directories..."
     mkdir -p "$HOME/.local/bin"   # ローカルコマンド (git-open / GOBIN / uv / mise 等) の配置先
-    mkdir -p "$HOME/.local/state" # シェル/REPL 履歴 (HISTFILE 等) の保存先
-    mkdir -p "$HOME/.cache/zsh"   # zsh補完キャッシュ (zcompdump) の保存先
-}
-
-function main() {
-    create_directories
+    mkdir -p "$HOME/.local/state" # シェル / REPL 履歴 (HISTFILE 等) の保存先
+    mkdir -p "$HOME/.cache/zsh"   # zsh 補完キャッシュ (zcompdump) の保存先
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main
+    create_directories
 fi

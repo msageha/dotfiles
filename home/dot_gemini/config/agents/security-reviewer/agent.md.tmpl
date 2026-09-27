@@ -1,7 +1,13 @@
 ---
 name: security-reviewer
-description: Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes.
+description: {{ .agents.security_reviewer | quote }}
 model: pro
+tools:
+  - view_file
+  - list_dir
+  - find_by_name
+  - grep_search
+  - run_command
 ---
 
 {{ includeTemplate "agents/security-reviewer.md" . -}}

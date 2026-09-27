@@ -1,5 +1,5 @@
 {{- $ageKey := joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt" }}
-# config.sakanaai.github / config.technoface.gitlab は age 秘密鍵が無いと復号できず、
+# 業務用 git 設定 (config.sakanaai.github / config.technoface.gitlab) は age 秘密鍵が無いと復号できず、
 # config.tmpl 側の includeIf も darwin 限定のため、いずれかに該当すれば ignore する
 {{ if or (not (stat $ageKey)) (ne .chezmoi.os "darwin") }}
 .config/git/config.*
@@ -11,24 +11,14 @@
 {{ end }}
 
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
-# git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける。
+# git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける
 {{ if eq .chezmoi.os "windows" }}
 .alias
 .bash_profile
 .zprofile
+.config/shell
 .config/tmux
 .vimrc
-# .local/share/vim / .config/delta / .local/share/tmux / .config/dircolors は .chezmoiexternal.toml の
-# external (dracula テーマ) の展開先。
-# external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
-.local/share/vim
-.local/share/vim/**
-.config/delta
-.config/delta/**
-.local/share/tmux
-.local/share/tmux/**
-.config/dircolors
-.config/dircolors/**
 .config/fastfetch
 .config/fish
 .config/gh
@@ -41,69 +31,46 @@
 .config/gh/hosts.yml
 {{ end }}
 
-# ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマを展開しない
+# ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマ (external) を展開しない。
+# external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
 {{ if or (eq .chezmoi.os "windows") (dig "skip_gui_tools" false .) }}
 .config/ghostty
 .config/ghostty/**
 {{ end }}
 
-# .claude / .codex / .gemini / .grok (コーディングエージェント設定) は
-# macOS / Linux で skip_cli_tools=true
-# Windows で skip_windows_extras=true
-# のとき管理対象外にする
-{{- /* unix は skip_cli_tools、Windows は skip_windows_extras のみ定義されるため or で片方を拾う。
-     キー未定義の旧 config でも動くよう dig のフォールバック形を使う (CLAUDE.md の規約) */}}
+# コーディングエージェント設定 (.claude / .codex / .gemini / .grok / .claude.json / .config/agents) は
+# unix は skip_cli_tools、Windows は skip_windows_extras で管理対象外にする (片方しか定義されないため or で拾う)。
+# 管理するときも各ディレクトリは X/* で一度 ignore し、管理対象のトップレベル項目だけを ! で戻す
+# (autoPush 環境で chezmoi add がランタイムファイルを取り込むのを防ぎ、source に残った迷子ファイルも展開しない)。
+# X/* は深さ 1 にしか効かないため、配下のファイルまで ! で戻す必要はない
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
-
-.claude/*
-!.claude/CLAUDE-FABLE-5.md
-{{ if not $skipCodingAgent }}
-# Manage only these files
-!.claude/CLAUDE.md
-!.claude/settings.json
-!.claude/settings.fusion.json
-!.claude/statusline-command.sh
-!.claude/agents
-!.claude/agents/**
-{{ if eq .chezmoi.os "darwin" }}
-!.claude/skills
-!.claude/skills/**
-{{ else }}
-!.claude/skills
-{{- range glob (joinPath .chezmoi.sourceDir "dot_claude/skills/*") }}
-{{- $name := base . }}
-{{- if not (hasPrefix "gws-" $name) }}
-!.claude/skills/{{ $name }}
-!.claude/skills/{{ $name }}/**
-{{- end }}
-{{- end }}
-{{ end }}
-!.claude/rules
-!.claude/rules/**
-{{ end }}
-{{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない。 */}}
-{{ if ne .chezmoi.os "darwin" }}
-.claude/skills/gws-*
-.claude/skills/gws-*/**
-{{ end }}
-# .claude.json は Claude MCP 設定
-{{ if $skipCodingAgent }}
-.claude.json
-{{ end }}
-{{ if $skipCodingAgent }}
-.config/agents
-.config/agents/**
-{{ end }}
-{{- /* X/* だけでは配下が全ignoreでもディレクトリ自体は空のまま作られてしまうため、
-     skip 時はディレクトリ自体も明示的に ignore する */}}
 {{ if $skipCodingAgent }}
 .claude
 .codex
 .gemini
 .grok
+.claude.json
+.config/agents
+.config/agents/**
 {{ end }}
+
+.claude/*
+{{ if not $skipCodingAgent }}
+!.claude/CLAUDE.md
+!.claude/settings.json
+!.claude/settings.fusion.json
+!.claude/statusline-command.sh
+!.claude/agents
+!.claude/skills
+!.claude/rules
+{{ end }}
+{{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない */}}
+{{ if ne .chezmoi.os "darwin" }}
+.claude/skills/gws-*
+.claude/skills/gws-*/**
+{{ end }}
+
 .codex/*
-!.codex/owl-alpha.json
 {{ if not $skipCodingAgent }}
 !.codex/AGENTS.md
 !.codex/config.toml
@@ -122,29 +89,21 @@
 !.codex/auth.json
 {{ end }}
 !.codex/agents
-!.codex/agents/**
 !.codex/rules
-!.codex/rules/**
 {{ end }}
+
 .gemini/*
 {{ if not $skipCodingAgent }}
 !.gemini/settings.json
 !.gemini/.env
 !.gemini/antigravity-cli
-!.gemini/antigravity-cli/settings.json
 !.gemini/config
-!.gemini/config/AGENTS.md
-!.gemini/config/mcp_config.json
-!.gemini/config/agents
-!.gemini/config/agents/**
-!.gemini/config/skills
-!.gemini/config/skills/**
 {{ end }}
-# auth・sessions・logs 等のランタイム状態のため .grok/* を ignore
+
+# auth・sessions・logs 等のランタイム状態を含むため .grok/* を ignore する
 .grok/*
 {{ if not $skipCodingAgent }}
 !.grok/AGENTS.md
 !.grok/config.toml
 !.grok/skills
-!.grok/skills/**
 {{ end }}

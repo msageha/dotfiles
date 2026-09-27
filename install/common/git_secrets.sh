@@ -1,28 +1,21 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-# git-secrets のフックを git テンプレートディレクトリに導入する。
 # dot_config/git/config.tmpl の init.templatedir = ~/.config/git/templates/git-secrets と対応し、
 # 以後 git init / clone したリポジトリに pre-commit / commit-msg フックが入る。
 # 検出パターンは chezmoi 管理の ~/.config/git/config [secrets] で設定済み。
 TEMPLATE_DIR="$HOME/.config/git/templates/git-secrets"
 
 function main() {
-    # macOS は brew、Debian/Ubuntu は apt で導入される。
-    # Alpine には git-secrets パッケージが無い (v3.22 時点で確認) ため恒常スキップになる。
+    # templatedir が存在しないと git init 時に警告が出るため、フック無しでも空ディレクトリだけは用意する
+    mkdir -p "$TEMPLATE_DIR"
+    # Alpine には git-secrets パッケージが無い (v3.22 時点で確認) ため恒常スキップになる
     if ! command -v git-secrets &>/dev/null; then
-        printf "%b\n" "${YELLOW}git-secrets が見つかりません。フック導入をスキップします。${NC}"
-        # templatedir が存在しないと git init 時に警告が出るため、フック無しでも空ディレクトリだけ用意する
-        mkdir -p "$TEMPLATE_DIR"
+        log_warn "git-secrets が見つかりません。フック導入をスキップします。"
         return 0
     fi
-    printf "%b\n" "${BLUE}Installing git-secrets hooks into ${TEMPLATE_DIR}...${NC}"
-    mkdir -p "$TEMPLATE_DIR"
-    # -f で既存フックを上書きするため再実行しても冪等
+    log_step "Installing git-secrets hooks into ${TEMPLATE_DIR}..."
     git secrets --install -f "$TEMPLATE_DIR"
 }
 

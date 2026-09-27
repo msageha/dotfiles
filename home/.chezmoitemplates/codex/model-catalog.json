@@ -1,0 +1,35 @@
+{{- /* codex の model_catalog_json。引数はモデルごとに異なるフィールド
+      (slug / display_name / context_window / priority / supports_reasoning_summaries / input_modalities)
+      だけを持つ dict の list で、共通フィールドはここで補う */ -}}
+{
+  "models": [
+{{- range $i, $m := . }}
+    {{- if $i }},{{ end }}
+    {
+      "slug": {{ $m.slug | toJson }},
+      "display_name": {{ $m.display_name | toJson }},
+      "context_window": {{ $m.context_window }},
+      "supported_reasoning_levels": [
+        { "effort": "high", "description": "Deep reasoning for complex problems" }
+      ],
+      "shell_type": "shell_command",
+      "visibility": "list",
+      "supported_in_api": true,
+      "priority": {{ $m.priority }},
+      "base_instructions": "",
+      "supports_reasoning_summaries": {{ $m.supports_reasoning_summaries }},
+      "default_reasoning_summary": "none",
+      "support_verbosity": false,
+      "default_verbosity": null,
+      "apply_patch_tool_type": "freeform",
+      "input_modalities": {{ $m.input_modalities | toJson }},
+      "truncation_policy": {
+        "mode": "tokens",
+        "limit": 10000
+      },
+      "supports_parallel_tool_calls": true,
+      "experimental_supported_tools": []
+    }
+{{- end }}
+  ]
+}

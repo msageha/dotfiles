@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes.
+description: {{ .agents.security_reviewer | quote }}
 model: opus
 effort: xhigh
 tools: Read, Grep, Glob, Bash

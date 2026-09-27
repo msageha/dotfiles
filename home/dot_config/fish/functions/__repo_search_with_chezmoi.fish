@@ -1,6 +1,8 @@
 function __repo_search_with_chezmoi -d 'Repository search (ghq + chezmoi source dir)'
-    set -l selector
-    [ -n "$GHQ_SELECTOR" ]; and set selector $GHQ_SELECTOR; or set selector fzf
+    set -l selector fzf
+    if [ -n "$GHQ_SELECTOR" ]
+        set selector $GHQ_SELECTOR
+    end
     set -l selector_options
     [ -n "$GHQ_SELECTOR_OPTS" ]; and set selector_options $GHQ_SELECTOR_OPTS
 
@@ -10,7 +12,10 @@ function __repo_search_with_chezmoi -d 'Repository search (ghq + chezmoi source 
     end
 
     set -l query (commandline -b)
-    [ -n "$query" ]; and set flags --query="$query"; or set flags
+    set -l flags
+    if [ -n "$query" ]
+        set flags --query="$query"
+    end
     switch "$selector"
         case fzf fzf-tmux peco percol fzy sk
             # ghq root の外にある chezmoi のソースディレクトリを一覧に足す

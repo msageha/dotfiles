@@ -47,16 +47,8 @@ jobs:
     with:
       fail-fast: true
 
-  docker-alpine:
-    uses: ./.github/workflows/docker-alpine.yaml
-    permissions:
-      contents: read
-      actions: write
-    with:
-      fail-fast: true
-
-  docker-debian:
-    uses: ./.github/workflows/docker-debian.yaml
+  docker:
+    uses: ./.github/workflows/docker.yaml
     permissions:
       contents: read
       actions: write

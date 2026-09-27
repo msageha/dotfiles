@@ -39,14 +39,12 @@ jobs:
           mkdir -p "$HOME/.config/chezmoi"
           cat <<EOF > "$HOME/.config/chezmoi/chezmoi.toml"
           [data]
+          # macOS の chezmoi init は computer_name を promptStringOnce で要求するため、非対話 runner 向けに事前設定する
           computer_name = "ci-${{ matrix.os }}"
           # macOS / Linux 共通。CLI ツールとコーディングエージェント設定は CI で検証し、
           # GUI 系 (フォント・ghostty・cask) はスキップする
           skip_cli_tools = false
           skip_gui_tools = true
-
-          [data.github]
-          user = "msageha"
           EOF
       - name: Initialize chezmoi
         run: chezmoi init --source=${{ github.workspace }}
@@ -64,37 +62,11 @@ jobs:
       # また apply が書いた user 側 config (~/.config/mise/config.toml) は mise.lock に無い
       # ツールを含み lockfile 強制で解決に失敗するため、MISE_CONFIG_DIR を空の場所へ
       # 退避して repo の mise.toml のみを対象にする。
-      # ツール導入の失敗は次ステップのリトライに委ねるため continue-on-error にする
       - name: Install mise
-        id: mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        continue-on-error: true
-        with:
-          # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
-          # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-          version: "2026.9.11"
-          cache: true
+        uses: ./.github/actions/setup-mise
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
           GITHUB_TOKEN: ${{ github.token }}
-      # aqua backend の attestation 検証が sigstore の TUF (tuf-repo-cdn.sigstore.dev) への
-      # 到達性に依存するため、一時的な到達不能でジョブを落とさずリトライする
-      # (機序と continue-on-error を選ぶ理由は prek.yaml の同名ステップに記載)。
-      - name: Retry mise install
-        if: steps.mise.outcome == 'failure'
-        env:
-          MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          for attempt in 1 2 3; do
-            if mise install --locked; then
-              exit 0
-            fi
-            echo "::warning::mise install failed (attempt ${attempt}/3)"
-            sleep "$((attempt * 10))"
-          done
-          echo "::error::mise install failed after 3 attempts"
-          exit 1
       - name: Run bats tests
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
@@ -138,9 +110,6 @@ jobs:
           # インストールとエージェント設定の展開まで CI で検証する。
           # GUI アプリ導入とシステム設定は各スクリプトの $env:CI ガードが CI でのみスキップする
           skip_windows_extras = false
-
-          [data.github]
-          user = "msageha"
           '@ | Set-Content -Path (Join-Path $HOME '.config\chezmoi\chezmoi.toml') -Encoding utf8
       - name: Initialize chezmoi
         shell: powershell

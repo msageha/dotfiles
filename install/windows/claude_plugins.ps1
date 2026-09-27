@@ -3,13 +3,9 @@
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-function Write-Step($msg) { Write-Host $msg -ForegroundColor Blue }
-function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
-
-# 公式 marketplace (claude-plugins-official) から plugin を取得する共通処理。
-# add / install は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する。
-# 5.1 はネイティブコマンドの失敗を throw しないため終了コードを明示的に確認する。
+# marketplace add / plugin install / update は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する。
 function Install-Plugin([string]$PluginId) {
     claude plugin install $PluginId
     if ($LASTEXITCODE -ne 0) { throw "claude plugin install failed ($PluginId): exit code $LASTEXITCODE" }
@@ -17,36 +13,30 @@ function Install-Plugin([string]$PluginId) {
     if ($LASTEXITCODE -ne 0) { throw "claude plugin update failed ($PluginId): exit code $LASTEXITCODE" }
 }
 
-# install/common/claude_plugins.sh の plugin 一覧と同期を保つこと
-$Plugins = @(
-    'cloudflare@claude-plugins-official'
-    'github@claude-plugins-official'
-    'agent-sdk-dev@claude-plugins-official'
-    'plugin-dev@claude-plugins-official'
-    'claude-md-management@claude-plugins-official'
-    'skill-creator@claude-plugins-official'
-    'sonatype-guide@claude-plugins-official'
-    # LSP servers
-    'pyright-lsp@claude-plugins-official'
-    'gopls-lsp@claude-plugins-official'
-    'clangd-lsp@claude-plugins-official'
-    'swift-lsp@claude-plugins-official'
-    'typescript-lsp@claude-plugins-official'
-)
-
 function Main {
+    # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
+    # run_once_before テンプレートが .chezmoidata.toml の claude.* から必ず export する契約。
+    # PowerShell は空文字を代入した環境変数を削除するため、未設定と「有効な plugin が 0 件」を区別できるのは
+    # marketplace 側だけ。CLAUDE_PLUGINS が無いときは 0 件として扱う
+    $marketplaces = @($env:CLAUDE_MARKETPLACES -split '\s+' | Where-Object { $_ })
+    $plugins = @($env:CLAUDE_PLUGINS -split '\s+' | Where-Object { $_ })
+    if (-not $marketplaces) {
+        throw 'CLAUDE_MARKETPLACES is not set; it must be exported by the caller.'
+    }
     if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
         Write-Warn 'claude が見つかりません。plugin のインストールをスキップします。'
         return
     }
 
     Write-Step '=== Installing Claude Code plugins ==='
-    claude plugin marketplace add anthropics/claude-plugins-official
-    if ($LASTEXITCODE -ne 0) { throw "claude plugin marketplace add failed: exit code $LASTEXITCODE" }
-    claude plugin marketplace update claude-plugins-official
-    if ($LASTEXITCODE -ne 0) { throw "claude plugin marketplace update failed: exit code $LASTEXITCODE" }
-
-    foreach ($plugin in $Plugins) {
+    foreach ($marketplace in $marketplaces) {
+        $name, $repo = $marketplace -split '=', 2
+        claude plugin marketplace add $repo
+        if ($LASTEXITCODE -ne 0) { throw "claude plugin marketplace add failed ($repo): exit code $LASTEXITCODE" }
+        claude plugin marketplace update $name
+        if ($LASTEXITCODE -ne 0) { throw "claude plugin marketplace update failed ($name): exit code $LASTEXITCODE" }
+    }
+    foreach ($plugin in $plugins) {
         Write-Step "Installing $plugin..."
         Install-Plugin $plugin
     }

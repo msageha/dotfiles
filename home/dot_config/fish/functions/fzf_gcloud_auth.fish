@@ -1,4 +1,4 @@
-function fzf_gcloud_auth -d "List gcloud auth"
+function fzf_gcloud_auth -d "Select and activate a gcloud account"
     if not type -q gcloud
         echo "fzf_gcloud_auth: gcloud not found" >&2
         return 1

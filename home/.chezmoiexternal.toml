@@ -1,5 +1,6 @@
-# dracula テーマ群は commit SHA で固定する
-# archive 型で pin し、更新は renovate で追従させる。
+# dracula テーマ群は archive 型で commit SHA に pin し、更新は renovate で追従させる。
+# Windows は展開先 (vim / delta / tmux / dircolors) のいずれも使わない
+{{ if ne .chezmoi.os "windows" }}
 [".local/share/vim/pack/themes/start/dracula"]
 type = "archive"
 url = "https://github.com/dracula/vim/archive/4f068752154e70ef8e03d6a70992033fff20a165.tar.gz"
@@ -23,6 +24,7 @@ type = "archive"
 url = "https://github.com/dracula/dircolors/archive/4b80eae10819becb1ba285aecd81487540b14b44.tar.gz"
 exact = true
 stripComponents = 1
+{{ end }}
 
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) }}
 [".local/bin/git-open"]
@@ -37,7 +39,8 @@ executable = true
       .chezmoiscripts/run_onchange_after_95_nanobanana-mcp.sh.tmpl で build する。
       pin は .chezmoidata.toml (renovate 追従)。build 生成物 (dist / node_modules) を
       apply で消さないよう exact は付けない。
-      gate は build に必要な node / npm の導入条件 (mise config の node と同じ式) に揃える */}}
+      gate は build に必要な node の導入条件 (mise config の node と同じ dig 既定 true) に揃え、
+      run_onchange_after_95 と .chezmoitemplates/claude.json の nano-banana も同じ式を使う */}}
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
 [".local/share/nanobanana-mcp"]
 type = "archive"
@@ -63,5 +66,5 @@ type = "file"
 url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f14d3ee8a3b40788/Alucard.xccolortheme"
 {{ end }}
 
-# フォント群は .chezmoitemplates/external-fonts.toml で定義する
+# フォント群は .chezmoitemplates/external-fonts.toml で定義する (run_onchange_after_93_fonts が hash を参照するため別ファイル)
 {{ includeTemplate "external-fonts.toml" . }}

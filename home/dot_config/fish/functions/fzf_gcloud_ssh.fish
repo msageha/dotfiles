@@ -1,6 +1,10 @@
-function fzf_gcloud_ssh -d "List and ssh into a gcloud compute instance"
+function fzf_gcloud_ssh -d "Select a gcloud compute instance and ssh into it"
     if not type -q gcloud
         echo "fzf_gcloud_ssh: gcloud not found" >&2
+        return 1
+    end
+    if not type -q fzf
+        echo "fzf_gcloud_ssh: fzf not found" >&2
         return 1
     end
 

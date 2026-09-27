@@ -15,8 +15,7 @@
       "args": [
         "-y",
         "@upstash/context7-mcp@{{ .mcp.context7 }}"
-      ],
-      "env": {}
+      ]
     },
     "chrome-devtools": {
       "type": "stdio",
@@ -24,17 +23,15 @@
       "args": [
         "-y",
         "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"
-      ],
-      "env": {}
+      ]
     },
     "antigravity": {
       "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
-        "@ask-llm/antigravity-mcp@0.7.6"
-      ],
-      "env": {}
+        "@ask-llm/antigravity-mcp@{{ .mcp.antigravity }}"
+      ]
     },
     "playwright": {
       "type": "stdio",
@@ -42,18 +39,23 @@
       "args": [
         "-y",
         "@playwright/mcp@{{ .mcp.playwright }}"
-      ],
-      "env": {}
+      ]
     },
-{{- /* dart (flutter 同梱) は macOS + skip_cli_tools=false でのみ導入する。 */}}
+{{- /* dart / xcode MCP は macOS 専用バイナリ (dart, xcrun) に依存する */}}
 {{- if eq .chezmoi.os "darwin" }}
     "dart": {
       "type": "stdio",
       "command": "dart",
       "args": [
         "mcp-server"
-      ],
-      "env": {}
+      ]
+    },
+    "xcode": {
+      "type": "stdio",
+      "command": "xcrun",
+      "args": [
+        "mcpbridge"
+      ]
     },
 {{- end }}
     "figma": {
@@ -65,19 +67,9 @@
       "command": "npx",
       "args": [
         "-y",
-        "@drawio/mcp@1.6.0"
+        "@drawio/mcp@{{ .mcp.drawio }}"
       ]
     },
-{{- if eq .chezmoi.os "darwin" }}
-    "xcode": {
-      "type": "stdio",
-      "command": "xcrun",
-      "args": [
-        "mcpbridge"
-      ],
-      "env": {}
-    },
-{{- end }}
 {{- if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
 {{- /* gemini-cli-extensions/nanobanana 同梱の MCP server。.chezmoiexternal.toml が source を展開し、
       .chezmoiscripts/run_onchange_after_95_nanobanana-mcp.sh.tmpl が build した dist を起動する。

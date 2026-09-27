@@ -9,9 +9,7 @@ Include ~/.orbstack/ssh/config
 Include ~/.ssh/config.local
 
 Host github.com
-  HostName github.com
   User msageha
-  Port 22
   IdentityFile ~/.ssh/git_msageha
   TCPKeepAlive yes
   IdentitiesOnly yes
@@ -19,8 +17,6 @@ Host github.com
 
 Host gitlab.technoface.co.jp
   User git
-  Port 22
-  HostName gitlab.technoface.co.jp
   IdentityFile ~/.ssh/gitlab_technoface
   TCPKeepAlive yes
   IdentitiesOnly yes

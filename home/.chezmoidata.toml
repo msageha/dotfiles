@@ -1,6 +1,7 @@
 [github]
 user = "msageha"
 
+# コーディングエージェント設定が参照する MCP server のバージョン pin (renovate が annotation で追従)
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
 context7 = "4.1.1"
@@ -8,5 +9,41 @@ context7 = "4.1.1"
 chromeDevtools = "1.9.0"
 # renovate: datasource=npm depName=@playwright/mcp
 playwright = "0.0.82"
+# renovate: datasource=npm depName=@ask-llm/antigravity-mcp
+antigravity = "0.7.6"
+# renovate: datasource=npm depName=@drawio/mcp
+drawio = "1.6.0"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
 nanobanana = "v1.0.12"
+
+# Claude Code の plugin marketplace (name = GitHub repo) と plugin (id = 既定で有効にするか)。
+# install/common/claude_plugins.sh (Windows は claude_plugins.ps1) が marketplace を登録して有効な plugin だけ導入し、
+# dot_claude/private_settings.json.tmpl が extraKnownMarketplaces / enabledPlugins を描画する
+[claude.marketplaces]
+claude-plugins-official = "anthropics/claude-plugins-official"
+openai-codex = "openai/codex-plugin-cc"
+
+[claude.plugins]
+"agent-sdk-dev@claude-plugins-official" = false
+"clangd-lsp@claude-plugins-official" = false
+"claude-md-management@claude-plugins-official" = true
+"cloudflare@claude-plugins-official" = false
+"codex@openai-codex" = true
+"github@claude-plugins-official" = true
+"gopls-lsp@claude-plugins-official" = true
+"plugin-dev@claude-plugins-official" = false
+"pyright-lsp@claude-plugins-official" = true
+"skill-creator@claude-plugins-official" = true
+"sonatype-guide@claude-plugins-official" = true
+"swift-lsp@claude-plugins-official" = true
+"typescript-lsp@claude-plugins-official" = true
+
+# サブエージェントの description。本文は .chezmoitemplates/agents/<name>.md、
+# Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
+[agents]
+browser_debugger = "Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues."
+code_reviewer = "Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues."
+debugger = "Debugging specialist for failing tests, runtime errors, and CI failures. Use when a concrete failure needs root-cause analysis and a minimal fix."
+security_reviewer = "Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
+source_grounded_researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
+test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."

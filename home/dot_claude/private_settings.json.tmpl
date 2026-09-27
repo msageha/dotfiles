@@ -4,35 +4,12 @@
     "commit": "",
     "pr": ""
   },
-  "enabledPlugins": {
-    "pyright-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": false,
-    "gopls-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "cloudflare@claude-plugins-official": false,
-    "github@claude-plugins-official": true,
-    "agent-sdk-dev@claude-plugins-official": false,
-    "plugin-dev@claude-plugins-official": false,
-    "claude-md-management@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
-    "sonatype-guide@claude-plugins-official": true,
-    "codex@openai-codex": true
-  },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-official"
-      }
-    },
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    }
-  },
+  "enabledPlugins": {{ .claude.plugins | toPrettyJson | indent 2 | trim }},
+{{- $marketplaces := dict }}
+{{- range $name, $repo := .claude.marketplaces }}
+{{-   $_ := set $marketplaces $name (dict "source" (dict "source" "github" "repo" $repo)) }}
+{{- end }}
+  "extraKnownMarketplaces": {{ $marketplaces | toPrettyJson | indent 2 | trim }},
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
   "fallbackModel": [],
@@ -47,13 +24,16 @@
     "DISABLE_AUTOUPDATER": "1",
     "DISABLE_AUTO_COMPACT": "1",
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
-    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
 {{- /* 空文字の ANTHROPIC_API_KEY は「キー設定済み」と解釈され authMethod: none で認証が落ちるため、
-       鍵未配置の環境ではキー自体を出力しない (出力すると /login の OAuth にフォールバックできない) */}}
+       鍵未配置の環境ではキー自体を出力しない (出力すると /login の OAuth にフォールバックできない)。
+       SONATYPE_GUIDE_TOKEN も同様に未注入なら出力しない */}}
 {{- if dig "apiKeys" "anthropic" "" . }}
     "ANTHROPIC_API_KEY": "{{ dig "apiKeys" "anthropic" "" . }}",
 {{- end }}
-    "SONATYPE_GUIDE_TOKEN": "{{ dig "apiKeys" "sonatypeGuide" "" . }}"
+{{- if dig "apiKeys" "sonatypeGuide" "" . }}
+    "SONATYPE_GUIDE_TOKEN": "{{ dig "apiKeys" "sonatypeGuide" "" . }}",
+{{- end }}
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000"
   },
   "skipWebFetchPreflight": true,
   "skipWorkflowUsageWarning": true,
@@ -267,7 +247,6 @@
       "Bash(until *)",
       "Bash(do *)",
       "Bash(do)",
-      "Bash(done)",
       "Bash(done:*)",
       "Bash(if *)",
       "Bash(elif *)",
@@ -359,8 +338,6 @@
       "mcp__maps-grounding-lite__*",
       "mcp__nano-banana__*",
       "mcp__xcode__*",
-      "mcp__gemini-cli__*",
-      "mcp__github__*",
       "mcp__plugin_sonatype-guide_sonatype-guide__*"
     ],
     "deny": [

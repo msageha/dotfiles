@@ -1,6 +1,6 @@
 function fenv -d "Select and load mise/fnox environment for the current directory"
     if not type -q fzf
-        echo "fzf is required."
+        echo "fenv: fzf not found" >&2
         return 1
     end
 

@@ -31,10 +31,12 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 
 - `home/` — chezmoi source (展開対象の dotfiles 本体)
 - `home/dot_claude/` — Claude Code のユーザースコープ設定 (`private_settings.json.tmpl`, `rules/`, `skills/`, `agents/`, `CLAUDE.md` 等)
-- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)
+- `home/dot_config/shell/` — bash / zsh 共有の `env.sh` (環境変数・PATH) と `integrations.sh` (ツールのシェル統合)。`dot_bash_profile` / `dot_zprofile` はこれを source する薄い入口
+- `home/.chezmoidata.toml` — テンプレート共有データ。MCP の版 pin (`mcp`)、Claude plugin の marketplace (`claude.marketplaces`) と plugin 一覧 + 有効フラグ (`claude.plugins`。install スクリプトは有効なものだけ導入し、settings.json の extraKnownMarketplaces / enabledPlugins はここから描画する単一ソース)、サブエージェントの description (`agents`)
+- `install/` — OS 別セットアップスクリプト (`common/`, `macos/`, `debian/`, `ubuntu/`, `alpine/`, `windows/`)。`lib.sh` (bash) / `windows/lib.ps1` が共通 helper で、`.chezmoiscripts` の各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。include したスクリプトは 1 つの bash プロセスに順に連結されるため、各スクリプトは関数を定義したうえで末尾の `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから自分の entry (`main` 等) を呼び終える構造にする。同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無く、prefix での rename はしない。一方、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は後続スクリプトに波及するため書かない。Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS` 環境変数、CLI / GUI 導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS) としてテンプレートが export する契約。`lib.sh` は各テンプレートに展開されるため、その変更はこれを include する `run_once_*` / `run_onchange_*` を全て再実行させる
 - `settings/` — アプリ設定 (`common/`, `macos/`)
-- `tests/` — bats テスト (`tests/files`, `tests/install`)
-- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) — Ubuntu / Debian / Alpine 検証用イメージのビルド (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)
+- `tests/` — bats テスト (`tests/files` = apply 後の `$HOME` を検査、`tests/install` = install スクリプトの関数をスタブで検査 (apply 済みの環境に依存しないため pre-push hook で回す)、`tests/docker` = `mise.toml` のバリアント表と CI matrix の一致)。skip_* による skip 判定は `tests/test_helper.bash`
+- `docker/` (`Dockerfile.debian` / `Dockerfile.alpine`) — Ubuntu / Debian / Alpine 検証用イメージの定義 (Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して生成)。バリアント表は `mise.toml` の `build-<tag>` タスク、chezmoi provisioning (導入 → apply → 掃除) は各 Dockerfile の最終 RUN
 
 ## LLM エージェント指示文の構成
 
@@ -49,8 +51,8 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   AGENTS.md か gemini/instructions.md を増やしたら
   `chezmoi execute-template < home/dot_gemini/config/AGENTS.md.tmpl | python3 -c 'import sys; print(len(sys.stdin.read()))'`
   で生成物そのものを再計測する (`wc -m` は LANG=C だとバイト数になる)。
-- サブエージェント定義の本文は `home/.chezmoitemplates/agents/<name>.md` が単一ソースで、Claude (`dot_claude/agents/*.md.tmpl`)・
-  Codex (`dot_codex/agents/*.toml.tmpl`、`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が include する。
+- サブエージェント定義の本文は `home/.chezmoitemplates/agents/<name>.md`、description は `home/.chezmoidata.toml` の `[agents]` が単一ソースで、Claude (`dot_claude/agents/*.md.tmpl`)・
+  Codex (`dot_codex/agents/*.toml.tmpl`、`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が include / `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
   Codex / Gemini の code-reviewer・security-reviewer は review / security skill 本文を frontmatter を剥いで追記する
   (`regexReplaceAll` は明示引数形。パイプ形は空文字になる)。skill 本文に `'''` を含めると Codex の TOML が壊れる。
   `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse するため、agents/*.md 本文に生の `{{` を書くと
@@ -64,23 +66,25 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 macOS / Linux は `skip_cli_tools` / `skip_gui_tools` (デフォルトはともに true = 最小構成。
 `skip_cli_tools=true` のとき `skip_gui_tools` は質問されず true 固定)、
 Windows は `skip_windows_extras`。
-`.chezmoiignore` (コーディングエージェント設定の除外)・`dot_config/mise/config.toml.tmpl`・
-`run_once_*` スクリプト・`data.apiKeys` の生成条件が横断的に参照する。
+`.chezmoiignore` (コーディングエージェント設定の除外)・`.chezmoiexternal.toml` (+ `.chezmoitemplates/external-fonts.toml`)・
+`dot_config/mise/config.toml.tmpl`・`run_once_*` / `run_onchange_*` スクリプト・`data.apiKeys` の生成条件・`tests/files/*.bats` の skip 判定が横断的に参照する。
 テンプレートで参照するときは、キー未定義の旧 config でも動くよう
 `dig "skip_cli_tools" false .` のフォールバック形を使う (既定 false = 全部入り)。
 例外: `dot_config/mise/config.toml.tmpl` の言語ランタイム (go / java / node / pnpm)・LSP サーバー群と、
 macOS 限定のクラウド / 開発 CLI 群 (awscli / aws-sso / flutter / gcloud / kubectl / stern /
-terraform / terragrunt) は dig 既定 true で、`skip_cli_tools=false` を明示した環境でのみインストールする。
+terraform / terragrunt)、および node に依存する nanobanana MCP (`.chezmoiexternal.toml` / `run_onchange_after_95` /
+`.chezmoitemplates/claude.json`) は dig 既定 true で、`skip_cli_tools=false` を明示した環境でのみインストールする。
 
 ## コマンド (mise tasks)
 
-タスクは `mise.toml` の `[tasks]` で定義する (Makefile は廃止済み)。
+タスクは `mise.toml` の `[tasks]` で定義する。
 
 - `mise run apply` — `chezmoi apply --verbose` (実際に適用)
 - `mise run dry-run` — `chezmoi apply --dry-run --verbose --force` (副作用なしの確認)
 - `mise run pre-commit` — `prek run --all-files` (lint / format / shellcheck / hadolint / typos など。prek は mise で導入)
+- `mise run pre-push` — `prek run --all-files --hook-stage pre-push` (テンプレート描画 dry-run + `tests/install` / `tests/docker` の bats)
 - `mise run test` — `bats -r tests/`
-- `mise run build-ubuntu` など `build-*` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)
+- `mise run build-<tag> [--push]` — 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント。バリアント表はこのタスク群)。各タスクは内部レシピ `docker-build` を呼び、`--push` は multi-arch build + push
 - `mise run decrypt-google-ime` / `encrypt-google-ime` — Google IME 辞書の復号・再暗号化。
   リポジトリは age 暗号化 (単一共有鍵、`home/.chezmoi.toml.tmpl`) を使い、辞書は
   `settings/common/encrypted_google.ime.txt.age` で管理。平文 `google.ime.txt` は gitignore 済みで、
@@ -88,9 +92,9 @@ terraform / terragrunt) は dig 既定 true で、`skip_cli_tools=false` を明�
 
 ## 検証
 
-変更後は `mise run pre-commit` → `mise run test` → `mise run dry-run` が通ることを確認する。
-このリポジトリの検証は上記の mise タスクで完結しており、`.claude/verify.sh` は用意しない
-(lint / format / テストは pre-commit と bats が包含する)。
+変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` → `mise run dry-run` が通ることを確認する。
+prek の git hook が commit 時に lint / format、push 時にテンプレート描画の dry-run と `tests/install` / `tests/docker` の bats を回す
+(`.pre-commit-config.yaml` の `default_stages` と `stages`)。このリポジトリの検証はこれらで完結しており、`.claude/verify.sh` は用意しない。
 `.claude/` はローカル設定領域のためリポジトリ管理対象外。
 
 **secret を含み得る出力は実行前に必ずマスクする。「まず生で試して後でマスクする」は不可。**

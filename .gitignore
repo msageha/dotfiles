@@ -12,13 +12,10 @@
 !dprint.json
 !renovate.json
 
-# --- Docker / Cloud Build ---
+# --- Docker ---
 !docker
-!docker/Dockerfile.alpine
-!docker/Dockerfile.debian
+!docker/**
 !.dockerignore
-!.gcloudignore
-!cloudbuild.yaml
 
 # --- ドキュメント ---
 !README.md

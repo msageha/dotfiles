@@ -1,4 +1,4 @@
-function fzf_gcloud_config -d "List gcloud config configurations"
+function fzf_gcloud_config -d "Select and activate a gcloud configuration"
     if not type -q gcloud
         echo "fzf_gcloud_config: gcloud not found" >&2
         return 1

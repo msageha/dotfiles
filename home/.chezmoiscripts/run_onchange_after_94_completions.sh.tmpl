@@ -1,16 +1,9 @@
 {{ if ne .chezmoi.os "windows" -}}
 #!/bin/bash
-set -e
+set -euo pipefail
 
-{{ if eq .chezmoi.os "linux" -}}
-export PATH="$HOME/.local/bin:$PATH"
-{{ end -}}
-{{ if eq .chezmoi.os "darwin" -}}
-eval "$(/opt/homebrew/bin/brew shellenv)"
-{{ end -}}
+{{ include "../install/lib.sh" }}
+activate_tool_paths
 
-eval "$(mise activate bash --shims)"
-(
-{{ include "../install/common/completions.sh" }}
-)
+{{   include "../install/common/completions.sh" }}
 {{ end -}}

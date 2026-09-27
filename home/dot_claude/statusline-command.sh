@@ -16,6 +16,7 @@ input=$(cat)
 } < <(jq -r '.context_window.used_percentage // "", .context_window.remaining_percentage // "", .model.display_name // "", .workspace.current_dir // .cwd // ""' <<<"$input")
 
 BAR_WIDTH=20
+line=""
 
 if [ -n "$used" ] && [ -n "$remaining" ]; then
   used_int=$(printf "%.0f" "$used")
@@ -37,8 +38,6 @@ if [ -n "$used" ] && [ -n "$remaining" ]; then
   remaining_int=$(printf "%.0f" "$remaining")
 
   line=$(printf '%b[%s]\033[0m %d%% used · %d%% remaining' "$bar_color" "$bar" "$used_int" "$remaining_int")
-else
-  line=""
 fi
 
 # セグメント (model / cwd) を " · " で連結。先頭に余分な区切りは付けない。

@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-# apt で入れる GUI 関連パッケージ
 apt_apps=(
-    fcitx5-mozc  # 日本語入力
+    fcitx5-mozc # 日本語入力
 )
 
-# snap で入れる GUI アプリ
 snap_apps=(
     discord
 )
 
-# snap (--classic) で入れる GUI アプリ
 snap_classic_apps=(
-    code               # Visual Studio Code
+    code # Visual Studio Code
     ghostty
     pycharm-community
     goland
@@ -25,62 +19,50 @@ snap_classic_apps=(
     webstorm
 )
 
-function has_privilege() {
-    if [ "$(id -u)" -eq 0 ]; then
-        return 0
-    fi
-    sudo -v 2>/dev/null || sudo -n true 2>/dev/null
-}
-
-function run_privileged() {
-    if [ "$(id -u)" -eq 0 ]; then
-        "$@"
-    else
-        sudo "$@"
-    fi
-}
-
 function update() {
-    printf "%b\n" "${BLUE}Updating APT package lists...${NC}"
-    run_privileged apt update -yq
+    log_step "Updating APT package lists..."
+    run_privileged apt -yq update
 }
 
 function install_apt_apps() {
-    printf "%b\n" "${BLUE}Installing APT GUI packages...${NC}"
+    log_step "Installing APT GUI packages..."
     run_privileged apt install -yq "${apt_apps[@]}"
 }
 
-function install_snap_apps() {
-    printf "%b\n" "${BLUE}Installing snap apps...${NC}"
-    if ! command -v snap &>/dev/null; then
-        printf "%b\n" "${YELLOW}snap が見つかりません (snapd 非搭載環境)。snap アプリのインストールをスキップします。${NC}"
+# $1 = snap 名、残りは snap install へ渡すオプション (--classic 等)
+function install_snap_app() {
+    local app="$1"
+    shift
+    if snap list "$app" &>/dev/null; then
+        log_step "${app} is already installed. Skipping"
         return 0
     fi
+    log_step "Installing ${app}${1:+ ($1)}..."
+    run_privileged snap install "$app" "$@"
+}
+
+function install_snap_apps() {
+    log_step "Installing snap apps..."
+    if ! command -v snap &>/dev/null; then
+        log_warn "snap が見つかりません (snapd 非搭載環境)。snap アプリのインストールをスキップします。"
+        return 0
+    fi
+    local app
     for app in "${snap_apps[@]}"; do
-        if snap list "$app" &>/dev/null; then
-            printf "%b\n" "${BLUE}${app} is already installed. Skipping${NC}"
-            continue
-        fi
-        printf "%b\n" "${BLUE}Installing ${app}...${NC}"
-        run_privileged snap install "$app"
+        install_snap_app "$app"
     done
     for app in "${snap_classic_apps[@]}"; do
-        if snap list "$app" &>/dev/null; then
-            printf "%b\n" "${BLUE}${app} is already installed. Skipping${NC}"
-            continue
-        fi
-        printf "%b\n" "${BLUE}Installing ${app} (classic)...${NC}"
-        run_privileged snap install "$app" --classic
+        install_snap_app "$app" --classic
     done
 }
 
 # Google Chrome は Ubuntu の apt リポジトリに無い (Google 配布のみ) ため公式 .deb を取得して入れる。
 # .deb が apt リポジトリと署名鍵を自動設定するので、以降は apt upgrade で更新される。
-# Linux 版は amd64 と arm64 のみ提供 (arm64 は 2026 Q2 提供開始)。それ以外や未公開時はスキップする。
+# Linux 版は amd64 と arm64 のみ提供 (arm64 は 2026 Q2 提供開始)。それ以外や未公開時はスキップする
 function install_chrome() {
-    printf "%b\n" "${BLUE}Installing Google Chrome...${NC}"
+    log_step "Installing Google Chrome..."
     if command -v google-chrome &>/dev/null; then
-        printf "%b\n" "${BLUE}Google Chrome is already installed.${NC}"
+        log_step "Google Chrome is already installed."
         return 0
     fi
 
@@ -89,7 +71,7 @@ function install_chrome() {
     case "$arch" in
         amd64 | arm64) ;;
         *)
-            printf "%b\n" "${YELLOW}Google Chrome is not available for ${arch}. Skipping.${NC}"
+            log_warn "Google Chrome is not available for ${arch}. Skipping."
             return 0
             ;;
     esac
@@ -99,17 +81,16 @@ function install_chrome() {
     # shellcheck disable=SC2064  # $deb を今展開して trap に固定する
     trap "rm -f '$deb'" RETURN
     if ! curl -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_${arch}.deb" -o "$deb"; then
-        printf "%b\n" "${YELLOW}Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping.${NC}"
+        log_warn "Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping."
         return 0
     fi
     run_privileged apt install -yq "$deb"
 }
 
 function main() {
-    printf "%b\n" "${BLUE}=== Starting GUI Application Installation ===${NC}"
-
+    log_step "=== Installing Ubuntu GUI apps ==="
     if ! has_privilege; then
-        printf "%b\n" "${YELLOW}root/sudo 権限が無いため GUI アプリのインストールをすべてスキップします。${NC}" >&2
+        log_warn "root/sudo 権限が無いため GUI アプリのインストールをすべてスキップします。"
         return 0
     fi
 
@@ -117,8 +98,7 @@ function main() {
     install_apt_apps
     install_chrome
     install_snap_apps
-
-    printf "%b\n" "${BLUE}=== All installations completed! ===${NC}"
+    log_step "=== All Ubuntu GUI apps installed! ==="
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

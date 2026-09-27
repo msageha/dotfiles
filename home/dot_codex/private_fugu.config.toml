@@ -1,5 +1,4 @@
-# codex --profile <name> が読む profile-v2 overlay (~/.codex/<name>.config.toml)。
-# base の config.toml に再帰マージされるため、上書きしたいキーだけを書く
+# codex --profile <name> が読む profile-v2 overlay。base の config.toml に再帰マージされるため上書きしたいキーだけを書く
 model = "fugu-ultra"
 model_reasoning_effort = "high"
 model_provider = "sakana"
@@ -7,9 +6,3 @@ model_catalog_json = "~/.codex/fugu.json"
 
 [features]
 image_generation = false
-
-[analytics]
-enabled = false
-
-[otel]
-metrics_exporter = "none"

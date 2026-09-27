@@ -1,19 +1,15 @@
-# 過去に配布していたが廃止したファイルを適用先から削除する。
-# - .claude/commands/*.md は .claude/skills/ へ移行済みの legacy slash command
-# - CLAUDE-FABLE-5.md は廃止した claude-fable5 alias 用のシステムプロンプト
-# - owl-alpha.json はどの codex profile からも参照されない model catalog
-.claude/CLAUDE-FABLE-5.md
-.codex/owl-alpha.json
-.claude/commands/commit.md
-.claude/commands/create-verify.md
-.claude/commands/deps.md
-.claude/commands/diagram.md
-.claude/commands/explain.md
-.claude/commands/pr.md
-.claude/commands/refactor.md
-.claude/commands/review.md
-.claude/commands/security.md
-.claude/commands/test.md
+# 過去に配布していたが廃止・移動したファイルを適用先から削除する。
+{{- /* 履歴上使われていない fish 関数の廃止で source から消えた旧ファイル */}}
+.config/fish/functions/faws.fish
+.config/fish/functions/fzf_load_env.fish
+.config/fish/functions/rm_cache.fish
+{{- /* 2026-07 の関数分割 (git.fish → git_*.fish 等) より前に配布していた複数関数ファイル。
+       残っていると fish が git / docker 等の呼び出し時に autoload し、分割後の同名関数を旧定義で上書きする */}}
+.config/fish/functions/clean.fish
+.config/fish/functions/docker.fish
+.config/fish/functions/fzf_environ.fish
+.config/fish/functions/gcloud.fish
+.config/fish/functions/git.fish
 
 {{ if ne .chezmoi.os "windows" -}}
 {{- /* dracula テーマの展開先を ~/.vim / ~/.tmux から ~/.local/share/{vim,tmux} へ移行したため、

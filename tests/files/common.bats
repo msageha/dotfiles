@@ -1,7 +1,8 @@
 #!/usr/bin/env bats
 
-# bats file_tags=common
-@test "[common] dotfiles" {
+load ../test_helper
+
+@test "[files] dotfiles" {
     files_exists=(
         "${HOME}/.config/git/config"
         "${HOME}/.vimrc"
@@ -9,6 +10,8 @@
         "${HOME}/.alias"
         "${HOME}/.bash_profile"
         "${HOME}/.zprofile"
+        "${HOME}/.config/shell/env.sh"
+        "${HOME}/.config/shell/integrations.sh"
         "${HOME}/.ssh/config"
         "${HOME}/.config/git/ignore"
         "${HOME}/.config/git/config.github"
@@ -22,9 +25,14 @@
         [ -f "${file}" ]
     done
 
+    # ~/.ssh は chezmoi が、.local/bin / .local/state / .cache/zsh は
+    # install/common/setup_directory.sh (run_once_before_01_common) が作る
     directories_exists=(
         "${HOME}/.config"
         "${HOME}/.ssh"
+        "${HOME}/.local/bin"
+        "${HOME}/.local/state"
+        "${HOME}/.cache/zsh"
     )
     for directory in "${directories_exists[@]}"; do
         echo "Checking ${directory}"
@@ -32,19 +40,18 @@
     done
 }
 
-@test "[common] gws-* skills are not deployed on non-macOS" {
+@test "[files] gws-* skills are not deployed on non-macOS" {
     if [[ "$(uname)" == "Darwin" ]]; then
         skip "gws-* skills are deployed only on macOS"
     fi
-    # skip_cli_tools=true では .claude/skills 自体が管理対象外
-    # (.chezmoiignore の skipCodingAgent gate と同条件) のため、その場合は確認しない。
-    if [ "$(chezmoi execute-template '{{ dig "skip_cli_tools" false . }}' 2>/dev/null)" == "true" ]; then
+    # skip_cli_tools=true では .claude/skills 自体が管理対象外 (.chezmoiignore の skipCodingAgent gate)
+    if cli_tools_skipped; then
         skip "coding agent settings are not managed (skip_cli_tools=true)"
     fi
-    # 個別 whitelist (.chezmoiignore の非 darwin 分岐) で gws-* 以外の skills は展開されること
+    # skills ディレクトリは展開され、gws-* だけが .chezmoiignore の非 darwin 分岐で除外されること
     echo "Checking ${HOME}/.claude/skills/commit"
     [ -d "${HOME}/.claude/skills/commit" ]
-    # gws-* skills は展開されないこと (マッチが無ければ glob はリテラルのまま残り -e は偽になる)
+    # マッチが無ければ glob はリテラルのまま残り -e は偽になる
     for path in "${HOME}/.claude/skills/"gws-*; do
         echo "Checking absence of ${path}"
         [ ! -e "${path}" ]

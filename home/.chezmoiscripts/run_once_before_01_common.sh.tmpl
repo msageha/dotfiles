@@ -1,6 +1,7 @@
 {{ if ne .chezmoi.os "windows" -}}
 #!/bin/bash
-set -e
+set -euo pipefail
 
+{{ include "../install/lib.sh" }}
 {{   include "../install/common/setup_directory.sh" }}
 {{ end -}}

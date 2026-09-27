@@ -1,89 +1,34 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-
-BLUE="\033[0;34m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-# 公式 marketplace (claude-plugins-official) から plugin を取得する共通処理。
-# add / install は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する。
-function install_plugin() {
-    local plugin_id="$1"
-    claude plugin install "$plugin_id"
-    claude plugin update "$plugin_id"
-}
-
-function cloudflare() {
-    printf "%b\n" "${BLUE}Installing cloudflare/skills...${NC}"
-    install_plugin cloudflare@claude-plugins-official
-}
-
-function github() {
-    printf "%b\n" "${BLUE}Installing GitHub MCP server...${NC}"
-    install_plugin github@claude-plugins-official
-}
-
-function agent_sdk_dev() {
-    printf "%b\n" "${BLUE}Installing agent-sdk-dev...${NC}"
-    install_plugin agent-sdk-dev@claude-plugins-official
-}
-
-function plugin_dev() {
-    printf "%b\n" "${BLUE}Installing plugin-dev...${NC}"
-    install_plugin plugin-dev@claude-plugins-official
-}
-
-function claude_md_management() {
-    printf "%b\n" "${BLUE}Installing claude-md-management...${NC}"
-    install_plugin claude-md-management@claude-plugins-official
-}
-
-function skill_creator() {
-    printf "%b\n" "${BLUE}Installing skill-creator...${NC}"
-    install_plugin skill-creator@claude-plugins-official
-}
-
-function sonatype_guide() {
-    printf "%b\n" "${BLUE}Installing sonatype-guide...${NC}"
-    install_plugin sonatype-guide@claude-plugins-official
-}
-
-lsp_plugins=(
-    pyright-lsp
-    gopls-lsp
-    clangd-lsp
-    swift-lsp
-    typescript-lsp
-)
-
-function lsp() {
-    printf "%b\n" "${BLUE}Installing language servers...${NC}"
-    local name
-    for name in "${lsp_plugins[@]}"; do
-        install_plugin "${name}@claude-plugins-official"
-    done
-}
+set -euo pipefail
+declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 function main() {
+    # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
+    # run_once_before テンプレートが .chezmoidata.toml の claude.* から export する契約。
+    # marketplace の未設定は設定ミスとして落とす。CLAUDE_PLUGINS は未設定・空文字を 0 件として扱う
+    # (PowerShell は空文字を代入した環境変数を削除するため両者を区別できず、Windows 版 claude_plugins.ps1 と契約を揃える)
+    if [ -z "${CLAUDE_MARKETPLACES+x}" ]; then
+        log_error "CLAUDE_MARKETPLACES is not set; it must be exported by the caller."
+        exit 1
+    fi
     if ! command -v claude &>/dev/null; then
-        printf "%b\n" "${YELLOW}claude が見つかりません。plugin のインストールをスキップします。${NC}"
+        log_warn "claude が見つかりません。plugin のインストールをスキップします。"
         return 0
     fi
 
-    printf "%b\n" "${BLUE}=== Installing Claude Code plugins ===${NC}"
-    claude plugin marketplace add anthropics/claude-plugins-official
-    claude plugin marketplace update claude-plugins-official
-
-    cloudflare
-    github
-    agent_sdk_dev
-    plugin_dev
-    claude_md_management
-    skill_creator
-    sonatype_guide
-    lsp
-
-    printf "%b\n" "${BLUE}=== All Claude Code plugins installed! ===${NC}"
+    log_step "=== Installing Claude Code plugins ==="
+    # marketplace add / plugin install / update は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する
+    local marketplace plugin
+    for marketplace in $CLAUDE_MARKETPLACES; do
+        claude plugin marketplace add "${marketplace#*=}"
+        claude plugin marketplace update "${marketplace%%=*}"
+    done
+    for plugin in ${CLAUDE_PLUGINS:-}; do
+        log_step "Installing ${plugin}..."
+        claude plugin install "$plugin"
+        claude plugin update "$plugin"
+    done
+    log_step "=== All Claude Code plugins installed! ==="
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

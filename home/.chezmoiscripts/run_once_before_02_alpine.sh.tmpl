@@ -1,9 +1,9 @@
-{{ if eq .chezmoi.os "linux" -}}
-{{   if eq (dig "id" "" .chezmoi.osRelease) "alpine" -}}
+{{ if and (eq .chezmoi.os "linux") (eq (dig "id" "" .chezmoi.osRelease) "alpine") -}}
 #!/bin/bash
-set -e
-{{     include "../install/alpine/apk.sh" }}
+set -euo pipefail
+
+{{ include "../install/lib.sh" }}
+activate_tool_paths
+{{   include "../install/alpine/apk.sh" }}
 curl -fsSL https://mise.run | sh
-export PATH="$HOME/.local/bin:$PATH"
-{{   end -}}
 {{ end -}}
