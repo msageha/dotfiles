@@ -98,7 +98,7 @@ API キーは `fnox.toml` では age 暗号文として管理され、ローカ�
 
 #### SSH 秘密鍵
 
-`~/.ssh/config` / `config.local` が参照する SSH 鍵はリポジトリに置かず、1Password の SSH Key item から `chezmoi apply` 時に `onepasswordRead` で取得する。秘密鍵は `home/private_dot_ssh/**/private_<name>.tmpl` が item の `private key` を、公開鍵は `<name>.pub.tmpl` が同じ item の `public key` を描く。
+`~/.ssh/config` / `config.local` が参照する SSH 鍵はリポジトリに置かず、1Password の SSH Key item から `chezmoi apply` 時に `onepasswordRead` で取得する。秘密鍵は `home/private_dot_ssh/**/private_<name>.tmpl` が item の `private_key` フィールドを OpenSSH 形式で、公開鍵は `<name>.pub.tmpl` が同じ item の `public_key` フィールドを描く。
 取得する鍵と item 名は `home/.chezmoidata.toml` の `[ssh_keys]` が単一ソースで、各 template はそこから item を参照し、`.chezmoiignore` はそこから除外対象を描く。
 ファイルとして配置するのは、1Password SSH agent が使えない headless Linux や、承認ダイアログを待てないバックグラウンドの ssh / git でも鍵を使うため。
 
@@ -283,7 +283,7 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   │   ├── config.tmpl            # 公開可の SSH 設定 (~/.ssh/config.local を Include)
 │   │   ├── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
 │   │   ├── **/private_<name>.tmpl # 秘密鍵 (1Password の SSH Key item から onepasswordRead で取得。apply_ssh_keys=true のときだけ適用)
-│   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public key。同上)
+│   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public_key。同上)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)
 │   ├── dot_codex/                 # OpenAI Codex 設定
 │   ├── dot_gemini/                # Antigravity (Gemini) 設定

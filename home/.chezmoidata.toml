@@ -53,7 +53,7 @@ test_runner = "Runs tests, lint, and verification commands, then summarizes fail
 # private_<dir>/<name>.pub.tmpl (公開鍵) の位置と手で一致させる (ズレると .chezmoiignore の除外が外れ、通常の status / apply で op read が走る)。
 # item は vault 内の SSH Key item 名。各 template は .ssh_keys.items.<key>.item で参照する (無いキーは描画時に fail する)
 [ssh_keys]
-vault = "Private"
+vault = "SSH Keys"
 
 [ssh_keys.items]
 git_msageha = { path = "git_msageha", item = "ssh-git_msageha" }
