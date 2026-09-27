@@ -86,7 +86,7 @@ pnpm = "12.5.1"
 # renovate: datasource=npm depName=typescript
 "npm:typescript" = "5.9.3"
 # renovate: datasource=npm depName=typescript-language-server
-"npm:typescript-language-server" = "5.3.0"
+"npm:typescript-language-server" = "6.0.0"
 {{ end -}}
 {{/* クラウド / 開発 CLI 群は macOS かつ skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true の理由は上と同じ) */ -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
