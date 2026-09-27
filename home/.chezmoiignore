@@ -10,6 +10,21 @@
 !.ssh/config
 {{ end }}
 
+# 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で op read が走らないよう、
+# data の apply_ssh_keys が true の実行 (mise run apply-ssh-keys が --override-data で渡す) 以外では
+# 秘密鍵・公開鍵・それらを置くサブディレクトリを ignore する (子が全て ignore でもディレクトリは作成されるため明示する)。
+# apply_ssh_keys は config には書かない前提で dig の既定を false にし、bool true と厳密に比較する (文字列を渡すと template error)。
+# Windows は private_ 属性が効かず NTFS ACL を制御できないため常に ignore する
+{{ if or (eq .chezmoi.os "windows") (ne (dig "apply_ssh_keys" false .) true) }}
+{{-   range .ssh_keys.items }}
+{{-     if ne (dir .path) "." }}
+.ssh/{{ dir .path }}
+{{-     end }}
+.ssh/{{ .path }}
+.ssh/{{ .path }}.pub
+{{-   end }}
+{{ end }}
+
 # Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
 # git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける
 {{ if eq .chezmoi.os "windows" }}

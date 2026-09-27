@@ -8,7 +8,7 @@ dprint = "0.57.4"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.35.2"
 hadolint = "2.15.1"
-# fnox.toml の 1Password provider が README の bootstrap 手順で op を呼び出すためここで pin する。
+# fnox.toml の 1Password provider (README の bootstrap 手順) と apply-ssh-keys (chezmoi の onepasswordRead) が op を呼び出すためここで pin する。
 # renovate: datasource=custom.onepassword-cli depName=1password-cli
 op = "2.34.1"
 powershell = "7.6.6"
@@ -41,6 +41,13 @@ run = "prek run --all-files --hook-stage pre-push"
 [tasks.test]
 description = "bats -r tests/"
 run = "bats -r tests/"
+
+# 鍵の template は data の apply_ssh_keys が true の実行だけ .chezmoiignore の除外が外れる (README「SSH 秘密鍵」)。
+# --less-interactive --error-on-conflict は chezmoi 未管理の既存鍵と内容が違うとき黙って上書きせず exit 1 にする
+# (確認後に上書きするなら `mise run apply-ssh-keys -- --force`)。--verbose は秘密鍵を平文で表示するため付けない
+[tasks.apply-ssh-keys]
+description = "1Password の SSH Key item から秘密鍵と公開鍵を取得して ~/.ssh 配下へ配置する"
+run = '''chezmoi apply --override-data '{"apply_ssh_keys": true}' --less-interactive --error-on-conflict ~/.ssh'''
 
 [tasks.encrypt-google-ime]
 description = "平文の IME 辞書を編集後に再暗号化する"
