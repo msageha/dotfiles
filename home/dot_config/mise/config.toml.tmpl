@@ -51,7 +51,7 @@ jq = "1.8.2"
 yq = "4.53.6"
 {{/* Git ホスティング / secret 管理 / Cloudflare CLI */ -}}
 # renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
-"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.118.0"
+"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.35.3"
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
@@ -86,7 +86,7 @@ pnpm = "12.7.0"
 {{/* クラウド / 開発 CLI 群は macOS かつ skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true の理由は上と同じ) */ -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 # renovate: datasource=github-tags depName=aws/aws-cli
-awscli = "2.37.3"
+awscli = "2.37.4"
 # renovate: datasource=github-releases depName=synfinatic/aws-sso-cli extractVersion=^v?(?<version>.+)
 aws-sso = "2.3.2"
 # renovate: datasource=flutter-version depName=flutter
