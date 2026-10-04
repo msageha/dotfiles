@@ -378,6 +378,17 @@
   "hooks": {
 {{- /* 以下の hooks は POSIX シェル + jq 前提。ネイティブ Windows では毎回エラー (exit≠2 で fail-open) になるだけなので設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -n \"$CLAUDE_ENV_FILE\" ]; then printf '%s\\n' 'export EDITOR=false VISUAL=false GIT_EDITOR=false GIT_SEQUENCE_EDITOR=false' 'export PAGER=cat GIT_PAGER=cat GH_PAGER=cat MANPAGER=cat' 'export NO_COLOR=1 CLICOLOR=0 GIT_TERMINAL_PROMPT=0 GH_PROMPT_DISABLED=1' 'export AWS_PAGER= AWS_CLI_AUTO_PROMPT=off' >> \"$CLAUDE_ENV_FILE\"; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

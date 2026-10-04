@@ -1,12 +1,8 @@
 # shellcheck shell=bash
 # bash (~/.bash_profile) と zsh (~/.zprofile) が共有するツールのシェル統合 (prompt / hook / completion)。
-# env.sh の後に source する。zsh は compinit (と aws_completer 用の bashcompinit) を済ませてから source すること。
-# _dotfiles_shell はプロンプト毎に呼ばれる _fnox_hook も参照するため unset しない
-if [ -n "${ZSH_VERSION:-}" ]; then
-    _dotfiles_shell=zsh
-else
-    _dotfiles_shell=bash
-fi
+# env.sh の後に source する。human の zsh は compinit (と aws_completer 用の bashcompinit) を済ませておく。
+# _dotfiles_human_shell と _dotfiles_shell は env.sh が設定する。_fnox_hook でも参照するため unset しない
+# shellcheck disable=SC2154
 
 # mise 経由でのみ導入されるツールは mise activate の PATH 反映がプロンプト時のため、
 # fresh シェルでは command -v が失敗しうる。mise which でフォールバックして実体パスを返す
@@ -16,50 +12,49 @@ _tool_path() {
 }
 
 # --- OrbStack ---
-if [ -d "$HOME/.orbstack/shell" ]; then
+if $_dotfiles_human_shell && [ -d "$HOME/.orbstack/shell" ]; then
     # shellcheck source=/dev/null
     source "$HOME/.orbstack/shell/init.$_dotfiles_shell"
+elif [ -d "$HOME/.orbstack/bin" ]; then
+    export PATH="$PATH:$HOME/.orbstack/bin"
 fi
 
-# --- Starship ---
-if _bin="$(_tool_path starship)"; then
-    eval "$("$_bin" init "$_dotfiles_shell")"
-fi
+if $_dotfiles_human_shell; then
+    # --- Starship ---
+    if _bin="$(_tool_path starship)"; then
+        eval "$("$_bin" init "$_dotfiles_shell")"
+    fi
 
-# --- fzf (CTRL-R / CTRL-T / ALT-C) ---
-if _bin="$(_tool_path fzf)"; then
-    eval "$("$_bin" "--$_dotfiles_shell")"
-fi
+    # --- fzf (CTRL-R / CTRL-T / ALT-C) ---
+    if _bin="$(_tool_path fzf)"; then
+        eval "$("$_bin" "--$_dotfiles_shell")"
+    fi
 
-# --- zoxide ---
-if _bin="$(_tool_path zoxide)"; then
-    eval "$("$_bin" init "$_dotfiles_shell")"
-fi
+    # --- zoxide ---
+    if _bin="$(_tool_path zoxide)"; then
+        eval "$("$_bin" init "$_dotfiles_shell")"
+    fi
 
-# --- Xcode ---
-# DEVELOPER_DIR は xcrun / ビルドツールが参照する。usr/bin を prepend すると Homebrew の git / python3 を
-# Xcode 同梱版が上書きしてしまうため、末尾に追加して Homebrew を優先しつつ simctl 等の Xcode 専用ツールも引けるようにする
-if xcode-select -p &>/dev/null; then
-    DEVELOPER_DIR="$(xcode-select -p)"
-    export DEVELOPER_DIR
-    export PATH="$PATH:$DEVELOPER_DIR/usr/bin"
-fi
-
-# --- direnv ---
-if _bin="$(_tool_path direnv)"; then
-    eval "$("$_bin" hook "$_dotfiles_shell")"
+    # --- direnv ---
+    if _bin="$(_tool_path direnv)"; then
+        eval "$("$_bin" hook "$_dotfiles_shell")"
+    fi
 fi
 
 # --- mise ---
 if command -v mise &>/dev/null; then
-    eval "$(mise activate "$_dotfiles_shell")"
+    if $_dotfiles_human_shell; then
+        eval "$(mise activate "$_dotfiles_shell")"
+    else
+        eval "$(mise activate "$_dotfiles_shell" --shims)"
+    fi
 fi
 
 # --- 1Password CLI のデフォルトアカウント ---
 export OP_ACCOUNT=my.1password.com
 
 # --- fnox ---
-if command -v fnox &>/dev/null; then
+if $_dotfiles_human_shell && command -v fnox &>/dev/null; then
     eval "$(fnox activate "$_dotfiles_shell")"
     _fnox_find_1password_config() {
         local dir="$PWD" config
@@ -113,11 +108,13 @@ fi
 # aws_completer は bash 形式の complete -C を前提とする (zsh は bashcompinit 経由)。
 # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、completions.sh が生成する
 # ファイル名一致の autoload には乗せず、この場で直接 source する
-if _bin="$(_tool_path aws_completer)"; then
-    complete -C "$_bin" aws
-fi
-if _bin="$(_tool_path aws-sso)"; then
-    eval "$("$_bin" setup completions --source --shell "$_dotfiles_shell")"
+if $_dotfiles_human_shell; then
+    if _bin="$(_tool_path aws_completer)"; then
+        complete -C "$_bin" aws
+    fi
+    if _bin="$(_tool_path aws-sso)"; then
+        eval "$("$_bin" setup completions --source --shell "$_dotfiles_shell")"
+    fi
 fi
 
 # --- Claude Code の GitHub トークン ---
