@@ -13,7 +13,7 @@ source "$HOME/.config/shell/integrations.sh"
 # --- 補完の読み込み ---
 # completions.sh が生成した静的ファイル (kubectl / ngrok / uv 含む) を source する
 _bash_completions_dir="$HOME/.local/share/bash-completion/completions"
-if [ -d "$_bash_completions_dir" ]; then
+if $_dotfiles_human_shell && [ -d "$_bash_completions_dir" ]; then
     _bash_supports_usage_completion=false
     if ((BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 2))); then
         _bash_supports_usage_completion=true

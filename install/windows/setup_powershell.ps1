@@ -98,19 +98,44 @@ function Install-StarshipConfig {
 
 # PowerShell プロファイルへ書き込む管理ブロック (キーがマーカー名になる)
 $ProfileBlocks = [ordered]@{
-    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
+    # UTF-8 出力は共通にし、prompt と PSReadLine は人間の対話 shell に限定する。
     starship = @(
         '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
         '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-        'if (Get-Command starship -ErrorAction SilentlyContinue) {'
-        '    Invoke-Expression (&starship init powershell)'
+        '$dotfilesAgent = @("AI_AGENT", "CLAUDECODE", "CODEX_CI", "CODEX_SANDBOX", "GEMINI_CLI", "CURSOR_AGENT" | Where-Object { [Environment]::GetEnvironmentVariable($_) }).Count -gt 0'
+        '$dotfilesShellArgs = [Environment]::GetCommandLineArgs()'
+        '$dotfilesBatch = $dotfilesShellArgs -match "^-(Command|c|File|f|EncodedCommand|e|ec|CommandWithArgs|cwa)$|\.ps1$"'
+        '$dotfilesHumanInteractive = -not $dotfilesAgent -and'
+        '    -not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected -and'
+        '    -not ($dotfilesShellArgs -match "^-NonI") -and'
+        '    (-not $dotfilesBatch -or $dotfilesShellArgs -match "^-NoE")'
+        'if ($dotfilesHumanInteractive) {'
+        '    if (Get-Command starship -ErrorAction SilentlyContinue) {'
+        '        Invoke-Expression (&starship init powershell)'
+        '    }'
+        '} else {'
+        '    $env:EDITOR = "powershell.exe -NoProfile -NonInteractive -Command exit 1"'
+        '    $env:VISUAL = $env:EDITOR'
+        '    $env:GIT_EDITOR = $env:EDITOR'
+        '    $env:GIT_SEQUENCE_EDITOR = $env:EDITOR'
+        # Windows PowerShell 5.1 は空の環境変数を保持できないため、pager を byte stream の透過に置き換える。
+        '    $env:PAGER = ''powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'''
+        '    $env:MANPAGER = $env:PAGER'
+        '    $env:AWS_PAGER = $env:PAGER'
+        '    $env:GIT_PAGER = "cat"'
+        '    $env:GH_PAGER = "cat"'
+        '    $env:NO_COLOR = "1"'
+        '    $env:CLICOLOR = "0"'
+        '    $env:GIT_TERMINAL_PROMPT = "0"'
+        '    $env:GH_PROMPT_DISABLED = "1"'
+        '    $env:AWS_CLI_AUTO_PROMPT = "off"'
         '}'
     )
     # PSReadLine トークン色の Dracula テーマ (https://github.com/dracula/powershell の
     # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
     # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
     dracula = @(
-        'if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {'
+        'if ($dotfilesHumanInteractive -and (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue)) {'
         '    Set-PSReadLineOption -Colors @{'
         '        "Command"   = [ConsoleColor]::Green'
         '        "Parameter" = [ConsoleColor]::Gray'

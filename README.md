@@ -216,6 +216,14 @@ docker container run -it msageha/dotfiles:ubuntu
 - Option (Alt) → Command
 - Command → Option
 
+## Agent が使う shell
+
+bash / zsh / fish は共通の PATH・build 環境を読み込み、対話 shell かつ stdin/stdout が TTY で Agent marker が無いときだけ prompt・補完・alias・theme を初期化する。PowerShell も TTY・`-NonInteractive`・Agent marker で Starship / PSReadLine を分岐する。marker は `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `GEMINI_CLI` / `CURSOR_AGENT`。これは初期化の切り替えであり、権限や secret の隔離ではない。
+
+非対話 / Agent の shell では editor の自動起動を失敗終了にし、pager・Git の terminal prompt・GitHub CLI の prompt・AWS CLI の auto prompt を無効にする。mise は shims を利用し、fnox / direnv の prompt hook は人間の対話 shell に限定する。必要な project 環境は `mise exec -- <command>` / `fnox exec -- <command>` / `direnv exec . <command>` で明示的に渡す。
+
+Codex は `shell_environment_policy.set`、macOS / Linux の Claude Code Bash tool は `SessionStart` の `CLAUDE_ENV_FILE` にも同じ非対話設定を持たせるため、profile を読まない実行にも適用される。人間が使う Codex / Claude Code の TUI の editor は変更しない。`CLAUDE_ENV_FILE` は Bash tool 用のため、native Windows の Claude Code で PowerShell の profile を省略する起動にはこの設定が適用されない。login shell は変更しない。
+
 ## 暗号化された設定の編集
 
 age 秘密鍵を配置済みの環境で、暗号化ファイルを編集・再暗号化する。
