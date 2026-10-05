@@ -6,7 +6,7 @@ bats = "1.14.0"
 chezmoi = "2.72.2"
 dprint = "0.57.4"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
-fnox = "1.35.3"
+fnox = "1.36.0"
 hadolint = "2.15.1"
 # fnox.toml の 1Password provider (README の bootstrap 手順) と apply-ssh-keys (chezmoi の onepasswordRead) が op を呼び出すためここで pin する。
 # renovate: datasource=custom.onepassword-cli depName=1password-cli
