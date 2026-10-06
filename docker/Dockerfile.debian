@@ -59,7 +59,7 @@ USER ${USERNAME}
 # hadolint ignore=DL3004
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   if [ -f /run/secrets/github_token ]; then MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)" && export MISE_GITHUB_TOKEN; fi && \
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.72.2 && \
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.73.0 && \
   export PATH="$HOME/.local/bin:$PATH" && \
   mkdir -p "$HOME/.config/chezmoi" && \
   printf '%s\n' \
