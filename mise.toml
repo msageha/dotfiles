@@ -4,7 +4,7 @@ actionlint = "1.7.12"
 age = "1.3.2"
 bats = "1.14.0"
 chezmoi = "2.73.0"
-dprint = "0.57.4"
+dprint = "0.58.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.36.0"
 hadolint = "2.15.1"
@@ -133,7 +133,7 @@ run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 # GPU は amd64 のみのためマルチアーキ (build-multi-platform) の対象外。
 [tasks.build-ubuntu-gpu]
 description = "Ubuntu + CUDA + CLI (amd64 のみ)"
-run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.4.1-base-ubuntu26.04 false docker/Dockerfile.debian"
+run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.4.2-base-ubuntu26.04 false docker/Dockerfile.debian"
 
 [tasks.buildx-setup]
 description = "buildx ビルダー (mybuilder) の作成・有効化"
