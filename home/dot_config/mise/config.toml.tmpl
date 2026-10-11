@@ -14,7 +14,7 @@ starship = "1.26.0"
 {{/* CLI ユーティリティ群 (dig 既定 false = キー未定義の旧 config でも入れる) */ -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 # renovate: datasource=github-releases depName=astral-sh/uv extractVersion=^v?(?<version>.+)
-uv = "0.12.22"
+uv = "0.12.23"
 {{/* モダンCLI ユーティリティ群 */ -}}
 # renovate: datasource=github-releases depName=sharkdp/bat extractVersion=^v?(?<version>.+)
 bat = "0.26.1"
@@ -71,7 +71,7 @@ java = "temurin-26.0.1+8"
 # renovate: datasource=node-version depName=nodejs
 node = "26.10.0"
 # renovate: datasource=npm depName=pnpm versioning=semver
-pnpm = "12.9.0"
+pnpm = "12.9.1"
 {{/* LSP サーバー群 (Claude Code の LSP plugin が参照。go / node ランタイム前提) */ -}}
 # renovate: datasource=go depName=golang.org/x/tools/gopls extractVersion=^v(?<version>.+)
 "go:golang.org/x/tools/gopls" = "0.23.0"
