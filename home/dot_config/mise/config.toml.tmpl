@@ -53,14 +53,14 @@ yq = "4.54.1"
 # renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
 "go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
-fnox = "1.38.1"
+fnox = "1.39.0"
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
 gh = "2.102.0"
 # renovate: datasource=gitlab-releases depName=gitlab-org/cli extractVersion=^v(?<version>.+)
-glab = "1.120.0"
+glab = "1.121.0"
 # fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "6.12.0"
+usage = "6.12.1"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバー群は skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true = キー未定義の旧 config に重いツールを入れない) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
