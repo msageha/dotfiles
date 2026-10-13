@@ -69,7 +69,7 @@ repos:
         always_run: true
         stages: [pre-push]
   - repo: https://github.com/crate-ci/typos
-    rev: dcea7116aaf94953292ab6ce0907fe483ef15406 # frozen: v1.51.0
+    rev: 7f9d0819ca1c008ade73f4b41fa9d258d48f605b # frozen: v1.51.1
     hooks:
       - id: typos
   - repo: https://github.com/rhysd/actionlint
