@@ -30,6 +30,23 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 [sandbox_workspace_write]
 network_access = true
 
+[shell_environment_policy.set]
+AI_AGENT = "1"
+EDITOR = "false"
+VISUAL = "false"
+GIT_EDITOR = "false"
+GIT_SEQUENCE_EDITOR = "false"
+PAGER = "cat"
+GIT_PAGER = "cat"
+GH_PAGER = "cat"
+MANPAGER = "cat"
+NO_COLOR = "1"
+CLICOLOR = "0"
+GIT_TERMINAL_PROMPT = "0"
+GH_PROMPT_DISABLED = "1"
+AWS_PAGER = ""
+AWS_CLI_AUTO_PROMPT = "off"
+
 [agents]
 max_threads = 6
 max_depth = 1
@@ -75,6 +92,18 @@ trust_level = "trusted"
 [projects.%q]
 trust_level = "trusted"
 ` .mcp.context7 $worksSrc $chezmoiSrc | fromToml -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[shell_environment_policy.set]
+EDITOR = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+VISUAL = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+GIT_EDITOR = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+GIT_SEQUENCE_EDITOR = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+PAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+MANPAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+AWS_PAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+`) -}}
+{{- end -}}
 {{- /* dart / xcode MCP は macOS 専用バイナリ (dart, xcrun) に依存する */}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `

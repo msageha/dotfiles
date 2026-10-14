@@ -1,6 +1,6 @@
-# --- エイリアスの読み込み ---
-if test -f $HOME/.alias
-    source $HOME/.alias
+set -l human_shell false
+if status is-interactive; and isatty stdin; and isatty stdout; and test -z "$AI_AGENT$CLAUDECODE$CODEX_CI$CODEX_SANDBOX$GEMINI_CLI$CURSOR_AGENT"
+    set human_shell true
 end
 
 # --- ヒストリーファイルの設定 ---
@@ -9,46 +9,53 @@ set -gx SQL_HISTORY $HOME/.local/state/sql_history
 set -gx MYSQL_HISTFILE $HOME/.local/state/mysql_history
 set -gx PSQL_HISTFILE $HOME/.local/state/psql_history
 set -gx PYTHON_HISTORY $HOME/.local/state/python_history
-
-# --- fzf Dracula Theme ---
-set -gx FZF_DEFAULT_OPTS "--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
-
-# --- eza / ripgrep / grep Dracula Theme ---
-# (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
-set -gx EZA_COLORS "uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
 set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
-set -gx GREP_COLORS "mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
-if test (uname) = "Darwin"
-    # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
-    set -gx GREP_COLOR "1;38;2;255;85;85"
-end
-# GREP_COLORS / GREP_COLOR は --color=auto を付けて実行しない限り効かない。
-# ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要。
-# ただし macOS 13+ の Apple 製 ls (FreeBSD 由来) は --color=auto でも
-# COLORTERM / CLICOLOR が設定されていないと色を出さない (man ls)。fish の workaround は
-# Terminal.app 限定のため、COLORTERM を設定しないターミナルでも色が付くよう CLICOLOR を
-# 設定する (GNU ls は CLICOLOR を無視するため他 OS でも無害)
-set -gx CLICOLOR 1
-if echo x | grep --color=auto -q x 2>/dev/null
-    alias grep='grep --color=auto'
-end
 
-# --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
-set -gx MANPAGER "less -s -M +Gg"
-set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin bold
-set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin blink
-set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # begin reverse video
-set -gx LESS_TERMCAP_us (printf '\e[01;36m') # begin underline
-set -gx LESS_TERMCAP_me (printf '\e[0m') # reset bold/blink
-set -gx LESS_TERMCAP_se (printf '\e[0m') # reset reverse video
-set -gx LESS_TERMCAP_ue (printf '\e[0m') # reset underline
-set -gx GROFF_NO_SGR 1
+if test "$human_shell" = true
+    # --- エイリアスの読み込み ---
+    if test -f $HOME/.alias
+        source $HOME/.alias
+    end
 
-# --- カスタム関数のエイリアス ---
-alias fgc=fzf_gcloud_config
-alias fga=fzf_gcloud_auth
-alias gssh=fzf_gcloud_ssh
-alias fssh=fzf_ssh
+    # --- fzf Dracula Theme ---
+    set -gx FZF_DEFAULT_OPTS "--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+
+    # --- eza / ripgrep / grep Dracula Theme ---
+    # (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
+    set -gx EZA_COLORS "uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
+    set -gx GREP_COLORS "mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
+    if test (uname) = Darwin
+        # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
+        set -gx GREP_COLOR "1;38;2;255;85;85"
+    end
+    # GREP_COLORS / GREP_COLOR は --color=auto を付けて実行しない限り効かない。
+    # ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要。
+    # ただし macOS 13+ の Apple 製 ls (FreeBSD 由来) は --color=auto でも
+    # COLORTERM / CLICOLOR が設定されていないと色を出さない (man ls)。fish の workaround は
+    # Terminal.app 限定のため、COLORTERM を設定しないターミナルでも色が付くよう CLICOLOR を
+    # 設定する (GNU ls は CLICOLOR を無視するため他 OS でも無害)
+    set -gx CLICOLOR 1
+    if echo x | grep --color=auto -q x 2>/dev/null
+        alias grep='grep --color=auto'
+    end
+
+    # --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
+    set -gx MANPAGER "less -s -M +Gg"
+    set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin bold
+    set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin blink
+    set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # begin reverse video
+    set -gx LESS_TERMCAP_us (printf '\e[01;36m') # begin underline
+    set -gx LESS_TERMCAP_me (printf '\e[0m') # reset bold/blink
+    set -gx LESS_TERMCAP_se (printf '\e[0m') # reset reverse video
+    set -gx LESS_TERMCAP_ue (printf '\e[0m') # reset underline
+    set -gx GROFF_NO_SGR 1
+
+    # --- カスタム関数のエイリアス ---
+    alias fgc=fzf_gcloud_config
+    alias fga=fzf_gcloud_auth
+    alias gssh=fzf_gcloud_ssh
+    alias fssh=fzf_ssh
+end
 
 # --- ローカルバイナリのパス追加 ---
 # (uvでインストールしたツールや mise 本体用)
@@ -72,19 +79,36 @@ end
 # git のコミットエディタはここではなく gitconfig の core.editor = vim が最優先される
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある。
-if type -q code
-    set -gx EDITOR "code --wait"
-else
-    set -gx EDITOR vim
-end
-set -gx VISUAL $EDITOR
+if test "$human_shell" = true
+    if type -q code
+        set -gx EDITOR "code --wait"
+    else
+        set -gx EDITOR vim
+    end
+    set -gx VISUAL $EDITOR
 
-# --- dircolors (LS_COLORS) の Dracula テーマ ---
-# (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
-# GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
-set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
-if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
-    eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
+    # --- dircolors (LS_COLORS) の Dracula テーマ ---
+    # (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
+    # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
+    set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
+    if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
+        eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
+    end
+else
+    set -gx EDITOR false
+    set -gx VISUAL false
+    set -gx GIT_EDITOR false
+    set -gx GIT_SEQUENCE_EDITOR false
+    set -gx PAGER cat
+    set -gx GIT_PAGER cat
+    set -gx GH_PAGER cat
+    set -gx MANPAGER cat
+    set -gx NO_COLOR 1
+    set -gx CLICOLOR 0
+    set -gx GIT_TERMINAL_PROMPT 0
+    set -gx GH_PROMPT_DISABLED 1
+    set -gx AWS_PAGER ''
+    set -gx AWS_CLI_AUTO_PROMPT off
 end
 
 # --- Goの設定 ---
@@ -96,7 +120,7 @@ set -gx GOBIN "$HOME/.local/bin"
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
-    set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"
+    set -gx CPPFLAGS -I/opt/homebrew/opt/openjdk/include
 end
 
 # --- Google Cloud SDKのPython設定 ---
@@ -104,7 +128,7 @@ set -gx CLOUDSDK_PYTHON (type -p python3)
 
 # --- Docker環境設定 ---
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
-    set -gx DOCKER_MACHINE_NAME "docker"
+    set -gx DOCKER_MACHINE_NAME docker
 end
 
 # --- MySQLクライアントのパス追加 ---
@@ -114,7 +138,7 @@ if test -d /opt/homebrew/opt/mysql-client/bin/
 end
 
 # --- mysqlclient用のコンパイラフラグ設定 ---
-if test (uname) = "Darwin"
+if test (uname) = Darwin
     contains -- /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     or set -gx PKG_CONFIG_PATH /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     string match -q "*-L/opt/homebrew/lib*" -- "$LDFLAGS"
@@ -137,20 +161,26 @@ end
 
 # --- direnvのフック設定 ---
 # 以降のツール検出は mise 由来のツールも解決できる __tool_path で行う
-set -l direnv_bin (__tool_path direnv)
-if test -n "$direnv_bin"
-    __source_cached_init direnv-hook "$direnv_bin" hook fish
+if test "$human_shell" = true
+    set -l direnv_bin (__tool_path direnv)
+    if test -n "$direnv_bin"
+        __source_cached_init direnv-hook "$direnv_bin" hook fish
+    end
 end
 
 # --- miseの初期化 ---
 if type -q mise
-    mise activate fish | source
+    if test "$human_shell" = true
+        mise activate fish | source
+    else
+        mise activate fish --shims | source
+    end
 end
 
 # --- 1Password CLI のデフォルトアカウント ---
 set -gx OP_ACCOUNT my.1password.com
 
-if status is-interactive
+if test "$human_shell" = true
     # --- fish 本体の Dracula テーマ (https://github.com/dracula/fish) ---
     # テーマファイルは fisher (fish_plugins の dracula/fish) が themes/ に配置する。
     # fish >= 3.4 はプラグイン導入だけでは適用されないため明示的に choose する
@@ -200,7 +230,7 @@ if status is-interactive
 end
 
 # --- fnoxの初期化 ---
-if status is-interactive; and type -q fnox
+if test "$human_shell" = true; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
 
     function __fnox_find_1password_config
