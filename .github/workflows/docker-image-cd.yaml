@@ -114,7 +114,7 @@ jobs:
           mkdir -p "${{ runner.temp }}/digests"
           touch "${{ runner.temp }}/digests/${BUILD_DIGEST#sha256:}"
       - name: Upload digest
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           # PLATFORM_PAIR は必ず linux- で始まるため、merge 側の
           # "digests-<tag>-linux-*" で ubuntu / ubuntu-min のような接頭辞衝突を避けられる。
@@ -139,7 +139,7 @@ jobs:
           - ubuntu-gpu
     steps:
       - name: Download digests
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-${{ matrix.tag }}-linux-*
