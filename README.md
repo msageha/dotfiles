@@ -93,8 +93,22 @@ API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secr
 | `FUGU_PAYG_API_KEY`    | `apiKeys.fuguCyber`     | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ) で使用                                                                                                                                                                                                                                                                    |
 | `OPENROUTER_API_KEY`   | `apiKeys.openRouter`    | Codex / Claude Code の OpenRouter プロバイダで使用                                                                                                                                                                                                                                                                                    |
 | `SONATYPE_GUIDE_TOKEN` | `apiKeys.sonatypeGuide` | Claude Code の sonatype-guide plugin (Sonatype Guide MCP) で使用                                                                                                                                                                                                                                                                      |
+| `TAKUMI_GUARD_API_KEY` | `apiKeys.takumiGuard`   | [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) の認証 token (`tg_anon_` / `tg_org_`)。npm / pip / uv / Go の registry 設定 (下記) に埋め込む。未設定なら匿名モードで動く                                                                                                                                          |
 
 API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
+
+#### パッケージレジストリ (Takumi Guard)
+
+macOS / Linux では npm / pip / uv / Go のパッケージ取得先を [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) に向ける。`apiKeys.takumiGuard` が空なら匿名モード、設定済みなら token 付きで展開する。Windows は対象外。設定ファイルは `skip_cli_tools=false` の環境にだけ展開し、`GOPROXY` は `skip_cli_tools` に関係なく設定する (匿名モードで動く)。
+
+| 対象                      | 設定ファイル                                                                                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| npm / pnpm / yarn v1      | `~/.npmrc` (`modify_private_dot_npmrc`。registry と `npm.flatt.tech` の `_authToken` の行だけを差し替え、`strict-ssl` 等の既存行は温存する)                                                            |
+| pip                       | `~/.config/pip/pip.conf`                                                                                                                                                                               |
+| uv                        | `~/.config/uv/uv.toml`                                                                                                                                                                                 |
+| Go (`GOPROXY` + 認証情報) | `GOPROXY` は `env.sh` / `config.fish`、token は `~/.netrc` (`modify_private_dot_netrc`。先頭に認証行を 1 行置き、他の行は温存する。token がある環境のみ管理し、token を空に戻しても既存の行は消えない) |
+
+`GOPROXY` は Takumi Guard の指示どおり `,direct` を付けないため、private module は `GOPRIVATE` で除外しないと取得できない。
 
 #### SSH 秘密鍵
 
@@ -289,6 +303,8 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   ├── dot_gemini/                # Antigravity (Gemini) 設定
 │   ├── dot_grok/                  # Grok CLI 設定
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
+│   ├── modify_private_dot_npmrc         # ~/.npmrc の Takumi Guard registry / token 行だけを管理 (他の行は温存)
+│   ├── modify_private_dot_netrc         # ~/.netrc の先頭に Takumi Guard (Go) の認証行を置く (他の行は温存)
 │   └── dot_config/                # fish / ghostty / mise / starship / git 等
 │       ├── agents/AGENTS.md       # 全 LLM エージェント共通の作業規約
 │       ├── shell/                 # bash / zsh 共有の env.sh (環境変数・PATH) と integrations.sh (ツール統合)

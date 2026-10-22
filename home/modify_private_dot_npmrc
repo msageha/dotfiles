@@ -1,0 +1,20 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.npmrc の registry と npm.flatt.tech の _authToken の行だけを差し替える。
+  strict-ssl 等のマシンローカルな設定行は空行も含めて温存する (npm / pnpm / yarn v1 が読む)。
+*/ -}}
+{{- $token := dig "apiKeys" "takumiGuard" "" . -}}
+{{- $lines := list -}}
+{{- $stdin := trimSuffix "\n" (dig "stdin" "" .chezmoi) -}}
+{{- if $stdin -}}
+{{-   range splitList "\n" $stdin -}}
+{{-     if not (regexMatch `^\s*(registry\s*=|//npm\.flatt\.tech/:_authToken\s*=)` .) -}}
+{{-       $lines = append $lines . -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{- $lines = append $lines "registry=https://npm.flatt.tech/" -}}
+{{- if $token -}}
+{{-   $lines = append $lines (printf "//npm.flatt.tech/:_authToken=%s" $token) -}}
+{{- end -}}
+{{ join "\n" $lines }}

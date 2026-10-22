@@ -1,0 +1,17 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.netrc の先頭に golang.flatt.tech の認証行を置く。この行以外は元の内容のまま温存する。
+  Go は同一 machine のエントリが複数あると先頭を優先し、`default` エントリで読み取りを止めるため、
+  末尾追記ではなく先頭に置く。token が無い環境は .chezmoiignore で管理対象から外す。
+*/ -}}
+{{- $prefix := "machine golang.flatt.tech login token password " -}}
+{{- $lines := list (printf "%s%s" $prefix (dig "apiKeys" "takumiGuard" "" .)) -}}
+{{- $stdin := trimSuffix "\n" (dig "stdin" "" .chezmoi) -}}
+{{- if $stdin -}}
+{{-   range splitList "\n" $stdin -}}
+{{-     if not (hasPrefix $prefix .) -}}
+{{-       $lines = append $lines . -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{ join "\n" $lines }}

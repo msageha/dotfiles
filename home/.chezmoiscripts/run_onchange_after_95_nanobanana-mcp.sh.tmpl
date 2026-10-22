@@ -10,7 +10,8 @@ activate_tool_paths
 cd "$HOME/.local/share/nanobanana-mcp/mcp-server"
 npm ci
 # upstream の package-lock.json が既知の脆弱性を含んだままリリースされているため、
-# semver 範囲内 (--force なし) でローカルに追従させる
-npm audit fix
+# semver 範囲内 (--force なし) でローカルに追従させる。
+# Takumi Guard (npm.flatt.tech) の audit endpoint は約 30 秒待たせた後に 502 を返すことがあるため、3 回まで試す
+npm audit fix || npm audit fix || npm audit fix
 npm run build
 {{ end -}}

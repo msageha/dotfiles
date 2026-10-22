@@ -46,6 +46,18 @@
 .config/gh/hosts.yml
 {{ end }}
 
+# Takumi Guard の registry 設定 (npm / pip / uv / Go)。Windows は設定ファイルの配置先が異なるため対象外。
+# パッケージマネージャーを導入しない最小構成 (skip_cli_tools) でも展開しない。
+# Go の token を置く .netrc は token が無い環境では触らない
+{{ if or (eq .chezmoi.os "windows") (dig "skip_cli_tools" false .) }}
+.npmrc
+.netrc
+.config/pip
+.config/uv
+{{ else if not (dig "apiKeys" "takumiGuard" "" .) }}
+.netrc
+{{ end }}
+
 # ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマ (external) を展開しない。
 # external にはディレクトリ単体のパターンだけでは効かないため /** も併記する
 {{ if or (eq .chezmoi.os "windows") (dig "skip_gui_tools" false .) }}

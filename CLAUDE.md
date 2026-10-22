@@ -107,7 +107,8 @@ prek の git hook が commit 時に lint / format、push 時にテンプレー�
   (`GEMINI_API_KEY` 等) を `data.apiKeys` に平文展開する。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env` — secret を実際に復号した値を返す。
 - `chezmoi apply --verbose` / `chezmoi diff` — 対象範囲に `.codex/.env`・`.codex/auth.json` や
-  `~/.config/chezmoi/chezmoi.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
+  `~/.config/chezmoi/chezmoi.toml`・Takumi Guard token を埋め込む `~/.npmrc`・`~/.netrc`・
+  `~/.config/pip/pip.conf`・`~/.config/uv/uv.toml` 等の secret ファイルが含まれると、unified diff に実値がそのまま出る。
 - `cat` / `git diff` で secret ファイルを直接読む。
 - `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose` — `.chezmoiignore` の除外が外れ、
   1Password から取得した SSH 秘密鍵が平文で出る。この data は `mise run apply-ssh-keys` の中でだけ渡し、検証コマンド (dry-run / pre-push / test) には渡さない。
