@@ -93,6 +93,9 @@ export GOPATH="$HOME/Works"
 # go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
 # mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
 export GOBIN="$HOME/.local/bin"
+# Takumi Guard。`,direct` を付けると未収載・ブロック済みの module でプロキシを迂回できるため URL のみ指定する。
+# 認証 token は ~/.netrc (modify_private_dot_netrc)
+export GOPROXY="https://golang.flatt.tech"
 
 # --- JDK (Homebrew openjdk) ---
 if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
