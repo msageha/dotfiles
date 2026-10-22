@@ -378,6 +378,17 @@
   "hooks": {
 {{- /* 以下の hooks は POSIX シェル + jq 前提。ネイティブ Windows では毎回エラー (exit≠2 で fail-open) になるだけなので設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -n \"$CLAUDE_ENV_FILE\" ]; then printf '%s\\n' '. \"$HOME/.config/shell/agent-env.sh\"' >> \"$CLAUDE_ENV_FILE\"; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

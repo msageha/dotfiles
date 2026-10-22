@@ -75,6 +75,20 @@ trust_level = "trusted"
 [projects.%q]
 trust_level = "trusted"
 ` .mcp.context7 $worksSrc $chezmoiSrc | fromToml -}}
+{{- /* Agent が実行するコマンドの環境。AI_AGENT は他のツールも参照する agent 検出の共通 marker、値は .chezmoidata.toml の agent_env */ -}}
+{{- $desired = mergeOverwrite $desired (dict "shell_environment_policy" (dict "set" (merge (dict "AI_AGENT" "1") .agent_env))) -}}
+{{- /* Windows の PATH には false / cat が無いため editor と pager を PowerShell で代替する。Git for Windows は起動時に同梱の usr\bin を
+      PATH に足し、git / gh は pager の cat を「pager なし」として扱うため、GIT_* と GH_PAGER は共通値のままでよい */ -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{-   $desired = mergeOverwrite $desired (fromToml `
+[shell_environment_policy.set]
+EDITOR = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+VISUAL = "powershell.exe -NoProfile -NonInteractive -Command exit 1"
+PAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+MANPAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+AWS_PAGER = 'powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'
+`) -}}
+{{- end -}}
 {{- /* dart / xcode MCP は macOS 専用バイナリ (dart, xcrun) に依存する */}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
@@ -108,5 +122,11 @@ cli_auth_credentials_store = "file"
 {{- if and (ne .chezmoi.os "darwin") (hasKey $current "mcp_servers") -}}
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
+{{- end -}}
+{{- /* macOS の ls は CLICOLOR の値でなく有無で色を付けるため、人間の shell から継承した値を外す。既存の exclude は残す */ -}}
+{{- $_ := set (get $desired "shell_environment_policy") "exclude" (concat (dig "shell_environment_policy" "exclude" (list) $current) (list "CLICOLOR") | uniq) -}}
+{{- /* shell_environment_policy.set は全量を管理し、desired から外した key が適用済みの config に残らないよう置き換える */ -}}
+{{- if hasKey $current "shell_environment_policy" -}}
+{{-   $_ := unset (get $current "shell_environment_policy") "set" -}}
 {{- end -}}
 {{- mergeOverwrite $current $desired | toToml -}}

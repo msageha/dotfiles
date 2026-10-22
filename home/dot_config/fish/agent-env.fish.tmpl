@@ -1,0 +1,11 @@
+# chezmoi が .chezmoidata.toml の agent_env から生成する。config.fish が判定後に source する
+if test "$agent_shell" = true
+{{- range $name, $value := .agent_env }}
+    set -gx {{ $name }} {{ squote $value }}
+{{- end }}
+    # macOS の ls は CLICOLOR の値を見ず、設定されているだけで色を付ける。
+    # -g を付けないと universal 変数まで恒久的に消えるため、継承した global だけを消す
+    set -eg CLICOLOR
+else if test "$DOTFILES_SHELL_MODE" = human
+    set -eg {{ keys .agent_env | sortAlpha | join " " }}
+end

@@ -1,0 +1,12 @@
+# shellcheck shell=sh
+# chezmoi が .chezmoidata.toml の agent_env から生成する。env.sh が判定後に source する。
+# Claude Code の SessionStart hook は判定変数を持たない shell から source するため、未設定なら Agent とみなす
+if ${_dotfiles_agent_shell:-true}; then
+{{- range $name, $value := .agent_env }}
+    export {{ $name }}={{ squote $value }}
+{{- end }}
+    # macOS の ls は CLICOLOR の値を見ず、設定されているだけで色を付ける
+    unset CLICOLOR
+elif [ "${DOTFILES_SHELL_MODE:-}" = human ]; then
+    unset {{ keys .agent_env | sortAlpha | join " " }}
+fi

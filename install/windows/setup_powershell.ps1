@@ -98,11 +98,51 @@ function Install-StarshipConfig {
 
 # PowerShell プロファイルへ書き込む管理ブロック (キーがマーカー名になる)
 $ProfileBlocks = [ordered]@{
-    # UTF-8 出力設定 (cp932 環境で starship のグリフが化けるのを防ぐ) と starship 初期化
+    # UTF-8 出力は共通にし、prompt と PSReadLine は人間の対話 shell に限定する。
+    # Agent / human の判定は ~/.config/shell/env.sh と同じで、どちらでもない非対話 shell には環境変数を足さない。
     starship = @(
         '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8'
         '$OutputEncoding           = [System.Text.Encoding]::UTF8'
-        'if (Get-Command starship -ErrorAction SilentlyContinue) {'
+        '$dotfilesAgent = switch ($env:DOTFILES_SHELL_MODE) {'
+        '    "agent" { $true }'
+        '    "human" { $false }'
+        '    default {'
+        '        @("AI_AGENT", "CLAUDECODE", "CODEX_CI", "CODEX_SANDBOX", "GEMINI_CLI", "CURSOR_AGENT", "ANTIGRAVITY_AGENT" |'
+        '            Where-Object { [Environment]::GetEnvironmentVariable($_) }).Count -gt 0 -or $env:GROK_AGENT -eq "1"'
+        '    }'
+        '}'
+        '$dotfilesShellArgs = [Environment]::GetCommandLineArgs()'
+        '$dotfilesBatch = $dotfilesShellArgs -match "^-(Command|c|File|f|EncodedCommand|e|ec|CommandWithArgs|cwa)$|\.ps1$"'
+        '$dotfilesHumanInteractive = -not $dotfilesAgent -and'
+        '    -not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected -and'
+        '    -not ($dotfilesShellArgs -match "^-NonI") -and'
+        '    (-not $dotfilesBatch -or $dotfilesShellArgs -match "^-NoE")'
+        # .chezmoidata.toml の agent_env の Windows 版。PATH に false / cat が無いため editor と pager を PowerShell で代替し、
+        # Windows PowerShell 5.1 は空の環境変数を保持できないため pager は byte stream の透過にする。
+        # Git for Windows は起動時に同梱の usr\bin を PATH に足し、git / gh は pager の cat を「pager なし」として扱うため GIT_* と GH_PAGER は共通値
+        '$dotfilesNoEditor = "powershell.exe -NoProfile -NonInteractive -Command exit 1"'
+        '$dotfilesPassthroughPager = ''powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'''
+        '$dotfilesAgentEnv = [ordered]@{'
+        '    EDITOR              = $dotfilesNoEditor'
+        '    VISUAL              = $dotfilesNoEditor'
+        '    GIT_EDITOR          = "true"'
+        '    GIT_SEQUENCE_EDITOR = "false"'
+        '    PAGER               = $dotfilesPassthroughPager'
+        '    MANPAGER            = $dotfilesPassthroughPager'
+        '    AWS_PAGER           = $dotfilesPassthroughPager'
+        '    GIT_PAGER           = "cat"'
+        '    GH_PAGER            = "cat"'
+        '    NO_COLOR            = "1"'
+        '    GIT_TERMINAL_PROMPT = "0"'
+        '    GH_PROMPT_DISABLED  = "1"'
+        '    AWS_CLI_AUTO_PROMPT = "off"'
+        '}'
+        'if ($dotfilesAgent) {'
+        '    foreach ($name in $dotfilesAgentEnv.Keys) { Set-Item "Env:$name" $dotfilesAgentEnv[$name] }'
+        '} elseif ($env:DOTFILES_SHELL_MODE -eq "human") {'
+        '    foreach ($name in $dotfilesAgentEnv.Keys) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }'
+        '}'
+        'if ($dotfilesHumanInteractive -and (Get-Command starship -ErrorAction SilentlyContinue)) {'
         '    Invoke-Expression (&starship init powershell)'
         '}'
     )
@@ -110,7 +150,7 @@ $ProfileBlocks = [ordered]@{
     # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
     # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
     dracula = @(
-        'if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {'
+        'if ($dotfilesHumanInteractive -and (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue)) {'
         '    Set-PSReadLineOption -Colors @{'
         '        "Command"   = [ConsoleColor]::Green'
         '        "Parameter" = [ConsoleColor]::Gray'
