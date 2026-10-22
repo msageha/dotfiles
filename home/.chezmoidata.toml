@@ -48,6 +48,25 @@ security_reviewer = "Read-only security reviewer. Use for authentication, author
 source_grounded_researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
 test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
 
+# Agent の shell の環境変数 (README「Agent が使う shell」)。editor の自動起動を失敗終了にし、pager と各 CLI の対話 prompt を止める。
+# GIT_EDITOR は Claude Code の既定と同じ true にして、rebase --continue 等が既定のメッセージで進むようにする。
+# dot_config/shell/agent-env.sh.tmpl (bash / zsh と Claude Code の SessionStart hook)、dot_config/fish/agent-env.fish.tmpl、
+# dot_codex/modify_private_config.toml の shell_environment_policy.set が読む。PowerShell は値が異なるため install/windows/setup_powershell.ps1 が別に持つ
+[agent_env]
+EDITOR = "false"
+VISUAL = "false"
+GIT_EDITOR = "true"
+GIT_SEQUENCE_EDITOR = "false"
+PAGER = "cat"
+GIT_PAGER = "cat"
+GH_PAGER = "cat"
+MANPAGER = "cat"
+NO_COLOR = "1"
+GIT_TERMINAL_PROMPT = "0"
+GH_PROMPT_DISABLED = "1"
+AWS_PAGER = ""
+AWS_CLI_AUTO_PROMPT = "off"
+
 # 1Password から chezmoi apply 時に取得する SSH 鍵 (README「SSH 秘密鍵」)。
 # path は ~/.ssh からの相対 target path。source の private_dot_ssh/private_<dir>/private_<name>.tmpl (秘密鍵) と
 # private_<dir>/<name>.pub.tmpl (公開鍵) の位置と手で一致させる (ズレると .chezmoiignore の除外が外れ、通常の status / apply で op read が走る)。

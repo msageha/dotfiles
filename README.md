@@ -218,11 +218,20 @@ docker container run -it msageha/dotfiles:ubuntu
 
 ## Agent が使う shell
 
-bash / zsh / fish は共通の PATH・build 環境を読み込み、対話 shell かつ stdin/stdout が TTY で Agent marker が無いときだけ prompt・補完・alias・theme を初期化する。PowerShell も TTY・`-NonInteractive`・Agent marker で Starship / PSReadLine を分岐する。marker は `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `GEMINI_CLI` / `CURSOR_AGENT`。これは初期化の切り替えであり、権限や secret の隔離ではない。
+bash / zsh / fish / PowerShell は起動時に次の 2 つを判定する。初期化の切り替えであり、権限や secret の隔離ではない。
 
-非対話 / Agent の shell では editor の自動起動を失敗終了にし、pager・Git の terminal prompt・GitHub CLI の prompt・AWS CLI の auto prompt を無効にする。mise は shims を利用し、fnox / direnv の prompt hook は人間の対話 shell に限定する。必要な project 環境は `mise exec -- <command>` / `fnox exec -- <command>` / `direnv exec . <command>` で明示的に渡す。
+- Agent: AI coding agent が付ける marker 環境変数 `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `GEMINI_CLI` / `CURSOR_AGENT` / `ANTIGRAVITY_AGENT` のどれかがあるか、`GROK_AGENT=1` のとき。`.chezmoidata.toml` の `agent_env` を export して、editor の自動起動を失敗終了にし、pager・Git の terminal prompt・GitHub CLI の prompt・AWS CLI の auto prompt を止める。`GIT_EDITOR` だけは `true` にして、`git rebase --continue` などが既定のメッセージで進むようにする。
+- 人間: Agent でない対話 shell で stdin / stdout が TTY のとき (PowerShell は `-NonInteractive` とスクリプト実行も除く)。prompt・補完・alias・theme と fnox / direnv の hook を初期化する。
 
-Codex は `shell_environment_policy.set`、macOS / Linux の Claude Code Bash tool は `SessionStart` の `CLAUDE_ENV_FILE` にも同じ非対話設定を持たせるため、profile を読まない実行にも適用される。人間が使う Codex / Claude Code の TUI の editor は変更しない。`CLAUDE_ENV_FILE` は Bash tool 用のため、native Windows の Claude Code で PowerShell の profile を省略する起動にはこの設定が適用されない。login shell は変更しない。
+どちらでもない非対話 shell には環境変数を足さない。VS Code などの GUI アプリはログイン shell を TTY なしで起動して環境を取り込み、統合ターミナルへ引き継ぐため、そこで Agent 用の値を入れると人間のターミナルに残る。PATH・build 環境はどの shell でも共通に読み込む。必要な project 環境は `mise exec -- <command>` / `fnox exec -- <command>` / `direnv exec . <command>` で明示的に渡す。
+
+marker は子孫の process に継承されるため、Agent が起動した tmux server に attach した pane は Agent 扱いになる。`DOTFILES_SHELL_MODE=human` / `agent` で判定を上書きでき、`human` では継承した `agent_env` の値も消す (TTY の対話 shell でなければ人間扱いにはならない)。上書きも子孫に継承されるので、`tmux new-window -e DOTFILES_SHELL_MODE=human` のように範囲を絞って使い、Agent を起動する shell には付けない。
+
+Claude Code と Codex は session 開始時に 1 回だけ profile を読んで shell の状態を snapshot に保存し、各コマンドはそれを使う。Claude Code の snapshot は export を保存しないため、macOS / Linux では `SessionStart` hook が `CLAUDE_ENV_FILE` に `~/.config/shell/agent-env.sh` の読み込みを書き、各コマンドの前に実行させる。native Windows の Claude Code には hook を設定しないため、PowerShell の profile を読まない実行には適用されない。Codex は `shell_environment_policy.set` に `agent_env` と `AI_AGENT=1` を持ち、こちらが snapshot の値より優先される。人間が使う Claude Code / Codex の TUI の editor は変更しない。
+
+mise は人間の対話 shell では `mise activate`、それ以外では `mise activate --shims` を使う。ただし親 shell で mise が activate 済みのとき (ターミナルから Agent を起動した場合など) は `--shims` は何もせず、親の PATH をそのまま引き継ぐ。
+
+PowerShell は Windows の PATH に `false` / `cat` が無いため、`agent_env` の Windows 版を `install/windows/setup_powershell.ps1` に持つ。
 
 ## 暗号化された設定の編集
 

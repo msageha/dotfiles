@@ -1,7 +1,21 @@
+# Agent / human の判定は ~/.config/shell/env.sh と同じ (理由はそちらのコメント)
+set -l agent_shell false
+switch "$DOTFILES_SHELL_MODE"
+    case agent
+        set agent_shell true
+    case human
+    case '*'
+        if test -n "$AI_AGENT$CLAUDECODE$CODEX_CI$CODEX_SANDBOX$GEMINI_CLI$CURSOR_AGENT$ANTIGRAVITY_AGENT"; or test "$GROK_AGENT" = 1
+            set agent_shell true
+        end
+end
 set -l human_shell false
-if status is-interactive; and isatty stdin; and isatty stdout; and test -z "$AI_AGENT$CLAUDECODE$CODEX_CI$CODEX_SANDBOX$GEMINI_CLI$CURSOR_AGENT"
+if test "$agent_shell" = false; and status is-interactive; and isatty stdin; and isatty stdout
     set human_shell true
 end
+
+# editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
+source $HOME/.config/fish/agent-env.fish
 
 # --- ヒストリーファイルの設定 ---
 set -gx NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
@@ -24,7 +38,7 @@ if test "$human_shell" = true
     # (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
     set -gx EZA_COLORS "uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
     set -gx GREP_COLORS "mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
-    if test (uname) = Darwin
+    if test (uname) = "Darwin"
         # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
         set -gx GREP_COLOR "1;38;2;255;85;85"
     end
@@ -76,7 +90,6 @@ end
 
 # --- デフォルトエディタ ---
 # crontab 等の CLI は VISUAL を EDITOR より優先して参照するため両方を揃える。
-# git のコミットエディタはここではなく gitconfig の core.editor = vim が最優先される
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある。
 if test "$human_shell" = true
@@ -94,21 +107,6 @@ if test "$human_shell" = true
     if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
         eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
     end
-else
-    set -gx EDITOR false
-    set -gx VISUAL false
-    set -gx GIT_EDITOR false
-    set -gx GIT_SEQUENCE_EDITOR false
-    set -gx PAGER cat
-    set -gx GIT_PAGER cat
-    set -gx GH_PAGER cat
-    set -gx MANPAGER cat
-    set -gx NO_COLOR 1
-    set -gx CLICOLOR 0
-    set -gx GIT_TERMINAL_PROMPT 0
-    set -gx GH_PROMPT_DISABLED 1
-    set -gx AWS_PAGER ''
-    set -gx AWS_CLI_AUTO_PROMPT off
 end
 
 # --- Goの設定 ---
@@ -120,7 +118,7 @@ set -gx GOBIN "$HOME/.local/bin"
 # --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
-    set -gx CPPFLAGS -I/opt/homebrew/opt/openjdk/include
+    set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"
 end
 
 # --- Google Cloud SDKのPython設定 ---
@@ -128,7 +126,7 @@ set -gx CLOUDSDK_PYTHON (type -p python3)
 
 # --- Docker環境設定 ---
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
-    set -gx DOCKER_MACHINE_NAME docker
+    set -gx DOCKER_MACHINE_NAME "docker"
 end
 
 # --- MySQLクライアントのパス追加 ---
@@ -138,7 +136,7 @@ if test -d /opt/homebrew/opt/mysql-client/bin/
 end
 
 # --- mysqlclient用のコンパイラフラグ設定 ---
-if test (uname) = Darwin
+if test (uname) = "Darwin"
     contains -- /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     or set -gx PKG_CONFIG_PATH /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     string match -q "*-L/opt/homebrew/lib*" -- "$LDFLAGS"

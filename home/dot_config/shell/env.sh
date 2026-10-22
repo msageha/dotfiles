@@ -8,14 +8,31 @@ else
     _dotfiles_shell=bash
 fi
 
+# Agent は AI coding agent が付ける marker 環境変数で判定する (GROK_AGENT は grok の agent 定義の選択にも
+# 使われるため、agent の terminal に付く値 1 だけを見る)。human は Agent でない対話 shell で stdin / stdout が TTY のとき。
+# どちらでもない非対話 shell (GUI アプリがログイン shell から環境を取り込む処理など) の環境は人間の shell に
+# 継承されるため、Agent 用の値を足さない。DOTFILES_SHELL_MODE=human|agent は marker の継承が実態とずれるときの上書き
+case "${DOTFILES_SHELL_MODE:-}" in
+    agent) _dotfiles_agent_shell=true ;;
+    human) _dotfiles_agent_shell=false ;;
+    *)
+        _dotfiles_agent_shell=false
+        if [ -n "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_CI:-}${CODEX_SANDBOX:-}${GEMINI_CLI:-}${CURSOR_AGENT:-}${ANTIGRAVITY_AGENT:-}" ] || [ "${GROK_AGENT:-}" = 1 ]; then
+            _dotfiles_agent_shell=true
+        fi
+        ;;
+esac
 _dotfiles_human_shell=false
 case "$-" in
     *i*)
-        if [ -t 0 ] && [ -t 1 ] && [ -z "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_CI:-}${CODEX_SANDBOX:-}${GEMINI_CLI:-}${CURSOR_AGENT:-}" ]; then
+        if ! $_dotfiles_agent_shell && [ -t 0 ] && [ -t 1 ]; then
             _dotfiles_human_shell=true
         fi
         ;;
 esac
+
+# editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
+source "$HOME/.config/shell/agent-env.sh"
 
 # --- エイリアス (bash / zsh / fish 共有) ---
 if $_dotfiles_human_shell && [ -f "$HOME/.alias" ]; then
@@ -104,12 +121,6 @@ if $_dotfiles_human_shell; then
     if echo x | grep --color=auto -q x &>/dev/null; then
         alias grep='grep --color=auto'
     fi
-else
-    export EDITOR=false VISUAL=false GIT_EDITOR=false GIT_SEQUENCE_EDITOR=false
-    export PAGER=cat GIT_PAGER=cat GH_PAGER=cat MANPAGER=cat
-    export NO_COLOR=1 CLICOLOR=0
-    export GIT_TERMINAL_PROMPT=0 GH_PROMPT_DISABLED=1
-    export AWS_PAGER='' AWS_CLI_AUTO_PROMPT=off
 fi
 
 # --- Go ---
@@ -124,6 +135,7 @@ if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
     export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
 fi
 
+# --- Xcode ---
 # DEVELOPER_DIR は xcrun / ビルドツールが参照する。Homebrew の git / python3 を優先しつつ
 # simctl 等の Xcode 専用ツールも引けるように usr/bin は末尾に追加する
 if xcode-select -p &>/dev/null; then
