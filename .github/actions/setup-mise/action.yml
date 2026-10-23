@@ -12,7 +12,7 @@ inputs:
     required: false
     # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
     # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
-    default: "2026.10.10"
+    default: "2026.10.12"
 
 runs:
   using: composite
@@ -22,7 +22,7 @@ runs:
     #  install: false にはせず cache を温存する)。mise 本体のみ導入するときはリトライ先が無いので失敗させる
     - name: Install mise
       id: mise
-      uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
+      uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5.2.0
       continue-on-error: ${{ inputs.install == 'true' }}
       with:
         version: ${{ inputs.version }}
