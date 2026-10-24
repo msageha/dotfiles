@@ -4,9 +4,9 @@ user = "msageha"
 # コーディングエージェント設定が参照する MCP server のバージョン pin (renovate が annotation で追従)
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
-context7 = "4.4.1"
+context7 = "4.4.2"
 # renovate: datasource=npm depName=chrome-devtools-mcp
-chromeDevtools = "1.10.1"
+chromeDevtools = "1.11.0"
 # renovate: datasource=npm depName=@playwright/mcp
 playwright = "0.0.83"
 # renovate: datasource=npm depName=@ask-llm/antigravity-mcp

@@ -1,6 +1,13 @@
 # self-repository audit (zizmor v1.30.0+) は同一リポジトリ参照に `$/` 構文を要求するが、
 # actionlint v1.7.12 は `$/` を reusable workflow の参照形式として認識せず `./` しか受け付けない。
 # actionlint が `$/` に対応したら、この disable を外して ci.yaml の `./` を `$/` に置き換える。
+# dangerous-triggers audit (zizmor v1.31.0+) は issue_comment を無条件に危険と判定するが、
+# claude.yaml は job の if で OWNER / MEMBER の @claude メンションに限定している。
+# 他の trigger まで隠さないよう、inline ignore ではなく位置 (行:列) で指定する。
+# claude.yaml の on: を編集して行がずれたら、この位置も追従させる。
 rules:
   self-repository:
     disable: true
+  dangerous-triggers:
+    ignore:
+      - claude.yaml:4:3
