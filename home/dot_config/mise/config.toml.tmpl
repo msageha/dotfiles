@@ -10,7 +10,7 @@ fzf = "0.74.5"
 # renovate: datasource=github-releases depName=x-motemen/ghq extractVersion=^v?(?<version>.+)
 ghq = "1.11.2"
 # renovate: datasource=github-releases depName=starship/starship extractVersion=^v?(?<version>.+)
-starship = "1.26.0"
+starship = "1.27.0"
 {{/* CLI ユーティリティ群 (dig 既定 false = キー未定義の旧 config でも入れる) */ -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 # renovate: datasource=github-releases depName=astral-sh/uv extractVersion=^v?(?<version>.+)
@@ -60,7 +60,7 @@ gh = "2.102.0"
 glab = "1.123.0"
 # fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "7.0.1"
+usage = "7.0.2"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバー群は skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true = キー未定義の旧 config に重いツールを入れない) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
