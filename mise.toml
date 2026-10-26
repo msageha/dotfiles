@@ -12,7 +12,7 @@ hadolint = "2.15.1"
 # renovate: datasource=custom.onepassword-cli depName=1password-cli
 op = "2.34.1"
 powershell = "7.6.7"
-prek = "0.5.5"
+prek = "0.5.6"
 shellcheck = "0.11.0"
 
 [hooks]
