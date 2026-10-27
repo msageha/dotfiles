@@ -3,7 +3,7 @@ actionlint = "1.7.12"
 # renovate: datasource=github-releases depName=FiloSottile/age extractVersion=^v?(?<version>.+)
 age = "1.3.2"
 bats = "1.14.0"
-chezmoi = "2.73.2"
+chezmoi = "2.73.3"
 dprint = "0.64.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.41.0"
