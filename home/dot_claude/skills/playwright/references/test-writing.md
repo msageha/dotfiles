@@ -72,7 +72,7 @@ export class LoginPage {
 }
 ```
 
-Use POM when: 3+ tests share the same page interactions. Do NOT use POM for simple, one-off tests.
+Use POM when 3+ tests share the same page interactions. For simple, one-off tests, keep the locators inline; a page object there adds indirection without reuse.
 
 ## Authentication (reuse login state)
 
@@ -101,7 +101,7 @@ await page.route('**/api/external-service', async route => {
 });
 ```
 
-Mock only external/third-party services. Never mock your own application endpoints.
+Mock only external/third-party services. Let requests to your own application endpoints reach the real app, so the test still covers them.
 
 ## Local Webapp Testing (Python)
 
@@ -109,19 +109,20 @@ For quick verification of local web applications:
 
 ```python
 import os
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
     page.goto('http://localhost:3000')
-    page.wait_for_load_state('networkidle')  # CRITICAL: wait for JS
+    # Wait for an element that appears only after the app has rendered; adjust the role and name to the page.
+    expect(page.get_by_role('heading', name='Dashboard')).to_be_visible()
     page.screenshot(path=os.path.join(os.environ.get('TMPDIR', '/tmp'), 'inspect.png'), full_page=True)
     # ... automation logic
     browser.close()
 ```
 
-**Common pitfall:** Don't inspect DOM before `networkidle` on dynamic apps.
+**Common pitfall:** On dynamic apps, inspecting the DOM right after `goto` sees a half-rendered page. Wait for a specific element as above rather than `wait_for_load_state('networkidle')`, which Playwright discourages and which may never settle on pages that keep polling.
 
 ## CI (GitHub Actions)
 

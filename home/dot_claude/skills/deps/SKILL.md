@@ -1,19 +1,19 @@
 ---
 name: deps
-description: "Dependency audit: list direct/transitive deps, flag outdated packages, and surface known vulnerabilities, then report prioritized actions. Use when the user wants a dependency audit or update review."
+description: "Audits a project's dependencies: lists direct and transitive packages, flags outdated ones, surfaces known vulnerabilities, and reports prioritized update actions without changing anything. Use when the user asks for a dependency audit or update review (「依存関係を棚卸しして」「古いパッケージを洗い出して」「アップデートすべきものある？」). It plans updates; for judging whether a vulnerability is exploitable in the code, use the security skill, and for vetting one specific package before adding or upgrading it, use sonatype-guide where available."
 allowed-tools: Read, Glob, Grep, Bash
 disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 # 依存関係の分析
 
-プロジェクトの依存関係を分析する。
+プロジェクトの依存関係を分析する。ファイルと環境は変更しない (install・lock ファイルの更新・audit の fix 系は実行せず、更新は推奨アクションとして示す)。
 
 ## 手順
 
 ### 1. 依存定義ファイルの検出
 プロジェクトルートおよびサブディレクトリから依存定義ファイルを探す:
-- `package.json` / `package-lock.json` / `pnpm-lock.yaml` / `bun.lockb`
+- `package.json` / `package-lock.json` / `pnpm-lock.yaml` / `yarn.lock` / `bun.lock` / `bun.lockb`
 - `go.mod` / `go.sum`
 - `pubspec.yaml` / `pubspec.lock`
 - `requirements.txt` / `pyproject.toml` / `poetry.lock` / `uv.lock`

@@ -1,13 +1,13 @@
 ---
 name: gws-drive
-description: "Google Drive: Manage files, folders, and shared drives using gws CLI."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [file ID, search query, or action description]
+description: "Google Drive: Manages files, folders, and shared drives using gws CLI."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[file ID, search query, or action description]"
 ---
 
 # drive (v3)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws drive <resource> <method> [flags]

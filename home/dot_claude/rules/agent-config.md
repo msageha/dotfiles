@@ -4,34 +4,43 @@ paths:
   - "**/CLAUDE.local.md"
   - "**/AGENTS.md"
   - "**/AGENTS.md.tmpl"
+  - "**/GEMINI.md"
+  - "**/SKILL.md"
   - "**/.claude/rules/**"
   - "**/.claude/skills/**"
   - "**/.claude/agents/**"
+  - "**/.agents/**"
+  - "**/.codex/agents/**"
+  - "**/.codex/skills/**"
+  - "**/.gemini/**/*.md"
+  - "**/.grok/**/*.md"
+  - "**/prompts/**"
   - "**/dot_claude/**/*.md"
   - "**/dot_claude/**/*.md.tmpl"
   - "**/dot_config/agents/**"
+  - "**/dot_agents/**"
   - "**/.chezmoitemplates/**/*.md"
+  - "**/.chezmoidata.toml"
   - "**/dot_codex/agents/**"
   - "**/dot_gemini/config/**/*.md"
   - "**/dot_gemini/config/**/*.md.tmpl"
   - "**/dot_grok/**/*.md.tmpl"
-  - "**/.claude/settings.json"
-  - "**/.claude/settings.local.json"
-  - "**/dot_claude/*settings*.json.tmpl"
 ---
-# LLM Agent Instruction Files (CLAUDE.md / AGENTS.md / rules / skills / agents / settings)
+# LLM Agent Instruction Files (CLAUDE.md / AGENTS.md / rules / skills / agents / prompt assets)
 
-- Budget: Always-loaded files (CLAUDE.md, AGENTS.md, rules without `paths`) are read on every session of every consumer that loads them, including subagent spawns, so the combined set must stay short; move procedures, reference tables and checklists into skills or reference files that are read only when needed.
+- Budget: Always-loaded files (CLAUDE.md, AGENTS.md, rules without `paths`) are read on every session of every consumer that loads them, including subagent spawns, so the combined set must stay short; move procedures, reference tables and checklists into skills or reference files that are read only when needed. Grok ignores `paths` and loads every rule in `~/.claude/rules` on every session, so a path-scoped rule still costs context there. Antigravity truncates each rule file, including the global AGENTS.md, at 24,000 bytes measured after includes are expanded (UTF-8, so roughly 8,000 Japanese characters), and drops everything past that point.
 - Progressive disclosure: Multi-file procedures (custom skills, multi-stage agent designs) load each file at the step that needs it, never all files up front. Keep reference files one level below SKILL.md and state for each what it contains and when to read it.
-- Reader: The reader is an LLM. Prefer short bullets; use a table only when rows are genuinely comparable records.
-- Harness: Do not restate what tool definitions or the harness already provide (tool descriptions, default behaviour, MCP server instructions). Write only the "when to use" that they do not contain.
-- Capability over instruction: To keep a skill or agent away from dangerous operations, remove the capability itself (`tools` allowlist / `disallowedTools` for agents, `disallowed-tools` for skills) instead of relying on "do not" instructions; `allowed-tools` only pre-approves listed tools and never restricts unlisted ones. Prompt injection can defeat an instruction but not a missing capability.
+- Consolidation: Keep prompts, and any definition or mapping table that prompts and scripts share, in one asset per scope (AGENTS.md, a skill, or a machine-readable md / csv that the prompt references) with the actual values, instead of scattering or duplicating them across code and several assets, so that everything the agent receives can be read in one place.
+- Reader: The reader is an LLM. Prefer short bullets; use a table only when rows are genuinely comparable records. Write each rule as a plain sentence without emphasis (IMPORTANT, CRITICAL, MUST, bold, ALL CAPS), which current models over-apply, and add a short reason when a rule's purpose is not obvious so the reader can apply it to adjacent cases.
+- Examples and goals: Check that no example or example value can mislead the reader (for instance by being copied verbatim), and write variable parts with one consistent placeholder style such as `<name>`. Say what to do, not only what to avoid. State a goal as a relative direction paired with a stopping condition (e.g. "halve the runtime; stop when an attempt no longer improves it") rather than a fixed value taken from the current state.
+- Harness: Do not restate what tool definitions or the harness already provide (tool descriptions, default behaviour, MCP server instructions). Write only the "when to use" that they do not contain. In a file several tools read (AGENTS.md, skill bodies included into other tools), judge per consumer: drop content only when every consumer already gets it, and move content that only one consumer needs into that tool's own instructions file.
+- Capability over instruction: To keep an agent away from dangerous operations, remove the capability instead of relying on "do not" instructions; prompt injection can defeat an instruction but not a missing capability. Claude Code enforces a subagent's `tools` / `disallowedTools`; Codex (0.166) custom agents ignore their own `sandbox_mode` / `approval_policy` and inherit the parent's. A skill's `allowed-tools` / `disallowed-tools` last only for the turn that invoked the skill (`allowed-tools` only pre-approves and never restricts unlisted tools), and other tools reading the same SKILL.md cannot be relied on to honour `disallowed-tools` (Codex ignores it; Antigravity and Grok do not document it). Bash left available keeps write capability whatever the Edit / Write restrictions say. Put a lasting restriction in the harness's permission settings (Claude `permissions.deny`, Codex `rules/*.rules`) or the sandbox. Because `allowed-tools` widens permission for that turn, list only the specific patterns the skill's procedure runs (e.g. `Bash(gh pr view:*)`), and do not pre-approve bare `Bash`, `Write` or `Edit` in a model-invocable skill that reads external content such as emails, PR comments or web pages.
 - Grounding: Add or change a rule only on the basis of the user's actual instruction history or official documentation, never on speculation.
 - Research: Before writing a new skill or agent definition, survey the reference implementations the user names, the harness vendors' official skills repositories (e.g. anthropics/skills, openai/skills), and current primary sources for the domain (e.g. OWASP for security assets).
-- Preservation: When fixing an instruction file, keep its structure and length; move or append existing know-how rather than deleting it by replacement.
+- Preservation: What a rewrite must keep is the content of norms that came from the user's instruction history; moving such a norm to the file or section that owns its topic is fine. Fix stale, duplicated or factually wrong text instead of preserving it; length is not something to preserve.
 - Placement: When adding to an existing instruction file, put the new rule under the section that already owns that topic instead of appending a new section or a trailing list.
-- Scope: User-scope skills and agents (`~/.claude/`, `~/.codex/`, `~/.gemini/config/`, `~/.grok/`) must not embed repository-specific knowledge; write only instructions that hold in any repository.
-- Project scope: AGENTS.md, skills and agents inside a repository must describe that code's actual design, architecture and implementation as verified by reading it, and follow the target tool's current official guidance. When revising a prompt from run results, locate the exact prompt text recorded in the execution logs that produced the defect instead of guessing which wording caused it.
-- Target-agnostic: Prompt assets of an agent harness you build (its AGENTS.md / skills / agent prompts) must hold for any target repository: embed no knowledge of a particular target and do not assume the launched agent knows the harness exists. When target knowledge is needed, add or fix the preceding discovery step instead of hardcoding it.
-- Reader simulation: After writing or editing prompt assets, check them against each other for contradictions and confirm the task is achievable with only what the reader receives at runtime (its own files, tools and inputs), not with context only the author has.
-- Permissions: In Claude Code `settings.json` `permissions.allow`, collapse every entry a wildcard covers into `Bash(tool:*)` form instead of listing individual subcommands. When the user asks to generate `permissions.allow` from their execution history, keep every command they repeatedly approved (interpreters, shells, delete and network commands included) instead of excluding them on your own safety judgement; state the residual risk as a note and leave the trade-off to the user.
+- Scope: User-scope skills and agents (`~/.claude/`, `~/.agents/`, `~/.codex/`, `~/.gemini/config/`, `~/.grok/`) must not embed repository-specific knowledge; write only instructions that hold in any repository.
+- Project scope: AGENTS.md, skills and agents inside a repository must describe that code's actual design, architecture and implementation as verified by reading it, and follow the target tool's current official guidance.
+- Revision from runs: When revising a prompt from run results, locate the exact prompt text recorded in the execution logs that produced the defect instead of guessing which wording caused it.
+- Target-agnostic: Prompt assets of an agent harness you build (its AGENTS.md, skills, agent prompts, prompts embedded in code, schema descriptions) must hold for any target repository: embed neither the harness's implementation details nor concrete values from a particular target, and do not assume the launched agent knows the harness exists. When target knowledge is needed, add or fix the preceding discovery step instead of hardcoding it. When you find one such leak, search the other assets for the same kind.
+- Reader simulation: After writing or editing prompt assets, check them against each other for contradictions and confirm the task is achievable with only what the reader receives at runtime (its own files, tools and inputs), not with context only the author has. A prompt for an unattended autonomous loop has nobody to answer questions, so instead of telling it to ask the user, tell it to decide on its own (consulting another model such as codex when unsure) and to report the assumptions it made; a one-shot delegated worker, by contrast, returns open questions to its caller.

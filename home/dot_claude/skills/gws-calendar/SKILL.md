@@ -1,13 +1,13 @@
 ---
 name: gws-calendar
-description: "Google Calendar: List/query calendars, update/delete/move events, manage calendar lists, and check free/busy using gws CLI — for creating an event or a quick cross-calendar agenda, use gws-calendar-insert or gws-calendar-agenda instead."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [action description]
+description: "Google Calendar: Lists/queries calendars, updates/deletes/moves events, manages calendar lists, and checks free/busy using gws CLI — for creating an event or a quick cross-calendar agenda, use gws-calendar-insert or gws-calendar-agenda instead."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[action description]"
 ---
 
 # calendar (v3)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws calendar <resource> <method> [flags]

@@ -1,13 +1,13 @@
 ---
 name: gws-gmail-triage
-description: "Gmail: Show unread inbox summary (sender, subject, date) using gws CLI."
-allowed-tools: Bash, Read, Grep, Glob
-argument-hint: [--max N] [--query 'search query']
+description: "Gmail: Shows an unread inbox summary (sender, subject, date) using gws CLI."
+allowed-tools: Bash(gws gmail +triage *)
+argument-hint: "[--max N] [--query 'search query']"
 ---
 
 # gmail +triage
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth and global flags.
 
 ## Usage
 
@@ -35,4 +35,4 @@ gws gmail +triage --labels
 ## Tips
 
 - Read-only — never modifies your mailbox.
-- Defaults to table output format.
+- Output defaults to `table` (the `--help` text says json); pass `--format json` when parsing the result.

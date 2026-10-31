@@ -1,8 +1,7 @@
 name = "debugger"
 description = {{ .agents.debugger | quote }}
-model = "gpt-5.6-sol"
+model = {{ .codex.subagent_model | quote }}
 model_reasoning_effort = "xhigh"
-sandbox_mode = "workspace-write"
 developer_instructions = '''
 {{ includeTemplate "agents/debugger.md" . -}}
 '''

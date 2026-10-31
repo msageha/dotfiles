@@ -18,6 +18,9 @@
   "model": "fable",
   "includeGitInstructions": false,
   "language": "japanese",
+{{- /* この repo の home/dot_claude/CLAUDE.md (~/.claude/CLAUDE.md の source) は、repo での作業中に nested の CLAUDE.md として読み込まれ、
+       適用済みの ~/.claude/CLAUDE.md と重複する (編集中は未 apply の下書きが指示として入る)。パターンは絶対パスに照合され、相対パスは一致しない */}}
+  "claudeMdExcludes": ["**/home/dot_claude/CLAUDE.md"],
   "env": {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",

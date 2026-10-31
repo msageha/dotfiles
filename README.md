@@ -302,7 +302,7 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 .
 ├── home/                          # chezmoi 管理対象の dotfiles (source root)
 │   ├── .chezmoi.toml.tmpl         # 初期設定テンプレート (プロンプト・age recipient)
-│   ├── .chezmoidata.toml          # テンプレート共有データ (MCP の版 pin・Claude plugin 一覧・サブエージェント description・1Password から取得する SSH 鍵の一覧)
+│   ├── .chezmoidata.toml          # テンプレート共有データ (github: GitHub ユーザー名 / mcp: MCP の版 pin / claude: plugin marketplace と plugin 一覧 / agents: サブエージェント description / codex: Codex サブエージェントの model / agent_env: Agent の shell の環境変数 / ssh_keys: 1Password から取得する SSH 鍵の一覧)
 │   ├── .chezmoiexternal.toml      # 外部取得物 (dracula テーマ・git-open・nanobanana・フォント)
 │   ├── .chezmoiignore             # age 鍵の有無・OS・skip_* フラグ・apply_ssh_keys (--override-data) で適用対象を制御
 │   ├── .chezmoiremove             # 廃止したファイルの適用先からの削除
@@ -315,10 +315,11 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   │   ├── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
 │   │   ├── **/private_<name>.tmpl # 秘密鍵 (1Password の SSH Key item から onepasswordRead で取得。apply_ssh_keys=true のときだけ適用)
 │   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public_key。同上)
-│   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)
-│   ├── dot_codex/                 # OpenAI Codex 設定
-│   ├── dot_gemini/                # Antigravity (Gemini) 設定
-│   ├── dot_grok/                  # Grok CLI 設定
+│   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)。skills は共有 skill の本体
+│   ├── dot_agents/skills/         # 共有 skill の Codex 向け wrapper (~/.agents/skills。dot_claude/skills の SKILL.md を include)
+│   ├── dot_codex/                 # OpenAI Codex 設定 (AGENTS.md・developer_instructions・custom agent)
+│   ├── dot_gemini/                # Antigravity (Gemini) 設定 (共通規約を config/AGENTS.md と config/GEMINI.md に分割・skills・agents)
+│   ├── dot_grok/                  # Grok CLI 設定 (CLAUDE.md・rules・agents・skills は ~/.claude から、共有 skill は ~/.agents/skills から読む)
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   ├── modify_private_dot_npmrc         # ~/.npmrc の Takumi Guard registry / token 行だけを管理 (他の行は温存)
 │   ├── modify_private_dot_netrc         # ~/.netrc の先頭に Takumi Guard (Go) の認証行を置く (他の行は温存)
@@ -341,6 +342,8 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ├── .github/actions/setup-mise/    # 共通の mise 導入 (リトライ付き composite action)
 ├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
 ├── renovate.json                  # 依存関係の自動更新設定
+├── AGENTS.md                      # このリポジトリで作業する LLM エージェント向けの規約
+├── CLAUDE.md                      # @AGENTS.md の import と Claude Code 固有の注意
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
 ├── dprint.json                    # json/yaml/markdown/toml のフォーマット設定 (dprint)
 └── _typos.toml                    # typos 設定 (*.age を除外)
