@@ -10,6 +10,24 @@
 .config/fish/functions/fzf_environ.fish
 .config/fish/functions/gcloud.fish
 .config/fish/functions/git.fish
+{{- /* 以下はコーディングエージェント設定を配布していた環境だけで消す (.chezmoiignore の $skipCodingAgent と同じ条件)。
+       .chezmoiignore で親ディレクトリを ignore しても、その配下は .chezmoiremove で消えるため、ここで条件を付ける */}}
+{{- if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) }}
+{{- /* Grok は ~/.claude/skills と ~/.agents/skills から同じ SKILL.md を読むため、~/.grok/skills のコピーは
+       冗長になった (しかも最優先で読まれ、更新漏れがあると古い版が勝つ)。そのため廃止した。
+       配布していたのは各ディレクトリの SKILL.md だけなので、それだけを消す。.chezmoiremove はディレクトリにマッチすると
+       中身ごと消し、利用者が同じディレクトリに足したファイルまで失われるため、ディレクトリは指定しない */}}
+.grok/skills/commit/SKILL.md
+.grok/skills/deps/SKILL.md
+.grok/skills/explain/SKILL.md
+.grok/skills/pr/SKILL.md
+.grok/skills/refactor/SKILL.md
+.grok/skills/review/SKILL.md
+.grok/skills/security/SKILL.md
+.grok/skills/test/SKILL.md
+{{- /* Codex は custom agent の mcp_servers を無視してブラウザ MCP を持てないため、Codex 版 browser_debugger を廃止した */}}
+.codex/agents/browser-debugger.toml
+{{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}
 {{- /* dracula テーマの展開先を ~/.vim / ~/.tmux から ~/.local/share/{vim,tmux} へ移行したため、

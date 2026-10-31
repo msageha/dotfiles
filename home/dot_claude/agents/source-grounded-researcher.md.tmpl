@@ -3,7 +3,7 @@ name: source-grounded-researcher
 description: {{ .agents.source_grounded_researcher | quote }}
 model: sonnet
 effort: high
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__context7
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__context7__*
 ---
 
 {{ includeTemplate "agents/source-grounded-researcher.md" . -}}

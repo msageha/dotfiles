@@ -2,8 +2,9 @@
 {{- /*
   ~/.codex/config.toml の既存値を base として、下の desired TOML に書いた key だけ上書きする。
   Codex CLI が追加する projects や tui などのローカル状態は温存する。
-  approval_policy = "never" は承認プロンプトの全廃 (自律実行優先)。sandbox_mode は
-  workspace-write を維持するため、sandbox 外が必要なコマンドはエスカレーションせず失敗する。
+  approval_policy = "never" は承認プロンプトの全廃 (自律実行優先)。sandbox_mode は workspace-write を維持し、
+  ~/.codex/rules/ (dot_codex/rules/) の allow に一致するコマンドは sandbox の外で承認なしに実行され、
+  それ以外で sandbox 外が必要なコマンドはエスカレーションせず失敗する。
   analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
   otel のログ・トレース exporter はデフォルト none のため設定不要。
   OpenAI API key が注入された環境では cli_auth_credentials_store = "file" で、chezmoi 管理の
@@ -21,9 +22,7 @@
 model = "gpt-6-astra"
 model_reasoning_effort = "high"
 model_reasoning_summary = "concise"
-personality = "pragmatic"
 approval_policy = "never"
-approvals_reviewer = "auto_review"
 sandbox_mode = "workspace-write"
 project_doc_fallback_filenames = ["CLAUDE.md"]
 
@@ -31,8 +30,7 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 network_access = true
 
 [agents]
-max_threads = 6
-max_depth = 1
+max_concurrent_threads_per_session = 6
 
 [analytics]
 enabled = false
@@ -65,9 +63,6 @@ base_url = "https://openrouter.ai/api/v1"
 env_key = "OPENROUTER_API_KEY"
 wire_api = "responses"
 stream_idle_timeout_ms = 600000
-
-[notice]
-"hide_gpt-5.1-codex-max_migration_prompt" = true
 
 [projects.%q]
 trust_level = "trusted"
@@ -113,8 +108,12 @@ cli_auth_credentials_store = "file"
 {{- if $stdin -}}
 {{-   $current = fromToml $stdin -}}
 {{- end -}}
-{{- /* playwright / chrome-devtools は browser_debugger サブエージェント (agents/browser-debugger.toml)
-      専属に移した。main config に残る既存エントリはツール定義で context を浪費するため削除する */ -}}
+{{- /* AGENTS.md は user role で注入され、base prompt (developer role) の既定動作 (質問形を実行指示とみなす・worktree や
+      draft PR を自律的に作る等) を上書きできない。衝突する少数の契約だけを developer_instructions に置く */ -}}
+{{- $_ := set $desired "developer_instructions" (includeTemplate "codex/developer-instructions.md" . | trim) -}}
+{{- /* playwright / chrome-devtools は Codex に置かない。Codex は custom agent の mcp_servers を無視し、main に置くと
+      Claude 等から呼ばれる codex exec の毎回の起動で MCP が立ち上がるため。ブラウザ検証は Claude の browser-debugger で行い、
+      以前 main config に入れていた既存エントリは削除する */ -}}
 {{- if hasKey $current "mcp_servers" -}}
 {{-   $_ := unset (get $current "mcp_servers") "playwright" -}}
 {{-   $_ := unset (get $current "mcp_servers") "chrome-devtools" -}}
@@ -122,6 +121,18 @@ cli_auth_credentials_store = "file"
 {{- if and (ne .chezmoi.os "darwin") (hasKey $current "mcp_servers") -}}
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
+{{- end -}}
+{{- /* 以前この template が書いていた key のうち Codex 0.166 で効果の無いもの (deprecated の personality、approval_policy = "never"
+      では使われない approvals_reviewer、V2 multi-agent では無視される agents.max_depth、旧名の agents.max_threads、
+      gpt-5.1-codex-max 用の notice) を適用先から消す */ -}}
+{{- $_ := unset $current "personality" -}}
+{{- $_ := unset $current "approvals_reviewer" -}}
+{{- if hasKey $current "agents" -}}
+{{-   $_ := unset (get $current "agents") "max_threads" -}}
+{{-   $_ := unset (get $current "agents") "max_depth" -}}
+{{- end -}}
+{{- if hasKey $current "notice" -}}
+{{-   $_ := unset (get $current "notice") "hide_gpt-5.1-codex-max_migration_prompt" -}}
 {{- end -}}
 {{- /* macOS の ls は CLICOLOR の値でなく有無で色を付けるため、人間の shell から継承した値を外す。既存の exclude は残す */ -}}
 {{- $_ := set (get $desired "shell_environment_policy") "exclude" (concat (dig "shell_environment_policy" "exclude" (list) $current) (list "CLICOLOR") | uniq) -}}

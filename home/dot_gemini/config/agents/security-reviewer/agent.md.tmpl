@@ -10,5 +10,8 @@ tools:
   - run_command
 ---
 
-{{ includeTemplate "agents/security-reviewer.md" . -}}
+{{ includeTemplate "agents/security-reviewer.md" . }}
+# Security skill
+
+The procedure below is the security skill. Where it conflicts with the rules above, including its default target, the rules above take precedence.
 {{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/security/SKILL.md") "" -}}

@@ -41,12 +41,17 @@ openai-codex = "openai/codex-plugin-cc"
 # サブエージェントの description。本文は .chezmoitemplates/agents/<name>.md、
 # Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
 [agents]
-browser_debugger = "Browser automation and debugging agent that owns the Playwright and Chrome DevTools MCP servers. Use to verify frontend changes in a real browser, and to investigate console, network, and performance issues."
-code_reviewer = "Read-only senior code reviewer. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues."
+browser_debugger = "Browser verification and debugging agent that uses the Playwright and Chrome DevTools MCP servers. Use to keep noisy browser output (snapshots, console logs, traces) out of the caller's context when verifying frontend changes in a real browser or investigating console, network, and performance issues."
+code_reviewer = "Senior code reviewer that reports findings and leaves the fixes to the caller. Use after code changes, before commits, or before PRs to find correctness, regression, security, performance, and maintainability issues."
 debugger = "Debugging specialist for failing tests, runtime errors, and CI failures. Use when a concrete failure needs root-cause analysis and a minimal fix."
-security_reviewer = "Read-only security reviewer. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
+security_reviewer = "Security reviewer that reports vulnerabilities and leaves the fixes to the caller. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, and dangerous-command changes."
 source_grounded_researcher = "Researches local repositories, GitHub, documentation, and web sources with concrete evidence. Use for broad investigation and source-grounded summaries."
-test_runner = "Runs tests, lint, and verification commands, then summarizes failures. Use after implementation or before completing a task."
+test_runner = "Runs tests, lint, and verification commands, then summarizes failures by root cause. Use when the output should stay out of the caller's context and no fix is needed."
+
+# Codex の custom agent (dot_codex/agents/*.toml.tmpl) が共通で使うモデル。reasoning effort は役割ごとに各ファイルが持つ。
+# .chezmoitemplates/codex/instructions.md もこの値を main agent への説明に描画する
+[codex]
+subagent_model = "gpt-6.1-sol"
 
 # Agent の shell の環境変数 (README「Agent が使う shell」)。editor の自動起動を失敗終了にし、pager と各 CLI の対話 prompt を止める。
 # GIT_EDITOR は Claude Code の既定と同じ true にして、rebase --continue 等が既定のメッセージで進むようにする。

@@ -1,12 +1,12 @@
 ---
 name: refactor
-description: "Refactor: plan and apply a behavior-preserving refactor of a file or symbol, keeping existing tests green and the change to roughly one commit. Use when the user wants to clean up or restructure code without changing its observable behavior."
+description: "Plans and applies a behavior-preserving refactor of a specified file or symbol, keeping existing tests green and the change to roughly one commit. Use when the user asks to restructure or clean up a given file or symbol without changing its observable behavior (「リファクタして」「整理して」「振る舞いを変えずに書き直して」). For simplifying only the code changed in the current diff, the /simplify skill fits better where available."
 argument-hint: <file-path-or-symbol>
 ---
 
 # リファクタリング
 
-`$ARGUMENTS` を対象としてリファクタリングを行う。
+引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) で指定されたファイル・シンボルを対象としてリファクタリングを行う。
 
 ## Goal
 

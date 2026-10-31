@@ -1,0 +1,16 @@
+{{- /* 共通 AGENTS.md を「## git」見出しの前 (part "0") と以降 (part "1"。末尾に suffix を連結) に分けて返す。
+      Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で行単位に切り詰めるため、
+      ~/.gemini/config/AGENTS.md と ~/.gemini/config/GEMINI.md (どちらも frontmatter 無しの常時有効な global rule) に分けて配り、
+      上限を超える描画は fail で止める */ -}}
+{{- $parts := splitn "\n## git\n" 2 (include "dot_config/agents/AGENTS.md") -}}
+{{- if ne (len $parts) 2 -}}
+{{-   fail "dot_config/agents/AGENTS.md: no \"## git\" heading to split the Antigravity rule files at" -}}
+{{- end -}}
+{{- $body := $parts._0 -}}
+{{- if eq .part "1" -}}
+{{-   $body = printf "# AGENTS.md — 作業規約 (続き: git 節以降)\n\n## git\n%s\n%s" $parts._1 .suffix -}}
+{{- end -}}
+{{- if gt (len $body) 24000 -}}
+{{-   fail (printf "%s would be %d bytes; Antigravity truncates rule files at 24000 bytes" .target (len $body)) -}}
+{{- end -}}
+{{- $body -}}

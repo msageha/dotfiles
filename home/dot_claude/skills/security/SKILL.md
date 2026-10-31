@@ -1,14 +1,19 @@
 ---
 name: security
-description: "Security review: detect vulnerabilities (injection, auth/authz, data protection, dependency, infra, AI-reviewer prompt injection) in code and report them with CWE, severity, and confidence. Use when the user wants a security review or vulnerability scan of a file, directory, or the whole project."
+description: "Reviews a specified file, directory, or the whole project for vulnerabilities (injection, auth/authz, data protection, dependency, infra, AI-reviewer prompt injection) and reports them with CWE, severity, confidence, and whether each was verified. Use when the user asks for a security review or vulnerability scan of a path or project (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For only the pending changes on the current branch, the bundled /security-review fits where available; for an independent-context review of a change, delegate to the security-reviewer agent (security_reviewer in Codex) instead."
 allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit), Bash(cargo audit --json)
 disallowed-tools: Edit, Write, NotebookEdit
-argument-hint: [file-or-directory]
+argument-hint: "[file-or-directory]"
 ---
 
 # セキュリティレビュー
 
-呼び出し時に指定されたファイル・ディレクトリ (`$ARGUMENTS`) を対象とし、未指定の場合はプロジェクト全体を対象とする。レビューのみでファイルは変更しない。
+引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) で指定されたファイル・ディレクトリを対象とし、未指定の場合はプロジェクト全体を対象とする。レビューのみで、ファイルと環境は変更しない。
+
+PoC と audit コマンドも read-only に保つ。
+
+- 作業ツリーや環境への書き込み (一時ディレクトリへの展開は除く)、パッケージのインストール、audit ツールの fix 系 (`npm audit fix` 等)、advisory データベース以外への通信はしない。これらが要る検証は実行せず、呼び出し元が実行できる手順として所見に添える。
+- 開始時に `git status --porcelain` を記録し、報告の前にそれが変わっていないことと、展開した一時物 (アーカイブ・一時ディレクトリ) を削除したことを確かめ、両方を報告の冒頭に書く。
 
 ## 検査項目
 

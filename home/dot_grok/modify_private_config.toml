@@ -22,7 +22,9 @@ enabled = true
 rules = true
 agents = true
 mcps = false
-skills = false
+# Grok 1.0.70 は false でも ~/.claude/skills を読む (共有 skill は ~/.agents/skills からも読む)。
+# ~/.claude/skills を読む意図を明示し、この挙動が将来変わっても skill が消えないよう true にする。
+skills = true
 hooks = false
 
 [mcp_servers.context7]

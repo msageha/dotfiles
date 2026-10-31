@@ -1,13 +1,13 @@
 ---
 name: gws-docs-write
-description: "Google Docs: Append text to a document using gws CLI."
-allowed-tools: Bash, Read, Grep, Glob
-argument-hint: --document <ID> --text <TEXT>
+description: "Google Docs: Appends text to a document using gws CLI."
+allowed-tools: Read, Grep, Glob
+argument-hint: "--document <ID> --text <TEXT>"
 ---
 
 # docs +write
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ## Usage
 
@@ -21,6 +21,7 @@ gws docs +write --document <ID> --text <TEXT>
 |------|----------|-------------|
 | `--document` | yes | Document ID |
 | `--text` | yes | Text to append (plain text) |
+| `--dry-run` | - | Validate the request locally without sending it |
 
 ## Examples
 
@@ -32,5 +33,3 @@ gws docs +write --document DOC_ID --text 'Hello, world!'
 
 - Text is inserted at the end of the document body.
 - For rich formatting, use the raw batchUpdate API instead.
-
-> **CAUTION:** This is a **write** command — confirm with the user before executing.

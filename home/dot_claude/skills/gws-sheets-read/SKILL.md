@@ -1,13 +1,13 @@
 ---
 name: gws-sheets-read
-description: "Google Sheets: Read values from a spreadsheet using gws CLI."
-allowed-tools: Bash, Read, Grep, Glob
-argument-hint: --spreadsheet <ID> --range <RANGE>
+description: "Google Sheets: Reads values from a spreadsheet using gws CLI."
+allowed-tools: Bash(gws sheets +read *)
+argument-hint: "--spreadsheet <ID> --range <RANGE>"
 ---
 
 # sheets +read
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth and global flags.
 
 ## Usage
 
@@ -32,3 +32,4 @@ gws sheets +read --spreadsheet ID --range Sheet1
 ## Tips
 
 - Read-only — never modifies the spreadsheet.
+- For advanced options, use the raw `values.get` API (see `gws-sheets`).

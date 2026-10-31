@@ -1,13 +1,13 @@
 ---
 name: gws-slides
-description: "Google Slides: Read and write presentations using gws CLI."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [presentation ID or action description]
+description: "Google Slides: Reads and writes presentations using gws CLI."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[presentation ID or action description]"
 ---
 
 # slides (v1)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws slides <resource> <method> [flags]

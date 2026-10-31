@@ -1,7 +1,8 @@
 ---
 name: gws-shared
-description: "gws CLI: Shared patterns for authentication, global flags, and output formatting."
-allowed-tools: Bash, Read, Grep, Glob
+description: "gws CLI: Shared reference for authentication, global flags, output formatting, and when to confirm sends and writes. Read it before the first gws command in a task, or when a gws command fails with an auth or flag error."
+user-invocable: false
+allowed-tools: Bash(gws schema *)
 ---
 
 # gws — Shared Reference
@@ -13,12 +14,19 @@ The `gws` binary must be on `$PATH`.
 ## Authentication
 
 ```bash
-# Browser-based OAuth (interactive)
+# Show the current authentication state
+gws auth status
+
+# Browser-based OAuth (interactive; opens a browser)
 gws auth login
 
-# Service Account
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
+# Credentials file (OAuth or service account JSON). Set it on the same command line,
+# because an exported variable does not persist between shell calls.
+GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/path/to/key.json gws drive files list
 ```
+
+- Credential precedence: `GOOGLE_WORKSPACE_CLI_TOKEN` (raw access token) > `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` > credentials saved by `gws auth login` > Application Default Credentials (`GOOGLE_APPLICATION_CREDENTIALS`, then the gcloud ADC file).
+- `gws auth export` prints decrypted credentials to stdout; use `gws auth status` to check auth instead.
 
 ## Global Flags
 
@@ -26,7 +34,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
 |------|-------------|
 | `--format <FORMAT>` | Output format: `json` (default), `table`, `yaml`, `csv` |
 | `--dry-run` | Validate locally without calling the API |
-| `--sanitize <TEMPLATE>` | Screen responses through Model Armor |
+| `--sanitize <TEMPLATE>` | Screen responses through a Model Armor template (requires cloud-platform scope) |
 
 ## CLI Syntax
 
@@ -46,9 +54,7 @@ gws <service> <resource> [sub-resource] <method> [flags]
 | `--page-limit <N>` | Max pages when using --page-all (default: 10) |
 | `--page-delay <MS>` | Delay between pages in ms (default: 100) |
 
-## Security Rules
+## Sends, Writes, and Content Screening
 
-- **Never** output secrets (API keys, tokens) directly
-- **Always** confirm with user before executing write/delete commands
-- Prefer `--dry-run` for destructive operations
-- Use `--sanitize` for PII/content safety screening
+- Sending mail and writing or deleting data leave changes other people can see. Unless the user has stated the content and the recipient or target, show the `--dry-run` result (for mail, `--draft` also works) and confirm before running the real command.
+- Model Armor screening applies only when a template is configured. If `GOOGLE_WORKSPACE_CLI_SANITIZE_TEMPLATE` is set, the CLI uses it as the default template and no flag is needed; otherwise pass `--sanitize` only when the user provides a template.

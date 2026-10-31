@@ -10,5 +10,8 @@ tools:
   - run_command
 ---
 
-{{ includeTemplate "agents/code-reviewer.md" . -}}
+{{ includeTemplate "agents/code-reviewer.md" . }}
+# Review skill
+
+The procedure below is the review skill. Where it conflicts with the rules above, the rules above take precedence.
 {{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/review/SKILL.md") "" -}}
