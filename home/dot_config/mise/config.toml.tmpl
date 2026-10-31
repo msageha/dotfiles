@@ -14,7 +14,7 @@ starship = "1.27.0"
 {{/* CLI ユーティリティ群 (dig 既定 false = キー未定義の旧 config でも入れる) */ -}}
 {{ if not (dig "skip_cli_tools" false .) -}}
 # renovate: datasource=github-releases depName=astral-sh/uv extractVersion=^v?(?<version>.+)
-uv = "0.13.2"
+uv = "0.13.3"
 {{/* モダンCLI ユーティリティ群 */ -}}
 # renovate: datasource=github-releases depName=sharkdp/bat extractVersion=^v?(?<version>.+)
 bat = "0.26.1"
@@ -57,7 +57,7 @@ fnox = "1.41.0"
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
 gh = "2.102.0"
 # renovate: datasource=gitlab-releases depName=gitlab-org/cli extractVersion=^v(?<version>.+)
-glab = "1.123.0"
+glab = "1.124.0"
 # fnox は補完生成 (completion fish/zsh/bash) 時に usage コマンドを内部で呼び出すため必須
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
 usage = "7.1.0"
@@ -65,7 +65,7 @@ usage = "7.1.0"
 {{/* 言語ランタイム / LSP サーバー群は skip_cli_tools=false を明示した環境でのみ入れる (dig 既定 true = キー未定義の旧 config に重いツールを入れない) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
 # renovate: datasource=github-tags depName=golang/go extractVersion=^go(?<version>\S+)
-go = "1.27.2"
+go = "1.27.3"
 # renovate: datasource=java-version depName=java-jdk
 java = "temurin-26.0.1+8"
 # renovate: datasource=node-version depName=nodejs
