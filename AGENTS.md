@@ -154,6 +154,8 @@ Claude Code ではこれが path-scoped rule として自動で読まれる。
     skill 本文に `'''` を含めると Codex の TOML が壊れる。
 - `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
   本文用のファイル (`agents/*.md`・`*/instructions.md` 等) に生の `{{` を書くと、include / includeTemplate のどちらで参照しても全 chezmoi コマンドが失敗するので、必要なら `{{ "{{" }}` でエスケープする。
+- `.gitattributes` が無く Windows の checkout は CRLF になる (CI の `chezmoi-windows` も同じ)。
+  include した本文を分割・正規表現で処理するテンプレートは、`replace "\r\n" "\n"` で改行をそろえるか、パターンを `\r?\n` で書く。
 
 ### サイズ予算 (Antigravity)
 

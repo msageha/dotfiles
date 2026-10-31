@@ -7,5 +7,5 @@ developer_instructions = '''
 # Security skill
 
 The procedure below is the security skill. Where it conflicts with the rules above, including its default target, the rules above take precedence.
-{{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/security/SKILL.md") "" -}}
+{{ regexReplaceAll `(?s)\A---\r?\n.*?\r?\n---\r?\n` (include "dot_claude/skills/security/SKILL.md") "" -}}
 '''

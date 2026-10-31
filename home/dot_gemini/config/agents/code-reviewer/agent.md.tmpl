@@ -14,4 +14,4 @@ tools:
 # Review skill
 
 The procedure below is the review skill. Where it conflicts with the rules above, the rules above take precedence.
-{{ regexReplaceAll `(?s)\A---\n.*?\n---\n` (include "dot_claude/skills/review/SKILL.md") "" -}}
+{{ regexReplaceAll `(?s)\A---\r?\n.*?\r?\n---\r?\n` (include "dot_claude/skills/review/SKILL.md") "" -}}
