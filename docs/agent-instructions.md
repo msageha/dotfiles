@@ -10,7 +10,7 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 
 - 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) にはそのツール固有の機構だけを書く。
   rule の読み方、MCP の使い分け、test-runner と test skill の使い分けも共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
-- Claude Code 以外 (Codex / Antigravity / Grok) は rule を path に応じて自動では読まない。
+- この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
   `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。rule が 1 つも見つからないときは描画を fail で止める。
 - 相談・独立レビューの工程は、共通規約の「主担当」(成果物をユーザーへ返すエージェント) だけが回す。

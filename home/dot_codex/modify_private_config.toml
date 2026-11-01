@@ -112,8 +112,8 @@ cli_auth_credentials_store = "file"
       draft PR を自律的に作る等) を上書きできない。衝突する少数の契約だけを developer_instructions に置く */ -}}
 {{- $_ := set $desired "developer_instructions" (includeTemplate "codex/developer-instructions.md" . | trim) -}}
 {{- /* playwright / chrome-devtools は Codex に置かない。Codex は custom agent の mcp_servers を無視し、main に置くと
-      Claude 等から呼ばれる codex exec の毎回の起動で MCP が立ち上がるため。ブラウザ検証は Claude の browser-debugger で行い、
-      以前 main config に入れていた既存エントリは削除する */ -}}
+      Claude 等から呼ばれる codex exec の毎回の起動で MCP が立ち上がるため。Codex でのブラウザ確認の手段は
+      .chezmoitemplates/codex/instructions.md に書き、以前 main config に入れていた既存エントリは削除する */ -}}
 {{- if hasKey $current "mcp_servers" -}}
 {{-   $_ := unset (get $current "mcp_servers") "playwright" -}}
 {{-   $_ := unset (get $current "mcp_servers") "chrome-devtools" -}}
