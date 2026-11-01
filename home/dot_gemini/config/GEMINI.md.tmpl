@@ -1,0 +1,2 @@
+{{- /* generated from dot_config/agents/AGENTS.md (「## git」以降) + .chezmoitemplates/gemini/instructions.md; edit the chezmoi source */ -}}
+{{ includeTemplate "gemini/agents-md-part" (dict "part" "1" "target" "~/.gemini/config/GEMINI.md" "suffix" (includeTemplate "gemini/instructions.md" .)) -}}

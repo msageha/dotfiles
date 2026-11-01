@@ -1,13 +1,13 @@
 ---
 name: test
-description: "Test runner: detect the project's test runner, execute the suite (or a matching subset), and on failure analyze the root cause and fix it. Use when the user wants to run tests or get a failing test suite green."
+description: "Detects the project's test runner and runs the suite or a matching subset. When the user only asks to run tests (「テスト回して」「結果見せて」), it reports results and root-cause hypotheses without editing files; when asked to make them pass (「通して」「直して」) or when verifying its own change, it fixes the root cause and re-runs. Use when the user wants to run tests or get a failing test suite green."
 allowed-tools: Read, Grep, Glob, Bash, Edit
-argument-hint: [test-pattern-or-file]
+argument-hint: "[test-pattern-or-file]"
 ---
 
 # テスト実行と修正
 
-テストの実行と結果対応を行う。
+テストを実行し、依頼が修正まで求めるとき (または自分の変更の検証として実行しているとき) だけ失敗を直す。実行だけの依頼ではファイルを変更しない (判定は手順 3)。
 
 ## 手順
 
@@ -21,8 +21,8 @@ argument-hint: [test-pattern-or-file]
 - Makefile / Taskfile → カスタムターゲット
 
 ### 2. テストの実行
-- 引数が指定されている場合: `$ARGUMENTS` にマッチするテストを実行
-- 引数がない場合: テストスイート全体を実行
+- 引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) でテスト名・パターン・ファイルが指定されている場合: それにマッチするテストを実行
+- 指定がない場合: テストスイート全体を実行
 - 結果は件数 (passed / failed / skipped) と失敗したテスト名・該当ログの抜粋で示し、全文が必要なら一時ディレクトリ (`$TMPDIR` 等) に保存してパスを示す
 
 ### 3. モード判定

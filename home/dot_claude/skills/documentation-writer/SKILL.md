@@ -1,13 +1,13 @@
 ---
 name: documentation-writer
-description: "Documentation: create and improve technical docs (tutorials, how-to guides, reference, explanations) using the Diataxis framework. Use when the user needs tutorials, how-to guides, reference docs, or explanations."
+description: "Creates and improves technical documentation (tutorials, how-to guides, reference, explanations) using the Diataxis framework, choosing the document type and structure for the audience. Use when the user asks for a README, guide, tutorial, API reference, or design explanation (「ドキュメントを書いて」「README を整備して」「手順書を作って」). It decides type and structure; for Japanese prose style in books, articles, or manuscripts (文体・整形・推敲), use japanese-tech-writing where available, together with this skill when both apply."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [topic, file path, or document type]
+argument-hint: "[topic, file path, or document type]"
 ---
 
 # Documentation Writer
 
-Expert technical writer using the Diataxis framework (https://diataxis.fr/). Creates clear, well-structured documentation tailored to the audience and purpose.
+Writes documentation with the Diataxis framework (https://diataxis.fr/), tailored to the audience and purpose.
 
 ## Document Types (Diataxis)
 
@@ -27,7 +27,7 @@ Before writing, determine:
 1. **Document type**: Which Diataxis category? (If unclear, ask the user.)
 2. **Audience**: Who will read this? What do they already know?
 3. **Goal**: What should the reader be able to do or understand after reading?
-4. **Scope**: What to include and, crucially, what to exclude.
+4. **Scope**: What to include and what to exclude.
 5. **Context**: Is there existing documentation to build on or align with?
 
 If the user hasn't specified these, ask targeted questions in one message together with the proposed outline (Phase 2). Under a full delegation (Goal / Constraints / Acceptance criteria, or 'すべて書いて'), do not ask: state your assumptions on audience and scope inline and proceed.
@@ -90,27 +90,27 @@ After writing, self-check:
 - Every step must be actionable and verifiable.
 - Minimize explanation -- keep the reader in flow.
 - End with a working result and suggest next steps.
-- Do NOT include optional steps or alternative approaches.
+- Leave out optional steps and alternative approaches; they break the reader's flow. Put alternatives in a how-to guide.
 
 ### How-to Guides
 - State the problem and prerequisites upfront.
 - Be direct: numbered steps to the solution.
 - Cover edge cases and variations briefly.
-- Do NOT explain underlying concepts (link to Explanations instead).
+- Link to an Explanation for underlying concepts instead of explaining them inline, so the steps stay short.
 
 ### Reference
 - Be exhaustive and consistently formatted.
 - Use tables for parameters, options, return values.
 - Include type information and default values.
 - Keep descriptions factual, not instructional.
-- Do NOT include tutorials or how-to content.
+- Keep tutorials and how-to content out; link to them, so readers looking something up find only facts.
 
 ### Explanations
 - Start with context: why does this exist? What problem does it solve?
 - Use analogies and comparisons when helpful.
 - Discuss trade-offs, alternatives, and design decisions.
 - Link to Reference for exact specifications.
-- Do NOT include step-by-step instructions.
+- Leave step-by-step instructions to tutorials and how-to guides and link to them.
 
 ## Anti-Patterns to Avoid
 

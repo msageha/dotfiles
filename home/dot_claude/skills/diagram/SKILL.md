@@ -1,14 +1,14 @@
 ---
 name: diagram
-description: "Diagram: analyze code and generate architecture/structure diagrams in Mermaid (flowchart, class, sequence, ER, state, or C4). Use when the user wants to visualize code structure, flow, or relationships."
+description: "Analyzes code and generates architecture / structure diagrams in Mermaid (flowchart, class, sequence, ER, state, or C4). Use when the user wants to visualize code structure, flow, or relationships (「図にして」「構成図を描いて」「シーケンス図で見せて」)."
 allowed-tools: Read, Grep, Glob
 disallowed-tools: Edit, Write, NotebookEdit
-argument-hint: [file-or-directory]
+argument-hint: "[file-or-directory]"
 ---
 
 # ダイアグラム生成
 
-`$ARGUMENTS` を対象としてコードを分析し、構造を視覚化するダイアグラムを生成する。引数が未指定の場合はプロジェクト全体を対象とする。
+引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) で指定された対象のコードを分析し、構造を視覚化するダイアグラムを生成する。引数が未指定の場合はプロジェクト全体を対象とする。ファイルと環境は変更せず、図は応答に出力する。
 
 ## 手順
 

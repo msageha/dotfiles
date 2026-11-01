@@ -65,7 +65,7 @@
 .config/ghostty/**
 {{ end }}
 
-# コーディングエージェント設定 (.claude / .codex / .gemini / .grok / .claude.json / .config/agents) は
+# コーディングエージェント設定 (.claude / .codex / .gemini / .grok / .agents / .claude.json / .config/agents) は
 # unix は skip_cli_tools、Windows は skip_windows_extras で管理対象外にする (片方しか定義されないため or で拾う)。
 # 管理するときも各ディレクトリは X/* で一度 ignore し、管理対象のトップレベル項目だけを ! で戻す
 # (autoPush 環境で chezmoi add がランタイムファイルを取り込むのを防ぎ、source に残った迷子ファイルも展開しない)。
@@ -76,6 +76,7 @@
 .codex
 .gemini
 .grok
+.agents
 .claude.json
 .config/agents
 .config/agents/**
@@ -132,5 +133,10 @@
 {{ if not $skipCodingAgent }}
 !.grok/AGENTS.md
 !.grok/config.toml
-!.grok/skills
+{{ end }}
+
+# ~/.agents/skills は Codex が読む共有 skill の配置先 (Grok も読む)
+.agents/*
+{{ if not $skipCodingAgent }}
+!.agents/skills
 {{ end }}

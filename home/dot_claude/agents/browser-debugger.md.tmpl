@@ -3,10 +3,7 @@ name: browser-debugger
 description: {{ .agents.browser_debugger | quote }}
 model: sonnet
 effort: high
-tools: Read, Grep, Glob, Bash, mcp__playwright, mcp__chrome-devtools
-mcpServers:
-  - playwright
-  - chrome-devtools
+tools: Read, Grep, Glob, Bash, mcp__playwright__*, mcp__chrome-devtools__*
 ---
 
 {{ includeTemplate "agents/browser-debugger.md" . -}}

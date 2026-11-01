@@ -1,6 +1,14 @@
 ---
 name: source-grounded-researcher
 description: {{ .agents.source_grounded_researcher | quote }}
+tools:
+  - view_file
+  - list_dir
+  - find_by_name
+  - grep_search
+  - run_command
+  - search_web
+  - read_url_content
 ---
 
 {{ includeTemplate "agents/source-grounded-researcher.md" . -}}

@@ -2,6 +2,15 @@
 name: debugger
 description: {{ .agents.debugger | quote }}
 model: pro
+tools:
+  - view_file
+  - list_dir
+  - find_by_name
+  - grep_search
+  - run_command
+  - write_to_file
+  - replace_file_content
+  - multi_replace_file_content
 ---
 
 {{ includeTemplate "agents/debugger.md" . -}}

@@ -17,8 +17,9 @@
 <!-- どのように動作確認したかを記載してください -->
 
 - [ ] `mise run pre-commit` が通った
+- [ ] `mise run pre-push` が通った (全テンプレートの描画を含む)
 - [ ] `mise run test` が通った
-- [ ] `mise run dry-run` で意図した差分のみであることを確認した
+- [ ] `chezmoi status` で意図した target だけが差分になっていることを確認した
 
 ## チェックリスト
 

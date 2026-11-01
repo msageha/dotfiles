@@ -1,13 +1,13 @@
 ---
 name: gws-gmail
-description: "Gmail: Read/search messages and threads, manage drafts/labels/settings, or send messages needing HTML/attachments/CC/BCC, using gws CLI — for a plain-text send or an unread inbox summary, use gws-gmail-send or gws-gmail-triage instead."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [action description or search query]
+description: "Gmail: Reads/searches messages and threads, or manages drafts/labels/settings using gws CLI — for sending an email (including HTML, attachments, CC/BCC) or an unread inbox summary, use gws-gmail-send or gws-gmail-triage instead."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[action description or search query]"
 ---
 
 # gmail (v1)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws gmail <resource> <method> [flags]

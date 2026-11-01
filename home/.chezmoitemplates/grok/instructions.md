@@ -1,22 +1,8 @@
-# 開発指針
+# Grok 固有の補足
 
-## 言語・ツール別 rules
+- `~/.claude/CLAUDE.md` と `~/.claude/rules` は Claude 互換の設定で読み込みを止めている。rule は下の一覧から選んで、編集・レビューの前に読む。
+- project 直下の `CLAUDE.md` は読み込まれる。その `@<path>` 行は Claude Code の import 記法で、Grok は展開しない。指す内容が AGENTS.md として読み込まれていなければ、必要に応じてその path を読む。
+- 独立 context のレビューは `code-reviewer` agent (`~/.claude/agents` から読まれる) に委ね、セキュリティ観点が要る変更では `security-reviewer` を併用する。
+- 主担当としての独立した相談・レビュー (AGENTS.md「事実と判断」「検証と完了」) の別モデルには、shell から codex CLI を使う。自由形式の相談・文書レビューは `codex exec -s read-only --ignore-rules`、コードレビューは `codex exec -s read-only --ignore-rules review` (対象範囲と検証結果は PROMPT 本文で渡し、冒頭に相談・レビューだけの依頼であることを書く)。`~/.codex/rules/` の allow に一致するコマンドは read-only の sandbox の外で実行されるので `--ignore-rules` を付ける。どちらも数分から 10 分超かかる。
 
-`~/.claude/rules/*.md` (言語・ツール別規約) は Claude 互換モードにより全件が常時読み込まれている。編集対象のファイル種別に対応する rule だけを適用し、他の rule は無視する。
-
-`~/.claude/CLAUDE.md` も同じ互換モードで読み込まれるが、そこに書かれた Claude Code 固有の機構 (Stop hook と `.claude/verify.sh`・`/create-verify`・codex plugin・github / nano-banana MCP・sandbox の解除・Agent tool の `subagent_type` 等) は Grok に無い。無い機構は使わず提案もせず、既存の lint / test と本書の Subagents / Skills を使う。CLAUDE.md 冒頭の `@~/.config/agents/AGENTS.md` は Claude Code の import 記法で、指している先の内容は本書の「開発指針」より前と同一である。
-
-## MCP サーバー
-
-- **playwright** — フロントエンド変更の実地検証 (「動くか」) に使う。
-- **chrome-devtools** — ブラウザのデバッグとパフォーマンス分析 (「なぜ遅い / 壊れるか」) に使う。
-- **dart** (macOS のみ) — Dart / Flutter 開発全般 (解析・整形・テスト・pub・実行中アプリのデバッグ)。`dart` / `flutter` コマンドのシェル直叩きより MCP を優先する。
-- **xcode** (macOS のみ) — Xcode プロジェクトのビルド・テスト・デバッグ。`xcodebuild` 直叩きより優先する。
-
-## Subagents
-
-定義は `~/.claude/agents/` から読み込まれる (Claude Code 互換): code-reviewer / security-reviewer / debugger / test-runner / source-grounded-researcher / browser-debugger。役割は各 description。独立した検証・調査はタスク文脈に合致する subagent へ委譲してよい。
-
-## Skills
-
-`~/.grok/skills/` に定義済み (commit / deps / explain / pr / refactor / review / security / test)。
+{{ includeTemplate "agents/rules-index" . -}}

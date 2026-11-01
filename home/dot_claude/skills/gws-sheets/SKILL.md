@@ -1,13 +1,13 @@
 ---
 name: gws-sheets
-description: "Google Sheets: Create spreadsheets, apply batch formatting/structural updates, or update/clear existing values using gws CLI — for simply reading a range or appending a row, use gws-sheets-read or gws-sheets-append instead."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [spreadsheet ID or action description]
+description: "Google Sheets: Creates spreadsheets, applies batch formatting/structural updates, or updates/clears existing values using gws CLI — for simply reading a range or appending a row, use gws-sheets-read or gws-sheets-append instead."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[spreadsheet ID or action description]"
 ---
 
 # sheets (v4)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws sheets <resource> <method> [flags]

@@ -1,13 +1,13 @@
 ---
 name: gws-docs
-description: "Google Docs: Get document contents, create new documents, or apply rich batchUpdate formatting using gws CLI — for simply appending plain text, use gws-docs-write instead."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
-argument-hint: [document ID or action description]
+description: "Google Docs: Gets document contents, creates new documents, or applies rich batchUpdate formatting using gws CLI — for simply appending plain text, use gws-docs-write instead."
+allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+argument-hint: "[document ID or action description]"
 ---
 
 # docs (v1)
 
-> **PREREQUISITE:** See `gws-shared` skill for auth, global flags, and security rules.
+Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
 gws docs <resource> <method> [flags]
