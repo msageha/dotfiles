@@ -12,7 +12,7 @@ disallowed-tools: Edit, Write, NotebookEdit
 ## Step 1: 変更の取得
 
 1. 中身を出さずにパスを把握する: `git status --short` (untracked の新規ファイルも対象)、`git diff HEAD --stat`、`git diff HEAD --name-only` (PR は `gh pr diff <pr> --name-only`)。`git diff HEAD` は unstaged と staged を合わせて比べる (`git diff` だけでは staged が漏れる)。
-2. secret ファイル (`.env*`・鍵・token を含むファイル・`auth.json` 等) を判定する。出力した secret は取り消せないため、中身を出す前に行う。secret ファイルは中身を出さず、変更の有無だけを見る。
+2. secret ファイル (AGENTS.md「安全」の定義) を判定する。出力した secret は取り消せないため、中身を出す前に行う。secret ファイルは中身を出さず、変更の有無だけを見る。
 3. 差分本体を、secret ファイルを除いて取得する (`git diff HEAD -- . ':(exclude)<path>'`)。untracked の新規ファイルは、secret でないものの中身を読む。
 
 レビュー対象が PR 番号 / URL で指定されたときは、代わりに `gh pr view <pr>` で説明を、`gh pr diff <pr> --exclude '<secret>'` で secret ファイルを除いた差分を取得する。

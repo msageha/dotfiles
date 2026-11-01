@@ -20,6 +20,10 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   - `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。
     外部ツール (ローカルデーモン等) が実行時に注入する hooks は apply のたびに消える。
     hooks 配列の部分マージは脆いため意図して全量管理にしており、温存が必要になったら modify-template 化を検討する。
+- `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
+  本文用のファイル (`agents/*.md`・`*/instructions.md` 等) に生の `{{` を書くと、include / includeTemplate のどちらで参照しても全 chezmoi コマンドが失敗するので、必要なら `{{ "{{" }}` でエスケープする。
+- `.gitattributes` が無く Windows の checkout は CRLF になる (CI の `chezmoi-windows` も同じ)。
+  include した本文を分割・正規表現で処理するテンプレートは、`replace "\r\n" "\n"` で改行をそろえるか、パターンを `\r?\n` で書く。
 
 ## コードから読み取れない契約
 
@@ -44,7 +48,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書き、`dot_bash_profile` / `dot_zprofile` はそれを source する。
   Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (README「Agent が使う shell」)。
 - `tests/install` (install スクリプトの関数をスタブで検査) と `tests/docker` (`mise.toml` のバリアント表と CI matrix の一致) は、apply 済みの環境に依存しないので pre-push hook で回す。
-  `tests/files` は apply 後の `$HOME` を検査し、`mise run test` で回す。
+  `tests/files` は apply 後の `$HOME` を検査するので、`mise run test` (`bats -r tests/`。3 つ全てを回す) でだけ回る。
   skip_* による skip 判定は `tests/test_helper.bash` にある。
 - 検証用 Docker イメージのバリアント表は `mise.toml` の `build-<tag>` タスクにあり、CI の matrix はこれを写す。
   chezmoi provisioning (導入 → apply → 掃除) は各 Dockerfile (`docker/Dockerfile.debian` / `docker/Dockerfile.alpine`) の最終 RUN にある。
@@ -81,9 +85,10 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。
 - prek の git hook は、commit 時に lint / format を、push 時にテンプレート全体の描画 (`chezmoi-dry-run` hook) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
-- テンプレートの描画確認は `chezmoi-dry-run` hook (`chezmoi apply --dry-run --force`) で行う。
+- テンプレートの描画確認は `chezmoi-dry-run` hook (`chezmoi apply --dry-run --force --source .`。既定の source ではなく、push しようとしている checkout を描画する) で行う。
   `--verbose` が無いので diff を出さない。
   `mise run dry-run` を使うなら、出力を捨てて exit code だけを見る (例: `mise run dry-run >/dev/null 2>&1`)。
+  差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
 
 ### secret を出力しうるコマンド
 
@@ -99,75 +104,18 @@ secret の扱いは共通規約の「安全」節に従う。
 - `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。
   この data は `mise run apply-ssh-keys` の中でだけ渡し、検証コマンド (pre-push / test / dry-run) には渡さない。
 
-値は `sed -E 's/=.*/=***/'` でマスクできる (引用符の有無や種類によらない)。それ以外はキー名だけを grep するか、`wc -c` 等で有無・長さだけを確かめる。
+`KEY=value` 形式の行は `sed -E 's/=.*/=***/'` でマスクできる (引用符の有無や種類によらない)。JSON・`.netrc`・鍵・値だけの出力 (`printenv <KEY>` 等) には効かないので、出力を捨てるか、キー名だけを grep するか、`wc -c` 等で有無・長さだけを確かめる。
 
 ### 既知の偽失敗
 
+- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (`~/Library/Caches/`・`~/.cache/`) への書き込みが "Operation not permitted" で落ちる。
+  コード起因と決めつけず、sandbox を外して再実行して切り分ける。
 - `.pre-commit-config.yaml` の dprint hook から `--allow-no-files` を外さない。
   prek は対象ファイルを複数バッチに分けて並列に `dprint fmt <subset>` を起動するため、あるバッチが `dprint.json` の `excludes` に全部マッチすると "No files found to format" (exit 14) で非決定的に失敗する。
   sandbox 起因の失敗と紛らわしいが別問題。
 
-## LLM エージェント指示文の構成
+## LLM エージェント指示文
 
-指示文ファイルを編集するときは、先に `dot_claude/rules/agent-config.md` (編集の規範) を読む。
-各ツールの settings・permission (Claude の settings*.json、Codex の config.toml / rules、Grok・Gemini の設定) を編集するときは `dot_claude/rules/claude-settings.md` を読む。
-Claude Code ではこれが path-scoped rule として自動で読まれる。
-
-- 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書く。
-  各ツールの adapter (下記) にはそのツール固有の機構だけを書き、共通ルールを複製しない。
-  各 `*.tmpl` 先頭の来歴コメントは chezmoi テンプレートコメントなので描画されない。
-- Claude Code: `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で import する。
-  `dot_claude/CLAUDE.md` の MCP 一覧には、ツール定義や server instructions に無い運用規範を持つサーバーだけを載せる (description は再掲しない)。
-- Codex
-  - `dot_codex/AGENTS.md.tmpl` が、共通 AGENTS.md と `.chezmoitemplates/codex/instructions.md` を連結する。
-  - AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、worktree や draft PR を自律的に作る等) を上書きできない。
-    これと衝突する少数の契約だけを `.chezmoitemplates/codex/developer-instructions.md` に書き、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れる。
-  - custom agent は `dot_codex/agents/*.toml.tmpl`。model は `.chezmoidata.toml` の `[codex] subagent_model` を参照する。
-    Codex は agent TOML の `sandbox_mode` / `mcp_servers` を無視して親の設定を継承するため、書かない。
-    Codex の custom agent はブラウザ MCP を持てず (main config にも playwright / chrome-devtools を置かない)、CLI に内蔵ブラウザも無いので、browser_debugger は Codex には置かない。ブラウザ検証は Claude の browser-debugger で行う。
-- Antigravity (Gemini)
-  - 1 ファイルの上限 (下記「サイズ予算」) に収めるため、共通 AGENTS.md を `## git` 見出しの前後で分けて配る。
-    前半は `dot_gemini/config/AGENTS.md.tmpl` → `~/.gemini/config/AGENTS.md`、後半と `.chezmoitemplates/gemini/instructions.md` は `dot_gemini/config/GEMINI.md.tmpl` → `~/.gemini/config/GEMINI.md`。
-    どちらも frontmatter 無しの、常時有効な global rule になる。
-  - 分割と上限の検査は `.chezmoitemplates/gemini/agents-md-part` が行う。
-    見出しが見つからないときと、生成物が 24,000 bytes を超えたときは、テンプレートが fail して描画を止める。
-    共通 AGENTS.md の `## git` 見出しを変えるときは、分割位置も合わせて直す。
-  - Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を読まない。
-- Grok
-  - `dot_grok/AGENTS.md.tmpl` が、共通 AGENTS.md と `.chezmoitemplates/grok/instructions.md` を連結する。
-  - Grok は `compat.claude` (`dot_grok/modify_private_config.toml`。`agents` cell が CLAUDE.md、`rules` / `skills` cell が各ディレクトリを制御する) により、`~/.claude/CLAUDE.md`・`~/.claude/rules` の全件 (`paths` を無視して常時)・`~/.claude/skills` を読む。`~/.claude/agents` は compat の設定にかかわらず読まれる。
-    Grok は `@` import を展開しないため、CLAUDE.md 経由で AGENTS.md が二重に載ることはない。
-  - `~/.grok/skills` のコピーは廃止し、`.chezmoiremove` で配布していた SKILL.md を適用先から消す。
-    Grok は `~/.agents/skills` も読み、`~/.claude/skills` と同名の skill は `~/.agents/skills` 側を採る (中身は同じ include なので挙動は変わらない)。
-- skills
-  - 本体は `dot_claude/skills/<name>/SKILL.md`。
-  - 共有の 9 本 (commit / deps / explain / improve-pr / pr / refactor / review / security / test) は、本体を include する wrapper で他のツールにも配る。
-    Gemini は `dot_gemini/config/skills/<name>/SKILL.md.tmpl`、Codex は `dot_agents/skills/<name>/SKILL.md.tmpl` → `~/.agents/skills`。
-    共有 skill の本文は他のツールからも読まれるので、Claude 固有の機構 (`$ARGUMENTS` の置換・Claude Code の tool 名) に依存させない。
-  - commit / pr には `disable-model-invocation` を付けず、自然文の依頼でも起動する。
-    skill を読み込んだことは git 操作の許可ではなく、操作してよいかは共通規約の「git」節 (ユーザーの明示指示) で決まる。
-- サブエージェント
-  - 本文は `.chezmoitemplates/agents/<name>.md`、description は `.chezmoidata.toml` の `[agents]` が単一ソース。
-    Claude (`dot_claude/agents/*.md.tmpl`)・Codex (`dot_codex/agents/*.toml.tmpl`。`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が、include と `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
-  - browser-debugger は Claude だけに置く。
-  - Codex / Gemini の code-reviewer・security-reviewer は、review / security skill の本文を frontmatter を剥いで追記する (`regexReplaceAll` は明示引数形で書く。パイプ形は空文字になる)。
-    skill 本文に `'''` を含めると Codex の TOML が壊れる。
-- `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
-  本文用のファイル (`agents/*.md`・`*/instructions.md` 等) に生の `{{` を書くと、include / includeTemplate のどちらで参照しても全 chezmoi コマンドが失敗するので、必要なら `{{ "{{" }}` でエスケープする。
-- `.gitattributes` が無く Windows の checkout は CRLF になる (CI の `chezmoi-windows` も同じ)。
-  include した本文を分割・正規表現で処理するテンプレートは、`replace "\r\n" "\n"` で改行をそろえるか、パターンを `\r?\n` で書く。
-
-### サイズ予算 (Antigravity)
-
-- rule ファイル 1 つあたりの上限は 24,000 bytes で、include 展開後に計測され、超過分は行の境界で切り捨てられる ([公式 rules](https://antigravity.google/docs/rules))。
-  単位は bytes なので、日本語 (UTF-8 で 1 文字 3 bytes) では約 8,000 文字になる。
-  以前の 12,000 characters は legacy workflow ファイルの上限で、rules には当たらない。
-- global と always_on の rule は、全体で 20,000 tokens の予算を共有する。このリポジトリで作業するときは直下の `AGENTS.md` も workspace の常時有効な rule としてこの予算に入り、3 つの中で最も大きいので、超過時は最初に pointer へ格下げされる。
-  超過すると、大きいファイルから順に path と description だけの pointer に格下げされる。
-- 共通 AGENTS.md か `.chezmoitemplates/gemini/instructions.md` を増やしたら、生成物の bytes を両方とも計測する。
-  `wc -c` は LANG に依らず bytes を数える (`wc -m` は locale 依存)。
-
-  ```sh
-  chezmoi execute-template < home/dot_gemini/config/AGENTS.md.tmpl | wc -c
-  chezmoi execute-template < home/dot_gemini/config/GEMINI.md.tmpl | wc -c
-  ```
+LLM エージェントの指示文 (共通規約・各ツールの AGENTS.md / CLAUDE.md / GEMINI.md と補足・rules・skills・サブエージェント) と各ツールの設定を編集・レビューする前に、`docs/agent-instructions.md` (各ツールへの配り方・コードから読み取れない契約・サイズ予算) と `dot_claude/rules/agent-config.md` (編集の規範) を読む。
+source は `dot_config/agents/`・`dot_claude/`・`dot_codex/`・`dot_gemini/`・`dot_grok/`・`dot_agents/`・`.chezmoitemplates/{agents,codex,gemini,grok}/`・`.chezmoidata.toml` の `[agents]` / `[codex]` にある。
+共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter にはそのツール固有の機構だけを書く。

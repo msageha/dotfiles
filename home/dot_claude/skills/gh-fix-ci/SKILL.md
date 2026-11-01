@@ -1,7 +1,7 @@
 ---
 name: "gh-fix-ci"
 description: "GitHub Actions CI: diagnoses failing PR checks from their logs and, on a fix request, fixes the root cause (flaky, timeout and external failures included) and verifies locally. Use when the user asks why CI failed (「CI の原因分かる？」), asks to fix failing checks (「CI が failed しているから修正して」「green にして」), or asks to watch CI."
-allowed-tools: Bash(gh:*), Bash(git:*), Read, Grep, Glob
+allowed-tools: Bash(gh pr view:*), Bash(gh pr checks:*), Bash(gh run view:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Read, Grep, Glob
 argument-hint: "[optional PR number or URL]"
 ---
 
@@ -63,7 +63,7 @@ For each failing check, present the check name and run URL, a short log excerpt 
 
 ### Step 7: Push and recheck (only when the request includes pushing)
 
-- Commit and push to the PR branch, and update the PR body if the scope changed (pr skill).
+- Commit and push to the PR branch, then rewrite the PR title and body for the whole diff (pr skill).
 - `gh pr checks <pr> --watch --fail-fast`, then report green / failed with the check names. On failure, go back to Step 3.
 - Merge only when the user says so.
 

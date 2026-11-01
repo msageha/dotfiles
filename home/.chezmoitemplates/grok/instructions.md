@@ -1,4 +1,8 @@
 # Grok 固有の補足
 
-- `~/.claude/rules/*.md` は Claude 互換モードで全件が常時読み込まれ、frontmatter の `paths` は効かない。編集対象のファイル種別に対応する rule だけを適用し、他の rule は無視する。
-- `~/.claude/CLAUDE.md` (Claude Code 用の補足) も読み込まれる。冒頭の `@~/.config/agents/AGENTS.md` は Claude Code の import 記法で、指す内容は本書の前半と同じである。そこにある Claude Code 固有の機構 (Stop hook と `.claude/verify.sh`・`/create-verify`・Agent tool の `subagent_type`・sandbox の解除・github / nano-banana MCP) は Grok では働かないので、使わず提案もしない。codex CLI による相談・レビュー (CLAUDE.md の codex の項にある `codex exec` の呼び方) は shell からそのまま使える。
+- `~/.claude/CLAUDE.md` と `~/.claude/rules` は Claude 互換の設定で読み込みを止めている。rule は下の一覧から選んで、編集・レビューの前に読む。
+- project 直下の `CLAUDE.md` は読み込まれる。その `@<path>` 行は Claude Code の import 記法で、Grok は展開しない。指す内容が AGENTS.md として読み込まれていなければ、必要に応じてその path を読む。
+- 独立 context のレビューは `code-reviewer` agent (`~/.claude/agents` から読まれる) に委ね、セキュリティ観点が要る変更では `security-reviewer` を併用する。
+- 主担当としての独立した相談・レビュー (AGENTS.md「事実と判断」「検証と完了」) の別モデルには、shell から codex CLI を使う。自由形式の相談・文書レビューは `codex exec -s read-only --ignore-rules`、コードレビューは `codex exec -s read-only --ignore-rules review` (対象範囲と検証結果は PROMPT 本文で渡し、冒頭に相談・レビューだけの依頼であることを書く)。`~/.codex/rules/` の allow に一致するコマンドは read-only の sandbox の外で実行されるので `--ignore-rules` を付ける。どちらも数分から 10 分超かかる。
+
+{{ includeTemplate "agents/rules-index" . -}}

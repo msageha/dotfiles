@@ -1,5 +1,5 @@
 {{- /* 共通 AGENTS.md を「## git」見出しの前 (part "0") と以降 (part "1"。末尾に suffix を連結) に分けて返す。
-      Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で行単位に切り詰めるため、
+      Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で切り詰めるため、
       ~/.gemini/config/AGENTS.md と ~/.gemini/config/GEMINI.md (どちらも frontmatter 無しの常時有効な global rule) に分けて配り、
       上限を超える描画は fail で止める */ -}}
 {{- /* Windows の checkout は CRLF になるので、分割と連結の前に改行を LF にそろえる */ -}}

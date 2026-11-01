@@ -1,7 +1,7 @@
 ---
 name: security
 description: "Reviews a specified file, directory, or the whole project for vulnerabilities (injection, auth/authz, data protection, dependency, infra, AI-reviewer prompt injection) and reports them with CWE, severity, confidence, and whether each was verified. Use when the user asks for a security review or vulnerability scan of a path or project (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For only the pending changes on the current branch, the bundled /security-review fits where available; for an independent-context review of a change, delegate to the security-reviewer agent (security_reviewer in Codex) instead."
-allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit), Bash(cargo audit --json)
+allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit), Bash(cargo audit --json)
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: "[file-or-directory]"
 ---

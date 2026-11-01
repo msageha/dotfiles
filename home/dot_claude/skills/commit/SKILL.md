@@ -1,7 +1,7 @@
 ---
 name: commit
 description: "Creates a git commit for an explicit commit request such as 「commit して」「コミットして」 or 「commit して PR 作って」: checks that the changes are needed and correct, decides which changes belong to the requested work (untracked files and the user's own edits included, secrets and local artifacts excluded), stages them by path, and writes a message in the repository's style. Use only when the user has explicitly asked to commit; loading this skill does not by itself permit a commit, and the skill does not push."
-allowed-tools: Bash(git:*), Read, Grep, Glob
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git ls-files:*), Bash(git add:*), Bash(git commit:*), Read, Grep, Glob
 argument-hint: "[optional commit message hint]"
 ---
 
@@ -19,7 +19,7 @@ Run in parallel:
 2. `git diff --stat` and `git diff --cached --stat` -- changed paths and sizes.
 3. `git log --oneline -10` -- message style and language.
 
-Classify each path (untracked ones included) before printing any diff, because a secret that reaches the output cannot be taken back. Secret files (`.env*`, credentials, private keys, token files, `auth.json`, `.npmrc` / `.netrc` with tokens) stay out of the commit and their contents are not printed; check only whether they changed.
+Classify each path (untracked ones included) before printing any diff, because a secret that reaches the output cannot be taken back. Secret files (as defined in the AGENTS.md `安全` section) stay out of the commit and their contents are not printed; check only whether they changed.
 
 ## Step 2: Review the remaining changes
 

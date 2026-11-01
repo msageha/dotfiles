@@ -122,9 +122,9 @@ cli_auth_credentials_store = "file"
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
 {{- end -}}
-{{- /* 以前この template が書いていた key のうち Codex 0.166 で効果の無いもの (deprecated の personality、approval_policy = "never"
-      では使われない approvals_reviewer、V2 multi-agent では無視される agents.max_depth、旧名の agents.max_threads、
-      gpt-5.1-codex-max 用の notice) を適用先から消す */ -}}
+{{- /* 以前この template が書いていた key のうち、Codex 0.166 で効果が無いか新しい key に置き換えたもの (deprecated の personality、
+      approval_policy = "never" では使われない approvals_reviewer、既定値と同じ 1 を書いていた (V2 では使われない) agents.max_depth、
+      max_concurrent_threads_per_session の旧名の agents.max_threads、gpt-5.1-codex-max 用の notice) を適用先から消す */ -}}
 {{- $_ := unset $current "personality" -}}
 {{- $_ := unset $current "approvals_reviewer" -}}
 {{- if hasKey $current "agents" -}}

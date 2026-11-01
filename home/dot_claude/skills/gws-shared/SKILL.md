@@ -56,5 +56,5 @@ gws <service> <resource> [sub-resource] <method> [flags]
 
 ## Sends, Writes, and Content Screening
 
-- Sending mail and writing or deleting data leave changes other people can see. Unless the user has stated the content and the recipient or target, show the `--dry-run` result (for mail, `--draft` also works) and confirm before running the real command.
+- Sending mail and writing or deleting data leave changes other people can see. Unless the user has asked for this send or write and stated its content and its recipient or target, show the `--dry-run` result (for mail, `--draft` also works) and confirm before running the real command. Changes to sharing or access permissions always follow the AGENTS.md `安全` section: show the current and resulting entries and confirm, even when the request is specific.
 - Model Armor screening applies only when a template is configured. If `GOOGLE_WORKSPACE_CLI_SANITIZE_TEMPLATE` is set, the CLI uses it as the default template and no flag is needed; otherwise pass `--sanitize` only when the user provides a template.

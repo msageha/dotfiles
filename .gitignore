@@ -21,6 +21,8 @@
 !README.md
 !AGENTS.md
 !CLAUDE.md
+!docs
+!docs/agent-instructions.md
 
 # --- chezmoi 本体 ---
 !.chezmoiroot

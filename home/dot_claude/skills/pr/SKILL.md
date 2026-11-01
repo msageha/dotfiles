@@ -1,7 +1,7 @@
 ---
 name: pr
 description: "Runs the pull request / merge request workflow for explicit requests such as 「PR 作って」「PR に積んで」「push して」「main に積んで」「conflict を解消して」「main を取り込んで」: branches from the latest base, pushes, opens or updates a GitHub PR / GitLab MR with a title and body rewritten for the whole diff, pushes straight to the base branch when asked, rebases or merges the base into a PR branch, and waits for CI and the mergeable state. Use only when the user has explicitly asked for one of these git operations; loading this skill does not by itself permit a push or a PR."
-allowed-tools: Bash(git:*), Bash(gh:*), Bash(glab:*), Read, Grep, Glob
+allowed-tools: Bash(git remote:*), Bash(git fetch:*), Bash(git status:*), Bash(git branch -f:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git ls-tree:*), Bash(git switch:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git rebase:*), Bash(git merge:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo view:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr checks:*), Bash(gh pr merge:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(glab repo view:*), Bash(glab mr list:*), Bash(glab mr create:*), Bash(glab mr update:*), Bash(glab mr merge:*), Bash(glab ci status:*), Read, Grep, Glob
 argument-hint: "[base-branch or title hint]"
 ---
 
@@ -12,9 +12,9 @@ Loading this skill is not permission to push or to open a PR. Do only the operat
 ## Step 1: Decide the mode and its end point
 
 - 「PR 作って」「commit して PR 作って」「〜を直して PR 作って」: a new PR, ending when the PR is open and its CI and mergeable state are checked. It does not include merging, and the PR is not a draft.
-- 「PR に積んで」 on a branch with an open PR: commit and push to that PR's branch and rewrite its title and body. If that PR is unrelated to this change (its purpose differs, or the user has just asked for a new PR), do not mix the change in: open a new PR from the latest base and report its URL. If the branch has no open PR, push the branch and ask whether to open one.
-- 「push して」 alone: push the current branch to its upstream and, if it has an open PR, rewrite that PR's title and body. If the open PR is unrelated to this change, stop and report instead of pushing; a bare push request does not permit opening a new PR.
-- A fix or follow-up to an existing PR (「この PR 向けに修正 PR を作って」「#N に対する別の PR として出して」, or a request that builds on an unmerged PR): a stacked PR. Branch from that PR's branch, open the PR against it, and do not merge it.
+- 「PR に積んで」 on a branch with an open PR: commit and push to that PR's branch and rewrite its title and body. If that PR is unrelated to this change (its purpose differs, or the user has just asked for a new PR), do not mix the change in: open a new PR from the latest base and report its URL. When it is unclear whether the PR is related, open a new PR, because closing a PR is easier to undo than commits pushed onto an existing one. If the branch has no open PR, push the branch and ask whether to open one.
+- 「push して」 alone: push the current branch to its upstream and, if it has an open PR, rewrite that PR's title and body. If the open PR is unrelated to this change, stop and report instead of pushing; a bare push request does not permit opening a new PR. On the base branch, stop and report as well, since pushing to the base branch is the 「main に積んで」 mode.
+- A PR whose base the user names as an existing PR or branch (「この PR 向けに修正 PR を作って」「#N に対する PR として出して」「`<branch>` に対しての PR」): a stacked PR. Branch from that PR's branch, open the PR against it, and do not merge it. Do not infer a stacked PR from words such as 「修正 PR」 alone, which often mean a PR against the base branch; if the change cannot be built on the latest base because it depends on an unmerged PR, ask which base to use.
 - 「main に積んで」「main に push して」: commit on the base branch and push to it directly, without a work branch or PR. This is the only mode that pushes to the base branch.
 - 「conflict を解消して」「main を取り込んで」: Step 8, then push to the PR branch.
 - Committing is part of the request when it says to commit, uses 「PR に積んで」 or 「main に積んで」 (both mean commit + push), or delegates the work through to a PR (「〜して PR 作って」). Otherwise, if the work has uncommitted changes, stop and report; committing needs its own instruction.
@@ -26,31 +26,23 @@ Loading this skill is not permission to push or to open a PR. Do only the operat
 1. `git remote get-url origin` -- the platform: `github.com` means GitHub (`gh`), a URL containing `gitlab` means GitLab (`glab`). If neither, ask.
 2. The base branch: the argument (`$ARGUMENTS`; if it is empty or not substituted, the request text) if it names a branch; otherwise treat the argument as a title hint and use the repository default (`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; GitLab: `glab repo view -F json --jq .default_branch`). For a stacked PR, the base is the parent PR's branch. Then `git fetch origin <base>`.
 3. Run in parallel:
-   - `git status --short --branch` -- branch and working tree. Do not use `-uall`.
-   - `git branch -vv --list "$(git branch --show-current)"` -- remote tracking.
+   - `git status --short --branch` -- branch, its remote tracking and the working tree. Do not use `-uall`.
    - `git log --oneline origin/<base>..HEAD` -- the commits in the PR.
    - `git diff --stat origin/<base>...HEAD` -- the changed files. Use three dots (diff from the merge base) so that commits added to the base after the branch point do not appear as part of the PR.
    - `gh pr list --head <branch> --json number,url,title,state` (GitLab: `glab mr list --source-branch <branch>`) -- an existing PR / MR for this branch.
 
 ## Step 3: Choose the branch
 
-- New PR: `git fetch origin <base> && git checkout -b <name> origin/<base>`. Do not branch from the current branch or from a reference PR's branch. Uncommitted changes carry over; if git refuses because a modified file also differs between HEAD and `origin/<base>`, record the current commit (`old=$(git rev-parse HEAD)`), create the branch at HEAD (`git checkout -b <name>`), commit, and move only the new commits onto the base with `git rebase --onto origin/<base> "$old"`, so commits of the branch you started from (for example another PR's) stay out of this PR.
+- New PR: `git fetch origin <base> && git switch -c <name> origin/<base>`. Do not branch from the current branch or from a reference PR's branch. Uncommitted changes carry over; if git refuses because a modified file also differs between HEAD and `origin/<base>`, record the current commit with `git rev-parse HEAD`, create the branch at HEAD (`git switch -c <name>`), commit, and move only the new commits onto the base with `git rebase --onto origin/<base> <recorded-commit>`, so commits of the branch you started from (for example another PR's) stay out of this PR.
 - The current branch already holds this work (its own commits, no PR yet): use it as is.
-- Work already committed on the local base but not on `origin/<base>`: keep it with `git checkout -b <name>` at HEAD and rebase onto `origin/<base>`. If all those commits belong to this work, reset the local base with `git branch -f <base> origin/<base>`; otherwise ask which ones belong before continuing.
-- Continuing an existing PR: commit on its branch directly (check it out first if needed).
-- Stacked PR: `git checkout -b <name> origin/<parent-branch>`.
+- Work already committed on the local base but not on `origin/<base>`: keep it with `git switch -c <name>` at HEAD and rebase onto `origin/<base>`. If all those commits belong to this work, reset the local base with `git branch -f <base> origin/<base>`; otherwise ask which ones belong before continuing.
+- Continuing an existing PR: commit on its branch directly (`git switch <branch>` first if needed).
+- Stacked PR: `git switch -c <name> origin/<parent-branch>`.
 - 「main に積んで」: work on the base branch (switch to it if needed). After committing, `git fetch origin <base>`; if `git merge-base --is-ancestor origin/<base> HEAD` succeeds, push with `git push origin <base>`, otherwise rebase onto `origin/<base>` first so the push is a fast-forward.
 
 ## Step 4: Commit (when the request includes it)
 
-Follow the commit skill. Its essentials, so this flow does not depend on it being loaded:
-
-- Check that each change is needed and correct before committing.
-- Decide secret paths from `git status --short` before printing any diff, and keep those files out of the output and the commit.
-- Include every change of the work: untracked files and directories, the user's own edits for the same work, and tracked files that match `.gitignore`. Leave out runtime artifacts, screenshots, local settings and unrelated changes, and report them.
-- Stage by pathspec (`git add <path>`), not with `git add -A` / `git add .` / `git commit -a`.
-- Use Conventional Commits in the language of the recent history, without attribution trailers.
-- If a hook fails, fix the cause and create a new commit instead of `--amend`.
+Follow the commit skill (`../commit/SKILL.md`; read it first if it is not loaded). The steps this flow relies on: decide the secret paths before printing any diff, commit this work's changes (untracked files included) by pathspec and nothing else, write the message in the history's style without attribution trailers, and when a hook fails, fix the cause and make a new commit instead of `--amend`.
 
 ## Step 5: Check the scope and read the whole change
 
@@ -128,7 +120,7 @@ Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh 
 ## Step 8: Resolve conflicts and bring in the base
 
 - Default: `git fetch origin <base>` and rebase the PR branch onto `origin/<base>`. When the user asks to merge the base in (「main を merge して」), merge `origin/<base>` instead of rebasing.
-- A rebase or merge refuses to run while the working tree holds uncommitted changes. If those changes are not yours (another session shares this checkout), do not stash, `--autostash`, reset or check them out (AGENTS.md `git` section); stop and report, and use a separate worktree only if the user asks for one.
+- A rebase or merge refuses to run while the working tree holds uncommitted changes. If those changes do not belong to this work (for example, another session shares this checkout), do not stash, `--autostash`, reset or check them out (AGENTS.md `git` section); stop and report, and use a separate worktree only if the user asks for one.
 - Treat the base as correct. Keep every fix that landed on the base, and do not bring back content the base changed or removed; check each conflicted file against `git log origin/<base> -- <file>`. Keep the design intent of both sides, and also update code the new base now requires (renamed APIs, moved files) even where git reported no conflict.
 - A conflict that needs a design decision: present the options with a recommendation and wait.
 - Run the existing lint / test, then push: `git push --force-with-lease` after a rebase, plain `git push` after a merge. Do not use `--force`.
@@ -144,4 +136,4 @@ Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh 
 
 - Use `--draft`, reviewers, labels and GitLab merge options (`--squash-before-merge`, `--remove-source-branch`) only when the user requests them.
 - Push to the base branch only in the 「main に積んで」 mode.
-- Do not use `--force`; `--force-with-lease` is only for a PR branch you just rebased.
+- Do not use `--force`. Force-push with `--force-with-lease`, and only to a PR branch you just rebased or when the user explicitly asks for a force push.

@@ -15,4 +15,5 @@ paths:
 # Agent Harness Settings and Permissions (Claude settings.json / Codex config.toml and rules / Grok config.toml / Gemini settings.json)
 
 - Claude `permissions.allow`: In Claude Code `settings.json` `permissions.allow`, collapse every entry a wildcard covers into `Bash(tool:*)` form instead of listing individual subcommands.
+- Codex rules: A `decision = "allow"` prefix rule in `~/.codex/rules/*.rules` runs the matching command outside the sandbox without approval, even in a session started with `-s read-only`; read-only delegations therefore pass `--ignore-rules` (`codex exec` and `codex exec review` accept it, top-level `codex review` does not). When adding an allow rule, check that no read-only workflow that omits `--ignore-rules` would then run that command outside its sandbox.
 - Allowlist from history: When the user asks to generate `permissions.allow` from their execution history, keep every command they repeatedly approved (interpreters, shells, delete and network commands included) instead of excluding them on your own safety judgement; state the residual risk as a note and leave the trade-off to the user.

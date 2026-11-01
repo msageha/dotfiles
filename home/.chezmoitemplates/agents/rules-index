@@ -1,0 +1,42 @@
+{{- /* dot_claude/rules/*.md の frontmatter から、rule ごとに「ファイル名・見出し・paths」の一覧を返す。
+      rule を自動で読み込まない Codex / Antigravity / Grok の補足が include し、編集・レビューの対象に当たる rule を選ばせる。
+      paths は Claude Code と同じく YAML の list と comma 区切りの文字列を受け付け、frontmatter が無い・空・paths が無い rule は常に適用として扱う。
+      Windows の checkout は CRLF になるので、frontmatter の分割前に改行を LF にそろえる */ -}}
+{{- /* glob (doublestar) の pattern は OS によらず / 区切りにする */ -}}
+{{- $rules := glob (printf "%s/dot_claude/rules/*.md" .chezmoi.sourceDir) -}}
+{{- if not $rules -}}
+{{-   fail "dot_claude/rules: no rule files found to build the rules index" -}}
+{{- end -}}
+## 言語・ファイル種別の rules
+
+rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter の `paths` が示す。編集・レビューの対象に当たる rule を、着手前に次の一覧から選んで読む (paths が多い rule は先頭の 6 件だけを示す)。
+
+{{ range $rules -}}
+{{- $text := replace "\r\n" "\n" (include .) -}}
+{{- $body := $text -}}
+{{- $frontmatter := "" -}}
+{{- if hasPrefix "---\n" $text -}}
+{{-   $rest := trimPrefix "---\n" $text -}}
+{{-   if hasPrefix "---\n" $rest -}}
+{{-     $body = trimPrefix "---\n" $rest -}}
+{{-   else -}}
+{{-     $parts := splitn "\n---\n" 2 $rest -}}
+{{-     if eq (len $parts) 2 -}}
+{{-       $frontmatter = $parts._0 -}}
+{{-       $body = $parts._1 -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{- $raw := "" -}}
+{{- $data := fromYaml $frontmatter -}}
+{{- if kindIs "map" $data }}{{ $raw = get $data "paths" }}{{ end -}}
+{{- $paths := list -}}
+{{- if kindIs "string" $raw -}}
+{{-   range splitList "," $raw }}{{ if trim . }}{{ $paths = append $paths (trim .) }}{{ end }}{{ end -}}
+{{- else if $raw -}}
+{{-   $paths = $raw -}}
+{{- end -}}
+{{- $titles := list -}}
+{{- range regexFindAll "(?m)^# .*$" $body -1 }}{{ $titles = append $titles (trimPrefix "# " .) }}{{ end -}}
+- `{{ base . }}`{{ with $titles }} — {{ join " / " . }}{{ end }}: {{ if not $paths }}paths 無し (常に適用){{ else if gt (len $paths) 6 }}`{{ join "`・`" (slice $paths 0 6) }}` 等{{ else }}`{{ join "`・`" $paths }}`{{ end }}
+{{ end -}}

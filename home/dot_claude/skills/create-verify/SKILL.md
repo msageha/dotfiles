@@ -1,6 +1,6 @@
 ---
 name: create-verify
-description: Analyzes a repository's existing verification mechanisms and creates or updates a thin .claude/verify.sh wrapper that the Stop hook runs for self-verification. Use when the user runs /create-verify to set up or refresh the project's verify.sh.
+description: Analyzes a repository's existing verification mechanisms and creates or updates a thin .claude/verify.sh wrapper that Claude Code's Stop hook runs for self-verification. Use when the user runs /create-verify to set up or refresh the project's verify.sh.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---

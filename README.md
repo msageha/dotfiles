@@ -274,7 +274,7 @@ mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
 mise install  # ツールを導入し、git hook (pre-commit / pre-push) を自動登録する
 ```
 
-prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer・dprint・typos・actionlint・zizmor 等) を、push 時に全テンプレートの描画 (`chezmoi apply --dry-run --force`) と install スクリプト・Docker バリアント表の bats を回す。同じものを手で回すには次を使う。
+prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer・dprint・typos・actionlint・zizmor 等) を、push 時に全テンプレートの描画 (`chezmoi apply --dry-run --force --source .`) と install スクリプト・Docker バリアント表の bats を回す。同じものを手で回すには次を使う。
 
 ```bash
 mise run pre-commit  # prek run --all-files (commit 時と同じ lint / format)
@@ -316,10 +316,10 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 │   │   ├── **/private_<name>.tmpl # 秘密鍵 (1Password の SSH Key item から onepasswordRead で取得。apply_ssh_keys=true のときだけ適用)
 │   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public_key。同上)
 │   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)。skills は共有 skill の本体
-│   ├── dot_agents/skills/         # 共有 skill の Codex 向け wrapper (~/.agents/skills。dot_claude/skills の SKILL.md を include)
+│   ├── dot_agents/skills/         # 共有 skill の Codex / Grok 向け wrapper (~/.agents/skills。dot_claude/skills の SKILL.md を include)
 │   ├── dot_codex/                 # OpenAI Codex 設定 (AGENTS.md・developer_instructions・custom agent)
 │   ├── dot_gemini/                # Antigravity (Gemini) 設定 (共通規約を config/AGENTS.md と config/GEMINI.md に分割・skills・agents)
-│   ├── dot_grok/                  # Grok CLI 設定 (CLAUDE.md・rules・agents・skills は ~/.claude から、共有 skill は ~/.agents/skills から読む)
+│   ├── dot_grok/                  # Grok CLI 設定 (agents・skills は ~/.claude から、共有 skill は ~/.agents/skills から読む)
 │   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
 │   ├── modify_private_dot_npmrc         # ~/.npmrc の Takumi Guard registry / token 行だけを管理 (他の行は温存)
 │   ├── modify_private_dot_netrc         # ~/.netrc の先頭に Takumi Guard (Go) の認証行を置く (他の行は温存)
@@ -343,6 +343,7 @@ mise run dry-run     # chezmoi apply --dry-run --verbose --force
 ├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
 ├── renovate.json                  # 依存関係の自動更新設定
 ├── AGENTS.md                      # このリポジトリで作業する LLM エージェント向けの規約
+├── docs/agent-instructions.md     # LLM エージェント指示文の配り方とサイズ予算 (指示文を編集するときに読む)
 ├── CLAUDE.md                      # @AGENTS.md の import と Claude Code 固有の注意
 ├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
 ├── dprint.json                    # json/yaml/markdown/toml のフォーマット設定 (dprint)

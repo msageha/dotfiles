@@ -7,7 +7,7 @@ paths:
 ---
 # Python
 
-The library and layout choices below (pydantic, `models.py`, `base.py`, `errors.py`, `settings.py`) are defaults for new code; the ORM bullets apply only to projects that already use SQLAlchemy.
+The library and layout choices below (pydantic, `models.py`, `base.py`, `errors.py`, `settings.py`) are defaults for new projects; the ORM bullets apply only to projects that already use SQLAlchemy.
 
 - Code Style:
   - Target Python 3.13+ unless the project pins an older version.
@@ -18,7 +18,7 @@ The library and layout choices below (pydantic, `models.py`, `base.py`, `errors.
   - Use pydantic BaseModel (not dataclasses or NamedTuple) for data structures.
   - Use StrEnum (3.11+) for any fixed set of string constants (model IDs, kinds). When the members mirror values accepted by an external tool (model IDs, permission modes), enumerate every value accepted across the supported version range, verified against primary sources, not only the latest generation.
   - Write a description for every Field; add a default only when the field is genuinely optional (a default on a required field silently makes it optional).
-  - Make a field or column Optional / nullable only when "no value" must be told apart from every real value; otherwise represent it with a default such as `""`. Merge a union whose members are effectively the same type into that single type.
+  - Make a field or column Optional / nullable only when "no value" must be told apart from every real value; otherwise represent it with a default such as `""`.
 - LLM Output Schemas: When a pydantic model is the JSON schema handed to an LLM (claude / codex CLI structured output, API tool schema), express constraints as `Field(pattern=..., max_length=..., ge=...)` so they reach the model through the schema; do not move them into `field_validator` post-checks or strip them from the emitted schema.
 - ORM (SQLAlchemy):
   - Declare every column with `mapped_column(...)`, stating `primary_key` / `nullable` / `unique` / `index` / `ForeignKey` inline rather than in `__table_args__`.
@@ -28,7 +28,7 @@ The library and layout choices below (pydantic, `models.py`, `base.py`, `errors.
   - Store JSON with the dialect-native type (`JSON().with_variant(JSONB(), "postgresql")`), never as `str`; model list-valued data as a child table with a `ForeignKey`, not a JSON array.
   - Store timestamps tz-aware in UTC with the library `TIMESTAMP` type.
   - Validate enums in Python, not as DB CHECK / native enum constraints (each new member would need a migration).
-- Abstractions: Add a typing.Protocol or abc.ABC base only when a consumer must accept more than one real implementation or implementations share logic duplicated in two or more places (AGENTS.md「コード」), not only so that tests can swap in a fake; then use the form the repository already uses (Protocol in a repository with neither).
+- Abstractions: Add a typing.Protocol or abc.ABC base only when a consumer must accept more than one real implementation or implementations share logic duplicated in two or more places (AGENTS.md「コード」), not only so that tests can swap in a fake; then use one form consistently within the repository: the one it already uses, or Protocol in a repository with neither.
 - Layout:
   - Put pydantic `BaseModel` subclasses in the package's `models.py` and keep that file free of logic (functions, factories, compiled regexes); put `Protocol` / ABC bases in `base.py`; use the same file layout in every package.
   - Create a package directory only when it holds at least two modules; a single module stays a `.py` file.

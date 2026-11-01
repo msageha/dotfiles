@@ -1,7 +1,7 @@
 ---
 name: "pdf"
 description: "Creates, edits, and checks PDF files locally with Python libraries and Poppler: generating PDFs with reportlab, filling forms, extracting text and tables programmatically, merging / splitting / rotating, OCR, and rendering pages to PNG for visual review. Use when the user asks to generate or fill a PDF, extract structured data from one, or verify a PDF's layout (「PDF を作って」「フォームに記入して」「PDF から表を抜き出して」). To just read a PDF, use the Read tool with pages first. For conversions through a Stirling PDF server (PDF to Markdown / Word / HTML / images, compression), use stirling-pdf where available."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Grep, Glob, Bash(pdftoppm:*), Bash(pdftotext:*), Bash(pdfimages:*), Bash(qpdf:*)
 argument-hint: "[file path or description of PDF task]"
 ---
 

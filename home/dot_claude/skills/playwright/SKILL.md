@@ -1,6 +1,6 @@
 ---
 name: playwright
-description: "Writes, fixes, and debugs Playwright tests (@playwright/test) for TypeScript and JavaScript projects: test code, locators, playwright.config.ts, flaky-test debugging, auth state reuse, network mocking, and CI setup. Use when the user asks to write or fix E2E / Playwright tests or their config and CI (「E2E テストを書いて」「Playwright のテストを直して」「flaky なテストを調べて」). For operating or checking a running app in a real browser, delegate to the browser-debugger agent; for launching the project's app to see a change working, use /run."
+description: "Writes, fixes, and debugs Playwright tests (@playwright/test) for TypeScript and JavaScript projects: test code, locators, playwright.config.ts, flaky-test debugging, auth state reuse, network mocking, and CI setup. Use when the user asks to write or fix E2E / Playwright tests or their config and CI (「E2E テストを書いて」「Playwright のテストを直して」「flaky なテストを調べて」). For operating or checking a running app in a real browser, delegate to the browser-debugger agent; for launching the project's app to see a change working, use /run where available."
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 argument-hint: "[scenario description or test file path]"
 ---
@@ -9,7 +9,7 @@ argument-hint: "[scenario description or test file path]"
 
 This skill covers writing and debugging test code with `@playwright/test`. Read `references/test-writing.md` before writing test code, `playwright.config.ts`, or CI config.
 
-Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run.
+Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run where available.
 
 ## Golden Rules
 

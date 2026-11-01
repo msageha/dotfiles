@@ -19,11 +19,15 @@ trace_upload = false
 enabled = true
 
 [compat.claude]
-rules = true
-agents = true
+# rules は paths を無視して ~/.claude/rules と project の .claude/rules を全件常時読み込むため止め、
+# 共通 AGENTS.md の冒頭どおり編集・レビューの前に該当する rule だけを読ませる。
+rules = false
+# agents は ~/.claude/CLAUDE.md (Claude Code 用の補足) と project の .claude/CLAUDE*.md を読み込むため止める。
+# Grok に要る規範は共通 AGENTS.md と grok/instructions.md にある。project 直下の CLAUDE.md と ~/.claude/agents は false でも読まれる。
+agents = false
 mcps = false
-# Grok 1.0.70 は false でも ~/.claude/skills を読む (共有 skill は ~/.agents/skills からも読む)。
-# ~/.claude/skills を読む意図を明示し、この挙動が将来変わっても skill が消えないよう true にする。
+# false だと ~/.claude/skills は一覧に載るだけで無効 (disabled) になり、~/.agents/skills の共有 9 本しか使えない。
+# true は Claude plugin の skill・command (codex plugin の review 等) も読み込む。
 skills = true
 hooks = false
 
