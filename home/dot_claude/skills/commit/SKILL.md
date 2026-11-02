@@ -44,7 +44,7 @@ The whole work goes in, secrets and local artifacts stay out, and unrelated chan
 
 Stage by pathspec (`git add <path>...`). Do not use `git add -A`, `git add .` or `git commit -a`, which pick up unrelated changes, secrets and artifacts along with the work; `git add -i` is also out, because it waits for interactive input.
 
-Unless the user specified how to split, split the work into logical commits that are easy to review and revert, and commit a derived fix (e.g. a pre-existing bug found during the work) separately. Stage, write and commit each one in turn (Steps 4-6). `git commit` records the whole index, so before each commit compare `git diff --cached --name-only` with that commit's paths; if other paths are already staged, commit with `git commit --only -- <paths>` so they stay staged for their own commit.
+Commit the requested work as one commit unless the user asks to split it. When splitting, stage, write and commit each part in turn (Steps 4-6). `git commit` records the whole index, so before each commit compare `git diff --cached --name-only` with that commit's paths; if other paths are already staged, commit with `git commit --only -- <paths>` so they stay staged for their own commit.
 
 ## Step 5: Write the message
 
