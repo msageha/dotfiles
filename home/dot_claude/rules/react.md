@@ -13,5 +13,5 @@ paths:
 - Lists: Use stable, unique keys for dynamic lists. Do not use array indexes as keys for reorderable data.
 - Accessibility: Use semantic elements and ARIA attributes. Ensure interactive components are keyboard-operable.
 - Performance: Memoize (memo/useMemo/useCallback) only for measured bottlenecks. Reserve space for async content to avoid layout shifts (CLS).
-- Routing: Navigate through a router instead of ad-hoc conditional rendering.
+- Routing: In a single-page app, navigate through a router instead of ad-hoc conditional rendering. A multi-page site, where each page is its own document (as in Astro), links between pages and needs no client router.
 - Testing: When asked to write component tests, use React Testing Library only if the project already uses it; if no component test framework exists, report that and confirm before adding one; query by role/label and assert behavior, not implementation details.

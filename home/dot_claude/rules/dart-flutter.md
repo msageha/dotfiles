@@ -12,7 +12,7 @@ paths:
 
 # Flutter for Mobile Apps
 
-This section applies only to projects whose `pubspec.yaml` depends on the `flutter` SDK, not to pure Dart packages (CLI, server, libraries). The library and architecture choices below are defaults for new (greenfield) projects.
+This section applies only to projects whose `pubspec.yaml` depends on the `flutter` SDK, not to pure Dart packages (CLI, server, libraries).
 
 - State Management: Use Riverpod + hooks_riverpod whenever possible.
 - Widget Structure: Composition over inheritance. Split a large build() into separate widget classes (not helper methods) along the parts that rebuild independently.
