@@ -42,6 +42,14 @@
 .config/ripgrep
 {{ end }}
 
+# self-hosted runner の実行ユーザー (runner) には、個人用の global mise 設定を展開しない。
+# global の [tools] / [plugins] が CI の mise に混入し、repo の mise.lock に無いツールの解決や、
+# registry と食い違う backend の指定 (flutter を asdf plugin に固定) で install が失敗するため。
+# GitHub-hosted runner の実行ユーザーも runner なので、GitHub Actions の job 内 (GITHUB_ACTIONS が立つ) は除く。
+{{ if and (eq .chezmoi.username "runner") (not (env "GITHUB_ACTIONS")) }}
+.config/mise
+{{ end }}
+
 {{ if ne .chezmoi.os "darwin" }}
 .config/gh/hosts.yml
 {{ end }}
