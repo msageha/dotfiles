@@ -9,12 +9,14 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 ## 原則
 
 - 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) にはそのツール固有の機構だけを書く。
-  rule の読み方と MCP の使い分けも共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
+  rule の読み方も共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
 - この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
   `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。rule が 1 つも見つからないときは描画を fail で止める。
 - 相談・独立レビューの工程は、共通規約のとおり、成果物をユーザーへ返すエージェントだけが回す。
   Claude から相談・レビューを頼まれて起動した Codex などが、同じ工程を起動し直さないようにするため。
+- 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、作業を渡す前に読ませる。
+  委譲しないセッションと、共通規約を読むサブエージェントの起動のたびに、その分の context を使わないため。
 - 各 `*.tmpl` 先頭の来歴コメントは chezmoi テンプレートコメントなので描画されない。
 
 ## Claude Code
