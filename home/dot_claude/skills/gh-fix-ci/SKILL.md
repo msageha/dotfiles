@@ -36,7 +36,7 @@ gh pr view <pr> --json mergeable,mergeStateStatus,headRefName,baseRefName
 gh pr checks <pr> --json name,state,bucket,link,startedAt,completedAt,workflow
 ```
 
-- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (rebase onto the freshly fetched `origin/<base>`, keep the base's fixes, run lint / test). Without a push request, stop there with the branch rebased and verified locally; with one, push with `--force-with-lease` and continue. If the conflict needs a design decision, present the options and wait.
+- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). Without a push request, stop there with the conflict resolved and verified locally; with one, push and continue. If the conflict needs a design decision, present the options and wait.
 - Checks still pending: `gh pr checks <pr> --watch` and wait; do not diagnose a partial run.
 - For each `bucket: fail` check, take the run ID from `link` (`.../actions/runs/<run_id>/...`):
 

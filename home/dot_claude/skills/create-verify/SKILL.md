@@ -27,10 +27,12 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 - 新しい検証基盤を作らない。テストファイル、Makefile ターゲット、`package.json` script、pre-commit 設定などは追加せず、検出だけを行う。
 - wrapper は薄く保つ。検証ロジック本体は呼び出し先に委ね、`verify.sh` 内で複雑な分岐や lint ロジックを書かない。
 - 副作用の大きい操作 (deploy / push / migrate / 実機ビルド / 長時間 E2E) は Stop hook で走らせない (Stop hook はターンを終えるたびに走るため)。検出しても呼び出さず、報告にとどめる。
+- ファイルを書き換える検査 (formatter の書き換えモード、`--fix` 付きの lint、それらを hook に含む `pre-commit run --all-files` やタスク) は呼ばない。ターンのたびに作業ツリーが変わり、作業中の差分に意図しない変更が混ざるため。代わりに、書き換えが必要なときに非ゼロで終わる check のモード (`--check` 等) を呼び、そのモードが無いものは除外して報告する。
 - `.claude/` ディレクトリが無ければ作成する。`.gitignore` の状態は変更しない (ユーザー判断に委ねる)。
 - 引数は使用しない。
 - プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記している場合だけ、その記述を示して作成するか確認を取ってから進める。
-- secret を出力し得るコマンド (`chezmoi apply --dry-run --verbose`、`fnox exec -- env` 等。それらを内包する mise / make タスクも含む) は候補にしない。
+- secret を出力し得るコマンド (対象ファイルの diff を出す dry-run、環境変数を一覧で出すコマンド等。それらを内包するタスクも含む) は候補にしない。
+- secret を要する検証は、リポジトリが定める secret の注入の経路 (それを通すタスク等) で呼び、`verify.sh` に secret の値や取得処理を書かない。
 
 ## 手順
 
@@ -52,14 +54,12 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
   - `Cargo.toml` (`cargo test`, `cargo clippy`, `cargo fmt --check`)
   - `pubspec.yaml` (`flutter test` / `dart test`, `dart analyze`)
 - 横断的な lint:
-  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (または `--from-ref`)
+  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (または `--from-ref`)。ファイルを書き換える hook を含むなら候補にしない (Constraints 参照)
   - `shellcheck` 対象の `.sh` がある場合
-- chezmoi リポジトリ特有:
-  - ルートに `.chezmoiroot` または `home/`, `dot_*` があれば `chezmoi apply --dry-run` を候補にする
 - フロントエンド E2E (Playwright / Puppeteer / Chrome DevTools):
   - 既にテストファイル (`*.spec.ts` 等) と設定が揃っている場合のみ採用する。
 
-採用する候補と、長時間 / 副作用ありで除外した候補 (理由付き) を一覧で示し、そのまま作成 / 更新に進む。
+採用する候補と、Constraints により除外した候補 (理由付き) を一覧で示し、そのまま作成 / 更新に進む。
 
 ### 3. wrapper テンプレート (新規作成時の雛形)
 
@@ -90,7 +90,7 @@ warn() { echo "verify.sh: $*" >&2; }
 ユーザーへの最終報告には以下を含める:
 
 - 採用した検証コマンドの一覧
-- 除外した候補とその理由 (副作用 / 重い / 未整備)
+- 除外した候補とその理由 (副作用 / ファイルの書き換え / secret の出力 / 重い / 未整備)
 - 新規作成 or 更新の別
 - 作成 / 更新後に自分で 1 回実行した `bash .claude/verify.sh` の結果 (exit code・所要時間)
 - warn でスキップされた項目と理由。スキップがあれば exit 0 でも全検証が通ったとは書かず、実行して通った項目と分けて書く

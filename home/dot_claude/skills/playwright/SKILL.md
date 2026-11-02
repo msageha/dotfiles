@@ -11,19 +11,21 @@ This skill covers writing and debugging test code with `@playwright/test`. Read 
 
 Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run where available.
 
-## Golden Rules
+## Defaults
 
-1. **`getByRole()` over CSS/XPath** -- resilient to markup changes, mirrors how users see the page.
-2. **No `page.waitForTimeout()`** -- fixed sleeps are flaky and slow; use `expect(locator).toBeVisible()` or `page.waitForURL()`. Do not wait for `networkidle` either: Playwright discourages it for testing, so rely on web-first assertions for readiness.
-3. **Web-first assertions** -- `expect(locator)` auto-retries; `expect(await locator.textContent())` does not.
-4. **Isolate every test** -- no shared state, no execution-order dependencies.
-5. **`baseURL` in config** -- zero hardcoded URLs in tests.
-6. **Retries: `2` in CI, `0` locally** -- surface flakiness where it matters.
-7. **Traces: `'on-first-retry'`** -- rich debugging artifacts without CI slowdown.
-8. **Fixtures over globals** -- share state via `test.extend()`, not module-level variables.
-9. **One behavior per test** -- multiple related `expect()` calls are fine.
-10. **Mock external services only** -- never mock your own app; mock third-party APIs, payment gateways, email.
-11. **Test user-visible behavior, not implementation details** -- assert on what the user sees and does, never on internal state or DOM structure.
+In an existing project, follow its config and conventions (retries, trace, reporter, locator style, fixtures) instead of rewriting them to match this list; the values below are the defaults for a new suite or config.
+
+1. Prefer `getByRole()` over CSS / XPath selectors: it survives markup changes and mirrors how users perceive the page.
+2. Wait with web-first assertions (`expect(locator).toBeVisible()`) or `page.waitForURL()` instead of `page.waitForTimeout()`, because fixed sleeps are flaky and slow. Do not wait for `networkidle` either: Playwright discourages it for testing.
+3. Assert through `expect(locator)`, which retries until the condition holds; `expect(await locator.textContent())` checks once and does not retry.
+4. Keep each test independent, with no shared state or dependence on execution order.
+5. Set `baseURL` in the config and use relative paths in tests rather than hardcoded URLs.
+6. Use `retries: 2` in CI and `0` locally, so flakiness shows up in local runs and CI does not fail on a single flaky attempt.
+7. Use `trace: 'on-first-retry'`, which records debugging artifacts only for retried tests and keeps passing runs fast.
+8. Share setup through fixtures (`test.extend()`) rather than module-level variables.
+9. Cover one behavior per test; several related `expect()` calls are fine.
+10. Mock external services (third-party APIs, payment gateways, email) and leave the app under test unmocked, since a mocked app no longer tests the app.
+11. Assert on what the user sees and does rather than on internal state or DOM structure, so tests survive refactoring.
 
 ## Debugging
 

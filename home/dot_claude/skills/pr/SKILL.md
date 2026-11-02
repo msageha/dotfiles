@@ -1,13 +1,19 @@
 ---
 name: pr
-description: "Runs the pull request / merge request workflow for explicit requests such as 「PR 作って」「PR に積んで」「push して」「main に積んで」「conflict を解消して」「main を取り込んで」: branches from the latest base, pushes, opens or updates a GitHub PR / GitLab MR with a title and body rewritten for the whole diff, pushes straight to the base branch when asked, rebases or merges the base into a PR branch, and waits for CI and the mergeable state. Use only when the user has explicitly asked for one of these git operations; loading this skill does not by itself permit a push or a PR."
-allowed-tools: Bash(git remote:*), Bash(git fetch:*), Bash(git status:*), Bash(git branch -f:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git ls-tree:*), Bash(git switch:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git rebase:*), Bash(git merge:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo view:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr checks:*), Bash(gh pr merge:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(glab repo view:*), Bash(glab mr list:*), Bash(glab mr create:*), Bash(glab mr update:*), Bash(glab mr merge:*), Bash(glab ci status:*), Read, Grep, Glob
+description: "Runs the pull request / merge request workflow for explicit requests such as 「PR 作って」「PR に積んで」「push して」「main に積んで」「conflict を解消して」「main を取り込んで」: branches from the latest base, pushes, opens or updates a GitHub PR / GitLab MR with a title and body rewritten for the whole diff, pushes straight to the base branch when asked, brings the base into a PR branch, and waits for CI and the mergeable state. Use only when the user has explicitly asked for one of these git operations; loading this skill does not by itself permit a push or a PR."
+allowed-tools: Bash(git remote:*), Bash(git fetch:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git ls-tree:*), Bash(git switch:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git rebase:*), Bash(git merge:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo view:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr checks:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(glab repo view:*), Bash(glab mr list:*), Bash(glab mr create:*), Bash(glab mr update:*), Bash(glab ci status:*), Read, Grep, Glob
 argument-hint: "[base-branch or title hint]"
 ---
 
 # Pull Request / Merge Request Workflow
 
-Loading this skill is not permission to push or to open a PR. Do only the operations the user explicitly asked for (AGENTS.md `git` section, which also maps each request phrase to its end point). Work in this order: decide what the request allows, then decide the target (base, branch, PR), then operate.
+Loading this skill is not permission to push or to open a PR. Do only the operations the user explicitly asked for (AGENTS.md `git` section); Step 1 maps each request phrase to its end point. Work in this order: decide what the request allows, then decide the target (base, branch, PR), then operate.
+
+## Safety rules
+
+- Use `--draft`, reviewers, labels and GitLab merge options (`--squash-before-merge`, `--remove-source-branch`) only when the user requests them.
+- Push to the base branch only in the 「main に積んで」 mode.
+- Do not use `--force`. Force-push only with `--force-with-lease`, and only after a rebase that Step 8 allows (including the stacked-PR retarget in Step 7) or when the user explicitly asks for a force push.
 
 ## Step 1: Decide the mode and its end point
 
@@ -16,10 +22,11 @@ Loading this skill is not permission to push or to open a PR. Do only the operat
 - 「push して」 alone: push the current branch to its upstream and, if it has an open PR, rewrite that PR's title and body. If the open PR is unrelated to this change, stop and report instead of pushing; a bare push request does not permit opening a new PR. On the base branch, stop and report as well, since pushing to the base branch is the 「main に積んで」 mode.
 - A PR whose base the user names as an existing PR or branch (「この PR 向けに修正 PR を作って」「#N に対する PR として出して」「`<branch>` に対しての PR」): a stacked PR. Branch from that PR's branch, open the PR against it, and do not merge it. Do not infer a stacked PR from words such as 「修正 PR」 alone, which often mean a PR against the base branch; if the change cannot be built on the latest base because it depends on an unmerged PR, ask which base to use.
 - 「main に積んで」「main に push して」: commit on the base branch and push to it directly, without a work branch or PR. This is the only mode that pushes to the base branch.
-- 「conflict を解消して」「main を取り込んで」: Step 8, then push to the PR branch.
+- 「conflict を解消して」「main を取り込んで」: Step 8 (by default, merge `origin/<base>` into the PR branch), then push to the PR branch.
 - Committing is part of the request when it says to commit, uses 「PR に積んで」 or 「main に積んで」 (both mean commit + push), or delegates the work through to a PR (「〜して PR 作って」). Otherwise, if the work has uncommitted changes, stop and report; committing needs its own instruction.
 - 「self merge して」「(問題なければ) merge して」 for an open PR: merge mode. Confirm CI is green and the PR is mergeable (Step 9), complete any check the condition names, then merge with the repository's usual method (`gh pr merge <pr>`; GitLab: `glab mr merge <mr>`) and report the merge commit and the base branch's CI. If a check failed or the PR conflicts, do not merge; report instead. 「main を merge して」 means bringing the base into the PR branch (Step 8), not merging the PR.
 - Merge the PR itself only in merge mode.
+- Follow the route the user specified (a direct push to the base branch, keeping the existing branch name, a non-draft PR, a permitted force push) instead of replacing it with a procedure you consider safer; the user chose it knowing the repository's practice. If something on that route blocks it, such as a hook rejecting the commit or push, show how to clear that obstacle rather than recommending another route.
 
 ## Step 2: Gather context
 
@@ -48,7 +55,8 @@ Follow the commit skill (`../commit/SKILL.md`; read it first if it is not loaded
 
 - Review every commit from the base to HEAD and the full diff `git diff origin/<base>...HEAD`. Before printing the diff, list the paths (`--name-only`) and exclude secret files from the printed output (`-- . ':(exclude)<path>'`). If a commit on the branch contains a secret file, do not push; report it.
 - Read the modified files as needed and identify the purpose, what changed and why, the risks, and any breaking change.
-- Keep the PR to changes that serve its purpose. Out-of-scope changes (unrelated fixes, a new feature, a different responsibility, edits to instruction files the task did not call for) stay out: if the user asked for them as a separate PR, put them on a new branch from the latest `origin/<base>`; otherwise report them as separate-PR candidates. Restore to the base state any diff that no longer serves the purpose, such as leftovers of an abandoned approach.
+- Give the PR one purpose and keep it to changes that serve it, so that it can be reviewed, merged and reverted as one unit. Out-of-scope changes (unrelated fixes, a new feature, a different responsibility, edits to instruction files the task did not call for) stay out, and so do changes of a different nature that can be reviewed, merged and reverted independently of the purpose (a rename or restructuring the behavior change does not depend on, formatting unification beside a design change): if the user asked for them as a separate PR, put them on a new branch from the latest `origin/<base>`; otherwise report them as separate-PR candidates. Changes the purpose needs stay in this PR even when they touch another layer or look loosely related (see the next bullets on shared layers); do not split them by how related they look. Restore to the base state any diff that no longer serves the purpose, such as leftovers of an abandoned approach.
+- Sort each open issue of the PR into one this PR closes (fix it here) or one taken out of the PR (remove its partial change and list it under Follow-ups). File the ones taken out as issues, one issue each, only when the user asks. Do not close PRs or issues the user did not ask to close.
 - When work is split into several PRs, each PR stands alone: it includes the supporting changes (shared layers, config) its purpose needs, and its body names any PR it depends on.
 
 ## Step 6: Write the title and body
@@ -119,11 +127,12 @@ Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh 
 
 ## Step 8: Resolve conflicts and bring in the base
 
-- Default: `git fetch origin <base>` and rebase the PR branch onto `origin/<base>`. When the user asks to merge the base in (「main を merge して」), merge `origin/<base>` instead of rebasing.
+- Default: `git fetch origin <base>` and merge `origin/<base>` into the PR branch, then push normally. A merge keeps the commits reviewers have already seen, while a rebase changes their SHAs and needs a force push, which makes it hard for reviewers to see what changed since their last review.
+- Rebase onto `origin/<base>` instead only when it is needed: the user asks for a rebase, no review has started on the branch yet, or the history has to be rewritten, as when retargeting a stacked PR (Step 7).
 - A rebase or merge refuses to run while the working tree holds uncommitted changes. If those changes do not belong to this work (for example, another session shares this checkout), do not stash, `--autostash`, reset or check them out (AGENTS.md `git` section); stop and report, and use a separate worktree only if the user asks for one.
-- Treat the base as correct. Keep every fix that landed on the base, and do not bring back content the base changed or removed; check each conflicted file against `git log origin/<base> -- <file>`. Keep the design intent of both sides, and also update code the new base now requires (renamed APIs, moved files) even where git reported no conflict.
+- Keep every fix that landed on the base, and do not bring back content the base changed or removed; check each conflicted file against `git log origin/<base> -- <file>`. Keep the design intent of both sides: do not overwrite values the branch changed on purpose or settings specific to it (such as a release branch's pins) with the base's, and also update code the new base now requires (renamed APIs, moved files) even where git reported no conflict.
 - A conflict that needs a design decision: present the options with a recommendation and wait.
-- Run the existing lint / test, then push: `git push --force-with-lease` after a rebase, plain `git push` after a merge. Do not use `--force`.
+- Run the existing lint / test (skip the separate run when the repository's push hook runs the same checks), then push: plain `git push` after a merge, `git push --force-with-lease` after a rebase.
 - After the push, confirm that the host reports the PR as mergeable and that `git diff origin/<base>...HEAD` contains only this PR's changes.
 
 ## Step 9: Wait for CI and report
@@ -131,9 +140,3 @@ Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh 
 - GitHub: `gh pr checks <pr> --watch --fail-fast`, then `gh pr view <pr> --json mergeable,mergeStateStatus`. Checks can take a moment to appear after a push, so if none are reported, check again before concluding there is no CI; `mergeable: UNKNOWN` means GitHub is still computing it, so query again. GitLab: `glab ci status --live`. For 「main に積んで」, watch the base branch's runs (`gh run list --branch <base> --limit 5`, then `gh run watch <run_id>`).
 - If a check fails or the PR conflicts, find the root cause, fix it and push again. Do not report completion before CI has finished.
 - Report the PR / MR URL, title, included commits, CI result (green, or failed with the failing check names), mergeable state and conflicts, whether the change is breaking, and anything left out of the PR with the reason.
-
-## Safety rules
-
-- Use `--draft`, reviewers, labels and GitLab merge options (`--squash-before-merge`, `--remove-source-branch`) only when the user requests them.
-- Push to the base branch only in the 「main に積んで」 mode.
-- Do not use `--force`. Force-push with `--force-with-lease`, and only to a PR branch you just rebased or when the user explicitly asks for a force push.

@@ -1,7 +1,6 @@
 ---
 name: test
-description: "Detects the project's test runner and runs the suite or a matching subset. When the user only asks to run tests (「テスト回して」「結果見せて」), it reports results and root-cause hypotheses without editing files; when asked to make them pass (「通して」「直して」) or when verifying its own change, it fixes the root cause and re-runs. Use when the user wants to run tests or get a failing test suite green."
-allowed-tools: Read, Grep, Glob, Bash, Edit
+description: "Detects the project's test runner, runs the suite or a matching subset, and fixes failures at their root cause until the tests pass. Use when the user asks to make tests pass or fix them (「通して」「直して」「green にして」), or when running tests to verify your own change. A request only to run tests and report (「テスト回して」「結果見せて」) goes to the test-runner agent where one is available, since it keeps the test output out of the caller's context; without one, this skill runs the tests and reports without editing files."
 argument-hint: "[test-pattern-or-file]"
 ---
 
@@ -31,14 +30,14 @@ argument-hint: "[test-pattern-or-file]"
 
 ### 4. 結果の対応
 
-**Goal**: 対象範囲のテストが通り、ベースライン (base ブランチ / 直近 green) に無かった失敗が残っていない状態にする
+Goal: 対象範囲のテストが通り、ベースライン (base ブランチ / 直近 green) に無かった失敗が残っていない状態にする
 
-**Acceptance criteria**:
+Acceptance criteria:
 - 新規失敗がゼロ (ベースラインで既に落ちていた失敗は分けて報告し、依頼範囲に含まれるか不明なら修正前に確認する)
 - 修正によって他のテストが破壊されていない
 - 最終レポートに「失敗の根本原因」「適用した修正」「再実行結果 (コマンドと件数)」「pre-existing 失敗の一覧」が含まれている
 
-**Constraints**:
+Constraints:
 - テスト失敗時は根本原因 (テスト側の問題か実装側の問題か) を特定してから修正に入る
 - 以下のケースに該当する場合のみ、修正を適用する前に確認を取る (subagent として呼ばれた場合は報告して止まる):
   - 仕様変更を伴う修正 (公開 API のシグネチャ変更、外部から観測できる挙動の変更)
@@ -48,9 +47,9 @@ argument-hint: "[test-pattern-or-file]"
 - 上記以外の修正 (実装バグ修正、誤ったアサーションの修正など) は委譲範囲とみなし、修正→再実行→成功確認まで一括で実施してから結果を報告する
 - 新しいテストの追加はユーザーの指示があるときのみ
 
-**手順**:
-- **全テスト成功**: テスト件数とカバレッジ (取得可能な場合) を報告して完了
-- **テスト失敗**:
+手順:
+- 全テスト成功: テスト件数とカバレッジ (取得可能な場合) を報告して完了
+- テスト失敗:
   1. 失敗したテストと対応するソースコードを読み込む
   2. 失敗の根本原因を特定する
   3. Constraints の確認対象に該当しなければ修正を適用し、再実行して成功を確認する

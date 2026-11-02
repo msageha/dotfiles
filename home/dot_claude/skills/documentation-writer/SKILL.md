@@ -1,7 +1,7 @@
 ---
 name: documentation-writer
 description: "Creates and improves technical documentation (tutorials, how-to guides, reference, explanations) using the Diataxis framework, choosing the document type and structure for the audience. Use when the user asks for a README, guide, tutorial, API reference, or design explanation (「ドキュメントを書いて」「README を整備して」「手順書を作って」). It decides type and structure; for Japanese prose style in books, articles, or manuscripts (文体・整形・推敲), use japanese-tech-writing where available, together with this skill when both apply."
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Grep, Glob
 argument-hint: "[topic, file path, or document type]"
 ---
 
@@ -13,10 +13,10 @@ Writes documentation with the Diataxis framework (https://diataxis.fr/), tailore
 
 | Type | Orientation | Purpose | Style |
 |---|---|---|---|
-| **Tutorial** | Learning | Teach by doing | Step-by-step, hand-holding, "follow me" |
-| **How-to Guide** | Problem | Solve a specific task | Goal-oriented, practical, "do this" |
-| **Reference** | Information | Describe the machinery | Accurate, complete, "dry" facts |
-| **Explanation** | Understanding | Clarify concepts | Discursive, contextual, "why" |
+| Tutorial | Learning | Teach by doing | Step-by-step, hand-holding, "follow me" |
+| How-to Guide | Problem | Solve a specific task | Goal-oriented, practical, "do this" |
+| Reference | Information | Describe the machinery | Accurate, complete, "dry" facts |
+| Explanation | Understanding | Clarify concepts | Discursive, contextual, "why" |
 
 ## Workflow
 
@@ -24,17 +24,17 @@ Writes documentation with the Diataxis framework (https://diataxis.fr/), tailore
 
 Before writing, determine:
 
-1. **Document type**: Which Diataxis category? (If unclear, ask the user.)
-2. **Audience**: Who will read this? What do they already know?
-3. **Goal**: What should the reader be able to do or understand after reading?
-4. **Scope**: What to include and what to exclude.
-5. **Context**: Is there existing documentation to build on or align with?
+1. Document type: Which Diataxis category?
+2. Audience: Who will read this? What do they already know?
+3. Goal: What should the reader be able to do or understand after reading?
+4. Scope: What to include and what to exclude.
+5. Context: Is there existing documentation to build on or align with?
 
-If the user hasn't specified these, ask targeted questions in one message together with the proposed outline (Phase 2). Under a full delegation (Goal / Constraints / Acceptance criteria, or 'すべて書いて'), do not ask: state your assumptions on audience and scope inline and proceed.
+Users rarely specify all five, so infer what you can from the request, the existing documentation and the code, and proceed; state the inferred values as assumptions in your report to the user, not in the document. Ask only when the audience or goal can be read in ways that would produce substantially different documents and the sources do not settle it. Then ask once, in one message, giving each open item as labelled options with one recommendation and what each choice changes. Under a full delegation (Goal / Constraints / Acceptance criteria, or 'すべて書いて'), do not ask: proceed on stated assumptions.
 
 ### Phase 2: Outline
 
-Propose a structure before writing full content:
+Plan the structure before writing full content:
 
 - Present a numbered outline with section headings and brief descriptions.
 - For tutorials: list the steps and the end state.
@@ -42,7 +42,7 @@ Propose a structure before writing full content:
 - For reference: list the entities/APIs/concepts to cover.
 - For explanations: list the key concepts and their relationships.
 
-Include the outline in the same confirmation message as the Phase 1 questions and wait once; under a full delegation, skip the wait.
+When Phase 1 needs a question, include the outline in that same message and wait once; otherwise write without waiting for approval of the outline.
 
 ### Phase 3: Write
 
@@ -80,7 +80,7 @@ After writing, self-check:
 - [ ] Is the audience appropriate? (Not too basic, not too advanced.)
 - [ ] Are all code examples correct and complete (verified by running them, or explicitly marked unverified)?
 - [ ] Are prerequisites clearly stated?
-- [ ] Is there unnecessary content that should be cut?
+- [ ] Is there content this reader does not need (history, internal names, repetition) that should be cut, while the premises, reasons and examples they need stay?
 - [ ] Does it follow the existing documentation's style/conventions?
 
 ## Type-Specific Guidelines
@@ -107,7 +107,7 @@ After writing, self-check:
 
 ### Explanations
 - Start with context: why does this exist? What problem does it solve?
-- Use analogies and comparisons when helpful.
+- Make abstract points concrete with examples from the reader's own setting (their code, commands, data) and with comparisons to alternatives they already know. Keep the standard technical terms instead of replacing them with metaphors or coined terms; readers cannot map those back to the identifiers and documentation they search.
 - Discuss trade-offs, alternatives, and design decisions.
 - Link to Reference for exact specifications.
 - Leave step-by-step instructions to tutorials and how-to guides and link to them.
