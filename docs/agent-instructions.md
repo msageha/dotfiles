@@ -9,18 +9,18 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 ## 原則
 
 - 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) にはそのツール固有の機構だけを書く。
-  rule の読み方、MCP の使い分け、test-runner と test skill の使い分けも共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
+  rule の読み方と MCP の使い分けも共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
 - この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
   `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。rule が 1 つも見つからないときは描画を fail で止める。
-- 相談・独立レビューの工程は、共通規約の「主担当」(成果物をユーザーへ返すエージェント) だけが回す。
+- 相談・独立レビューの工程は、共通規約のとおり、成果物をユーザーへ返すエージェントだけが回す。
   Claude から相談・レビューを頼まれて起動した Codex などが、同じ工程を起動し直さないようにするため。
 - 各 `*.tmpl` 先頭の来歴コメントは chezmoi テンプレートコメントなので描画されない。
 
 ## Claude Code
 
-- `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で共通規約を import し、Claude 固有の機構 (Stop hook、Agent tool の `subagent_type`、codex CLI の呼び方、plugin 由来の MCP) を足す。
-  MCP の項には、ツール定義や server instructions に無い運用規範を持つサーバーだけを載せる (description は再掲しない)。
+- `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で共通規約を import し、Claude 固有の機構 (Stop hook が実行する `.claude/verify.sh`・Read の再読・sandbox の二重適用・permission に合わせたコマンドの形・Agent tool の `subagent_type`・codex CLI の呼び方・github MCP の認証) を足す。
+  MCP やサブエージェントの「いつ使うか」は tool の定義・server instructions・agent の description にあるので再掲しない。
 - この repo で作業すると、`home/dot_claude/CLAUDE.md` が nested の CLAUDE.md として読み込まれ、適用済みの `~/.claude/CLAUDE.md` と重複する。
   user settings の `claudeMdExcludes` (`dot_claude/private_settings.json.tmpl`) で外している。
 
@@ -29,6 +29,7 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 - `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。
 - AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、worktree や draft PR を自律的に作る等) を上書きできない。
   これと衝突する少数の契約だけを `.chezmoitemplates/codex/developer-instructions.md` に書き、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れる。
+- Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan --settings '{"disableAllHooks":true}'` を使う (`.chezmoitemplates/codex/instructions.md`)。plan だけでは Stop hook が止まらず、`.claude/verify.sh` が作業ツリーを変えうるので、hook も止める。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
 - custom agent は `dot_codex/agents/*.toml.tmpl`。model は `.chezmoidata.toml` の `[codex] subagent_model` を参照する。
   custom agent のファイルは親の `sandbox_mode`・`approval_policy`・`model_provider`・`mcp_servers` を上書きできず、子は親の設定を継承するので ([公式 subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents))、これらは書かない。
 - Codex には playwright / chrome-devtools MCP を置かない。custom agent の `mcp_servers` は無視され、main config に置くと Claude から呼ぶ `codex exec` の起動のたびに MCP が立ち上がるため。

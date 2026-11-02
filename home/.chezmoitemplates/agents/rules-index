@@ -9,7 +9,7 @@
 {{- end -}}
 ## 言語・ファイル種別の rules
 
-rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter の `paths` が示す。編集・レビューの対象に当たる rule を、着手前に次の一覧から選んで読む (paths が多い rule は先頭の 6 件だけを示す)。
+rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter の `paths` が示す。編集・レビューの対象に当たる rule を、着手前に次の一覧から選んで読む (paths が多い rule は先頭の 6 件だけを示す)。作業中の project に `.claude/rules/` があれば、`paths` が対象に一致するものと `paths` の無いものも読む。
 
 {{ range $rules -}}
 {{- $text := replace "\r\n" "\n" (include .) -}}
