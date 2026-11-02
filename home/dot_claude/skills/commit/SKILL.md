@@ -9,6 +9,11 @@ argument-hint: "[optional commit message hint]"
 
 Loading this skill is not permission to commit. Commit only when the user explicitly asked for it, and do only the git operations the request names (AGENTS.md `git` section). This skill does not push: when the request also asks to push or to update a PR, finish the commit here and continue with the pr skill.
 
+Git safety:
+
+- Use `--amend` only when the user asks. Do not change git config.
+- Do not run destructive operations (`reset --hard`, `clean -f`, `stash drop`, `checkout -- .`).
+
 The argument (`$ARGUMENTS`; if it is empty or not substituted, the request text) may say which changes to include or hint at the message.
 
 ## Step 1: List the changes without printing contents
@@ -29,24 +34,31 @@ Classify each path (untracked ones included) before printing any diff, because a
 
 ## Step 3: Decide what belongs to the work
 
-The AGENTS.md `git` section sets the rule: the whole work goes in, secrets and local artifacts stay out, unrelated changes are reported, and you ask only when a change's attribution is unclear. In practice:
+The whole work goes in, secrets and local artifacts stay out, and unrelated changes are left untouched and reported. In practice:
 
-- The work includes changes staged or not, new untracked files and directories, edits the user made by hand for the same work, and tracked files even when they match `.gitignore` (`.gitignore` only affects untracked files, so `git add <path>` works for them).
-- Leave out, and report with the reason: another session's work in other paths, agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files; not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the work), screenshots, local settings (`.idea/`, `.envrc`, `*.local.json`), OS or editor files (`.DS_Store`), build artifacts and large binaries, and unrelated lock-file or CI changes.
+- The work includes changes staged or not, new untracked files and directories, the user's uncommitted hand edits, and tracked files even when they match `.gitignore` (`.gitignore` only affects untracked files, so `git add <path>` works for them). Include the user's edits and untracked files after checking their content in Step 2, without asking whose they are.
+- Besides secrets and the artifacts below, leave out only what the user excluded by limiting the scope, and changes in paths unrelated to the work (e.g. another session's). Do not touch those; report them.
+- Leave out, and report with the reason: agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files; not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the work), screenshots, local settings (`.idea/`, `.envrc`, `*.local.json`), OS or editor files (`.DS_Store`), build artifacts and large binaries, and unrelated lock-file or CI changes.
 
 ## Step 4: Stage
 
-Stage by pathspec (`git add <path>...`) as the AGENTS.md `git` section requires. `git add -i` is also out, because it waits for interactive input.
+Stage by pathspec (`git add <path>...`). Do not use `git add -A`, `git add .` or `git commit -a`, which pick up unrelated changes, secrets and artifacts along with the work; `git add -i` is also out, because it waits for interactive input.
+
+Unless the user specified how to split, split the work into logical commits that are easy to review and revert, and commit a derived fix (e.g. a pre-existing bug found during the work) separately. Stage, write and commit each one in turn (Steps 4-6). `git commit` records the whole index, so before each commit compare `git diff --cached --name-only` with that commit's paths; if other paths are already staged, commit with `git commit --only -- <paths>` so they stay staged for their own commit.
 
 ## Step 5: Write the message
 
-Use Conventional Commits (`<type>[scope]: <subject>`, optional body and footers), matching the types and scopes visible in `git log`.
+Match the format of the recent history from Step 1. If the history uses Conventional Commits (`<type>[scope]: <subject>`, optional body and footers), use the types and scopes it uses. Only when there is no history or its format cannot be determined, default to Conventional Commits:
 
 - type: `feat` / `fix` / `refactor` / `docs` / `style` / `test` / `chore` / `perf` / `ci` / `build` / `revert`.
 - scope: optional; the area of the codebase (e.g. `auth`, `api`, `ui`).
 - subject: imperative mood, no trailing period, at most about 50 characters; in English, start lowercase.
 - body: explain why, not what; wrap at 72 characters; omit it for trivial changes.
 - footer: `BREAKING CHANGE:` when applicable, or `!` after the type/scope (e.g. `feat!:`).
+
+In any format:
+
+- Content: write for a later reader of the history. State the final intent of the change, not how the work went (what was tried and dropped). Leave out IDs and prefixes that only an agent or tool understands (task, worker or session IDs, `[<tool>]` prefixes).
 - Language: the same as the recent history (Japanese history, Japanese message). If the history is mixed or unclear, use English.
 - Do not add `Co-Authored-By` or other attribution trailers.
 
@@ -62,10 +74,6 @@ EOF
 ```
 
 - Run `git status` to confirm the commit.
+- Confirm from the `git commit` output that the configured hooks (pre-commit etc.) actually ran. If the repository has a hook config (e.g. `.pre-commit-config.yaml`) but no hook output appeared, check whether the hook is installed in the directory `git rev-parse --git-path hooks` prints (it follows `core.hooksPath` and worktrees), and report the result instead of installing it.
 - If a pre-commit hook fails, read its output, fix the cause, re-stage and create a new commit. Do not use `--amend` here: the failed commit did not happen, so `--amend` would rewrite the previous commit.
 - Fix the cause, not the check: do not add files or config whose only purpose is to make a hook pass (e.g. an empty `__init__.py` to satisfy an import check). If the fix needs a project decision, stop and report it.
-
-## Git safety
-
-- Use `--amend` only when the user asks. Do not change git config.
-- Do not run destructive operations (`reset --hard`, `clean -f`, `stash drop`, `checkout -- .`).

@@ -4,6 +4,7 @@ paths:
   - "**/*.htm"
   - "**/*.ejs"
   - "**/*.hbs"
+  - "**/*.astro"
 ---
 # HTML
 
@@ -14,5 +15,5 @@ paths:
 - Forms: Use the input type that matches the value (email, number, date, ...), name attributes, and built-in validation attributes before reaching for custom JS validation.
 - Images / Media: Specify dimensions (width/height or aspect-ratio) to avoid layout shifts. Use loading="lazy" for offscreen images. Provide fallbacks for external resources.
 - Dialogs: Use <dialog> or an in-page message component instead of alert()/confirm().
-- Templates (.ejs/.hbs): Escape user-provided data by default; use raw/unescaped output only for trusted, sanitized content.
+- Templates (.ejs/.hbs/.astro): Escape user-provided data by default; use raw/unescaped output (Astro's `set:html` included) only for trusted, sanitized content.
 - Validity: Keep markup valid per the HTML spec (checkable with the W3C Nu validator): no misnested elements, unique ids, no deprecated attributes.

@@ -27,6 +27,7 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 
 ## コードから読み取れない契約
 
+- 対象は macOS / Ubuntu / Debian / Windows の amd64 と arm64。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
 - `install/` の OS 別スクリプトは、`.chezmoiscripts` の各テンプレートが include して 1 つの bash プロセスに順に連結する。
   共通 helper の `install/lib.sh` (Windows は `install/windows/lib.ps1`) は各テンプレートが先頭で 1 回 include し、各スクリプトは単体実行時だけ冒頭のガードで読み込む。
   - 各スクリプトは関数を定義し、末尾の `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから自分の entry (`main` 等) を呼んで終える。

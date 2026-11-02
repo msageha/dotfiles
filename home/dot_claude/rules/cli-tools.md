@@ -8,7 +8,7 @@ paths:
 ---
 # Command Line Tools
 
-These requirements apply to CLI applications, not to ad-hoc scripts or hooks.
+These requirements apply to the command-line interface of an application (arguments, help, exit codes, terminal output), not to ad-hoc scripts, hooks, or internal modules that only invoke other CLIs and have no command line of their own.
 
 - User Interface: Use POSIX argument conventions (-h, --help) for new surfaces.
 - Help Documentation: When adding a command or option, describe it in --help, with a usage example for each new command.

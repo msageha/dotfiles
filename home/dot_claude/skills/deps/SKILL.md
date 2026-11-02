@@ -1,7 +1,7 @@
 ---
 name: deps
 description: "Audits a project's dependencies: lists direct and transitive packages, flags outdated ones, surfaces known vulnerabilities, and reports prioritized update actions without changing anything. Use when the user asks for a dependency audit or update review (「依存関係を棚卸しして」「古いパッケージを洗い出して」「アップデートすべきものある？」). It plans updates; for judging whether a vulnerability is exploitable in the code, use the security skill, and for vetting one specific package before adding or upgrading it, use sonatype-guide where available."
-allowed-tools: Read, Glob, Grep, Bash(npm ls:*), Bash(npm outdated:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm list:*), Bash(pnpm outdated:*), Bash(pnpm audit), Bash(pnpm audit --json), Bash(yarn outdated:*), Bash(bun outdated:*), Bash(go list:*), Bash(govulncheck:*), Bash(pip list:*), Bash(pip-audit), Bash(uv tree:*), Bash(uv pip list:*), Bash(cargo tree:*), Bash(cargo outdated:*), Bash(cargo audit), Bash(cargo audit --json), Bash(bundle outdated:*), Bash(dart pub outdated:*), Bash(flutter pub outdated:*)
+allowed-tools: Read, Glob, Grep, Bash(npm ls:*), Bash(npm outdated:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm list:*), Bash(pnpm outdated:*), Bash(pnpm audit), Bash(pnpm audit --json), Bash(yarn outdated:*), Bash(bun outdated:*), Bash(go list:*), Bash(govulncheck:*), Bash(pip list:*), Bash(pip-audit), Bash(uv tree --locked:*), Bash(uv pip list:*), Bash(cargo tree --locked:*), Bash(cargo outdated:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json), Bash(bundle outdated:*), Bash(dart pub outdated:*), Bash(flutter pub outdated:*)
 disallowed-tools: Edit, Write, NotebookEdit
 ---
 
@@ -21,10 +21,16 @@ disallowed-tools: Edit, Write, NotebookEdit
 - `Gemfile` / `Gemfile.lock`
 
 ### 2. 依存関係の分析
-各パッケージマネージャーの読み取り系のコマンド (例: `npm ls` / `npm outdated` / `npm audit --json`、`go list -m -u all` / `govulncheck ./...`、`pip list --outdated` / `pip-audit`、`cargo tree` / `cargo outdated` / `cargo audit`、`bundle outdated`、`dart pub outdated`) で以下を調査する:
+各パッケージマネージャーの読み取り系のコマンド (例: `npm ls` / `npm outdated` / `npm audit --json`、`pnpm list` / `pnpm outdated`、`go list -m -u all` / `govulncheck ./...`、`pip list --outdated` / `pip-audit`、`uv tree --locked`、`cargo tree --locked` / `cargo outdated` / `cargo audit --file Cargo.lock`、`bundle outdated`、`dart pub outdated`) で以下を調査する:
 - 直接依存と間接依存の一覧
 - 古いバージョンの依存パッケージ (outdated チェック)
 - 既知のセキュリティ脆弱性 (audit コマンドが利用可能な場合)
+
+依存を解決し直すコマンドには、lock ファイルが無いか manifest と食い違うと lock を生成・更新するもの (`uv tree`・`cargo tree`・`cargo outdated`・`cargo audit`) があるので、次の形で実行する:
+- `uv tree` と `cargo tree` には `--locked` を付ける。lock を書かず、lock が無いか manifest と食い違うと失敗する。
+- `cargo outdated` は lock の書き込みを止めるフラグを持たないので、`cargo tree --locked` が通ったときだけ実行する。
+- `cargo audit` は lock が無いと生成するので、workspace root で `--file Cargo.lock` を付けて既存の lock を読ませる。
+- lock が無い・古いことで失敗したら、lock を生成・更新せずにその旨を報告し、manifest と既存の lock から読める範囲で分析を続ける。
 
 ### 3. 報告
 
