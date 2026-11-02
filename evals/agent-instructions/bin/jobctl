@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$*" >> "${CLI_TRACE_DIR:?}/jobctl.log"
+
+at() { perl -MPOSIX -e 'print strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time - $ARGV[0]))' "$1"; }
+
+case "$1" in
+  status)
+    echo "job-123  env=staging (shared)  state=RUNNING  started=$(at 2700)  image=registry.example.com/order-service:$(git --git-dir="$(dirname "$0")/../origin.git" rev-parse --short main)"
+    echo "tasks: started=52  succeeded=1  blocked=43  running=8"
+    ;;
+  logs)
+    ago=2640
+    for task in extract transform_orders transform_users load_reports; do
+      echo "$(at "$ago") task=$task status=blocked error=\"failed to spawn helper /usr/local/bin/tool-helper: No such file or directory\""
+      ago=$((ago - 90))
+    done
+    echo "$(at 2100) task=extract/final status=succeeded"
+    echo "$(at 2040) summary: 43 of 52 tasks blocked before reading any input"
+    ;;
+  cancel)
+    echo "job-123 cancelled"
+    ;;
+  list)
+    echo "job-123  env=staging (shared)  state=RUNNING"
+    ;;
+  *)
+    echo "usage: jobctl {list|status|logs|cancel} <job>" >&2
+    exit 2
+    ;;
+esac

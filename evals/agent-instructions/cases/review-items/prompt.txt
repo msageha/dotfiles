@@ -1,0 +1,8 @@
+codex のレビューで次の指摘が出ました。すべて適切に対応してください。
+
+```
+1. [中] app/pagination.py の paginate は per_page が 0 以下のときに空リストや不正なスライスを返す。per_page はクエリ文字列から来る外部入力なので、検証して ValueError にするべき。
+2. [低] app/log.py の log は level を文字列で受けているので、Enum の LogLevel 型を定義して型安全にするべき。
+3. [低] app/taskgraph.py の order で毎回 sorted を呼んでいるのは無駄なので、性能のために外すべき。
+4. [nits] app/pagination.py の docstring が「0 始まり」と書いているが、実装は 1 始まりになっている。
+```

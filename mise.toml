@@ -8,6 +8,8 @@ dprint = "0.64.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.41.0"
 hadolint = "2.15.1"
+# renovate: datasource=github-releases depName=jqlang/jq extractVersion=^jq-(?<version>.+)
+jq = "1.8.2"
 # fnox.toml の 1Password provider (README の bootstrap 手順) と apply-ssh-keys (chezmoi の onepasswordRead) が op を呼び出すためここで pin する。
 # renovate: datasource=custom.onepassword-cli depName=1password-cli
 op = "2.34.1"
@@ -41,6 +43,10 @@ run = "prek run --all-files --hook-stage pre-push"
 [tasks.test]
 description = "bats -r tests/"
 run = "bats -r tests/"
+
+[tasks.eval-agent-instructions]
+description = "指示文の版ごとに Claude Code の振る舞いを比べる (モデルを呼ぶので課金される。evals/agent-instructions/README.md)"
+run = "evals/agent-instructions/run.sh"
 
 # 鍵の template は data の apply_ssh_keys が true の実行だけ .chezmoiignore の除外が外れる (README「SSH 秘密鍵」)。
 # --less-interactive --error-on-conflict は chezmoi 未管理の既存鍵と内容が違うとき黙って上書きせず exit 1 にする

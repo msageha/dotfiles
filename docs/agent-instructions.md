@@ -98,3 +98,9 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 - Codex: この repo で `codex debug prompt-input "ping"` を実行し、AGENTS.md の連結 (共通規約 → Codex の補足 → repo の AGENTS.md) が末尾まで入っていることと、skill の一覧を見る。
 - Grok: `grok inspect --json` の `projectInstructions` (有効な指示文と disabled の一覧)・`skills`・`agents`。
 - Antigravity: `agy agents` で agent の一覧を見る。rule の読み込みはモデルを呼ばないと確かめられない。
+
+## 振る舞いの確認
+
+規範を足す・削る・言い換える改訂では、`mise run eval-agent-instructions` で改訂前 (`old`) と改訂後 (`new`) の Claude Code を同じ依頼で比べ、狙った振る舞いの変化と、ユーザー由来の振る舞いの喪失が無いことを確かめる (仕組み・費用・限界は `evals/agent-instructions/README.md`)。
+規範を削る候補は、指示文なし (`none`) でも同じ振る舞いになるかで見分けられる。
+ただし測れるのは、ケースのある規範についての 1 回の依頼への振る舞いだけで、ケースの無い規範に差が出ないことは削る根拠にならない。
