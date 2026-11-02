@@ -29,8 +29,9 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 ## Codex
 
 - `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。
-- AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、worktree や draft PR を自律的に作る等) を上書きできない。
+- AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、範囲が曖昧でも仮定を置いて進める、前のターンの許可を持ち越す、worktree や draft PR を自律的に作る等) を上書きできない。
   これと衝突する少数の契約だけを `.chezmoitemplates/codex/developer-instructions.md` に書き、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れる。
+  各項目は共通規約の該当する規範と同じ条件で書き、共通規約を変えたら同じ変更で直す。Codex ではこちらが AGENTS.md より優先されるので、条件がずれると Codex だけ振る舞いが変わる。
 - Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan --settings '{"disableAllHooks":true}'` を使う (`.chezmoitemplates/codex/instructions.md`)。plan だけでは Stop hook が止まらず、`.claude/verify.sh` が作業ツリーを変えうるので、hook も止める。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
 - custom agent は `dot_codex/agents/*.toml.tmpl`。model は `.chezmoidata.toml` の `[codex] subagent_model` を参照する。
   custom agent のファイルは親の `sandbox_mode`・`approval_policy`・`model_provider`・`mcp_servers` を上書きできず、子は親の設定を継承するので ([公式 subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents))、これらは書かない。

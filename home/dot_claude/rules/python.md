@@ -27,7 +27,7 @@ The ORM bullets apply only to projects that already use SQLAlchemy.
 - ORM Types:
   - Store JSON with the dialect-native type (`JSON().with_variant(JSONB(), "postgresql")`), never as `str`; model list-valued data as a child table with a `ForeignKey`, not a JSON array.
   - Store timestamps tz-aware in UTC with the library `TIMESTAMP` type.
-  - Validate enums in Python, not as DB CHECK / native enum constraints (each new member would need a migration).
+  - Keep value conditions (enum members, ranges, length limits) in Python, and do not copy them into the schema as CHECK constraints, native enums or column lengths (each change would need a migration).
 - Abstractions: Add a typing.Protocol or abc.ABC base only in the cases AGENTS.md「コード」 allows, not only so that tests can swap in a fake. Use one form consistently within the repository: the one it already uses, or Protocol in a repository with neither.
 - Layout:
   - Put pydantic `BaseModel` subclasses in the package's `models.py` and keep that file free of logic (functions, factories, compiled regexes); put `Protocol` / ABC bases in `base.py`; use the same file layout in every package.
