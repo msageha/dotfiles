@@ -1,20 +1,19 @@
 name: prek
 
-# ci.yaml から reusable workflow として呼び出される。
-# pull_request / workflow_dispatch のトリガーは ci.yaml 側が持つ。
+# ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
 on:
   workflow_call:
     inputs:
       fail-fast:
-        description: "失敗時に呼び出し元の run 全体をキャンセルして他の並列チェックを止める"
+        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
         type: boolean
         required: false
         default: false
 
 permissions:
   contents: read
-  # fail-fast step (gh run cancel) に必要。呼び出し元でも同じ権限を付与すること
-  # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
+  # fail-fast の run キャンセルに要る。called workflow の GITHUB_TOKEN は caller の権限を
+  # 超えられないので、ci.yaml の job にも同じ権限を付ける。
   actions: write
 
 jobs:
@@ -27,8 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # GITHUB_TOKEN は GitHub API を叩くステップ (ubi/aqua backend の rate limit 回避)
-      # だけに step-level で渡し、workflow レベルで全ステップへ露出させない。
+      # GITHUB_TOKEN は GitHub API を呼ぶ step (aqua / ubi backend の rate limit 回避) にだけ渡す。
       - name: Install mise
         uses: ./.github/actions/setup-mise
         env:

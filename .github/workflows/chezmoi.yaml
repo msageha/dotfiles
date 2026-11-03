@@ -1,20 +1,19 @@
 name: chezmoi
 
-# ci.yaml から reusable workflow として呼び出される。
-# pull_request / workflow_dispatch のトリガーは ci.yaml 側が持つ。
+# ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
 on:
   workflow_call:
     inputs:
       fail-fast:
-        description: "失敗時に呼び出し元の run 全体をキャンセルして他の並列チェックを止める"
+        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
         type: boolean
         required: false
         default: false
 
 permissions:
   contents: read
-  # fail-fast step (gh run cancel) に必要。呼び出し元でも同じ権限を付与すること
-  # (called workflow の GITHUB_TOKEN は caller の権限を超えられない)
+  # fail-fast の run キャンセルに要る。called workflow の GITHUB_TOKEN は caller の権限を
+  # 超えられないので、ci.yaml の job にも同じ権限を付ける。
   actions: write
 
 jobs:
@@ -29,7 +28,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # ローカル (mise.toml) と同一バージョンに -t で pin して導入する。
+      # mise.toml の chezmoi と同じバージョンに揃える。
       - name: Install chezmoi
         run: |
           sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.73.2
@@ -39,10 +38,9 @@ jobs:
           mkdir -p "$HOME/.config/chezmoi"
           cat <<EOF > "$HOME/.config/chezmoi/chezmoi.toml"
           [data]
-          # macOS の chezmoi init は computer_name を promptStringOnce で要求するため、非対話 runner 向けに事前設定する
+          # macOS の chezmoi init は computer_name を対話で尋ねるため、事前に設定する
           computer_name = "ci-${{ matrix.os }}"
-          # macOS / Linux 共通。CLI ツールとコーディングエージェント設定は CI で検証し、
-          # GUI 系 (フォント・ghostty・cask) はスキップする
+          # GUI 系 (フォント・ghostty・cask) だけを省いて検証する
           skip_cli_tools = false
           skip_gui_tools = true
           EOF
@@ -56,12 +54,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
-      # bats は mise.toml の pin + mise.lock の checksum 検証つきで mise 経由で導入・実行する。
-      # mise セッション環境は apply 内の nested mise install (go backend) と干渉するため、
-      # mise-action は chezmoi apply より後に置く。
-      # また apply が書いた user 側 config (~/.config/mise/config.toml) は mise.lock に無い
-      # ツールを含み lockfile 強制で解決に失敗するため、MISE_CONFIG_DIR を空の場所へ
-      # 退避して repo の mise.toml のみを対象にする。
+      # mise-action が設定する環境は apply 内の nested mise install (go backend) と干渉するので、apply の後に置く。
+      # apply が書いた ~/.config/mise/config.toml は mise.lock に無いツールを含み lockfile の強制で
+      # 解決に失敗するので、MISE_CONFIG_DIR を空の場所に向けて repo の mise.toml だけを読ませる。
       - name: Install mise
         uses: ./.github/actions/setup-mise
         env:
@@ -72,9 +67,8 @@ jobs:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          # ~/.bash_profile は対話用で、環境によっては非ゼロを返すコマンドを含む。
-          # ステップは bash -e で走るため、source をそのまま実行すると PATH 設定
-          # 途中で中断しうる。source 中だけ -e を外し、最後まで環境を読み込ませる。
+          # ~/.bash_profile は非ゼロを返しうるコマンドを含み、bash -e のままだと PATH 設定の途中で
+          # 止まりうるので、source 中だけ -e を外す。
           set +e
           # shellcheck disable=SC1090
           source ~/.bash_profile
@@ -94,7 +88,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # unix job と同様、ローカル (mise.toml) と同一バージョンに -t で pin して導入する
+      # mise.toml の chezmoi と同じバージョンに揃える。
       - name: Install chezmoi
         shell: powershell
         run: |
@@ -107,8 +101,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $HOME '.config\chezmoi') | Out-Null
           @'
           [data]
-          # インストールとエージェント設定の展開まで CI で検証する。
-          # GUI アプリ導入とシステム設定は各スクリプトの $env:CI ガードが CI でのみスキップする
+          # GUI アプリとシステム設定は、各スクリプトが $env:CI を見て CI では skip する
           skip_windows_extras = false
           '@ | Set-Content -Path (Join-Path $HOME '.config\chezmoi\chezmoi.toml') -Encoding utf8
       - name: Initialize chezmoi

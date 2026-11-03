@@ -1,8 +1,7 @@
 function git_clean_branches
     set -l current_branch (git symbolic-ref --short HEAD 2>/dev/null)
 
-    # detached HEAD では symbolic-ref が空文字を返すため、未クォートの比較で
-    # test の引数エラーになる。空の場合は全ブランチ削除の判定ができないため中断する
+    # detached HEAD では現在のブランチが分からず削除対象から外せないため中断する
     if test -z "$current_branch"
         echo "Detached HEAD: current branch cannot be determined. Aborting."
         return 1
@@ -10,8 +9,7 @@ function git_clean_branches
 
     set -l protected_branches master main
 
-    # 削除対象を先に列挙し、確認を取ってから削除する
-    # (-D は未マージブランチも消すため、black-box に即実行しない)
+    # -D は未マージのブランチも消すため、対象を列挙して確認を取ってから消す
     set -l targets
     for branch in (git branch --format="%(refname:short)")
         if contains $branch $protected_branches

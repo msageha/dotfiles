@@ -72,16 +72,14 @@
     }
   },
   "permissions": {
-{{- /* インタプリタ・ラッパー・削除・ネットワーク取得 (python / node / xargs / timeout / env / source / rm / curl) は
-       #43 で除去したが、許可プロンプトの大半を占めるため許可に戻した (危険度より効率を優先するユーザー判断。
-       rm は PreToolUse hook が / ~ $HOME * . .. を対象とする再帰削除を block する前提)。シェル本体
-       (sh / bash / zsh / fish) は `bash -c '…'` で hook を素通りさせるため、secret に触る fnox / security /
-       gpg / aws-vault とともに引き続き allow しない。auto mode では wildcarded interpreter の allow は
-       無視され classifier が判定する (default / acceptEdits モードでは効く)。
-       パスや環境変数の値のバリエーションは `*` でまとめる (`*` は空白を含む任意文字列に一致するので
-       `VAR=* cmd` は `VAR=x PATH=/evil cmd` も通す。承知の上で採用)。先頭 `*` はその文字列を含む
-       任意のコマンドに一致し、`bash` とスクリプトパスの間の `*` は `bash -c '…' path` を通すため、
-       どちらも使わない */}}
+{{- /* インタプリタ・ラッパー・削除・ネットワーク取得 (python / node / xargs / timeout / env / source / rm / curl) は、
+       許可プロンプトの大半を占めるため危険度より効率を優先して許可する (rm は PreToolUse hook が / ~ $HOME * . .. の
+       再帰削除を block する前提)。シェル本体 (sh / bash / zsh / fish) は `bash -c '…'` で hook を素通りさせるため、
+       secret に触る fnox / security / gpg / aws-vault とともに allow しない。auto mode では wildcard 付きの
+       interpreter の allow は無視され classifier が判定する (default / acceptEdits モードでは効く)。
+       パスや環境変数の値のバリエーションは `*` でまとめる (`*` は空白を含む任意の文字列に一致し、
+       `VAR=* cmd` は `VAR=x PATH=/evil cmd` も通すが許容する)。先頭の `*` はその文字列を含む任意のコマンドに、
+       `bash` とスクリプトパスの間の `*` は `bash -c '…' path` に一致するため、どちらも使わない */}}
     "allow": [
       "Bash(git:*)",
       "Bash(npm:*)",

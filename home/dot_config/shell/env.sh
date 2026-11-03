@@ -34,12 +34,10 @@ esac
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
 source "$HOME/.config/shell/agent-env.sh"
 
-# --- エイリアス (bash / zsh / fish 共有) ---
 if $_dotfiles_human_shell && [ -f "$HOME/.alias" ]; then
     source "$HOME/.alias"
 fi
 
-# --- REPL 履歴の保存先 ---
 export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
 export SQL_HISTORY="$HOME/.local/state/sql_history"
 export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
@@ -47,8 +45,7 @@ export PSQL_HISTFILE="$HOME/.local/state/psql_history"
 export PYTHON_HISTORY="$HOME/.local/state/python_history"
 export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 
-# --- Dracula テーマ (fzf / eza / ripgrep / grep / man) ---
-# (https://github.com/dracula/fzf, dracula/eza, dracula/ripgrep, dracula/grep, dracula/man-pages)
+# Dracula テーマの配色 (https://github.com/dracula/ の fzf / eza / ripgrep / grep / man-pages)
 if $_dotfiles_human_shell; then
     export FZF_DEFAULT_OPTS="--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
     export EZA_COLORS="uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
@@ -58,24 +55,22 @@ if $_dotfiles_human_shell; then
         export GREP_COLOR="1;38;2;255;85;85"
     fi
     export MANPAGER="less -s -M +Gg"
-    export LESS_TERMCAP_mb=$'\e[1;31m'      # begin bold
-    export LESS_TERMCAP_md=$'\e[1;34m'      # begin blink
+    export LESS_TERMCAP_mb=$'\e[1;31m'      # begin blink
+    export LESS_TERMCAP_md=$'\e[1;34m'      # begin bold
     export LESS_TERMCAP_so=$'\e[01;45;37m'  # begin reverse video
     export LESS_TERMCAP_us=$'\e[01;36m'     # begin underline
     export LESS_TERMCAP_me=$'\e[0m'         # reset bold/blink
     export LESS_TERMCAP_se=$'\e[0m'         # reset reverse video
     export LESS_TERMCAP_ue=$'\e[0m'         # reset underline
-    export GROFF_NO_SGR=1                   # for konsole
+    export GROFF_NO_SGR=1                   # groff の SGR 出力を止め、LESS_TERMCAP_* の配色を効かせる
 fi
 
-# --- PATH: ツール置き場を先に通す ---
 # brew / mise / direnv / starship などの activate は PATH が揃っている前提のため、
 # それらより前に静的なバイナリ置き場 (uv で入れたツールや mise 本体は ~/.local/bin) を PATH へ追加する
 if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# --- Homebrew ---
 _brew_bin="$(command -v brew || true)"
 if [ -z "$_brew_bin" ] && [ -x /opt/homebrew/bin/brew ]; then
     _brew_bin="/opt/homebrew/bin/brew"
@@ -87,7 +82,6 @@ if [ -n "$_brew_bin" ]; then
 fi
 unset _brew_bin
 
-# --- デフォルトエディタ ---
 # crontab 等の CLI は VISUAL を EDITOR より優先して参照するため両方を揃える。
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある
@@ -99,7 +93,7 @@ if $_dotfiles_human_shell; then
     fi
     export VISUAL="$EDITOR"
 
-    # --- dircolors (LS_COLORS) の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得) ---
+    # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)。
     # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
     _dircolors_bin="$(command -v dircolors || command -v gdircolors || true)"
     if [ -n "$_dircolors_bin" ] && [ -f "$HOME/.config/dircolors/dracula/.dircolors" ]; then
@@ -107,13 +101,9 @@ if $_dotfiles_human_shell; then
     fi
     unset _dircolors_bin
 
-    # --- ls / grep のカラー出力 ---
-    # LS_COLORS / GREP_COLORS は --color=auto を付けて実行しない限り効かず、login shell は
-    # ~/.bashrc (ディストリ既定の alias 定義元) を読まないためここで張る。
-    # 古い BSD ls (macOS 12 以前など) は --color 非対応のため、動作確認してから張る。
-    # Apple 製 ls (FreeBSD 由来) は LS_COLORS でなく LSCOLORS を見るため dracula 配色にはならず、
-    # さらに COLORTERM / CLICOLOR が無いと --color=auto でも色を出さない (man ls) ため CLICOLOR を設定する
-    # (GNU ls は CLICOLOR を無視するため他 OS でも無害)
+    # LS_COLORS / GREP_COLORS は --color=auto を付けたときだけ効き、login shell は alias を定義する ~/.bashrc を読まないためここで張る
+    # (--color 非対応の古い BSD ls もあるため、動くことを確かめてから)。
+    # macOS の ls は COLORTERM か CLICOLOR が無いと色を出さないため CLICOLOR を設定する (GNU ls は無視する)
     export CLICOLOR=1
     if ls --color=auto -d . &>/dev/null; then
         alias ls='ls --color=auto'
@@ -123,22 +113,19 @@ if $_dotfiles_human_shell; then
     fi
 fi
 
-# --- Go ---
 export GOPATH="$HOME/Works"
 # go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
 # mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
 export GOBIN="$HOME/.local/bin"
-# Takumi Guard。`,direct` を付けると未収載・ブロック済みの module でプロキシを迂回できるため URL のみ指定する。
+# Takumi Guard (悪性パッケージを遮断する proxy)。`,direct` を付けると未収載・ブロック済みの module で proxy を迂回できてしまうため URL だけを指定する。
 # 認証 token は ~/.netrc (modify_private_dot_netrc)
 export GOPROXY="https://golang.flatt.tech"
 
-# --- JDK (Homebrew openjdk) ---
 if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
     export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
     export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
 fi
 
-# --- Xcode ---
 # DEVELOPER_DIR は xcrun / ビルドツールが参照する。Homebrew の git / python3 を優先しつつ
 # simctl 等の Xcode 専用ツールも引けるように usr/bin は末尾に追加する
 if xcode-select -p &>/dev/null; then
@@ -147,22 +134,19 @@ if xcode-select -p &>/dev/null; then
     export PATH="$PATH:$DEVELOPER_DIR/usr/bin"
 fi
 
-# --- Google Cloud SDK ---
 CLOUDSDK_PYTHON="$(command -v python3)"
 export CLOUDSDK_PYTHON
 
-# --- Docker コンテナ内の識別 ---
 if [ -e /.dockerenv ] && [ -z "$DOCKER_MACHINE_NAME" ]; then
     export DOCKER_MACHINE_NAME="docker"
 fi
 
-# --- MySQL クライアント (Homebrew mysql-client) ---
 if [ -d "/opt/homebrew/opt/mysql-client/bin/" ]; then
     export MYSQL_CLIENT_PATH="/opt/homebrew/opt/mysql-client"
     export PATH="$MYSQL_CLIENT_PATH/bin:$PATH"
 fi
 
-# --- mysqlclient 等のビルド用コンパイラフラグ (macOS) ---
+# Homebrew のライブラリに依存するネイティブ拡張 (mysqlclient 等) のビルド用
 if [[ "$(uname)" == "Darwin" ]]; then
     [[ "$PKG_CONFIG_PATH" != */opt/homebrew/lib/pkgconfig* ]] && export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH"
     [[ "$LDFLAGS" != *-L/opt/homebrew/lib* ]] && export LDFLAGS="-L/opt/homebrew/lib $LDFLAGS"

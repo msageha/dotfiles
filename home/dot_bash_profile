@@ -1,4 +1,3 @@
-# --- ヒストリー ---
 export HISTFILE="$HOME/.local/state/bash_history"
 # 既定 HISTSIZE=500 は小さく、複数端末を使うと古い履歴から消えてしまうため拡張し、
 # histappend で終了時の上書きではなく追記にする
@@ -10,8 +9,7 @@ shopt -s histappend
 source "$HOME/.config/shell/env.sh"
 source "$HOME/.config/shell/integrations.sh"
 
-# --- 補完の読み込み ---
-# completions.sh が生成した静的ファイル (kubectl / ngrok / uv 含む) を source する
+# completions.sh が生成した補完ファイルを source する
 _bash_completions_dir="$HOME/.local/share/bash-completion/completions"
 if $_dotfiles_human_shell && [ -d "$_bash_completions_dir" ]; then
     _bash_supports_usage_completion=false

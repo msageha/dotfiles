@@ -1,6 +1,6 @@
+# 全て無視し、管理するものだけを ! で戻す
 *
 
-# --- Git / CI 設定 ---
 !.gitignore
 !.pre-commit-config.yaml
 !_typos.toml
@@ -12,43 +12,35 @@
 !dprint.json
 !renovate.json
 
-# --- Docker ---
 !docker
 !docker/**
 !.dockerignore
 
-# --- ドキュメント ---
 !README.md
 !AGENTS.md
 !CLAUDE.md
 !docs
 !docs/agent-instructions.md
+!docs/agent-shell.md
 
-# --- chezmoi 本体 ---
 !.chezmoiroot
 !home
 !home/**
 
-# --- インストールスクリプト ---
 !install
 !install/**
 
-# --- アプリケーション設定 ---
 !settings
 !settings/**
 settings/common/google.ime.txt
 
-# --- テスト ---
 !tests
 !tests/**
 
-# === ホワイトリスト内から再除外: 機密・不要ファイル ===
-
-# OS メタデータ
+# 戻した範囲から、機密・不要なファイルを再び除外する
 **/.DS_Store
 **/Thumbs.db
 
-# エディタ一時ファイル・ローカル設定
 **/*.swp
 **/*.swo
 **/*.tmp
@@ -56,7 +48,6 @@ settings/common/google.ime.txt
 **/*~
 **/.idea/
 
-# 環境変数・シークレット
 **/.env
 **/*.env
 **/.env.*
@@ -65,7 +56,6 @@ settings/common/google.ime.txt
 **/*_token
 **/*_password
 
-# 秘密鍵・証明書
 **/*.pem
 **/*.key
 **/id_rsa
@@ -73,7 +63,6 @@ settings/common/google.ime.txt
 **/*.p12
 **/*.pfx
 
-# ログ・キャッシュ
 **/*.log
 **/__pycache__/
 **/.cache/

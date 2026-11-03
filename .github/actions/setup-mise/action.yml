@@ -10,16 +10,14 @@ inputs:
   version:
     description: "導入する mise のバージョン"
     required: false
-    # "latest" 解決だと上流の release 作成直後の asset 未アップロード等で
-    # 404 になりうる (2026-09-08 の CI 失敗)。固定して Renovate に追従させる。
+    # "latest" は上流の release 直後に asset が未アップロードで 404 になりうるので、固定して Renovate で更新する。
     default: "2026.10.15"
 
 runs:
   using: composite
   steps:
-    # ツール導入の失敗は次ステップのリトライに委ねるため continue-on-error にする
-    # (mise-action は install を自分で行ったときだけ cache を保存するので、
-    #  install: false にはせず cache を温存する)。mise 本体のみ導入するときはリトライ先が無いので失敗させる
+    # ツール導入の失敗は次の step のリトライに任せる。mise-action は自分で install したときだけ cache を
+    # 保存するので、install: false にはしない。mise 本体だけを入れるときはリトライが無いので失敗させる。
     - name: Install mise
       id: mise
       uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
@@ -29,12 +27,10 @@ runs:
         install: ${{ inputs.install }}
         cache: ${{ inputs.install == 'true' }}
 
-    # aqua backend の artifact attestation 検証は、GitHub の Immutable Releases が付ける
-    # attestation (certificate identity: dotcom.releases.github.com) が aqua registry の
-    # signer_workflow と一致せず、常に 2 つ目の sigstore 署名 attestation へフォールバック
-    # する。その検証は tuf-repo-cdn.sigstore.dev への到達性に依存し、mise の http_retries は
-    # attestation API にしか効かず TUF 取得には及ばない。mise 本体と PATH は前ステップで
-    # 設定済みなので、ここではツール導入だけをやり直す。
+    # aqua backend の attestation 検証は、Immutable Releases の attestation が aqua registry の
+    # signer_workflow と一致しないため sigstore 署名の検証に回り、tuf-repo-cdn.sigstore.dev への到達性に
+    # 依存する。mise の http_retries はこの取得に効かないので、ツール導入だけをやり直す
+    # (mise 本体と PATH は前の step で設定済み)。
     - name: Retry mise install
       if: inputs.install == 'true' && steps.mise.outcome == 'failure'
       shell: bash

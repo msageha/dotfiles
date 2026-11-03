@@ -1,10 +1,8 @@
 # 過去に配布していたが廃止・移動したファイルを適用先から削除する。
-{{- /* 履歴上使われていない fish 関数の廃止で source から消えた旧ファイル */}}
 .config/fish/functions/faws.fish
 .config/fish/functions/fzf_load_env.fish
 .config/fish/functions/rm_cache.fish
-{{- /* 2026-07 の関数分割 (git.fish → git_*.fish 等) より前に配布していた複数関数ファイル。
-       残っていると fish が git / docker 等の呼び出し時に autoload し、分割後の同名関数を旧定義で上書きする */}}
+{{- /* 旧版の複数関数ファイル。残っていると fish が git / docker 等の呼び出し時に autoload し、同名関数を旧定義で上書きする */}}
 .config/fish/functions/clean.fish
 .config/fish/functions/docker.fish
 .config/fish/functions/fzf_environ.fish
@@ -13,10 +11,8 @@
 {{- /* 以下はコーディングエージェント設定を配布していた環境だけで消す (.chezmoiignore の $skipCodingAgent と同じ条件)。
        .chezmoiignore で親ディレクトリを ignore しても、その配下は .chezmoiremove で消えるため、ここで条件を付ける */}}
 {{- if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) }}
-{{- /* Grok は ~/.claude/skills と ~/.agents/skills から同じ SKILL.md を読むため、~/.grok/skills のコピーは
-       冗長になった (しかも最優先で読まれ、更新漏れがあると古い版が勝つ)。そのため廃止した。
-       配布していたのは各ディレクトリの SKILL.md だけなので、それだけを消す。.chezmoiremove はディレクトリにマッチすると
-       中身ごと消し、利用者が同じディレクトリに足したファイルまで失われるため、ディレクトリは指定しない */}}
+{{- /* ~/.grok/skills のコピー。Grok は ~/.claude/skills と ~/.agents/skills を読むので不要で、最優先で読まれるため古い版が勝ちうる。
+       .chezmoiremove はディレクトリにマッチすると利用者が足したファイルごと消すため、配布した SKILL.md だけを指定する */}}
 .grok/skills/commit/SKILL.md
 .grok/skills/deps/SKILL.md
 .grok/skills/explain/SKILL.md
@@ -25,17 +21,15 @@
 .grok/skills/review/SKILL.md
 .grok/skills/security/SKILL.md
 .grok/skills/test/SKILL.md
-{{- /* Codex は custom agent の mcp_servers を無視してブラウザ MCP を持てないため、Codex 版 browser_debugger を廃止した */}}
+{{- /* Codex は custom agent の mcp_servers を無視し、browser_debugger がブラウザ MCP を使えない */}}
 .codex/agents/browser-debugger.toml
 {{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}
-{{- /* dracula テーマの展開先を ~/.vim / ~/.tmux から ~/.local/share/{vim,tmux} へ移行したため、
-       旧 external が置いた ~/.vim / ~/.tmux を掃除する */}}
+{{- /* 旧版が dracula テーマを置いた場所 (現在は ~/.local/share/{vim,tmux}) */}}
 .vim
 .tmux
-{{- /* tmux の設定ファイルを ~/.tmux.conf から ~/.config/tmux/tmux.conf へ移行したため、
-       旧 ~/.tmux.conf を掃除する (残したままだと tmux が両方読み込んでしまう) */}}
+{{- /* 旧配置。残っていると tmux が ~/.config/tmux/tmux.conf と両方読む */}}
 .tmux.conf
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
@@ -48,9 +42,7 @@
 {{ $fontDir }}/* For Powerline.otf
 {{ $fontDir }}/PowerlineSymbols.otf
 {{ $fontDir }}/PowerlineExtraSymbols.otf
-{{- /* ghostty 設定は chezmoi 管理 (~/.config/ghostty/config) へ移行済み。
-       旧 installer (install/common/ghostty.sh、廃止) と旧 external が置いた残骸を掃除する。
-       AppSupport はアプリの状態も置かれうるためディレクトリごとではなくファイル単位で消す */}}
+{{- /* 旧版が置いた ghostty の設定とテーマ (現在は ~/.config/ghostty)。AppSupport にはアプリの状態も置かれうるためファイル単位で消す */}}
 {{- if eq .chezmoi.os "darwin" }}
 Library/Application Support/com.mitchellh.ghostty/config.ghostty
 Library/Application Support/com.mitchellh.ghostty/themes/dracula

@@ -10,9 +10,7 @@ function fzf_ssh -d "Select an ssh host from ~/.ssh/config* and connect"
     end
     test -z "$configs"; and return
 
-    # git 系ホスト (Host git / github.com / gitlab.* 等) は ssh 接続対象から除外する。
-    # -w で単語境界を要求し、"digital" のような git を部分文字列に含むだけの
-    # 無関係なホスト名まで除外してしまわないようにする
+    # git 系ホスト (git / github.com / gitlab.* 等) を除く。-w で "digital" のように git を含むだけのホストは残す
     set -l host (\
         grep -hiE '^[[:space:]]*Host[[:space:]]+' $configs \
         | grep -v '[*?]' \

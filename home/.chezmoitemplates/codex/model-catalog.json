@@ -1,6 +1,6 @@
-{{- /* codex の model_catalog_json。引数はモデルごとに異なるフィールド
+{{- /* Codex の model_catalog_json。引数は、モデルごとに異なるフィールド
       (slug / display_name / context_window / priority / supports_reasoning_summaries / input_modalities)
-      だけを持つ dict の list で、共通フィールドはここで補う */ -}}
+      を持つ dict の list。共通フィールドはここで埋める */ -}}
 {
   "models": [
 {{- range $i, $m := . }}

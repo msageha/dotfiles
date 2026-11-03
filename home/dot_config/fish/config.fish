@@ -17,7 +17,6 @@ end
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
 source $HOME/.config/fish/agent-env.fish
 
-# --- ヒストリーファイルの設定 ---
 set -gx NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
 set -gx SQL_HISTORY $HOME/.local/state/sql_history
 set -gx MYSQL_HISTFILE $HOME/.local/state/mysql_history
@@ -26,37 +25,32 @@ set -gx PYTHON_HISTORY $HOME/.local/state/python_history
 set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
 
 if test "$human_shell" = true
-    # --- エイリアスの読み込み ---
     if test -f $HOME/.alias
         source $HOME/.alias
     end
 
-    # --- fzf Dracula Theme ---
+    # fzf / eza / grep の配色は Dracula テーマ (https://github.com/dracula)
     set -gx FZF_DEFAULT_OPTS "--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
 
-    # --- eza / ripgrep / grep Dracula Theme ---
-    # (https://github.com/dracula/eza, dracula/ripgrep, dracula/grep)
     set -gx EZA_COLORS "uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
     set -gx GREP_COLORS "mt=1;38;2;255;85;85:fn=38;2;255;121;198:ln=38;2;80;250;123:bn=38;2;80;250;123:se=38;2;139;233;253"
     if test (uname) = "Darwin"
         # macOS の BSD grep は GREP_COLORS を解さないため単数形の GREP_COLOR も設定する
         set -gx GREP_COLOR "1;38;2;255;85;85"
     end
-    # GREP_COLORS / GREP_COLOR は --color=auto を付けて実行しない限り効かない。
-    # ls は fish 組み込みの ls 関数が --color=auto / -G を自動付与するため alias 不要。
-    # ただし macOS 13+ の Apple 製 ls (FreeBSD 由来) は --color=auto でも
-    # COLORTERM / CLICOLOR が設定されていないと色を出さない (man ls)。fish の workaround は
-    # Terminal.app 限定のため、COLORTERM を設定しないターミナルでも色が付くよう CLICOLOR を
-    # 設定する (GNU ls は CLICOLOR を無視するため他 OS でも無害)
+    # ls は fish 組み込みの ls 関数が色オプションを付けるので alias 不要。ただし macOS 13+ の ls は
+    # COLORTERM か CLICOLOR が無いと色を出さず、fish の対処は Terminal.app 限定のため CLICOLOR を設定する
+    # (GNU ls は CLICOLOR を無視する)
     set -gx CLICOLOR 1
+    # GREP_COLORS / GREP_COLOR は --color=auto を付けたときだけ効く
     if echo x | grep --color=auto -q x 2>/dev/null
         alias grep='grep --color=auto'
     end
 
-    # --- man ページの Dracula テーマ (https://github.com/dracula/man-pages) ---
+    # man ページの Dracula テーマ (https://github.com/dracula/man-pages)
     set -gx MANPAGER "less -s -M +Gg"
-    set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin bold
-    set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin blink
+    set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin blink
+    set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin bold
     set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # begin reverse video
     set -gx LESS_TERMCAP_us (printf '\e[01;36m') # begin underline
     set -gx LESS_TERMCAP_me (printf '\e[0m') # reset bold/blink
@@ -64,20 +58,17 @@ if test "$human_shell" = true
     set -gx LESS_TERMCAP_ue (printf '\e[0m') # reset underline
     set -gx GROFF_NO_SGR 1
 
-    # --- カスタム関数のエイリアス ---
     alias fgc=fzf_gcloud_config
     alias fga=fzf_gcloud_auth
     alias gssh=fzf_gcloud_ssh
     alias fssh=fzf_ssh
 end
 
-# --- ローカルバイナリのパス追加 ---
-# (uvでインストールしたツールや mise 本体用)
+# uv で入れたツールと mise 本体の置き場
 if test -d $HOME/.local/bin
     fish_add_path $HOME/.local/bin
 end
 
-# --- Homebrewの設定 ---
 set -l brew_bin (command -v brew 2>/dev/null)
 if test -z "$brew_bin"; and test -x /opt/homebrew/bin/brew
     set brew_bin /opt/homebrew/bin/brew
@@ -88,7 +79,6 @@ if test -n "$brew_bin"
     __source_cached_init brew-shellenv "$brew_bin" shellenv fish
 end
 
-# --- デフォルトエディタ ---
 # crontab 等の CLI は VISUAL を EDITOR より優先して参照するため両方を揃える。
 # VSCode は --wait が無いと即座に制御を返し、呼び出し元が編集完了と誤認する。
 # code の検出は brew shellenv で PATH が揃った後に行う必要がある。
@@ -100,45 +90,38 @@ if test "$human_shell" = true
     end
     set -gx VISUAL $EDITOR
 
-    # --- dircolors (LS_COLORS) の Dracula テーマ ---
-    # (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)
-    # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
+    # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml が取得)。
+    # dircolors は GNU coreutils にしか無く、macOS 標準には無い
     set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
     if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
         eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
     end
 end
 
-# --- Goの設定 ---
 set -gx GOPATH "$HOME/Works"
-# go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
-# mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
+# mise activate 環境では mise が GOBIN を上書きするため、これは mise が無いときの値
 set -gx GOBIN "$HOME/.local/bin"
-# Takumi Guard。`,direct` を付けると未収載・ブロック済みの module でプロキシを迂回できるため URL のみ指定する。
-# 認証 token は ~/.netrc (modify_private_dot_netrc)
+# Takumi Guard (悪性パッケージを遮断する proxy)。`,direct` を付けると未収載・ブロック済みの module で
+# proxy を迂回できてしまうため URL だけを指定する。認証 token は ~/.netrc (modify_private_dot_netrc)
 set -gx GOPROXY "https://golang.flatt.tech"
 
-# --- JDKの設定 ---
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
     set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"
 end
 
-# --- Google Cloud SDKのPython設定 ---
 set -gx CLOUDSDK_PYTHON (type -p python3)
 
-# --- Docker環境設定 ---
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"
     set -gx DOCKER_MACHINE_NAME "docker"
 end
 
-# --- MySQLクライアントのパス追加 ---
 if test -d /opt/homebrew/opt/mysql-client/bin/
     set -gx MYSQL_CLIENT_PATH /opt/homebrew/opt/mysql-client
     fish_add_path $MYSQL_CLIENT_PATH/bin
 end
 
-# --- mysqlclient用のコンパイラフラグ設定 ---
+# mysqlclient (Python) のビルド用
 if test (uname) = "Darwin"
     contains -- /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
     or set -gx PKG_CONFIG_PATH /opt/homebrew/lib/pkgconfig $PKG_CONFIG_PATH
@@ -148,19 +131,16 @@ if test (uname) = "Darwin"
     or set -gx CPPFLAGS "-I/opt/homebrew/include $CPPFLAGS"
 end
 
-# --- orbstackの設定 ---
 if test -d $HOME/.orbstack/shell
     source $HOME/.orbstack/shell/init2.fish
 end
 
-# --- Xcodeの設定 ---
 # usr/bin は末尾に追加して Homebrew の git/python3 を優先しつつ simctl 等も引けるようにする
 if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
     set -gx DEVELOPER_DIR (xcode-select -p)
     fish_add_path -a $DEVELOPER_DIR/usr/bin
 end
 
-# --- direnvのフック設定 ---
 # 以降のツール検出は mise 由来のツールも解決できる __tool_path で行う
 if test "$human_shell" = true
     set -l direnv_bin (__tool_path direnv)
@@ -169,7 +149,6 @@ if test "$human_shell" = true
     end
 end
 
-# --- miseの初期化 ---
 if type -q mise
     if test "$human_shell" = true
         mise activate fish | source
@@ -178,59 +157,50 @@ if type -q mise
     end
 end
 
-# --- 1Password CLI のデフォルトアカウント ---
 set -gx OP_ACCOUNT my.1password.com
 
 if test "$human_shell" = true
-    # --- fish 本体の Dracula テーマ (https://github.com/dracula/fish) ---
-    # テーマファイルは fisher (fish_plugins の dracula/fish) が themes/ に配置する。
-    # fish >= 3.4 はプラグイン導入だけでは適用されないため明示的に choose する
+    # Dracula テーマ (https://github.com/dracula/fish) は fisher が themes/ に置く。
+    # fish >= 3.4 は導入だけでは適用されないため明示的に choose する
     if test -f $HOME/.config/fish/themes/"Dracula Official.theme"
         fish_config theme choose "Dracula Official"
     end
 
-    # --- カーソルスタイルの設定 ---
-    # Ghosttyの cursor-style = block に合わせて、常にblockカーソルを使用
+    # Ghostty の cursor-style = block に揃える
     set -g fish_cursor_default block
     set -g fish_cursor_insert block
     set -g fish_cursor_replace_one underscore
     set -g fish_cursor_visual block
 
-    # --- Starshipの設定 ---
     set -l starship_bin (__tool_path starship)
     if test -n "$starship_bin"
         # `starship init fish` は full-init を都度生成する stub なので full-init 本体をキャッシュする
         __source_cached_init starship-init "$starship_bin" init fish --print-full-init
     end
 
-    # --- AWS CLI / aws-sso-cliの補完初期化 ---
-    # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、fish の
-    # completions/*.fish 自動ロード (コマンド名一致が必須) には乗せず直接 source する。
-    # aws_completer は補完実行時 (プロンプト表示後 = PATH 反映済み) に名前解決されるので、
-    # 登録判定のみフォールバックし、補完本体はコマンド名のまま呼び出す
+    # aws_completer は補完の実行時 (PATH 反映後) に解決されるので、__tool_path は登録の判定にだけ使う
     set -l aws_completer_bin (__tool_path aws_completer)
     if test -n "$aws_completer_bin"
         complete --command aws --no-files --arguments '(begin; set --local --export COMP_SHELL fish; set --local --export COMP_LINE (commandline); aws_completer | string trim --right; end)'
     end
+    # aws-sso の補完はヘルパー関数 (aws-sso-profile 等) も定義するため、コマンド名で自動ロードされる
+    # completions/ には置かず直接 source する
     set -l aws_sso_bin (__tool_path aws-sso)
     if test -n "$aws_sso_bin"
         __source_cached_init aws-sso-completions "$aws_sso_bin" setup completions --source --shell fish
     end
 
-    # --- fzfのシェル統合設定 (CTRL-R/CTRL-T/ALT-C キーバインド + 補完) ---
     set -l fzf_bin (__tool_path fzf)
     if test -n "$fzf_bin"
         __source_cached_init fzf-fish "$fzf_bin" --fish
     end
 
-    # --- zoxideの初期化 (z / zi コマンド) ---
     set -l zoxide_bin (__tool_path zoxide)
     if test -n "$zoxide_bin"
         __source_cached_init zoxide-init "$zoxide_bin" init fish
     end
 end
 
-# --- fnoxの初期化 ---
 if test "$human_shell" = true; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
 
@@ -252,9 +222,8 @@ if test "$human_shell" = true; and type -q fnox
         return 1
     end
 
-    # op whoami は ~70ms/回かかるためプロンプト毎に払わず結果を TTL キャッシュする。
-    # 別プロセスでの signin / signout の反映は最大 TTL 秒遅れる。
-    # 失効側の TTL は別タブでの signin を拾い直せるよう短めにする
+    # op whoami は 1 回 ~70ms かかるため結果を TTL 付きでキャッシュする。
+    # 失効側の TTL は、別タブでの signin を早く拾えるよう短くする
     set -g __fnox_op_session_status 1
     set -g __fnox_op_session_expires 0
     function __fnox_op_session_ok
@@ -272,9 +241,8 @@ if test "$human_shell" = true; and type -q fnox
         return $__fnox_op_session_status
     end
 
-    # 起動時・プロンプト時は op signin を実行しない (Touch ID 待ちで数秒ブロックし
-    # タブを開く操作が固まるため)。失効は config 毎に一度だけ通知し、
-    # signin は fnox の明示実行時 (下の fnox wrapper) まで遅延する
+    # 起動時・プロンプト時は op signin しない (Touch ID 待ちで数秒止まり、タブを開く操作が固まるため)。
+    # 失効は config ごとに 1 回だけ通知し、signin は fnox の明示実行時 (下の fnox wrapper) に行う
     function __fnox_preauth_1password
         type -q op; or return 0
 
@@ -294,9 +262,8 @@ if test "$human_shell" = true; and type -q fnox
     functions -e __fnox_env_eval
     functions -e __fnox_cd_hook
 
-    # 失効時は hook-env を実行しない。FNOX_PROMPT_AUTH=false は fnox 自身の
-    # auth_command 確認プロンプトを抑止するだけで、secret ごとに並列 spawn される
-    # op プロセスの認証ダイアログは素通しになる (secret の数だけダイアログが出る)
+    # 失効時は hook-env を実行しない。FNOX_PROMPT_AUTH=false では、secret ごとに並列に起動される
+    # op の認証ダイアログは抑止できない (secret の数だけダイアログが出る)
     function __fnox_env_eval --on-event fish_prompt
         if test "$FNOX_SHELL" = fish
             if __fnox_preauth_1password
@@ -311,11 +278,9 @@ if test "$human_shell" = true; and type -q fnox
         end
     end
 
-    # fnox activate が定義する fnox wrapper を、1Password 再認証付きで置き換える。
-    # 明示実行時は Touch ID 待ちでブロックしてよいのでここで signin し、
-    # 成功したら env を反映してから本体を実行する。signin に失敗したまま本体を
-    # 実行すると op が secret ごとに認証ダイアログを出すため中断する。
-    # deactivate / shell の eval 分岐は activate 版と同じ挙動を維持する
+    # fnox activate が定義する fnox wrapper を、1Password の signin 付きのものに置き換える。
+    # 明示実行時は Touch ID 待ちで止まってよいのでここで signin し、失敗したら中断する
+    # (そのまま実行すると op が secret ごとに認証ダイアログを出す)。deactivate / shell の扱いは activate 版と同じ
     functions -e fnox
     function fnox
         if type -q op; and __fnox_find_1password_config >/dev/null; and not __fnox_op_session_ok

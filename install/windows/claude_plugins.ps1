@@ -15,9 +15,8 @@ function Install-Plugin([string]$PluginId) {
 
 function Main {
     # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
-    # run_once_before テンプレートが .chezmoidata.toml の claude.* から必ず export する契約。
-    # PowerShell は空文字を代入した環境変数を削除するため、未設定と「有効な plugin が 0 件」を区別できるのは
-    # marketplace 側だけ。CLAUDE_PLUGINS が無いときは 0 件として扱う
+    # run_once_before テンプレートが .chezmoidata.toml の claude.* から必ず渡す。
+    # PowerShell は空文字を代入した環境変数を削除するため、CLAUDE_PLUGINS が無いときは有効な plugin 0 件として扱う
     $marketplaces = @($env:CLAUDE_MARKETPLACES -split '\s+' | Where-Object { $_ })
     $plugins = @($env:CLAUDE_PLUGINS -split '\s+' | Where-Object { $_ })
     if (-not $marketplaces) {

@@ -1,13 +1,12 @@
 name: CI
 
 on:
-  # push トリガーは置かない: merge 後の main での再実行は PR で検証済みのため不要
-  # (secret scan の main 全履歴は gitleaks.yaml の週次 schedule が再スキャンする)。
-  # デフォルト types の明示: closed 等 CI が不要な PR イベントでは走らせない
+  # push トリガーは置かない。main へ入る変更は PR で検証済みで、main 全履歴の secret scan は
+  # gitleaks.yaml の週次 schedule が行う。
   pull_request:
     types: [opened, synchronize, reopened]
-  # mise-lock.yaml が GITHUB_TOKEN で push / 作成する PR には workflow run が自動発火しないため、
-  # PR head ブランチへ明示的に dispatch できるようにする
+  # mise-lock.yaml が GITHUB_TOKEN で push / 作成した PR では CI が自動で走らないため、
+  # PR の head ブランチへ dispatch できるようにする
   workflow_dispatch:
 
 permissions: {}
@@ -16,12 +15,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# 各チェックは reusable workflow として並列実行し、1 つでも失敗したら
-# その時点で run 全体をキャンセルする (fail-fast)。
-# チェックを追加するときはここに job を足し、呼び出される側は
-# workflow_call + fail-fast input を持つ reusable workflow として実装する。
-# permissions は workflow レベルではなく job レベルで付与する (zizmor excessive-permissions)。
-# actions: write は fail-fast (失敗した job が gh run cancel で run 全体を止める) に必要。
+# 各チェックは workflow_call と fail-fast input を持つ reusable workflow として並列に走り、
+# 1 つでも失敗したら run 全体をキャンセルする。
+# permissions は zizmor (excessive-permissions) に従い job 単位で付ける。actions: write は run のキャンセルに要る。
 jobs:
   prek:
     uses: ./.github/workflows/prek.yaml

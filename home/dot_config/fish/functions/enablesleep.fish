@@ -1,3 +1,3 @@
-function enablesleep --description "Enable sleep (disablesleep 0)"
+function enablesleep --description "Re-enable system sleep"
     sudo pmset -a disablesleep 0
 end

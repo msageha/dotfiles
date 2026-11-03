@@ -1,13 +1,10 @@
 #!/usr/bin/env pwsh
 # winget (Windows Package Manager) のブートストラップ。
-# Windows Server 2022 / Windows Sandbox など Microsoft Store が無い環境には winget が
-# 同梱されないため、GitHub リリースの App Installer パッケージから導入する。後続の
-# setup_powershell.ps1 (Starship) と apps.ps1 (GUI アプリ) が winget を前提にするので、
-# それらより先に実行すること。
-# Microsoft 公式手順の Repair-WinGetPackageManager (Microsoft.WinGet.Client) は
-# Windows Server 2022 だと WinRT 相互運用層の初期化に失敗し
-# "ManagementDeploymentCommand の型初期化子が例外をスロー" で落ちる既知問題があるため
-# (microsoft/winget-cli#4502)、最終フォールバックとしてのみ使う。
+# Microsoft Store が無い環境 (Windows Server 2022・Windows Sandbox 等) には winget が同梱されないため、
+# GitHub リリースの App Installer パッケージから導入する。
+# winget を使う setup_powershell.ps1 と apps.ps1 より先に実行すること。
+# 公式手順の Repair-WinGetPackageManager は Windows Server 2022 で WinRT の初期化に失敗する
+# 既知問題 (microsoft/winget-cli#4502) があるため、最後の手段としてだけ使う。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -33,18 +30,16 @@ function Register-ExistingAppInstaller {
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
     }
     catch {
-        # App Installer 自体が無い環境 (Windows Server 等) では失敗する。
-        # その場合は呼び出し元が GitHub リリースからの導入に進むため、ここでは何も出力しない
+        # App Installer 自体が無い環境 (Windows Server 等) では失敗するが、
+        # 呼び出し元が GitHub リリースからの導入に進むため何も出力しない
         return
     }
     Update-WinGetSessionPath
 }
 
 function Install-WinGetFromGitHubRelease {
-    # GitHub リリースから App Installer 本体・依存パッケージ (VCLibs / UI.Xaml)・
-    # ライセンス XML を取得して導入する。Windows Server 2022 で実績のある方式
-    # (Add-AppxPackage だけだと Server では "No applicable app licenses" になるため、
-    # 管理者ではライセンス XML を添えて Add-AppxProvisionedPackage で機械全体に配置する)
+    # Windows Server では Add-AppxPackage だけだと "No applicable app licenses" になるため、
+    # 管理者ならライセンス XML を添えて Add-AppxProvisionedPackage でマシン全体に配置する
     Write-Step 'Installing winget from the GitHub release of winget-cli...'
 
     $arch = switch ($env:PROCESSOR_ARCHITECTURE) {
@@ -102,8 +97,6 @@ function Install-WinGetFromGitHubRelease {
 }
 
 function Install-WinGetViaPSGallery {
-    # Microsoft 公式手順のフォールバック。Windows Server 2022 では前述の既知問題で
-    # 失敗するため、GitHub リリース方式が失敗した場合の最終手段としてのみ呼ぶ
     Write-Step 'Installing winget via Microsoft.WinGet.Client (Repair-WinGetPackageManager)...'
     try {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
@@ -148,8 +141,7 @@ function Install-WinGet {
         Write-Step 'winget was installed successfully.'
     }
     else {
-        # winget 依存のステップ (Starship / GUI アプリ) は各スクリプト側が
-        # 警告してスキップするため、apply 全体はここで止めない
+        # winget を使う後続のスクリプトは警告してスキップするため、apply 全体は止めない
         Write-Warn 'winget を導入できませんでした。Windows Server 2019 以前は winget 非対応です。'
     }
 }

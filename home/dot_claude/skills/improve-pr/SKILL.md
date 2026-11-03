@@ -1,6 +1,6 @@
 ---
 name: improve-pr
-description: "Scrutinizes a PR or branch diff against the purpose of the change, from structure and responsibilities down to naming and comments, and improves it, for requests such as 「PR を精査して改善して」「main との差分を確認して改善して」「merge するべきか確認して」「この PR に問題ないか確認して」. Evaluation-only requests get a read-only report with a merge verdict; improvement requests get fixes within the PR's purpose, verified. Use when the user asks to scrutinize, improve or judge whether to merge a PR or branch; for a findings-only code review use review, and for working through a PR's review comments use gh-address-comments where available."
+description: "Scrutinizes a PR or branch diff against the purpose of the change, from structure down to naming and comments. Evaluation requests (「merge するべきか確認して」「この PR に問題ないか確認して」) get a read-only report with a merge verdict; improvement requests (「PR を精査して改善して」「main との差分を確認して改善して」) get verified fixes within the PR's purpose. For a findings-only code review use review; for PR review comments use gh-address-comments where available."
 argument-hint: "[PR number / URL / branch]"
 ---
 

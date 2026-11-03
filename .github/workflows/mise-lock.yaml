@@ -13,7 +13,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  # PR 作成 / push 後に CI 系 workflow を workflow_dispatch で起動するため (最下段のステップ参照)
+  # 更新したブランチで ci.yaml を workflow_dispatch するため
   actions: write
 
 concurrency:
@@ -22,33 +22,28 @@ concurrency:
 
 jobs:
   mise-lock:
-    # fork からの PR は head ref が base リポジトリに存在せず checkout の時点で失敗し、
-    # GITHUB_TOKEN でも push できないため job ごとスキップする。
+    # fork からの PR は head ref が base リポジトリに無く、GITHUB_TOKEN で push もできないため skip する。
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      # push は下段のステップで明示的にトークンを渡して行うため、
-      # チェックアウトに認証情報を残さない
+      # push は後の step で token を明示して行うため、checkout に認証情報を残さない
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
           persist-credentials: false
 
-      # install: false — 古い mise.lock のまま mise install すると checksum 不一致で
-      # 失敗しうるため、mise 本体のみ導入して lock の再生成だけを行う。
+      # 古い mise.lock のままツールを導入すると checksum 不一致で失敗しうるので、mise 本体だけを入れる。
       - name: Install mise
         uses: ./.github/actions/setup-mise
         with:
           install: "false"
 
-      # mise.toml のバージョン更新は Renovate に任せる。
-      # ここでは pin されたバージョンのまま mise.lock の checksum / URL だけを再生成する。
+      # バージョンの更新は Renovate が行う。ここでは pin のまま mise.lock の checksum / URL だけを再生成する。
       - name: Run mise lock
         env:
-          # mise の GitHub API アクセス (リリース取得・SLSA 検証) を認証付きにして
-          # ランナー共有 IP の無認証 rate limit (60 req/h) を回避する
+          # runner の共有 IP での無認証 rate limit (60 req/h) を避ける
           GITHUB_TOKEN: ${{ github.token }}
         run: mise lock
 
@@ -67,9 +62,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Renovate 等が mise.toml を変更した既存 PR には、
-      # 同じブランチに直接 commit して mise.lock を追従させる。
-      # fork からの PR は GITHUB_TOKEN で push できないためスキップする。
+      # mise.toml を変えた PR (Renovate 等) には、同じブランチへ mise.lock を commit する。
       - name: Push mise.lock update to the pull request branch
         if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
@@ -95,11 +88,8 @@ jobs:
               --body "mise lock の自動実行による mise.lock の更新です。差分を確認してください。"
           fi
 
-      # GITHUB_TOKEN による push / PR 作成からは新しい workflow run が発火しない
-      # (再帰実行防止の GitHub 仕様)。workflow_dispatch はその例外なので、
-      # 更新したブランチへ CI 系 workflow を明示的に起動して required check を付ける。
-      # CI 系チェック (prek / gitleaks / chezmoi / docker) は
-      # ci.yaml に集約されているため ci.yaml のみ起動する。
+      # GITHUB_TOKEN による push / PR 作成では workflow が発火しない (GitHub の再帰防止)。
+      # workflow_dispatch はその例外なので、更新したブランチで ci.yaml を起動して required check を付ける。
       - name: Dispatch CI workflows for the updated branch
         if: steps.diff.outputs.changed == 'true'
         env:

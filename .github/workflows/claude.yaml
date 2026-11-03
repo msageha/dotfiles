@@ -1,11 +1,11 @@
 name: Claude Code
 on:
-  # issue_comment は第三者も起動できるため、job の if で OWNER / MEMBER に限定している
+  # issue_comment は第三者も起動できるため、job の if で OWNER / MEMBER に限っている
   issue_comment:
     types: [created]
   pull_request_review_comment:
     types: [created]
-  # assigned は if 条件 (@claude メンション必須) と噛み合わないため opened のみ
+  # assigned は if の条件 (@claude メンション必須) を満たさないため opened だけにする
   issues:
     types: [opened]
   pull_request_review:
@@ -18,12 +18,8 @@ concurrency:
 
 jobs:
   claude:
-    # @claude メンション + author_association による一次フィルタ。
-    # 起動は OWNER / MEMBER のみに許可する (COLLABORATOR は read-only の
-    # outside collaborator も含みうるため許可しない)。
-    # なお書き込み権限の厳密な検証は claude-code-action 内部でも行われる
-    # (src/entrypoints/prepare.ts が src/github/validation/permissions.ts の
-    # checkWritePermissions を呼び、write/admin 以外なら実行を拒否する)
+    # @claude メンションと author_association による一次フィルタ。COLLABORATOR は read-only の
+    # outside collaborator を含みうるので許可しない。claude-code-action も write / admin 以外の実行を拒否する。
     if: |
       (github.event_name == 'issue_comment' &&
         contains(github.event.comment.body, '@claude') &&

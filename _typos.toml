@@ -1,11 +1,11 @@
 [files]
-# age 暗号化ファイルは base64 暗号文なので typos の誤検出対象外にする。
+# age の暗号文 (base64) は誤検出しかしない
 extend-exclude = ["*.age"]
 
 [default.extend-words]
-# "PNGs" (home/dot_claude/skills/pdf/SKILL.md) の PN を typos が ON の typo と判定するため
+# "PNGs" の PN を ON の typo と誤検出する
 PN = "PN"
-# BetterTouchTool's own misspelled key name
+# BetterTouchTool の設定キーそのものの綴り
 Fom = "Fom"
-# eza color code key (user execute for other file kinds) in EZA_COLORS
+# EZA_COLORS のキー (その他の種類のファイルの user execute)
 ue = "ue"

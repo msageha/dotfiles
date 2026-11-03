@@ -1,6 +1,6 @@
 ---
 name: playwright
-description: "Writes, fixes, and debugs Playwright tests (@playwright/test) for TypeScript and JavaScript projects: test code, locators, playwright.config.ts, flaky-test debugging, auth state reuse, network mocking, and CI setup. Use when the user asks to write or fix E2E / Playwright tests or their config and CI (「E2E テストを書いて」「Playwright のテストを直して」「flaky なテストを調べて」). For operating or checking a running app in a real browser, delegate to the browser-debugger agent; for launching the project's app to see a change working, use /run where available."
+description: "Writes, fixes, and debugs Playwright tests (@playwright/test) in TypeScript / JavaScript: locators, playwright.config.ts, flaky tests, auth state reuse, network mocking, and CI setup (「E2E テストを書いて」「Playwright のテストを直して」「flaky なテストを調べて」). To operate or check a running app in a real browser, delegate to the browser-debugger agent; to launch the app to see a change working, use /run where available."
 allowed-tools: Read, Grep, Glob
 argument-hint: "[scenario description or test file path]"
 ---

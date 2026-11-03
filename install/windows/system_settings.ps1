@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# Windows のシステム設定 (エクスプローラー・壁紙)。
+# Windows のシステム設定 (エクスプローラー・壁紙・タスクバー・電源・キーボード・開発者モード・BitLocker 等)。
 # mac (install/macos/system_settings.sh) / ubuntu (install/ubuntu/system_settings.sh) に相当する。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
@@ -41,9 +41,8 @@ function Set-ExplorerSettings {
 
 function Set-ContextMenuSettings {
     Write-Step '右クリックメニューを従来表示 (Windows 10 形式) に設定しています...'
-    # この CLSID の InprocServer32 を空の既定値で登録すると Windows 11 が簡略メニューを
-    # ロードできなくなり、常に従来のフルメニューが表示される。Windows 10 では参照されない
-    # キーのため無害。反映は Main 末尾の Restart-Explorer で行われる。
+    # この CLSID の InprocServer32 を空の既定値で登録すると、Windows 11 が簡略メニューを読み込めず
+    # 従来のメニューを表示する。Windows 10 では参照されない。反映は Main 末尾の Restart-Explorer で行う。
     $key = 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32'
     New-Item -Path $key -Force | Out-Null
     Set-ItemProperty -Path $key -Name '(Default)' -Value ''
@@ -55,7 +54,7 @@ function Set-WallpaperSettings {
     New-Item -ItemType Directory -Force -Path $picturesDir | Out-Null
     $wallpaperPath = Join-Path $picturesDir 'wallpaper.png'
 
-    # 取得失敗時に壊れた本文を壁紙にしないよう、失敗したらここで打ち切ってスキップする
+    # 取得に失敗した本文を壁紙にしないよう、失敗したらスキップする
     try {
         Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/windows.png' -OutFile $wallpaperPath -UseBasicParsing
     }
@@ -68,8 +67,8 @@ function Set-WallpaperSettings {
     Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name WallpaperStyle -Value '10' # 10 = Fill
     Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name TileWallpaper -Value '0'
 
-    # レジストリの更新だけでは反映されないため SystemParametersInfo で即時反映させる。
-    # 同一セッションで複数回読み込まれても再定義エラーにならないよう -ErrorAction で無視する。
+    # レジストリの更新だけでは反映されないため SystemParametersInfo で反映する。
+    # 同じ session で再度読み込んだときの型の再定義エラーは無視する。
     Add-Type -ErrorAction SilentlyContinue @'
 using System;
 using System.Runtime.InteropServices;
@@ -82,18 +81,16 @@ public class ChezmoiWallpaper {
     [ChezmoiWallpaper]::SystemParametersInfo(0x14, 0, $wallpaperPath, 3) | Out-Null
 }
 
-# UCPD.sys (User Choice Protection Driver) は保護対象の値名への書き込みをカーネルの
-# レジストリコールバックで傍受し、呼び出し元が deny-list (reg.exe / powershell.exe 等) の
-# 場合に ACCESS_DENIED を返す。TaskbarDa と ShellFeedsTaskbarViewMode がこれに該当し、
-# Microsoft 署名バイナリ (設定アプリ) 以外からは変更できないため、拒否は警告にして続行する。
-# 拒否以外の失敗は握りつぶさず再スローする。
+# UCPD.sys (User Choice Protection Driver) は、保護対象の値 (TaskbarDa・ShellFeedsTaskbarViewMode 等) への
+# powershell.exe などからの書き込みを ACCESS_DENIED にし、設定アプリからしか変更できない。
+# そのため拒否は警告にして続行し、それ以外の失敗は再スローする。
 function Set-UcpdProtectedDword($path, $name, $value) {
     try {
         Set-RegistryDword $path $name $value
     }
     catch {
-        # $ErrorActionPreference = 'Stop' 経由で終了エラー化された場合に例外が
-        # 包まれることがあるため、例外チェーンと FullyQualifiedErrorId の両方で判定する
+        # $ErrorActionPreference = 'Stop' で終了エラー化されると例外が包まれることがあるため、
+        # 例外チェーンと FullyQualifiedErrorId の両方で判定する
         $unauthorized = $false
         for ($ex = $_.Exception; $null -ne $ex; $ex = $ex.InnerException) {
             if ($ex -is [System.UnauthorizedAccessException]) {
@@ -131,7 +128,7 @@ function Set-PowerSettings {
         Write-Warn 'powercfg が見つかりません。電源設定をスキップします。'
         return
     }
-    # 画面オフ 5 分・スリープ 15 分 (AC 電源/バッテリー共通)。値は分単位。
+    # 値は分単位
     powercfg /change monitor-timeout-ac 5
     powercfg /change monitor-timeout-dc 5
     powercfg /change standby-timeout-ac 15
@@ -153,9 +150,8 @@ function Set-KeyboardSettings {
 }
 
 function Enable-DeveloperMode {
-    # シンボリックリンク作成等に管理者権限が不要になるなど dotfiles/chezmoi の運用と相性が良い。
-    # HKLM への書き込みが必要なため、既に有効なら何もせず、未昇格なら UAC 昇格して 1 回だけ設定する
-    # (毎回 UAC ダイアログが出ると煩わしいため、まず現在値を読み取って判定する)。
+    # 開発者モードではシンボリックリンクの作成に管理者権限が要らなくなる。
+    # HKLM への書き込みに昇格が要るため、毎回 UAC ダイアログを出さないよう未設定のときだけ昇格する。
     $path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
     if ((Get-RegistryValueOrNull $path 'AllowDevelopmentWithoutDevLicense') -eq 1) {
         Write-Step '開発者モードは既に有効なため、スキップします。'
@@ -176,9 +172,8 @@ function Enable-DeveloperMode {
 }
 
 function Disable-BitLockerProtection {
-    # Get-BitLockerVolume は管理者権限が必要なため、未昇格でも読み取れるシェルプロパティで
-    # 先にシステムドライブの状態を判定し、無効化が必要なときだけ UAC 昇格する
-    # (Enable-DeveloperMode と同様、毎回ダイアログが出るのを避けるため)。
+    # Get-BitLockerVolume は管理者権限が要るため、未昇格でも読めるシェルプロパティで状態を判定し、
+    # 毎回 UAC ダイアログを出さないよう無効化が必要なときだけ昇格する。
     try {
         $shell = New-Object -ComObject Shell.Application
         $protection = $shell.NameSpace("$env:SystemDrive\").Self.ExtendedProperty('System.Volume.BitLockerProtection')
@@ -223,13 +218,12 @@ function Set-StartMenuSettings {
 
 function Restart-Explorer {
     Write-Step 'エクスプローラーを再起動しています...'
-    # explorer はシェルとして登録されているため kill 後に自動で再起動する。
-    # 明示的に Start-Process すると余計なファイルウィンドウが開くため行わない。
+    # explorer は停止後に自動で再起動する。Start-Process で起動すると余計なウィンドウが開くため行わない。
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
 }
 
 function Main {
-    # GUI/デスクトップの見た目設定のため CI ではスキップする (mac の system_settings.sh と同様)
+    # デスクトップの設定は CI では不要なためスキップする
     if ($env:CI) {
         Write-Step 'CI 環境のためシステム設定をスキップします。'
         return

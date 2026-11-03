@@ -29,9 +29,8 @@ function __fenv_load_fnox
         cp fnox.local.toml "$temp_dir/fnox.local.toml"
     end
 
-    # 1Password の事前認証 (op signin 1 回) と失効時の中断は fnox wrapper
-    # (config.fish) が担う。失効したまま本体を実行すると op が secret ごとに
-    # 認証ダイアログを出すため、ここでフォールバック実行しない
+    # 1Password の signin と失効時の中断は fnox wrapper (config.fish) が担う。
+    # command fnox で迂回すると、失効時に op が secret ごとに認証ダイアログを出す
     set -l fnox_output (fnox -c "$temp_dir/fnox.toml" $profile_args export -f env 2>/dev/null)
     set -l fnox_status $status
     rm -rf "$temp_dir"

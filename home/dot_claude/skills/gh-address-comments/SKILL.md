@@ -1,6 +1,6 @@
 ---
 name: "gh-address-comments"
-description: "GitHub PR review comments: fetches every review thread (with resolved / outdated state) and comment on a PR, addresses them based on the reviewer's intent rather than the literal wording, and reports a per-comment ledger of what was and was not addressed. Use when the user asks to handle, fix, respond to or check PR review comments (「レビューコメントに対応して」「コメントへの対応は全部取れてる？」)."
+description: "Handles GitHub PR review comments: fetches every review thread (with resolved / outdated state) and comment, addresses each by the reviewer's intent rather than the literal wording, and reports a per-comment ledger of what was and was not addressed. Use when the user asks to handle, fix, respond to, or check PR review comments (「レビューコメントに対応して」「コメントへの対応は全部取れてる？」)."
 allowed-tools: Bash(gh pr view:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Read, Grep, Glob
 argument-hint: "[optional PR number or URL]"
 ---

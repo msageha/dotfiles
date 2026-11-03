@@ -4,10 +4,8 @@
 auto_update = false
 
 [features]
-# support_permission は undocumented (docs.x.ai の settings reference に記載なし) だが、
-# バイナリ埋め込み README では「prompt before tool execution」と説明されている。
-# 自律実行を優先し、ツール実行前プロンプトを無効化 (全 auto-approve 相当) する false にする。
-# ガードを戻したい場合は true + --permission-mode で都度制御する。
+# support_permission は undocumented だが、バイナリ同梱の README では「prompt before tool execution」。
+# 自律実行を優先して false (ツール実行前に確認しない) にする
 support_permission = false
 telemetry = false
 feedback = false
@@ -20,14 +18,13 @@ enabled = true
 
 [compat.claude]
 # rules は paths を無視して ~/.claude/rules と project の .claude/rules を全件常時読み込むため止め、
-# 共通 AGENTS.md の冒頭どおり編集・レビューの前に該当する rule だけを読ませる。
+# 共通 AGENTS.md のとおり対象に当たる rule だけを読ませる
 rules = false
-# agents は ~/.claude/CLAUDE.md (Claude Code 用の補足) と project の .claude/CLAUDE*.md を読み込むため止める。
-# Grok に要る規範は共通 AGENTS.md と grok/instructions.md にある。project 直下の CLAUDE.md と ~/.claude/agents は false でも読まれる。
+# agents は ~/.claude/CLAUDE.md (Claude Code 用の補足) と project の .claude/CLAUDE*.md を読み込むため止める
+# (project 直下の CLAUDE.md と ~/.claude/agents は false でも読まれる)
 agents = false
 mcps = false
-# false だと ~/.claude/skills は一覧に載るだけで無効 (disabled) になり、~/.agents/skills の共有 9 本しか使えない。
-# true は Claude plugin の skill・command (codex plugin の review 等) も読み込む。
+# false だと ~/.claude/skills は無効になり ~/.agents/skills しか使えない。true は Claude plugin の skill・command も読み込む
 skills = true
 hooks = false
 

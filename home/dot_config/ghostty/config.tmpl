@@ -1,7 +1,5 @@
-# Theme
 theme = "dracula"
 
-# Font
 font-family = "SauceCodePro Nerd Font"
 font-family = "Source Han Code JP"
 font-size = 18
@@ -9,7 +7,6 @@ font-feature = "-calt"
 font-feature = "-dlig"
 font-feature = "-liga"
 
-# Window
 macos-titlebar-style = "transparent"
 window-padding-balance = true
 window-padding-x = 0
@@ -19,23 +16,18 @@ window-theme = "ghostty"
 background-opacity = 0.98
 background-blur-radius = 0
 
-# Terminal
 term = "xterm-256color"
-# scrollback-limit の単位はバイト (行数ではない)。2MB。
-# 注意: Ghostty の config はインラインコメント非対応 (値の後に # を書くと行ごと無視される)
+# 単位はバイト (2MB)。Ghostty の config は行末コメントに対応せず、値の後に # を書くと行ごと無視される
 scrollback-limit = 2000000
 
-# Window Size
 window-inherit-font-size = true
 window-height = 30
 window-width = 999
 
-# Quick Terminal
 quick-terminal-screen = main
 quick-terminal-size = 75%
 quick-terminal-position = top
 
-# macOS Specific
 macos-option-as-alt = false
 macos-hidden = always
 
@@ -52,6 +44,5 @@ shell-integration-features = no-cursor
 
 unfocused-split-opacity = 0.30
 
-# Mouse and Cursor
 mouse-shift-capture = true
 cursor-style = block
