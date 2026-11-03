@@ -77,11 +77,12 @@ AWS_CLI_AUTO_PROMPT = "off"
 # private_<dir>/<name>.pub.tmpl (公開鍵) の位置と手で一致させる (ズレると .chezmoiignore の除外が外れ、通常の status / apply で op read が走る)。
 # item は vault 内の SSH Key item 名。各 template は .ssh_keys.items.<key>.item で参照する (無いキーは描画時に fail する)
 [ssh_keys]
-vault = "SSH Keys"
+# vault は ID で指定する (名前 "[Dev] SSH Keys" の "[" は op:// の secret reference で使えない)
+vault = "gbprko7eo2rpxq2jgtdq3hxmly"
 
 [ssh_keys.items]
 git_msageha = { path = "git_msageha", item = "ssh-git_msageha" }
-ocloud_instance = { path = "ocloud-instance", item = "ssh-ocloud-instance" }
+mzk_macos = { path = "mzk/macos", item = "ssh-mzk-macos" }
 mzk_openclaw = { path = "mzk/openclaw", item = "ssh-mzk-openclaw" }
 mzk_proxmox = { path = "mzk/proxmox", item = "ssh-mzk-proxmox" }
 parents_freshtomato = { path = "parents/freshtomato", item = "ssh-parents-freshtomato" }
