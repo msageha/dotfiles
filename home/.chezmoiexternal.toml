@@ -34,13 +34,11 @@ executable = true
 
 {{ end }}
 
-{{- /* Claude Code の nano-banana MCP server。gemini-cli-extensions/nanobanana 同梱の実装だが
-      npm 未公開のため release tag の source archive を展開し、
-      .chezmoiscripts/run_onchange_after_95_nanobanana-mcp.sh.tmpl で build する。
-      pin は .chezmoidata.toml (renovate 追従)。build 生成物 (dist / node_modules) を
-      apply で消さないよう exact は付けない。
-      gate は build に必要な node の導入条件 (mise config の node と同じ dig 既定 true) に揃え、
-      run_onchange_after_95 と .chezmoitemplates/claude.json の nano-banana も同じ式を使う */}}
+{{- /* Claude Code の nano-banana MCP server (gemini-cli-extensions/nanobanana 同梱)。npm 未公開のため
+      release の source archive を展開し、run_onchange_after_95_nanobanana-mcp.sh.tmpl が build する。
+      build 生成物 (dist / node_modules) を apply で消さないよう exact は付けない。
+      条件は build に要る node の導入条件 (mise config と同じ dig 既定 true) に揃え、
+      run_onchange_after_95 と .chezmoitemplates/claude.json も同じ式を使う */}}
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
 [".local/share/nanobanana-mcp"]
 type = "archive"
@@ -49,8 +47,7 @@ stripComponents = 1
 {{ end }}
 
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}
-{{- /* カスタムテーマの探索パスは ~/.config/ghostty/themes と Ghostty resources dir のみ
-      (+show-config --docs で確認)。macOS も XDG 側に置く (旧 AppSupport 配置は探索対象外) */}}
+{{- /* カスタムテーマの探索先は ~/.config/ghostty/themes と Ghostty の resources dir だけなので、macOS も XDG 側に置く */}}
 [".config/ghostty/themes/dracula"]
 type = "file"
 url = "https://raw.githubusercontent.com/dracula/ghostty/b0e64590232331d9837c82cc1c5138e11ea39f76/dracula"

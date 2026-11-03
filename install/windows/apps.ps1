@@ -5,9 +5,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-# winget のパッケージ ID (`winget search <name>` で確認できる)。
-# 既定のソースは community リポジトリ (winget)。ChatGPT のように winget-pkgs に
-# 登録が無く Microsoft Store 配布のみのものは Source を明示する。
+# 既定のソースは winget。winget-pkgs に無く Microsoft Store 配布のみのものは Source を明示する。
 $Apps = @(
     @{ Id = 'Google.Chrome' }
     @{ Id = 'Google.JapaneseIME' }
@@ -17,7 +15,7 @@ $Apps = @(
     @{ Id = 'Microsoft.PowerToys' }
     @{ Id = 'AgileBits.1Password' }
     @{ Id = 'Google.GoogleDrive' }
-    @{ Id = '9NT1R1C2HH7J'; Source = 'msstore' } # ChatGPT (winget-pkgs に無く Microsoft Store 配布のみ)
+    @{ Id = '9NT1R1C2HH7J'; Source = 'msstore' } # ChatGPT
 )
 
 function Install-GuiApps {
@@ -36,8 +34,7 @@ function Install-GuiApps {
         Write-Step "Installing $id via winget ($source)..."
         winget install --id $id --exact --source $source `
             --accept-package-agreements --accept-source-agreements
-        # GUI アプリは best-effort とし、1 つの失敗 (msstore の未サインイン等) で
-        # apply 全体を止めない。ただし黙って流さず警告は出す
+        # 1 つの失敗 (msstore の未サインイン等) で apply 全体を止めないよう、警告して続行する
         if ($LASTEXITCODE -ne 0) {
             Write-Warn "$id のインストールが終了コード $LASTEXITCODE で失敗しました。続行します。"
         }
@@ -45,7 +42,6 @@ function Install-GuiApps {
 }
 
 function Uninstall-OneDrive {
-    # プリインストールされている OneDrive は使わないため削除する
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Write-Warn 'winget が見つかりません。OneDrive のアンインストールをスキップします。'
         return
@@ -66,10 +62,8 @@ function Uninstall-OneDrive {
 }
 
 function Set-PowerToysSettings {
-    # PowerToys の設定は %LOCALAPPDATA%\Microsoft\PowerToys\ 配下の JSON で管理されており、
-    # バージョン間でスキーマが変わりうる上、PowerToys が一度も実行されていないとファイル自体が
-    # 存在しない等、レジストリほど安定した対象ではない。そのため生の JSON を直接書き換えるのではなく、
-    # PowerToys 公式の設定 CLI (PowerToys.DSC.exe, v0.95.0 以降同梱) を経由して行う。
+    # PowerToys の設定 JSON はバージョン間でスキーマが変わりうるうえ、一度も起動していないと存在しないため、
+    # 直接書き換えず公式の設定 CLI (PowerToys.DSC.exe、v0.95.0 以降に同梱) を使う。
     $dscExe = @(
         (Join-Path $env:LOCALAPPDATA 'PowerToys\PowerToys.DSC.exe')
         (Join-Path $env:ProgramFiles 'PowerToys\PowerToys.DSC.exe')
@@ -80,9 +74,8 @@ function Set-PowerToysSettings {
         return
     }
 
-    # FancyZones / PowerToys Run (内部名 PowerLauncher) / Hosts File Editor (内部名 Hosts) /
-    # Environment Variables を有効化する。個別モジュールの詳細設定 (ショートカット等) ではなく
-    # 有効/無効の切り替えのみのため、アプリ全体設定を扱う "App" モジュールを使う。
+    # 有効/無効の切り替えだけなので、アプリ全体の設定を扱う "App" モジュールを使う。
+    # PowerLauncher は PowerToys Run、Hosts は Hosts File Editor の内部名。
     $config = @{
         settings = @{
             properties = @{
@@ -102,7 +95,7 @@ function Set-PowerToysSettings {
     # そのままだと子プロセス側で引用符が剥がれて JSON として不正になる
     $config = $config -replace '"', '\"'
 
-    # DSC exe の起動失敗 (AppLocker 等) も best-effort として警告に留め、後続のセットアップを止めない
+    # DSC exe の起動失敗 (AppLocker 等) も警告に留め、後続のセットアップを止めない
     try {
         & $dscExe set --resource 'settings' --module App --input $config
         if ($LASTEXITCODE -ne 0) {
@@ -117,9 +110,8 @@ function Set-PowerToysSettings {
 }
 
 function Test-DefaultAppsAlreadySet {
-    # UserChoice は「書き込み」はハッシュ保護されるが「読み取り」は誰でもできるため、
-    # 既に望む状態になっているかはここで判定できる。7-Zip は拡張子ごとに ProgId を持つが、
-    # .zip を代表として確認する (全拡張子を厳密に見るのはやり過ぎなので簡易判定とする)。
+    # UserChoice はハッシュ保護で書き込めないが、読み取りはできる。
+    # 7-Zip は拡張子ごとに ProgId を持つが、.zip だけを代表として見る簡易判定にする。
     $browserProgId = Get-RegistryValueOrNull 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' 'ProgId'
     $zipProgId = Get-RegistryValueOrNull 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice' 'ProgId'
 
@@ -130,11 +122,8 @@ function Test-DefaultAppsAlreadySet {
 }
 
 function Open-DefaultAppsSettings {
-    # ブラウザ (Chrome) や展開ツール (7-Zip) の既定アプリ変更は Windows 8+ の UserChoice
-    # ハッシュ保護 (Windows 10/11 では UCPD ドライバによる改ざん防止も追加) により、
-    # スクリプトから安全に自動設定する方法が無い。設定アプリの該当ページを開き、
-    # ユーザーが選ぶだけの状態にする。実行のたびにポップアップが出ると煩わしいため、
-    # 既に両方とも設定済みなら開かない。
+    # 既定のブラウザ・展開ツールは UserChoice のハッシュ保護 (Windows 10/11 では UCPD ドライバも) により
+    # スクリプトから設定できないため、設定アプリを開いてユーザーに選ばせる。毎回開かないよう、設定済みなら開かない。
     if (Test-DefaultAppsAlreadySet) {
         Write-Step '既定のブラウザ (Chrome) と展開ツール (7-Zip) は設定済みのため、既定アプリ設定はスキップします。'
         return
@@ -149,10 +138,8 @@ function Open-DefaultAppsSettings {
 }
 
 function Find-GoogleJapaneseInputTip {
-    # IME の InputMethodTips は "<LCID>:{CLSID}{ProfileGUID}" 形式 (キーボードレイアウトは
-    # "0411:00000411" のような形式なので正規表現に一致しない)。CLSID の TSF 登録情報の
-    # 説明文字列から "Google" を含むものを探す。32bit COM 登録の可能性があるため
-    # WOW6432Node 側も見る。見つからなければ $null を返す (呼び出し側で best-effort に扱う)。
+    # IME の InputMethodTips は "<LCID>:{CLSID}{ProfileGUID}" 形式 (キーボードレイアウトの "0411:00000411" 等は一致しない)。
+    # CLSID の TSF 登録情報の説明文字列に "Google" を含むものを探す。32bit の COM 登録もありうるため WOW6432Node も見る。
     param([string[]]$Tips)
 
     foreach ($tip in $Tips) {
@@ -185,10 +172,8 @@ function Find-GoogleJapaneseInputTip {
 }
 
 function Set-DefaultInputMethod {
-    # Google 日本語入力を既定の入力方式にする。ブラウザ等と違い UserChoice の保護対象外で、
-    # 公式コマンドレット (International モジュール) で正規にスクリプト化できる。
-    # ただし Google 側の内部 CLSID をインストール後に動的に探す必要があり、インストール直後は
-    # セッションに反映されず見つからないことがあるため best-effort (失敗時は警告のみ) とする。
+    # 既定の入力方式は UserChoice の保護対象外で、International モジュールの cmdlet で設定できる。
+    # インストール直後は Google 日本語入力の IME が見つからないことがあるため、失敗は警告に留める。
     if (-not (Get-Command Set-WinDefaultInputMethodOverride -ErrorAction SilentlyContinue)) {
         Write-Warn 'Set-WinDefaultInputMethodOverride が見つかりません (International モジュール無し)。IME の既定化をスキップします。'
         return
@@ -218,7 +203,7 @@ function Set-DefaultInputMethod {
 }
 
 function Main {
-    # GUI アプリは mac (brew.sh の cask) と同様、時間がかかり対話を伴いうるため CI ではスキップする
+    # GUI アプリの導入は時間がかかり対話を伴いうるため、CI ではスキップする
     if ($env:CI) {
         Write-Step 'CI 環境のため GUI アプリ導入・設定をスキップします。'
         return

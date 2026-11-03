@@ -1,8 +1,6 @@
 name: Docker Image Continuous Deployment (CD)
 on:
-  # CI (ci.yaml) は pull_request でのみ実行され、ruleset の required checks が
-  # merge 条件のため「CI green 後にのみビルドする」は branch protection 側で担保される。
-  # workflow_run 連鎖 (CI 完走待ち) は CI の push トリガー撤去に伴い成立しなくなったので使わない。
+  # main へは required checks (ci.yaml) を通った PR しか merge できないので、push 時点で CI は通過済み。
   push:
     branches: [main]
   workflow_dispatch:
@@ -19,8 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # バリアント表の単一ソースは mise.toml の build-<tag> タスク。このマトリクスはそれと一致させること。
-        # GPU は arm64 を持たないため下の exclude で arm64 の組み合わせを除外する。
+        # mise.toml の build-<tag> タスクのバリアント表と一致させる。
+        # GPU は arm64 が無いため exclude で除く。
         variant:
           - tag: ubuntu-min
             base: ubuntu:26.04
@@ -55,7 +53,7 @@ jobs:
             runner: ubuntu-latest
           - os: linux/arm64
             runner: ubuntu-26.04-arm
-        # マトリクス値がオブジェクトのため、exclude では該当エントリを完全一致で指定する。
+        # matrix の値がオブジェクトなので、exclude ではエントリ全体を一致させる。
         exclude:
           - variant:
               tag: ubuntu-gpu
@@ -93,17 +91,16 @@ jobs:
             SKIP_CLI_TOOLS=${{ matrix.variant.skip_cli_tools }}
             SKIP_GUI_TOOLS=true
           provenance: false
-          # GitHub のレート制限回避のため token を BuildKit secret で渡す (任意)。
+          # GitHub API のレート制限を避けるため token を BuildKit secret で渡す (無くてもビルドできる)。
           secrets: |
             github_token=${{ github.token }}
           cache-from: type=gha,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
-      # tag 付与 (merge job) 前に、push 済み digest をネイティブ arch で実行して
-      # 起動確認する。fish -c は config.fish を読むため、シェル設定と mise の PATH が
-      # 壊れているイメージをここで検出できる (ビルド成功のみでの公開を防ぐ)
+      # merge job で tag を付ける前に起動を確かめる。fish -c は config.fish を読むので、
+      # シェル設定や mise の PATH が壊れたイメージを公開前に検出できる。
       - name: Smoke test image
-        # outputs は run へ直接展開せず env 経由で渡す (zizmor template-injection)
+        # outputs は run に直接展開せず env で渡す (zizmor template-injection)
         env:
           BUILD_DIGEST: ${{ steps.build.outputs.digest }}
         run: docker run --rm "${IMAGE}@${BUILD_DIGEST}" fish -c 'mise --version'
@@ -116,8 +113,8 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          # PLATFORM_PAIR は必ず linux- で始まるため、merge 側の
-          # "digests-<tag>-linux-*" で ubuntu / ubuntu-min のような接頭辞衝突を避けられる。
+          # PLATFORM_PAIR は linux- で始まるので、merge 側の "digests-<tag>-linux-*" が
+          # ubuntu と ubuntu-min のような接頭辞の重なりを取り違えない。
           name: digests-${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error

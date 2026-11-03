@@ -1,19 +1,15 @@
 #!/usr/bin/env pwsh
-# Windows 向けセットアップ: Starship + SauceCodePro Nerd Font + PowerShell プロファイル。
-# 通常は chezmoi apply (home/.chezmoiscripts/run_once_before_02_windows.ps1.tmpl) から
-# 自動実行される。Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
-# 手動実行する場合は pwsh を使う:
-#   pwsh -File install/windows/setup_powershell.ps1
-# (このファイルは BOM 無し UTF-8 のため、Windows PowerShell 5.1 で直接実行すると
-#  日本語コメントが ANSI として解釈され構文が壊れる。chezmoi 経由の実行では
-#  .chezmoiscripts テンプレートが先頭に BOM を付与するため 5.1 でも問題ない)
+# Starship・SauceCodePro Nerd Font・PowerShell プロファイル・Windows Terminal の設定。
+# Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
+# 単体で実行するときは pwsh を使う (`pwsh -File install/windows/setup_powershell.ps1`)。
+# このファイルは BOM 無し UTF-8 なので、5.1 で直接実行すると日本語コメントが ANSI として読まれ構文が壊れる
+# (chezmoi 経由ではテンプレートが BOM を付ける)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-# winget/Store でインストールしたコマンドを現在のセッションの PATH に反映する。
-# 置換ではなく追記マージにする (置換するとプロセス固有の PATH 追加分、
-# 例えば CI が GITHUB_PATH で注入したパスが落ちる)。
+# winget でインストールしたコマンドを現在のセッションの PATH に反映する。
+# 置換するとプロセス固有の追加分 (CI が GITHUB_PATH で足したパス等) が落ちるため、追記する。
 function Update-SessionPath {
     $machine = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
     $user    = [System.Environment]::GetEnvironmentVariable('Path', 'User')
@@ -22,13 +18,13 @@ function Update-SessionPath {
     $env:Path = ($current + $added) -join ';'
 }
 
-# home/.chezmoitemplates/external-fonts.toml の nerd-fonts external と同一バージョン (renovate が両方を更新する)
+# home/.chezmoitemplates/external-fonts.toml の nerd-fonts と同じ版にする (renovate が両方を更新する)
 $NerdFontsVersion = 'v3.5.1'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'
 
-# chezmoi 経由の実行では一時ファイルにコピーされ $PSScriptRoot がリポジトリ外を指すため、
-# chezmoi がスクリプト実行時に渡す CHEZMOI_SOURCE_DIR (= <repo>/home) を優先して使う。
+# chezmoi 経由では一時ファイルから実行され $PSScriptRoot がリポジトリ外を指すため、
+# chezmoi が渡す CHEZMOI_SOURCE_DIR (= <repo>/home) を優先する。
 $RepoRoot = if ($env:CHEZMOI_SOURCE_DIR) {
     (Resolve-Path (Join-Path $env:CHEZMOI_SOURCE_DIR '..')).Path
 } else {
@@ -117,9 +113,9 @@ $ProfileBlocks = [ordered]@{
         '    -not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected -and'
         '    -not ($dotfilesShellArgs -match "^-NonI") -and'
         '    (-not $dotfilesBatch -or $dotfilesShellArgs -match "^-NoE")'
-        # .chezmoidata.toml の agent_env の Windows 版。PATH に false / cat が無いため editor と pager を PowerShell で代替し、
-        # Windows PowerShell 5.1 は空の環境変数を保持できないため pager は byte stream の透過にする。
-        # Git for Windows は起動時に同梱の usr\bin を PATH に足し、git / gh は pager の cat を「pager なし」として扱うため GIT_* と GH_PAGER は共通値
+        # .chezmoidata.toml の agent_env の Windows 版。PATH に false / cat が無いため editor と pager は PowerShell で代替し、
+        # 5.1 は空の環境変数を保持できないため pager は入力をそのまま出力するコマンドにする。
+        # GIT_* と GH_PAGER は POSIX と同じ値でよい (Git for Windows は同梱の usr\bin を PATH に足し、git / gh は pager の cat を「pager なし」として扱う)
         '$dotfilesNoEditor = "powershell.exe -NoProfile -NonInteractive -Command exit 1"'
         '$dotfilesPassthroughPager = ''powershell.exe -NoProfile -NonInteractive -Command "[Console]::OpenStandardInput().CopyTo([Console]::OpenStandardOutput())"'''
         '$dotfilesAgentEnv = [ordered]@{'
@@ -146,9 +142,8 @@ $ProfileBlocks = [ordered]@{
         '    Invoke-Expression (&starship init powershell)'
         '}'
     )
-    # PSReadLine トークン色の Dracula テーマ (https://github.com/dracula/powershell の
-    # theme/dracula-prompt-configuration.ps1 から PSReadLine 部分のみ取り込む。
-    # posh-git ベースのプロンプト設定部分はプロンプトを starship が描画するため対象外)
+    # PSReadLine の Dracula 配色 (https://github.com/dracula/powershell の theme/dracula-prompt-configuration.ps1 の
+    # PSReadLine 部分。プロンプトは starship が描くため posh-git の部分は取り込まない)
     dracula = @(
         'if ($dotfilesHumanInteractive -and (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue)) {'
         '    Set-PSReadLineOption -Colors @{'
@@ -166,7 +161,6 @@ $ProfileBlocks = [ordered]@{
 }
 
 function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]$Lines) {
-    # マーカーで囲んだ管理ブロックをプロファイルへ冪等に書き込む
     $begin = "# >>> chezmoi $Name (managed) >>>"
     $end   = "# <<< chezmoi $Name (managed) <<<"
     $block = (@($begin) + $Lines + @($end)) -join "`n"
@@ -179,23 +173,20 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]
 
     $pattern = [regex]::Escape($begin) + '[\s\S]*?' + [regex]::Escape($end)
     if ($current -match $pattern) {
-        # .NET regex の置換文字列で特別扱いされるのは $ のみ。$$ へエスケープして literal 置換にする
-        # (\ は置換文字列では特別な意味を持たない)
+        # .NET regex の置換文字列で特別な意味を持つのは $ だけなので、$$ へエスケープして literal に置換する
         $updated = [regex]::Replace($current, $pattern, $block.Replace('$', '$$'))
     }
     else {
         $sep = if ($current.TrimEnd().Length -gt 0) { "`n`n" } else { '' }
         $updated = $current.TrimEnd() + $sep + $block + "`n"
     }
-    # -Encoding utf8 は Windows PowerShell 5.1 だと BOM 付きで書き出されるため、
-    # pwsh/5.1 のどちらでも BOM 無し UTF-8 になるよう .NET API で明示的に書く。
+    # 5.1 の -Encoding utf8 は BOM を付けるため、.NET API で BOM 無し UTF-8 を書く。
     [System.IO.File]::WriteAllText($ProfilePath, $updated, [System.Text.UTF8Encoding]::new($false))
     Write-Step "Configured PowerShell profile -> $ProfilePath"
 }
 
 function Set-PowerShellProfile {
-    # $PROFILE は実行ホスト依存 (5.1 と pwsh でパスが異なる) のため、ユーザーが
-    # どちらのシェルを使っても設定が有効になるよう両方のプロファイルに書く。
+    # $PROFILE は 5.1 と pwsh でパスが異なるため、どちらを使っても効くよう両方に書く。
     $documents = [Environment]::GetFolderPath('MyDocuments')
     $profilePaths = @(
         (Join-Path $documents 'WindowsPowerShell\Microsoft.PowerShell_profile.ps1') # Windows PowerShell 5.1
@@ -209,11 +200,8 @@ function Set-PowerShellProfile {
 }
 
 function Set-WindowsTerminalDraculaFragment {
-    # Dracula カラースキームを Windows Terminal の JSON Fragment として配置する
-    # (https://github.com/dracula/windows-terminal の dracula.json の静的コピー。
-    # 公式の Add-TerminalProfileDracula.ps1 は実行時ダウンロード方式のため使わない)。
-    # fragment がサポートするのは schemes の追加と GUID 指定のプロファイル更新のみで、
-    # profiles.defaults は対象外のため、既定スキームの適用は Set-WindowsTerminalDefaults が行う
+    # https://github.com/dracula/windows-terminal の dracula.json の静的コピー (公式スクリプトは実行時にダウンロードするため使わない)。
+    # fragment は profiles.defaults を変更できないため、既定の配色は Set-WindowsTerminalDefaults が設定する
     $fragmentPath = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\Fragments\chezmoi\dracula.json'
     $fragmentJson = @'
 {
@@ -267,7 +255,7 @@ function Set-WindowsTerminalDefaults {
         $clean = $clean -replace ',(\s*[}\]])', '$1'
         $cfg   = $clean | ConvertFrom-Json
 
-        # 設定済みなら書き換えない (再書き込みは下記のとおりコメントを失うため)
+        # 書き換えると JSONC のコメントが失われるため、設定済みなら書き換えない
         $face = $null
         $scheme = $null
         if ($cfg.profiles.PSObject.Properties['defaults']) {
@@ -295,8 +283,7 @@ function Set-WindowsTerminalDefaults {
         # colorScheme 本体 (Dracula) は Set-WindowsTerminalDraculaFragment が fragment として供給する
         $cfg.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $WindowsTerminalColorScheme -Force
 
-        # -Encoding utf8 は Windows PowerShell 5.1 だと BOM 付きで書き出され、
-        # BOM 付き JSON を読めないパーサーがあるため .NET API で BOM 無し UTF-8 にする。
+        # 5.1 の -Encoding utf8 は BOM を付け、BOM 付き JSON を読めないパーサーがあるため .NET API で書く。
         $json = $cfg | ConvertTo-Json -Depth 32
         [System.IO.File]::WriteAllText($path, $json, [System.Text.UTF8Encoding]::new($false))
         Write-Step "Set Windows Terminal defaults -> font: $WindowsTerminalFont, colorScheme: $WindowsTerminalColorScheme"

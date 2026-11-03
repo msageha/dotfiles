@@ -1,6 +1,6 @@
 ---
 name: test
-description: "Detects the project's test runner, runs the suite or a matching subset, and fixes failures at their root cause until the tests pass. Use when the user asks to make tests pass or fix them (「通して」「直して」「green にして」), or when running tests to verify your own change. A request only to run tests and report (「テスト回して」「結果見せて」) goes to the test-runner agent where one is available, since it keeps the test output out of the caller's context; without one, this skill runs the tests and reports without editing files."
+description: "Detects the project's test runner, runs the suite or a subset, and fixes failures at their root cause until they pass. Use when the user asks to make tests pass or fix them (「通して」「直して」「green にして」), or to verify your own change. A request only to run tests and report (「テスト回して」「結果見せて」) goes to the test-runner agent where available, which keeps the output out of the caller's context; without it, this skill runs the tests and reports without editing files."
 argument-hint: "[test-pattern-or-file]"
 ---
 

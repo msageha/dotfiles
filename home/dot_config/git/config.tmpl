@@ -1,6 +1,5 @@
-{{- /* delta は mise のモダン CLI 群 (config.toml.tmpl)、git-secrets は
-     run_once_after_91_common.sh.tmpl で導入され、Windows はどちらも展開しない。
-     存在しない環境で core.pager / init.templatedir が壊れないよう導入側と同じ条件で gate する */ -}}
+{{- /* delta (mise config) と git-secrets (run_once_after_91_common.sh.tmpl) が入らない環境で
+     core.pager / init.templatedir が壊れないよう、導入側と同じ条件で設定する */ -}}
 {{- $hasCliTools := and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) -}}
 [ghq]
     root = ~/Works/src
@@ -43,7 +42,6 @@
     ff = only
 
 [fetch]
-    # リモートで削除されたブランチの追跡 ref を fetch 時に掃除する
     prune = true
 
 [submodule]
@@ -53,8 +51,7 @@
 [color]
     ui = auto
 
-# Dracula theme for Git (https://github.com/dracula/git の config/gitconfig をマージ。
-# upstream の配布形式が「内容を自分の gitconfig へコピー」のため include ではなく直書き)
+# Dracula テーマ (https://github.com/dracula/git)。upstream が gitconfig へのコピーを前提に配布しているため直書きする
 [color "branch"]
     current = cyan bold reverse
     local = white

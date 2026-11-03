@@ -1,30 +1,25 @@
 name: docker
 
-# ci.yaml から reusable workflow として呼び出される。
-# Dockerfile の経路は bats テスト (ubuntu/macos runner) でも chezmoi.yaml の native runner apply でも
-# 検証されず、docker-image-cd (main push) まで無検証だったため、PR 時点でビルドを通して検証する。
-# - alpine: Dockerfile.alpine (apk.sh + chezmoi apply の実行)
-# - ubuntu-min: Dockerfile.debian の userdel ubuntu の経路 / debian-min: 素の Debian 経路
-#   (locale 生成・useradd 等は両方で通る)
-# cache scope を docker-image-cd の <tag>-linux-amd64 と揃え、main のビルドキャッシュを
-# PR から再利用して所要時間を抑える。
+# ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
+# Dockerfile は他の CI では検証されないので、PR の時点でビルドする。ubuntu-min は既存の ubuntu
+# ユーザーを消す経路、debian-min は素の Debian の経路、alpine は Dockerfile.alpine を通す。
 on:
   workflow_call:
     inputs:
       fail-fast:
-        description: "失敗時に呼び出し元の run 全体をキャンセルして他の並列チェックを止める"
+        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
         type: boolean
         required: false
         default: false
 
 permissions:
   contents: read
-  # fail-fast step (gh run cancel) に必要。呼び出し元でも同じ権限を付与すること
+  # fail-fast の run キャンセルに要る。ci.yaml の job にも同じ権限を付ける。
   actions: write
 
 jobs:
   build:
-    # check 名に base image の tag を含めない (Renovate の bump で check 名が変わらないようにする)
+    # check 名に base image の tag を含めない (Renovate の更新で check 名が変わらないように)
     name: build (${{ matrix.variant.tag }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -61,12 +56,13 @@ jobs:
             SKIP_CLI_TOOLS=true
             SKIP_GUI_TOOLS=true
           provenance: false
-          # GitHub のレート制限回避のため token を BuildKit secret で渡す (任意)。
+          # GitHub API のレート制限を避けるため token を BuildKit secret で渡す (無くてもビルドできる)。
           secrets: |
             github_token=${{ github.token }}
+          # scope を docker-image-cd の <tag>-linux-amd64 と揃え、main のビルドキャッシュを再利用する
           cache-from: type=gha,scope=${{ matrix.variant.tag }}-linux-amd64
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.tag }}-linux-amd64
-      # docker-image-cd の smoke test と同じ条件で起動確認する
+      # docker-image-cd の smoke test と同じ確認
       - name: Smoke test image
         run: docker run --rm dotfiles:${{ matrix.variant.tag }}-ci fish -c 'mise --version'
       - name: Cancel the entire run on failure

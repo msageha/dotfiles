@@ -16,10 +16,8 @@ load ../test_helper
         "${HOME}/.config/git/ignore"
         "${HOME}/.config/git/config.github"
     )
-    # .config/git/config.technoface.gitlab / .config/git/config.sakanaai.github は
-    # age 暗号化 (encrypted_*.age) のため、鍵 (~/.config/chezmoi/key.txt) が無い環境
-    # (CI・鍵未配置マシン) では .chezmoiignore により適用されない。よって
-    # 「常に存在する」前提の本テストには含めない。
+    # age 暗号化した git config (encrypted_*.age) は、鍵 (~/.config/chezmoi/key.txt) が無い環境 (CI 等) では
+    # .chezmoiignore により適用されないため含めない
     for file in "${files_exists[@]}"; do
         echo "Checking ${file}"
         [ -f "${file}" ]

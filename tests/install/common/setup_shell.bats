@@ -18,7 +18,7 @@ function setup() {
     grep -Fq 'HISTFILE="$HOME/.local/state/zsh_history"' "${HOME}/.zshrc"
     grep -Fxq 'SAVEHIST=10000' "${HOME}/.zshrc"
     grep -Fxq 'HISTSIZE=10000' "${HOME}/.zshrc"
-    # 二重実行の原因だった無条件 source が含まれないこと
+    # login shell で初期化を二重実行させる無条件 source が含まれないこと
     run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
     [ "$status" -ne 0 ]
 }

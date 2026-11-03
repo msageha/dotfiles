@@ -3,23 +3,18 @@ ARG BASE_IMAGE=alpine:3.24
 FROM ${BASE_IMAGE}
 
 ENV DOCKER_MACHINE_NAME="msageha-docker"
-# DL3064 は変数名に "username" を含むだけで機微情報とみなすため、
-# コンテナのログインユーザー名を渡すこの ARG では抑制する
+# DL3064 は変数名の "username" だけで機微情報とみなすため抑制する (値はログインユーザー名)
 # hadolint ignore=DL3064
 ARG USERNAME=mzk
 ENV USER=${USERNAME}
 ENV TZ=Asia/Tokyo
 ENV HOME=/home/${USERNAME}
-# chezmoi のツール導入レベルを制御するビルド引数。
-# SKIP_CLI_TOOLS=true で最小構成
+# chezmoi data の skip_cli_tools / skip_gui_tools に渡す。true で最小構成
 ARG SKIP_CLI_TOOLS=true
 ARG SKIP_GUI_TOOLS=true
 
-# busybox ash で pipefail を有効化。
-# ここでは chezmoi とそのスクリプト実行に必要な最小限だけ導入する。
-# CLI ツール群・shell (fish/zsh)・git 等は debian と同様 chezmoi apply 時に
-# run_once_before_02_alpine 経由で install/alpine/apk.sh が導入する。
-# bash: chezmoi スクリプトの #!/bin/bash 用 / shadow: groupadd・useradd・chpasswd 用。
+# ここでは chezmoi apply に要る最小限だけを入れる。CLI ツール・shell・git 等は apply 中に
+# install/alpine/apk.sh が入れる。bash は chezmoi スクリプトの #!/bin/bash 用。
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 RUN \
   apk add --no-cache \
@@ -28,10 +23,8 @@ RUN \
   curl \
   sudo \
   tzdata && \
-  # tzdata は残す: musl は ENV TZ=Asia/Tokyo を解決する際 /usr/share/zoneinfo を参照する。
-  # 消すと TZ がフォールバックして UTC になるため (/etc/localtime のコピーだけでは不足)。
-  # shadow (useradd/groupadd/chpasswd) はビルド時のみ必要。virtual package にまとめ、
-  # ユーザー作成後に削除してランタイムイメージから外す。
+  # tzdata は消さない。musl は ENV TZ を /usr/share/zoneinfo で解決し、無いと UTC になる
+  # (/etc/localtime のコピーだけでは足りない)。shadow (groupadd / useradd / chpasswd) はユーザー作成後に消す。
   apk add --no-cache --virtual .build-deps shadow && \
   cp "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
   echo "${TZ}" > /etc/timezone && \
@@ -41,9 +34,8 @@ RUN \
   echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
   apk del .build-deps
 
-# musl libc は glibc 互換の locale-gen を持たず ja_JP.UTF-8 ロケールは生成できない。
-# ただし musl は文字コードを UTF-8 として扱うため、LANG/LC_ALL を設定すれば UTF-8 の
-# 入出力は機能する (メッセージ・照合順序の日本語ローカライズは glibc 環境ほどではない)。
+# musl には locale-gen が無く ja_JP.UTF-8 は生成できないが、musl は常に UTF-8 で扱うので
+# LANG / LC_ALL を設定すれば UTF-8 の入出力は動く。
 ENV LANG=ja_JP.UTF-8
 ENV LANGUAGE=ja_JP:ja
 ENV LC_ALL=ja_JP.UTF-8
@@ -54,12 +46,11 @@ COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
 
 USER ${USERNAME}
 
-# secret は BuildKit 既定で root 所有 0400 のため、非 root ユーザーが読めるよう mode=0444 を指定する
-# (GitHub のレート制限回避用トークン。未指定だと cat が権限拒否され匿名枠で 403 になる)。
-# 汎用の GITHUB_TOKEN ではなく mise 専用変数で渡し、GITHUB_TOKEN を参照する第三者の
-# インストーラ (curl | sh) や gh が gh のフルスコープ token を使わないようにする
-# (環境変数自体は子プロセスへ継承されるため、隔離ではない)。
-# DL3004: USER 切替後の掃除 (strip 用 binutils の出し入れ) にだけ sudo を使う
+# github_token は GitHub API のレート制限を避けるための token。BuildKit の secret は既定で root 所有 0400 で、
+# 非 root ユーザーが読めないと匿名枠で 403 になるので mode=0444 にする。
+# GITHUB_TOKEN ではなく MISE_GITHUB_TOKEN で渡し、GITHUB_TOKEN を読む第三者のインストーラ (curl | sh) や gh に
+# 使わせない (子プロセスへは継承されるので隔離ではない)。
+# DL3004: sudo は USER 切替後の strip 用 binutils の出し入れにだけ使う
 # hadolint ignore=DL3004
 RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   if [ -f /run/secrets/github_token ]; then MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)" && export MISE_GITHUB_TOKEN; fi && \
@@ -73,13 +64,11 @@ RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   > "$HOME/.config/chezmoi/chezmoi.toml" && \
   chezmoi apply --source="$HOME/dotfiles" && \
   rm -rf "$HOME/dotfiles" "$HOME/.cache" && \
-  # java が導入されるビルド変種では src.zip を落とす
+  # java の src.zip はランタイムに要らない
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
-  # chezmoi は provisioning 専用でランタイム不要。~42MB あるため apply 後に削除する
-  # (再適用が必要なら curl get.chezmoi.io で都度入れ直す)。
+  # chezmoi は provisioning にしか使わない (再適用するなら get.chezmoi.io で入れ直す)
   rm -f "$HOME/.local/bin/chezmoi" && \
-  # mise.run が入れるバイナリは strip されておらず ~83MB ある。binutils を一時導入して
-  # strip し (~70MB に縮む)、binutils はランタイムに残さず削除する。
+  # mise.run が入れる mise は strip されていない。binutils は strip のためだけに入れて消す
   sudo apk add --no-cache --virtual .strip-deps binutils && \
   strip "$HOME/.local/bin/mise" && \
   sudo apk del .strip-deps

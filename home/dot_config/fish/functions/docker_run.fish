@@ -1,4 +1,4 @@
-function docker_run -d 'run and exec docker container'
+function docker_run -d 'Run a shell (or command) in a container with the current directory mounted'
     set -l image $argv[1]
     set -l cmd bash
 

@@ -1,3 +1,3 @@
-function disablesleep --description "Disable sleep (disablesleep 1)"
+function disablesleep --description "Disable system sleep"
     sudo pmset -a disablesleep 1
 end

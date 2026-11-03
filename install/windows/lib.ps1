@@ -1,11 +1,8 @@
 #!/usr/bin/env pwsh
 # install/windows/*.ps1 が共有する helper (install/lib.sh の Windows 版)。
-# chezmoi の run_once_before_02_windows.ps1.tmpl が先頭で 1 回 include し、
-# スクリプトを単体で実行するときは各スクリプト冒頭のガードがこのファイルを dot-source する。
-# chezmoi の config (.chezmoi.toml.tmpl の [interpreters.ps1]) が実行ホストを Windows 標準搭載の
-# Windows PowerShell 5.1 に固定しているため、5.1 互換の構文のみを使うこと (pwsh 専用の演算子・cmdlet は使わない)。
-# 5.1 はネイティブコマンド (winget / claude 等の exe) の失敗を throw しないため、
-# 呼び出し後は $LASTEXITCODE を明示的に確認する。
+# chezmoi の config (.chezmoi.toml.tmpl の [interpreters.ps1]) が実行ホストを Windows PowerShell 5.1 に
+# 固定しているため、5.1 互換の構文のみを使うこと (pwsh 専用の演算子・cmdlet は使わない)。
+# 5.1 はネイティブコマンド (winget / claude 等) の失敗を throw しないため、呼び出し後は $LASTEXITCODE を確認する。
 
 # Windows PowerShell 5.1 は Invoke-WebRequest / Expand-Archive のプログレスバー描画で
 # 処理が極端に遅くなるため無効化する

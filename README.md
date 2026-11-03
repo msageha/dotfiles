@@ -1,351 +1,248 @@
 # dotfiles
 
-macOS / Ubuntu / Debian / Windows 向けの dotfiles リポジトリ。[chezmoi](https://www.chezmoi.io/) で管理する。
-機微な設定（一部の SSH ホスト定義・業務用 Git 設定・IME 辞書など）は
-[age](https://age-encryption.org/) で暗号化してリポジトリに載せているため、公開しても安全な構成になっている。
-SSH 秘密鍵はリポジトリに置かず、1Password から apply 時に取得する（後述「SSH 秘密鍵」）。
+macOS / Ubuntu / Debian / Windows の開発環境を [chezmoi](https://www.chezmoi.io/) で再現する dotfiles。
 
-`.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
+- シェル: bash / zsh / fish / PowerShell の設定と Starship のプロンプト
+- ターミナル: Ghostty・tmux・Windows Terminal の設定 (配色は Dracula で統一)
+- ツール: Homebrew / apt / winget / mise による CLI・GUI アプリの導入と、git・ripgrep 等の設定
+- コーディングエージェント: Claude Code / Codex / Antigravity / Grok の設定・skill・サブエージェント
+- OS: macOS・Ubuntu・Windows のシステム設定
+
+公開リポジトリなので、機微な設定 (非公開の SSH ホスト定義・業務用 Git 設定・IME 辞書など) は [age](https://age-encryption.org/) で暗号化して置き、SSH 秘密鍵と API キーは 1Password から取得する。
 
 ## Setup
 
-### 事前準備 (Prerequisites)
+### 1. 事前準備
 
-セットアップには `curl` と `git` が必要。`curl` は chezmoi インストーラの取得に必須で、`git` はリポジトリの clone と `autoCommit` / `autoPush` の運用に使用する。
+`curl` と `git` が要る。
 
-#### macOS
+- macOS: `xcode-select --install`
+- Ubuntu / Debian: `sudo apt update && sudo apt install -y curl git`
+- Windows: `winget install --id Git.Git --exact --source winget` を実行し、PowerShell を開き直す。
+  winget が無い環境 (Windows Server・Windows Sandbox 等) では、[Git for Windows](https://gitforwindows.org/) を使う。
+  スクリプトは標準の Windows PowerShell 5.1 で動くので、PowerShell 7 は要らない。
 
-`curl` は標準搭載されている。`git` は Xcode Command Line Tools に含まれるため、未インストールの場合のみ以下を実行する（後続の Setup でも `xcode-select --install` は自動実行されるが、事前に入れておくと確実）。
+### 2. 適用
 
-```bash
-xcode-select --install
-```
+適用すると、OS の設定も変わる。
 
-#### Ubuntu / Debian
+- macOS: Dock のアプリを全て外して決まったアプリだけを並べ直すほか、Finder・キーボード等の設定を `defaults` で書き換える。
+- Windows (`skip_windows_extras=false`): OneDrive をアンインストールし、システムドライブで BitLocker が有効なら、全ドライブの BitLocker を無効にする (復号が始まる)。
 
-最小構成では `curl` / `git` ともに未インストールのことがあるため、先に導入する。
-
-```bash
-sudo apt update
-sudo apt install -y curl git
-```
-
-#### Windows
-
-`git` が必要。Windows 向けスクリプトは既定搭載の Windows PowerShell 5.1 で動作するため、pwsh (PowerShell 7) の別途インストールは不要。`git` が無ければ winget で導入する。
-
-```powershell
-winget install --id Git.Git --exact --source winget
-```
-
-導入後は新しい PowerShell を開き直してから Setup に進む。
-
-winget 自体は前提条件ではない。winget が無い環境 (Windows Server 2022 / Windows Sandbox など Microsoft Store 非搭載の環境) では、セットアップスクリプトが GitHub リリースの App Installer パッケージ (依存 + ライセンス XML 込み) から winget を自動導入する (`install/windows/winget.ps1`)。ただし Windows Server 2019 以前は winget 非対応。その場合や、上記の `git` 導入時点で winget が無い場合は、[Git for Windows](https://gitforwindows.org/) のインストーラーで `git` を導入する。
-
-### 暗号化された設定の復号鍵 (age)
-
-一部の設定ファイルは age で暗号化され、`encrypted_*.age` としてリポジトリに含まれている。
-
-| 暗号化ファイル                                               | 展開先                                   | 内容                                                             |
-| ------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------- |
-| `home/private_dot_ssh/encrypted_config.local.age`            | `~/.ssh/config.local`                    | 非公開の SSH ホスト定義（`~/.ssh/config` から `Include` される） |
-| `home/dot_config/git/encrypted_config.technoface.gitlab.age` | `~/.config/git/config.technoface.gitlab` | 業務用 Git 設定                                                  |
-| `home/dot_config/git/encrypted_config.sakanaai.github.age`   | `~/.config/git/config.sakanaai.github`   | 業務用 Git 設定                                                  |
-| `settings/common/encrypted_google.ime.txt.age`               | （手動インポート用）                     | Google 日本語入力のユーザー辞書                                  |
-| `settings/macos/btt/encrypted_licence.txt.age`               | （実行時に復号）                         | BetterTouchTool ライセンス                                       |
-
-復号には age 秘密鍵が必要。**公開鍵 (recipient) は `home/.chezmoi.toml.tmpl` に記載してリポジトリに載せているが、秘密鍵はリポジトリに含めない。**
-
-新しいマシンでこれらを展開するには、`chezmoi apply` の起動前に秘密鍵を配置する。
-ただし初回 macOS セットアップでは 1Password / `op` / `fnox` がまだ無いことがあるため、初回 apply は鍵なしで実行し、その後にこれらのツールをインストールする必要がある。
-`.chezmoiignore` が鍵の有無を判定し、chezmoi 管理対象の復号できない暗号化ファイルをスキップする。
-秘密鍵が無い環境（コンテナ・鍵未配置の初回など）でも `chezmoi apply` は失敗しない。該当設定が展開されないだけで、他の設定は通常通り展開される。
-
-1Password 導入・認証後、鍵を配置するマシン (新マシン) 側で実行:
-
-```bash
-mkdir -p ~/.config/chezmoi
-op read --out-file ~/.config/chezmoi/key.txt --file-mode 0600 'op://Private/age-identity/password'
-```
-
-その後、`fnox` が API key を環境変数として注入した状態で `chezmoi apply --init` を再実行する。
-`--init` は `home/.chezmoi.toml.tmpl` から `~/.config/chezmoi/chezmoi.toml` を再生成し、`fnox` が注入した API key を `data.apiKeys` に反映するために必要。
-
-```bash
-fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --init
-```
-
-なお、一度上記の手順を実行した後は、secrets に変更がない限り、通常の `chezmoi apply` を実行するだけで良い。
-SSH 鍵は上記の apply では配置されず、後述「SSH 秘密鍵」の手順で別に配置する。
-
-#### API キー
-
-API キーは対話入力せず、上記の `fnox exec` が `fnox.toml` の secrets を復号して環境変数に注入し、`home/.chezmoi.toml.tmpl` がそれを `data.apiKeys` に反映する。未注入の環境変数は空文字で展開されるため、鍵未配置の初回 bootstrap では空のまま進み、1Password 認証後に上記の手順を再実行することで実値に更新される。
-`data.apiKeys` が生成されるのは、コーディングエージェント設定を管理する環境（macOS / Linux で `skip_cli_tools=false`、または Windows で `skip_windows_extras=false`）のみ。
-
-| 環境変数               | データキー              | 説明                                                                                                                                                                                                                                                                                                                                  |
-| ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`    | `apiKeys.anthropic`     | [Claude Console](https://platform.claude.com/settings/keys) で発行。Claude Code を API 従量課金で使う場合に設定する。未設定なら `~/.claude/settings.json` にキー自体が出力されず `/login` の OAuth (サブスクリプション) が使われる                                                                                                    |
-| `OPENAI_API_KEY`       | `apiKeys.openai`        | [OpenAI Platform](https://platform.openai.com/api-keys) で発行。Codex CLI を API 従量課金で使う場合に設定する。設定すると `~/.codex/auth.json` が API key ログイン状態として chezmoi 管理になる (`codex login` で ChatGPT 認証に切り替えても次回 apply で戻る)。未設定なら auth.json は管理外で、既存のログイン状態がそのまま使われる |
-| `GEMINI_API_KEY`       | `apiKeys.gemini`        | [Google AI Studio](https://aistudio.google.com/apikey) で発行。Antigravity CLI / nano-banana MCP 等で使用                                                                                                                                                                                                                             |
-| `GOOGLE_MAP_API_KEY`   | `apiKeys.googleMaps`    | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で発行。maps-grounding-lite MCP で使用                                                                                                                                                                                                                      |
-| `FUGU_API_KEY`         | `apiKeys.fugu`          | Codex の Sakana プロバイダで使用                                                                                                                                                                                                                                                                                                      |
-| `FUGU_PAYG_API_KEY`    | `apiKeys.fuguCyber`     | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ) で使用                                                                                                                                                                                                                                                                    |
-| `OPENROUTER_API_KEY`   | `apiKeys.openRouter`    | Codex / Claude Code の OpenRouter プロバイダで使用                                                                                                                                                                                                                                                                                    |
-| `SONATYPE_GUIDE_TOKEN` | `apiKeys.sonatypeGuide` | Claude Code の sonatype-guide plugin (Sonatype Guide MCP) で使用                                                                                                                                                                                                                                                                      |
-| `TAKUMI_GUARD_API_KEY` | `apiKeys.takumiGuard`   | [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) の認証 token (`tg_anon_` / `tg_org_`)。npm / pip / uv / Go の registry 設定 (下記) に埋め込む。未設定なら匿名モードで動く                                                                                                                                          |
-
-API キーは `fnox.toml` では age 暗号文として管理され、ローカルの `~/.config/chezmoi/chezmoi.toml` に `data.apiKeys` として平文展開される（リポジトリには入らない）。
-
-#### パッケージレジストリ (Takumi Guard)
-
-macOS / Linux では npm / pip / uv / Go のパッケージ取得先を [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) に向ける。`apiKeys.takumiGuard` が空なら匿名モード、設定済みなら token 付きで展開する。Windows は対象外。設定ファイルは `skip_cli_tools=false` の環境にだけ展開し、`GOPROXY` は `skip_cli_tools` に関係なく設定する (匿名モードで動く)。
-
-| 対象                      | 設定ファイル                                                                                                                                                                                           |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| npm / pnpm / yarn v1      | `~/.npmrc` (`modify_private_dot_npmrc`。registry と `npm.flatt.tech` の `_authToken` の行だけを差し替え、`strict-ssl` 等の既存行は温存する)                                                            |
-| pip                       | `~/.config/pip/pip.conf`                                                                                                                                                                               |
-| uv                        | `~/.config/uv/uv.toml`                                                                                                                                                                                 |
-| Go (`GOPROXY` + 認証情報) | `GOPROXY` は `env.sh` / `config.fish`、token は `~/.netrc` (`modify_private_dot_netrc`。先頭に認証行を 1 行置き、他の行は温存する。token がある環境のみ管理し、token を空に戻しても既存の行は消えない) |
-
-`GOPROXY` は Takumi Guard の指示どおり `,direct` を付けないため、private module は `GOPRIVATE` で除外しないと取得できない。
-
-#### SSH 秘密鍵
-
-`~/.ssh/config` / `config.local` が参照する SSH 鍵はリポジトリに置かず、1Password の SSH Key item から `chezmoi apply` 時に `onepasswordRead` で取得する。秘密鍵は `home/private_dot_ssh/**/private_<name>.tmpl` が item の `private_key` フィールドを OpenSSH 形式で、公開鍵は `<name>.pub.tmpl` が同じ item の `public_key` フィールドを描く。
-取得する鍵と item 名は `home/.chezmoidata.toml` の `[ssh_keys]` が単一ソースで、各 template はそこから item を参照し、`.chezmoiignore` はそこから除外対象を描く。
-ファイルとして配置するのは、1Password SSH agent が使えない headless Linux や、承認ダイアログを待てないバックグラウンドの ssh / git でも鍵を使うため。
-
-通常の `chezmoi status` / `diff` / `apply` では鍵とそのサブディレクトリが `.chezmoiignore` で除外されるため `op read` は走らず、配置済みの鍵にも触れない。鍵の配置・更新は、data の `apply_ssh_keys` を `--override-data` でその実行だけ true にして `~/.ssh` 配下だけを apply するタスクで行う（リポジトリ直下で実行する。他のディレクトリからは `mise -C ~/.local/share/chezmoi run apply-ssh-keys`）。`apply_ssh_keys` は `~/.config/chezmoi/chezmoi.toml` には書かない。書くとそのマシンでは通常の `status` / `diff` でも `op read` が走る。
-
-```bash
-mise run apply-ssh-keys   # chezmoi apply --override-data '{"apply_ssh_keys": true}' --less-interactive --error-on-conflict ~/.ssh
-```
-
-- 各鍵は事前に 1Password アプリで `[ssh_keys]` の `vault` に SSH Key item として取り込む（New Item → SSH Key → Import a Key File。item 名は `[ssh_keys.items]` の `item`）。1Password は取り込み時に passphrase を外して独自に暗号化するため、配置される秘密鍵ファイルは passphrase 無しになる。
-- age 秘密鍵が無い環境では `.ssh/config` 以外が ignore されるため、鍵の配置には `~/.config/chezmoi/key.txt` も必要（上記手順の順序どおり）。
-- `op` の認証は 1Password アプリ統合なら apply 中にダイアログが出る。手動 signin の環境では事前に `eval $(op signin)` でセッションを環境に入れておく。
-- chezmoi が管理していない既存の鍵ファイルと内容が違うと、`--less-interactive --error-on-conflict` により黙って上書きせず exit 1 で止まる（メッセージは出ない）。`chezmoi status --override-data '{"apply_ssh_keys": true}' ~/.ssh` で対象を確認し（状態コードとパスだけを表示し鍵本文は出ない）、上書きしてよければ `mise run apply-ssh-keys -- --force` で再実行する。
-- item が無い・未サインイン・値が空など取得に失敗すると apply はその鍵で exit 1 で止まる（target path 順で手前の鍵は配置済み。既存の鍵ファイルは消えない）。原因を直して再実行する。
-- 通常の `status` は鍵の欠損や 1Password 側の更新を検知しない。鍵を rotation したら item を更新して `mise run apply-ssh-keys` を再実行する（秘密鍵と公開鍵が同時に更新される）。
-- `apply_ssh_keys` を true にした `chezmoi diff` / `apply --verbose` は秘密鍵を平文で表示するため使わない。
-- Windows には配置しない（`.chezmoiignore` で除外。chezmoi の `private_` 属性が効かず NTFS ACL を制御できないため。必要になったら ACL 設定と併せて有効化する）。
-
-### 実行
-
-公開リポジトリなので HTTPS なら認証不要でどのマシンからでも clone できる。初回セットアップにはこちらを推奨。
+macOS / Linux:
 
 ```bash
 sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
-Windows (Windows PowerShell 5.1) の場合:
+Windows (PowerShell 5.1):
 
 ```powershell
 iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '$HOME\.local\bin'"
 $env:Path = "$HOME\.local\bin;$env:Path"
+[Environment]::SetEnvironmentVariable('Path', "$HOME\.local\bin;" + [Environment]::GetEnvironmentVariable('Path', 'User'), 'User')
 chezmoi init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
-chezmoi が実行するセットアップスクリプトは `-ExecutionPolicy Bypass` 付きで起動されるため、apply 自体は実行ポリシーが既定の `Restricted` のままでも成功する。ただし apply では PowerShell プロファイルが配置され、`Restricted` は `.ps1` の読み込みを一律で禁止するため、以降シェルを起動するたびにプロファイルの読み込みが `PSSecurityException` で失敗する。apply 後に一度だけ以下を実行する。
+適用が終わったら、新しいシェルを開く (導入したツールの PATH が通る)。
+Windows では、さらに一度だけ次を実行する。
+実行ポリシーが既定の `Restricted` のままだと、配置した PowerShell プロファイルを読み込めず、シェルの起動のたびに `PSSecurityException` になる。
+`Get-ExecutionPolicy -List` の `MachinePolicy` / `UserPolicy` に値があるときは GPO で強制されていて、この設定では変えられない。
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 ```
 
-`CurrentUser` スコープなので管理者権限は不要。プロファイルは chezmoi がローカルに生成したファイルで Zone.Identifier が付かないため、署名を要求されない `RemoteSigned` で足りる。`Get-ExecutionPolicy -List` で `MachinePolicy` / `UserPolicy` に値が入っている場合は GPO による強制で、ユーザースコープからは覆せない。`install/windows/*.ps1` を手動で実行する場合も同じ設定が必要になる。
+使い捨てのコンテナなどでは、`init --apply --depth=1` の代わりに `init --one-shot` を使うと、適用後に source・chezmoi の設定・chezmoi 本体を削除する。
+適用した設定と導入したツールは残り、既存のファイルは確認なしに上書きされる。下の質問はされず、既定値で進む。
 
-SSH URL (`git@github.com:msageha/dotfiles.git`) も利用できるが、その場合はそのマシンに GitHub 登録済みの SSH 鍵が既に必要（未設定の初回マシンでは clone に失敗する）。`autoCommit` / `autoPush` で push し返すオーナー環境では、鍵を配置してから remote を SSH に切り替えると push が楽になる。
+### 3. 初回に聞かれる項目
+
+答えは `~/.config/chezmoi/chezmoi.toml` に保存され、`chezmoi init` を再実行しても聞き直さない。変えるときはこのファイルを編集して `chezmoi apply` する。
+
+| データキー            | 対象 OS       | 内容                                                                                                                        |
+| --------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `computer_name`       | macOS         | コンピュータ名                                                                                                              |
+| `skip_cli_tools`      | macOS / Linux | `true` なら CLI ツール (docker・gh・言語ランタイム等) とコーディングエージェント設定を入れない (既定 `true`)                |
+| `skip_gui_tools`      | macOS / Linux | `true` なら GUI アプリ・フォント・アプリ設定・Ubuntu のシステム設定を入れない (既定 `true`。`skip_cli_tools=true` なら固定) |
+| `skip_windows_extras` | Windows       | `true` ならコーディングエージェント・GUI アプリ・システム設定を入れない (既定 `true`)                                       |
+
+既定はどれも最小構成なので、手元の開発マシンでは `false` を選ぶ。
+Windows は `skip_windows_extras=false` でも、mise やシェル補完などの `install/common/` のセットアップは行わない。
+
+### 4. 暗号化された設定と API キーの展開
+
+初回の適用では age 秘密鍵が無いので、暗号化されたファイルは飛ばされる (適用は失敗しない)。
+1Password CLI (`op`) にサインインしてから、鍵を置いて再適用する。
+`op` が無い環境 (Linux や、GUI アプリを入れない macOS) では、`cd ~/.local/share/chezmoi && mise trust && mise install` でリポジトリの開発ツールとして入れ、このディレクトリで実行する。
+
+```bash
+mkdir -p ~/.config/chezmoi
+op read --out-file ~/.config/chezmoi/key.txt --file-mode 0600 'op://Private/age-identity/password'
+chezmoi apply
+```
+
+コーディングエージェント設定を入れる環境 (`skip_cli_tools=false`、Windows は `skip_windows_extras=false`) では、続けて API キーを入れる (Windows ではこのリポジトリが `fnox` を入れないので、別に導入する)。
+`fnox exec` が `fnox.toml` に暗号化して置いた API キーを環境変数に入れ、`--init` がそれを `chezmoi.toml` の `data.apiKeys` に書き込む。
+以降は、secret を変えない限り `chezmoi apply` だけでよい。
+
+```bash
+fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --init
+```
+
+暗号化しているファイル:
+
+| ファイル                                                     | 展開先                                   | 内容                                                        |
+| ------------------------------------------------------------ | ---------------------------------------- | ----------------------------------------------------------- |
+| `home/private_dot_ssh/encrypted_config.local.age`            | `~/.ssh/config.local`                    | 非公開の SSH ホスト定義 (`~/.ssh/config` が `Include` する) |
+| `home/dot_config/git/encrypted_config.technoface.gitlab.age` | `~/.config/git/config.technoface.gitlab` | 業務用 Git 設定 (macOS のみ)                                |
+| `home/dot_config/git/encrypted_config.sakanaai.github.age`   | `~/.config/git/config.sakanaai.github`   | 業務用 Git 設定 (macOS のみ)                                |
+| `settings/common/encrypted_google.ime.txt.age`               | (手動でインポート)                       | Google 日本語入力のユーザー辞書                             |
+| `settings/macos/btt/encrypted_licence.txt.age`               | (適用時に復号)                           | BetterTouchTool のライセンス                                |
+
+#### API キー
+
+平文はリポジトリに入らず、`chezmoi.toml` とキーを使う各設定ファイル (`~/.claude/settings.json`・`~/.codex/auth.json`・`.env`・パッケージレジストリの設定等) に展開される。
+注入されていないキーは空として扱い、その設定は認証なしで展開する。
+ただし `~/.codex/auth.json` と `~/.netrc` はキーが空なら管理から外れるだけで、既存の認証情報は残る。
+
+| 環境変数               | 用途                                                                                                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`    | Claude Code を API 従量課金で使う ([Claude Console](https://platform.claude.com/settings/keys))。空ならサブスクリプションの `/login` を使う                           |
+| `OPENAI_API_KEY`       | Codex を API 従量課金で使う ([OpenAI Platform](https://platform.openai.com/api-keys))。設定すると `~/.codex/auth.json` を管理し、`codex login` で変えても適用時に戻る |
+| `GEMINI_API_KEY`       | Antigravity CLI・nano-banana MCP ([Google AI Studio](https://aistudio.google.com/apikey))                                                                             |
+| `GOOGLE_MAP_API_KEY`   | maps-grounding-lite MCP ([Google Cloud Console](https://console.cloud.google.com/apis/credentials))                                                                   |
+| `FUGU_API_KEY`         | Codex の Sakana プロバイダ                                                                                                                                            |
+| `FUGU_PAYG_API_KEY`    | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ)                                                                                                           |
+| `OPENROUTER_API_KEY`   | Codex / Claude Code の OpenRouter プロバイダ                                                                                                                          |
+| `SONATYPE_GUIDE_TOKEN` | Claude Code の sonatype-guide plugin                                                                                                                                  |
+| `TAKUMI_GUARD_API_KEY` | パッケージレジストリ (下記) の token。空なら匿名で使う                                                                                                                |
+
+#### パッケージレジストリ (Takumi Guard)
+
+macOS / Linux では、npm / pip / uv / Go のパッケージを、悪性パッケージを遮断する [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) 経由で取得する。
+`GOPROXY` はどの環境でも設定し、各ツールの設定ファイルは `skip_cli_tools=false` の環境にだけ置く。
+`GOPROXY` に `,direct` を付けないので、private module は `GOPRIVATE` で除外する。
+
+### 5. SSH 秘密鍵
+
+`~/.ssh` の鍵は 1Password の SSH Key item から取得し、ファイルとして置く。
+1Password の SSH agent が使えない headless Linux や、承認ダイアログを出せないバックグラウンドの ssh / git でも鍵を使うため。
+取得する鍵と item 名は `home/.chezmoidata.toml` の `[ssh_keys]` で定義する。
+
+鍵は通常の `chezmoi apply` / `status` / `diff` の対象外で、次のタスクでだけ配置・更新する (age 秘密鍵も要る)。
+
+```bash
+mise -C ~/.local/share/chezmoi run apply-ssh-keys
+```
+
+- 鍵は先に 1Password アプリで、`[ssh_keys]` の `vault` に SSH Key item として取り込んでおく (item 名は `[ssh_keys.items]` の `item`)。取り込み時に passphrase が外れる。
+- 手で signin する環境では、先に `eval $(op signin)` を実行する。
+- chezmoi が管理していない既存の鍵と内容が違うと、何も表示せずに exit 1 で止まる。`chezmoi status --override-data '{"apply_ssh_keys": true}' ~/.ssh` で対象を確かめ、上書きしてよければ `-- --force` を付けて再実行する。
+- 鍵を rotation したら item を更新して再実行する。通常の `chezmoi status` は 1Password 側の変更を検知しない。
+- `apply_ssh_keys` を `chezmoi.toml` に書かない (通常の操作でも 1Password を呼ぶようになる)。これを付けた `chezmoi diff` / `apply --verbose` は秘密鍵を平文で表示する。
+- Windows には置かない。chezmoi の `private_` 属性が NTFS の ACL に効かず、権限を絞れないため。
+
+### 6. 手動で行う設定
+
+- macOS の外付けキーボード: システム設定で Caps Lock → Control、Option → Command、Command → Option に入れ替える。
+- Google 日本語入力: `mise -C ~/.local/share/chezmoi run decrypt-google-ime` で復号した `settings/common/google.ime.txt` を辞書ツールからインポートする。
+- VS Code: Custom CSS の拡張機能から `settings/common/vscode/styles.css` を読み込む。
+- BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に設定ファイルを開くので、各アプリのダイアログで取り込む。BetterTouchTool のライセンスは初回の適用時にだけ登録するので、age 秘密鍵を後から置いた場合は手で登録する。
+
+変更を push するマシンでは、SSH 鍵を置いた後に remote を SSH に切り替える。
 
 ```bash
 git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfiles.git
 ```
 
-#### 一度きりの適用（痕跡を残さない / one-shot）
-
-コンテナや他人のマシンなど、chezmoi の source (`~/.local/share/chezmoi`) や設定を残したくない環境では `--one-shot` を使う。適用後に source ディレクトリ・設定 (`~/.config/chezmoi`)・インストールした chezmoi バイナリまで自動で削除する（実質 `--apply --depth 1 --force --purge --purge-binary` 相当）。
+## 日常の操作
 
 ```bash
-sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --one-shot https://github.com/msageha/dotfiles.git
+chezmoi update   # リポジトリの変更を pull して適用する
+chezmoi apply    # source (~/.local/share/chezmoi) の変更を適用する
 ```
 
-注意点:
+設定は `home/` の source を編集する。適用先を直接編集しても、次の apply で上書きされる。
+`chezmoi edit` / `chezmoi add` は自動で commit と push まで行う (`autoCommit` / `autoPush`)。
 
-- `--one-shot` は `--force` を含むため、通常は対話的に聞かれる項目（`computer_name` など）が確認されずデフォルト値で進む。値を指定したい場合はこの方式ではなく通常の `init --apply` を使う。
-- 暗号化ファイルを展開したい場合は、one-shot でも事前に age 秘密鍵の配置が必要（未配置なら該当ファイルは自動スキップされる）。
-
-### 初回セットアップ時に要求される項目
-
-`chezmoi init --apply` の実行時に以下が対話的に聞かれる（`~/.config/chezmoi/chezmoi.toml` に保存され、2 回目以降はスキップされる）。設定を変更したい場合は `chezmoi init` を再実行するか、`~/.config/chezmoi/chezmoi.toml` を直接編集する。
-
-#### macOS のみ
-
-| プロンプト      | データキー      | 説明                   |
-| --------------- | --------------- | ---------------------- |
-| `computer_name` | `computer_name` | macOS のコンピュータ名 |
-
-#### macOS / Linux (Ubuntu / Debian) 共通
-
-| プロンプト                        | データキー       | 説明                                                                                                                                                                                                                                                        |
-| --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Skip CLI tool installation ...?` | `skip_cli_tools` | CLI ツール（各種ユーティリティ・chezmoi・docker・gh 等）とコーディングエージェント設定をスキップするかどうか（デフォルト: `true`）                                                                                                                          |
-| `Skip GUI tool installation?`     | `skip_gui_tools` | GUI 系パッケージ（macOS は cask）・フォント・Ubuntu のシステム設定・macOS の GUI アプリ設定のインストールをスキップするかどうか（デフォルト: `true`。macOS のシステム設定は CI 以外で常に適用する）。`skip_cli_tools=true` のときは質問されず `true` になる |
-
-#### Windows のみ
-
-| プロンプト                                              | データキー            | 説明                                                                                                                                                                                                                  |
-| ------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Skip coding agent / GUI apps / system settings setup?` | `skip_windows_extras` | コーディングエージェント CLI・GUI アプリ (Chrome 等)・システム設定 (エクスプローラー/壁紙/タスクバー等) をまとめてスキップするかどうか（デフォルト `true`）。`false` にするとコーディングエージェント設定も展開される |
-
-Windows は最小構成（chezmoi 管理の dotfiles + winget によるアプリ導入 + コーディングエージェント CLI のみ）。`install/common/` 配下のセットアップ（mise によるツール管理・シェル補完・git-secrets など）を include する各 `.chezmoiscripts/*.sh.tmpl` は `ne .chezmoi.os "windows"` でゲートされ、Windows では実行されない。フォント（`.chezmoiexternal.toml` の external として導入）も Windows は対象外で、Windows Terminal 用の Nerd Font のみ `install/windows/setup_powershell.ps1` で別途導入される。
-
-### Docker
-
-開発環境イメージをローカルでビルドできる（ベース OS / ツール構成別の 7 バリアント）。バリアント表（タグ・ベースイメージ・`skip_cli_tools`・Dockerfile）は `mise.toml` の `build-<tag>` タスクが単一ソースで、各タスクはその値を内部レシピ `docker-build` に渡す。イメージ名は既定で `msageha/dotfiles:<tag>`（`DOCKER_REPOSITORY` で上書き可）。
+暗号化したファイルは、age 秘密鍵がある環境で編集する。
 
 ```bash
-mise run build-ubuntu                  # 標準構成 (Ubuntu + CLI)
+chezmoi edit ~/.ssh/config.local   # 復号して編集し、保存時に再暗号化する
+cd ~/.local/share/chezmoi
+mise run decrypt-google-ime        # settings/ の IME 辞書を平文に戻す (平文は gitignore 済み)
+mise run encrypt-google-ime        # 編集した平文を再暗号化する
+```
+
+## Docker
+
+この dotfiles を適用したイメージを、リポジトリのディレクトリでビルドできる。Docker と、GitHub にログイン済みの `gh` (API のレート制限を避けるため token を渡す) が要る。
+イメージ名は既定で `msageha/dotfiles:<tag>` (`DOCKER_REPOSITORY` で変更できる)。
+
+```bash
+mise run build-ubuntu
 docker container run -it msageha/dotfiles:ubuntu
 ```
 
-| ターゲット                       | タグ              | 構成                             |
-| -------------------------------- | ----------------- | -------------------------------- |
-| `mise run build-ubuntu-min`      | `ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く) |
-| `mise run build-ubuntu`          | `ubuntu`          | Ubuntu / CLI                     |
-| `mise run build-debian-min`      | `debian-min`      | Debian / 最小                    |
-| `mise run build-debian`          | `debian`          | Debian / CLI                     |
-| `mise run build-debian-slim-min` | `debian-slim-min` | Debian slim / 最小               |
-| `mise run build-alpine`          | `alpine`          | Alpine / 最小                    |
-| `mise run build-ubuntu-gpu`      | `ubuntu-gpu`      | Ubuntu + CUDA + CLI (amd64 のみ) |
+| タスク                           | 構成                                        |
+| -------------------------------- | ------------------------------------------- |
+| `mise run build-ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く)            |
+| `mise run build-ubuntu`          | Ubuntu / CLI ツール入り                     |
+| `mise run build-debian-min`      | Debian / 最小                               |
+| `mise run build-debian`          | Debian / CLI ツール入り                     |
+| `mise run build-debian-slim-min` | Debian slim / 最小                          |
+| `mise run build-alpine`          | Alpine / 最小                               |
+| `mise run build-ubuntu-gpu`      | Ubuntu + CUDA / CLI ツール入り (amd64 のみ) |
 
-マルチアーキ (amd64/arm64) ビルドと registry への push は `mise run build-multi-platform` (`mise run build-<tag> --push` で multi-arch manifest を直接 push) / `mise run push` (単一 arch のローカルビルド済みタグを push)。CD は `.github/workflows/docker-image-cd.yaml` が main への push を契機に 7 バリアントを multi-arch (GPU は amd64 のみ) でビルドして DockerHub へ push する (matrix は `mise.toml` の表を写す)。`latest` は更新しない。両 Dockerfile は最終 RUN で provisioning (chezmoi 導入 → apply → 掃除) を行う。
-
-ビルドコンテキストには機微な平文（例: 復号した IME 辞書）が入らないよう `.dockerignore` で除外している。暗号化済み `*.age` は ciphertext のため同梱されても安全。GitHub のレート制限回避用に `gh auth token` を BuildKit secret で渡すが、イメージ内では mise 専用の `MISE_GITHUB_TOKEN` としてのみ export し、`GITHUB_TOKEN` を参照する第三者インストーラ (`curl | sh`) や汎用ツールが gh のフルスコープ token を使わないようにする（環境変数自体は子プロセスへ継承されるため、隔離ではない）。
-
-### 外付けキーボードのキーリマップ (macOS, 任意)
-
-設定から、変更するキーの組み合わせを以下のように入れ替える。
-
-- Caps Lock → Control
-- Option (Alt) → Command
-- Command → Option
-
-## Agent が使う shell
-
-bash / zsh / fish / PowerShell は起動時に次の 2 つを判定する。初期化の切り替えであり、権限や secret の隔離ではない。
-
-- Agent: AI coding agent が付ける marker 環境変数 `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `GEMINI_CLI` / `CURSOR_AGENT` / `ANTIGRAVITY_AGENT` のどれかがあるか、`GROK_AGENT=1` のとき。`.chezmoidata.toml` の `agent_env` を export して、editor の自動起動を失敗終了にし、pager・Git の terminal prompt・GitHub CLI の prompt・AWS CLI の auto prompt を止める。`GIT_EDITOR` だけは `true` にして、`git rebase --continue` などが既定のメッセージで進むようにする。
-- 人間: Agent でない対話 shell で stdin / stdout が TTY のとき (PowerShell は `-NonInteractive` とスクリプト実行も除く)。prompt・補完・alias・theme と fnox / direnv の hook を初期化する。
-
-どちらでもない非対話 shell には環境変数を足さない。VS Code などの GUI アプリはログイン shell を TTY なしで起動して環境を取り込み、統合ターミナルへ引き継ぐため、そこで Agent 用の値を入れると人間のターミナルに残る。PATH・build 環境はどの shell でも共通に読み込む。必要な project 環境は `mise exec -- <command>` / `fnox exec -- <command>` / `direnv exec . <command>` で明示的に渡す。
-
-marker は子孫の process に継承されるため、Agent が起動した tmux server に attach した pane は Agent 扱いになる。`DOTFILES_SHELL_MODE=human` / `agent` で判定を上書きでき、`human` では継承した `agent_env` の値も消す (TTY の対話 shell でなければ人間扱いにはならない)。上書きも子孫に継承されるので、`tmux new-window -e DOTFILES_SHELL_MODE=human` のように範囲を絞って使い、Agent を起動する shell には付けない。
-
-Claude Code と Codex は session 開始時に 1 回だけ profile を読んで shell の状態を snapshot に保存し、各コマンドはそれを使う。Claude Code の snapshot は export を保存しないため、macOS / Linux では `SessionStart` hook が `CLAUDE_ENV_FILE` に `~/.config/shell/agent-env.sh` の読み込みを書き、各コマンドの前に実行させる。native Windows の Claude Code には hook を設定しないため、PowerShell の profile を読まない実行には適用されない。Codex は `shell_environment_policy.set` に `agent_env` と `AI_AGENT=1` を持ち、こちらが snapshot の値より優先される。人間が使う Claude Code / Codex の TUI の editor は変更しない。
-
-mise は人間の対話 shell では `mise activate`、それ以外では `mise activate --shims` を使う。ただし親 shell で mise が activate 済みのとき (ターミナルから Agent を起動した場合など) は `--shims` は何もせず、親の PATH をそのまま引き継ぐ。
-
-PowerShell は Windows の PATH に `false` / `cat` が無いため、`agent_env` の Windows 版を `install/windows/setup_powershell.ps1` に持つ。
-
-## 暗号化された設定の編集
-
-age 秘密鍵を配置済みの環境で、暗号化ファイルを編集・再暗号化する。
-
-`home/` 配下（chezmoi 管理対象）のファイルは chezmoi が透過的に復号/再暗号化する。
-
-```bash
-chezmoi edit ~/.ssh/config.local      # 復号して編集 → 保存時に再暗号化
-chezmoi decrypt <source>/encrypted_foo.age   # 標準出力へ復号
-```
-
-`settings/` 配下（chezmoi 管理外）は mise タスクを使う。
-
-```bash
-mise run decrypt-google-ime   # encrypted_google.ime.txt.age → settings/common/google.ime.txt (平文, gitignore 済み)
-mise run encrypt-google-ime   # 平文を編集後に再暗号化
-```
+`mise run build-<tag> --push` は amd64 / arm64 のイメージをビルドして registry へ push する (GPU は対象外)。`mise run build-multi-platform` は GPU 以外の全バリアントをまとめて push する。
+push の前に `docker login` と `mise run buildx-setup` を済ませておく。
+main への push では、CI が全バリアントを Docker Hub へ push する (`latest` は更新しない)。
 
 ## 開発
 
-このリポジトリ自体の開発ツール (`prek` / `dprint` / `shellcheck` / `hadolint` / `actionlint` / `bats` / `powershell` / `chezmoi` / `age` / `fnox` / `op`) は [mise](https://mise.jdx.dev/) でバージョン管理している (`mise.toml`)。`op` は `fnox.toml` の 1Password provider と `mise run apply-ssh-keys` (`onepasswordRead`) が呼び出す。`home/dot_config/mise/config.toml.tmpl` はマシンに展開されるユーザー環境向けの mise 設定で、これとは別物。
+開発ツール (prek・dprint・shellcheck・bats・chezmoi・age・fnox・op 等) は `mise.toml` で管理する。
+`home/dot_config/mise/config.toml.tmpl` は各マシンに展開するユーザー環境の設定で、これとは別。
 
 ```bash
-mise trust    # 初回のみ: リポジトリ直下の mise.toml を信頼する
-mise install  # ツールを導入し、git hook (pre-commit / pre-push) を自動登録する
+mise trust
+mise install         # ツールの導入と git hook (pre-commit / pre-push) の登録
+mise run pre-commit  # commit 時と同じ lint / format
+mise run pre-push    # push 時と同じ検査 (全テンプレートの描画と、install スクリプトの bats)
+mise run test        # 全 bats テスト (適用後の $HOME の検査を含む)
 ```
 
-prek が commit 時に lint / format (shellcheck・hadolint・PSScriptAnalyzer・dprint・typos・actionlint・zizmor 等) を、push 時に全テンプレートの描画 (`chezmoi apply --dry-run --force --source .`) と install スクリプト・Docker バリアント表の bats を回す。同じものを手で回すには次を使う。
+CI (GitHub Actions) は PR ごとに lint / format・secret の検出・Linux / macOS / Windows での実際の `chezmoi apply` (Linux / macOS では続けて bats)・Docker イメージのビルドを回す。
+依存関係は [Renovate](https://docs.renovatebot.com/) が更新の PR を作る。
+LLM エージェントの指示文を編集するときは、先に `docs/agent-instructions.md` を読む。
 
-```bash
-mise run pre-commit  # prek run --all-files (commit 時と同じ lint / format)
-mise run pre-push    # prek run --all-files --hook-stage pre-push (テンプレート描画 dry-run + bats -r tests/install tests/docker)
-mise run test        # bats -r tests/ (apply 後の $HOME を検査する tests/files も含む)
-mise run dry-run     # chezmoi apply --dry-run --verbose --force
-```
+## Agent が使う shell
 
-依存関係 (GitHub Actions・mise.toml のツール・ベースイメージ等) の更新は [Renovate](https://docs.renovatebot.com/) (`renovate.json`) が自動 PR を作成する。
-
-### CI/CD (GitHub Actions)
-
-`.github/workflows/` に 8 つの workflow がある。mise の導入 (リトライ付き) は composite action `.github/actions/setup-mise` に集約し、`prek.yaml` / `chezmoi.yaml` / `mise-lock.yaml` が使う。
-
-- `ci.yaml` — PR で `prek.yaml` (lint / format)・`gitleaks.yaml` (secret scan)・`chezmoi.yaml`・`docker.yaml` を reusable workflow として並列実行し、1 つでも失敗したら run 全体をキャンセルする (fail-fast)
-- `chezmoi.yaml` — Linux / macOS / Windows で dry-run に加えて実際に `chezmoi apply` まで行い、Linux / macOS では続けて bats テスト (`mise run test`) も実行する
-- `docker.yaml` — PR で ubuntu-min / debian-min (`Dockerfile.debian`) と alpine (`Dockerfile.alpine`) をビルドして smoke test する (cache scope は CD と共有)
-- `mise-lock.yaml` — `mise.lock` を週次で再生成し、mise.toml を変更する PR にも追従 commit する
-- `claude.yaml` — issue / PR での `@claude` メンションで Claude Code を起動する
-- `docker-image-cd.yaml` — main への push で 7 バリアントを multi-arch ビルドし DockerHub へ push する CD (上記「Docker」参照)
+bash / zsh / fish / PowerShell は、AI coding agent から起動されたと判定すると、editor・pager・各 CLI の対話 prompt を止める (権限や secret の隔離ではない)。
+判定の条件と上書きの方法は `docs/agent-shell.md` にある。
 
 ## Structure
 
+`.chezmoiroot` が `home` なので、chezmoi の source root は `home/`。
+
 ```
 .
-├── home/                          # chezmoi 管理対象の dotfiles (source root)
-│   ├── .chezmoi.toml.tmpl         # 初期設定テンプレート (プロンプト・age recipient)
-│   ├── .chezmoidata.toml          # テンプレート共有データ (github: GitHub ユーザー名 / mcp: MCP の版 pin / claude: plugin marketplace と plugin 一覧 / agents: サブエージェント description / codex: Codex サブエージェントの model / agent_env: Agent の shell の環境変数 / ssh_keys: 1Password から取得する SSH 鍵の一覧)
-│   ├── .chezmoiexternal.toml      # 外部取得物 (dracula テーマ・git-open・nanobanana・フォント)
-│   ├── .chezmoiignore             # age 鍵の有無・OS・skip_* フラグ・apply_ssh_keys (--override-data) で適用対象を制御
-│   ├── .chezmoiremove             # 廃止したファイルの適用先からの削除
-│   ├── .chezmoiscripts/           # chezmoi ライフサイクルスクリプト (install/ を include)
-│   ├── .chezmoitemplates/         # 共有テンプレート (サブエージェント本文・各ツール固有指示・claude.json・Codex model catalog・フォント external・1Password からの SSH 鍵取得)
-│   ├── dot_alias.tmpl             # シェルエイリアス (bash / zsh / fish 共有)
-│   ├── dot_bash_profile, dot_zprofile   # 薄い入口。本体は dot_config/shell/
-│   ├── private_dot_ssh/
-│   │   ├── config.tmpl            # 公開可の SSH 設定 (~/.ssh/config.local を Include)
-│   │   ├── encrypted_config.local.age   # 非公開ホスト定義 (age 暗号化)
-│   │   ├── **/private_<name>.tmpl # 秘密鍵 (1Password の SSH Key item から onepasswordRead で取得。apply_ssh_keys=true のときだけ適用)
-│   │   └── **/<name>.pub.tmpl     # 公開鍵 (同じ item の public_key。同上)
-│   ├── dot_claude/                # Claude Code 設定 (CLAUDE.md, settings, skills, rules, agents)。skills は共有 skill の本体
-│   ├── dot_agents/skills/         # 共有 skill の Codex / Grok 向け wrapper (~/.agents/skills。dot_claude/skills の SKILL.md を include)
-│   ├── dot_codex/                 # OpenAI Codex 設定 (AGENTS.md・developer_instructions・custom agent)
-│   ├── dot_gemini/                # Antigravity (Gemini) 設定 (共通規約を config/AGENTS.md と config/GEMINI.md に分割・skills・agents)
-│   ├── dot_grok/                  # Grok CLI 設定 (agents・skills は ~/.claude から、共有 skill は ~/.agents/skills から読む)
-│   ├── modify_private_dot_claude.json   # ~/.claude.json を管理 (マシンローカル状態のみ温存)
-│   ├── modify_private_dot_npmrc         # ~/.npmrc の Takumi Guard registry / token 行だけを管理 (他の行は温存)
-│   ├── modify_private_dot_netrc         # ~/.netrc の先頭に Takumi Guard (Go) の認証行を置く (他の行は温存)
-│   └── dot_config/                # fish / ghostty / mise / starship / git 等
-│       ├── agents/AGENTS.md       # 全 LLM エージェント共通の作業規約
-│       ├── shell/                 # bash / zsh 共有の env.sh (環境変数・PATH) と integrations.sh (ツール統合)
-│       └── git/                   # Git 設定 (config.tmpl は業務用の暗号化 include を条件付きで参照、config.github は個人 GitHub 用、encrypted_config.*.age は業務用)
-├── install/                       # インストールスクリプト (.chezmoiscripts が include。単体実行も可)
-│   ├── lib.sh                     # 共通 helper (ログ・権限判定・PATH 設定)
-│   ├── common/                    # 共通 (setup_shell, fisher, mise, completions, claude_plugins 等)
-│   ├── macos/                     # macOS (brew, xcode, system/app settings)
-│   ├── debian/ ubuntu/ alpine/    # Linux 系
-│   └── windows/                   # Windows (lib.ps1・winget ブートストラップ・コーディングエージェント・GUI アプリ・Starship 等・システム設定)
-├── settings/                      # アプリ設定 (chezmoi 管理外, スクリプトが参照)
-│   ├── common/                    # IME 辞書(暗号化) / ユーザーアイコン / vscode/styles.css (VS Code の Custom CSS 拡張から手動で参照)
-│   └── macos/                     # Raycast / BetterTouchTool(preset・ライセンス暗号化) / Stream Deck
-├── tests/                         # BATS テスト (files = apply 後の $HOME と導入結果 / install = スクリプト単体をスタブで / docker = mise.toml のバリアント表と CI matrix の一致)
-├── docker/                        # イメージ定義 (Dockerfile.debian / Dockerfile.alpine。最終 RUN で chezmoi provisioning)
-├── .github/workflows/             # CI/CD (ci = prek + gitleaks + chezmoi + docker の集約 / mise-lock / claude / docker-image-cd)
-├── .github/actions/setup-mise/    # 共通の mise 導入 (リトライ付き composite action)
-├── mise.toml / mise.lock          # 開発ツールのバージョン管理と開発タスク (ビルド / テスト / 暗号化ユーティリティ)
-├── renovate.json                  # 依存関係の自動更新設定
-├── AGENTS.md                      # このリポジトリで作業する LLM エージェント向けの規約
-├── docs/agent-instructions.md     # LLM エージェント指示文の配り方とサイズ予算 (指示文を編集するときに読む)
-├── CLAUDE.md                      # @AGENTS.md の import と Claude Code 固有の注意
-├── .pre-commit-config.yaml        # Lint/Format 設定 (prek で実行)
-├── dprint.json                    # json/yaml/markdown/toml のフォーマット設定 (dprint)
-└── _typos.toml                    # typos 設定 (*.age を除外)
+├── home/                     # chezmoi が管理する dotfiles
+│   ├── .chezmoi.toml.tmpl    # 初回の質問と age の公開鍵
+│   ├── .chezmoidata.toml     # テンプレートが共有するデータ (Agent 用の環境変数・SSH 鍵の一覧・MCP の版等)
+│   ├── .chezmoiexternal.toml # 外部から取得するもの (テーマ・フォント等)
+│   ├── .chezmoiignore        # OS・skip_* の値・age 鍵の有無による適用対象の制御
+│   ├── .chezmoiscripts/      # 適用時に走るスクリプト (install/ を include)
+│   ├── .chezmoitemplates/    # 共有テンプレート
+│   ├── dot_config/           # ~/.config (fish・shell・ghostty・mise・git 等)
+│   ├── dot_claude/ dot_codex/ dot_gemini/ dot_grok/ dot_agents/  # コーディングエージェントの設定
+│   ├── private_dot_ssh/      # SSH 設定と 1Password から取得する鍵
+│   └── modify_*              # 既存ファイルの一部だけを管理する (~/.claude.json・~/.npmrc・~/.netrc)
+├── install/                  # OS 別のインストールスクリプト (単体でも実行できる)
+├── settings/                 # chezmoi が管理しないアプリ設定 (IME 辞書・Raycast・BetterTouchTool 等)
+├── tests/                    # bats テスト
+├── docker/                   # Docker イメージの定義
+├── docs/                     # Agent が使う shell の詳細と、LLM エージェント指示文の配り方
+├── AGENTS.md / CLAUDE.md     # このリポジトリで作業する LLM エージェント向けの規約
+└── mise.toml                 # 開発ツールとタスク
 ```

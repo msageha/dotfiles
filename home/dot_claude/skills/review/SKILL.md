@@ -1,6 +1,6 @@
 ---
 name: review
-description: Reviews uncommitted changes, the current branch's diff against its base, or a PR given by number / URL as a senior engineer across correctness, security, performance, readability, maintainability, and whether the change should be made at all, and can post the findings to the PR as a pending review. Use when the user asks for a code review (「レビューして」「この PR を見て」「差分を確認して」「PR にレビューコメントをつけて」) or a comparison of two changes or PRs. To judge a PR against its purpose with a merge verdict, or to improve it, use improve-pr instead.
+description: "Reviews uncommitted changes, the current branch's diff against its base, or a PR (number / URL) for correctness, security, performance, readability, maintainability, and whether the change should be made at all, and can post the findings to the PR as a pending review. Use when the user asks for a code review (「レビューして」「この PR を見て」「差分を確認して」「PR にレビューコメントをつけて」) or to compare two changes or PRs. To judge a PR against its purpose with a merge verdict, or to improve it, use improve-pr."
 allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(gh pr diff:*), Bash(gh pr view:*)
 disallowed-tools: Edit, Write, NotebookEdit
 ---

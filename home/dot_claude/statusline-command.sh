@@ -40,7 +40,6 @@ if [ -n "$used" ] && [ -n "$remaining" ]; then
   line=$(printf '%b[%s]\033[0m %d%% used · %d%% remaining' "$bar_color" "$bar" "$used_int" "$remaining_int")
 fi
 
-# セグメント (model / cwd) を " · " で連結。先頭に余分な区切りは付けない。
 [ -n "$model" ] && line="${line:+$line · }$model"
 [ -n "$cwd" ]   && line="${line:+$line · }$cwd"
 printf '%s\n' "$line"

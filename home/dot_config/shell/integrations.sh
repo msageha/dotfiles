@@ -11,7 +11,6 @@ _tool_path() {
     command -v mise &>/dev/null && mise which "$1" 2>/dev/null
 }
 
-# --- OrbStack ---
 if $_dotfiles_human_shell && [ -d "$HOME/.orbstack/shell" ]; then
     # shellcheck source=/dev/null
     source "$HOME/.orbstack/shell/init.$_dotfiles_shell"
@@ -20,28 +19,23 @@ elif [ -d "$HOME/.orbstack/bin" ]; then
 fi
 
 if $_dotfiles_human_shell; then
-    # --- Starship ---
     if _bin="$(_tool_path starship)"; then
         eval "$("$_bin" init "$_dotfiles_shell")"
     fi
 
-    # --- fzf (CTRL-R / CTRL-T / ALT-C) ---
     if _bin="$(_tool_path fzf)"; then
         eval "$("$_bin" "--$_dotfiles_shell")"
     fi
 
-    # --- zoxide ---
     if _bin="$(_tool_path zoxide)"; then
         eval "$("$_bin" init "$_dotfiles_shell")"
     fi
 
-    # --- direnv ---
     if _bin="$(_tool_path direnv)"; then
         eval "$("$_bin" hook "$_dotfiles_shell")"
     fi
 fi
 
-# --- mise ---
 if command -v mise &>/dev/null; then
     if $_dotfiles_human_shell; then
         eval "$(mise activate "$_dotfiles_shell")"
@@ -50,10 +44,8 @@ if command -v mise &>/dev/null; then
     fi
 fi
 
-# --- 1Password CLI のデフォルトアカウント ---
 export OP_ACCOUNT=my.1password.com
 
-# --- fnox ---
 if $_dotfiles_human_shell && command -v fnox &>/dev/null; then
     eval "$(fnox activate "$_dotfiles_shell")"
     _fnox_find_1password_config() {
@@ -104,7 +96,6 @@ if $_dotfiles_human_shell && command -v fnox &>/dev/null; then
     }
 fi
 
-# --- AWS CLI / aws-sso-cli の補完 ---
 # aws_completer は bash 形式の complete -C を前提とする (zsh は bashcompinit 経由)。
 # aws-sso の補完は aws-sso-profile 等のヘルパー関数も含むため、completions.sh が生成する
 # ファイル名一致の autoload には乗せず、この場で直接 source する
@@ -117,7 +108,6 @@ if $_dotfiles_human_shell; then
     fi
 fi
 
-# --- Claude Code の GitHub トークン ---
 # GitHub MCP server (Claude Code の github plugin) が参照する GITHUB_PERSONAL_ACCESS_TOKEN を、
 # gh の OAuth トークンから claude 起動時に注入する (PAT をファイルに置かず、gh auth token の ~170ms を
 # シェル起動毎に払わない。fish の functions/claude.fish と同じ方式)。gh 未導入・未ログイン時は設定しない

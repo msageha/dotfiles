@@ -7,8 +7,7 @@ $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
 # Command は導入済み判定と `<Command> update` の両方に使う。
-# antigravity-cli は update に使う agy を probe する (antigravity を probe すると、agy だけ無い環境で
-# $ErrorActionPreference='Stop' により後続のインストールごと中断してしまう)
+# antigravity-cli を antigravity で判定すると、agy だけ無い環境で `agy update` が失敗して後続ごと止まるため agy で判定する
 $CodingAgents = @(
     @{ Name = 'antigravity-cli'; Command = 'agy'; Installer = 'https://antigravity.google/cli/install.ps1' }
     @{ Name = 'Claude Code'; Command = 'claude'; Installer = 'https://claude.ai/install.ps1' }
@@ -16,9 +15,8 @@ $CodingAgents = @(
 )
 
 function Invoke-RemoteInstaller([string]$Url) {
-    # このスクリプトの Set-StrictMode / $ErrorActionPreference='Stop' は子スコープに
-    # 継承され、strict-clean とは限らないサードパーティのインストーラを誤爆させうるため、
-    # 別プロセスで実行して隔離する (debian 版の `curl | bash` と同等)。
+    # このスクリプトの Set-StrictMode / $ErrorActionPreference='Stop' は子スコープに継承され、
+    # それを想定していない外部のインストーラを失敗させうるため、別プロセスで実行する。
     powershell -NoProfile -ExecutionPolicy Bypass -Command "irm $Url | iex"
     if ($LASTEXITCODE -ne 0) {
         throw "インストーラが失敗しました ($Url): exit code $LASTEXITCODE"

@@ -36,26 +36,14 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   - テンプレートからスクリプトへは環境変数で値を渡す。
     Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS`、CLI / GUI の導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS)。
   - `lib.sh` は各テンプレートに展開されるため、変更するとこれを include する `run_once_*` / `run_onchange_*` が全て再実行される。
-- `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。
-  - `github`: GitHub ユーザー名。`dot_config/gh/private_hosts.yml.tmpl` が読む。
-  - `mcp`: MCP の版 pin。
-  - `claude.marketplaces` / `claude.plugins`: Claude plugin の marketplace と、plugin 一覧 + 有効フラグ。
-    install スクリプトは有効なものだけ導入し、settings.json の `extraKnownMarketplaces` / `enabledPlugins` もここから描画する。
-  - `agents`: サブエージェントの description。
-  - `codex.subagent_model`: Codex の custom agent が使う model。
-  - `agent_env`: Agent の shell の環境変数。bash / zsh / fish の `agent-env` と Codex の `shell_environment_policy.set` が読む。
-    PowerShell は値が異なるため `install/windows/setup_powershell.ps1` に別に持つ。
-  - `ssh_keys`: 1Password から取得する SSH 鍵の一覧。`.chezmoiignore` の除外対象と、`private_dot_ssh/**/private_<name>.tmpl` / `<name>.pub.tmpl` の item 参照が読む。
+- `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。各キーの用途と読み手は同ファイルのコメントにある。
 - bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書き、`dot_bash_profile` / `dot_zprofile` はそれを source する。
-  Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (README「Agent が使う shell」)。
+  Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (`docs/agent-shell.md`)。
 - `tests/install` (install スクリプトの関数をスタブで検査) と `tests/docker` (`mise.toml` のバリアント表と CI matrix の一致) は、apply 済みの環境に依存しないので pre-push hook で回す。
   `tests/files` は apply 後の `$HOME` を検査するので、`mise run test` (`bats -r tests/`。3 つ全てを回す) でだけ回る。
   skip_* による skip 判定は `tests/test_helper.bash` にある。
-- 検証用 Docker イメージのバリアント表は `mise.toml` の `build-<tag>` タスクにあり、CI の matrix はこれを写す。
-  chezmoi provisioning (導入 → apply → 掃除) は各 Dockerfile (`docker/Dockerfile.debian` / `docker/Dockerfile.alpine`) の最終 RUN にある。
-  Ubuntu は `Dockerfile.debian` に `BASE_IMAGE=ubuntu:*` を渡して作る。
 
-## data の skip_* フラグ
+## chezmoi data のフラグ
 
 ツールの導入レベルは chezmoi data のフラグで制御する (プロンプトの詳細は README)。
 
@@ -70,16 +58,9 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 
 ## mise tasks
 
-タスクは `mise.toml` の `[tasks]` にある。
+タスクは `mise.toml` の `[tasks]` にある (`mise tasks ls`)。
 
-- `mise run pre-commit` / `mise run pre-push` / `mise run test`: 検証 (下記「検証」)。
-- `mise run apply` (`chezmoi apply --verbose`) / `mise run dry-run` (`chezmoi apply --dry-run --verbose --force`): どちらも `--verbose` 付きで、secret ファイルの diff を出しうる (下記「secret を出力しうるコマンド」)。
-- `mise run apply-ssh-keys`: 1Password の SSH Key item から秘密鍵と公開鍵を取得し、`~/.ssh` 配下へ配置する。
-- `mise run build-<tag> [--push]`: 検証用 Docker イメージのビルド (Ubuntu / Debian / Alpine の 7 バリアント)。
-  各タスクは内部レシピ `docker-build` を呼び、`--push` は multi-arch build + push。
-- `mise run decrypt-google-ime` / `mise run encrypt-google-ime`: Google IME 辞書の復号・再暗号化。
-  辞書は age (単一共有鍵、`home/.chezmoi.toml.tmpl`) で暗号化した `settings/common/encrypted_google.ime.txt.age` で管理し、平文の `settings/common/google.ime.txt` は gitignore 済み。
-  平文を編集したら encrypt タスクで再暗号化してから commit する。
+- 平文の IME 辞書 (`settings/common/google.ime.txt`、gitignore 済み) を編集したら、`mise run encrypt-google-ime` で再暗号化してから commit する。
 
 ## 検証
 
@@ -88,7 +69,6 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (`chezmoi apply --dry-run --force --source .`。既定の source ではなく、push しようとしている checkout を描画する) で行う。
   `--verbose` が無いので diff を出さない。
-  `mise run dry-run` を使うなら、出力を捨てて exit code だけを見る (例: `mise run dry-run >/dev/null 2>&1`)。
   差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
 
 ### secret を出力しうるコマンド
@@ -98,12 +78,11 @@ secret の扱いは共通規約の「安全」節に従う。
 
 - `chezmoi execute-template --init`: `home/.chezmoi.toml.tmpl` が fnox 注入の API キー (`GEMINI_API_KEY` 等) を `data.apiKeys` に平文展開する。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env`: secret を復号した値を返す。
-- `chezmoi apply --verbose` / `chezmoi diff` と、それを使う `mise run apply` / `mise run dry-run`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る。
+- `chezmoi apply --verbose` / `chezmoi diff` と、それを使う `mise run apply` / `mise run dry-run`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る (`mise run dry-run` は出力を捨てて exit code だけを見る)。
   secret ファイルは `.codex/.env`・`.codex/auth.json`・`~/.config/chezmoi/chezmoi.toml`・Takumi Guard token を埋め込む `~/.npmrc` / `~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml` 等。
   secret ファイルが対象範囲に入るときは `chezmoi apply` に `--verbose` を付けず、`chezmoi diff` は target を絞るか出力をマスクする。
 - `cat` / `git diff` で secret ファイルを直接読む。
-- `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。
-  この data は `mise run apply-ssh-keys` の中でだけ渡し、検証コマンド (pre-push / test / dry-run) には渡さない。
+- `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。検証コマンド (pre-push / test / dry-run) には渡さない。
 
 `KEY=value` 形式の行は `sed -E 's/=.*/=***/'` でマスクできる (引用符の有無や種類によらない)。JSON・`.netrc`・鍵・値だけの出力 (`printenv <KEY>` 等) には効かないので、出力を捨てるか、キー名だけを grep するか、`wc -c` 等で有無・長さだけを確かめる。
 

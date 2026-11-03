@@ -35,7 +35,7 @@ function print_completion() {
 }
 
 # 生成途中の失敗で壊れたファイルや空ファイルを残さないよう、一時ファイルへ書いてから置き換える。
-# mv は既存の symlink (kubectl.fish が symlink だった環境がある) もリンク先へ書き込まず実体ファイルで置き換える
+# mv は既存の symlink もリンク先へ書き込まず実体ファイルで置き換える
 function write_completion() {
     local tool="$1" shell="$2" out="$3"
     if print_completion "$tool" "$shell" > "$out.tmp" && [ -s "$out.tmp" ]; then

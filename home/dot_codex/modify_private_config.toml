@@ -1,19 +1,15 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- /*
-  ~/.codex/config.toml の既存値を base として、下の desired TOML に書いた key だけ上書きする。
-  Codex CLI が追加する projects や tui などのローカル状態は温存する。
-  approval_policy = "never" は承認プロンプトの全廃 (自律実行優先)。sandbox_mode は workspace-write を維持し、
-  ~/.codex/rules/ (dot_codex/rules/) の allow に一致するコマンドは sandbox の外で承認なしに実行され、
-  それ以外で sandbox 外が必要なコマンドはエスカレーションせず失敗する。
-  analytics / otel.metrics_exporter は外部送信 (プロダクトイベント / Statsig メトリクス) の停止。
-  otel のログ・トレース exporter はデフォルト none のため設定不要。
-  OpenAI API key が注入された環境では cli_auth_credentials_store = "file" で、chezmoi 管理の
-  ~/.codex/auth.json (private_auth.json.tmpl) を Codex が実際に読む保存先に固定する
-  (keyring / auto だと管理ファイルが読まれない)。鍵なし環境では既存の保存先設定に触れない。
+  ~/.codex/config.toml の既存値に、下の desired の key だけを上書きする (projects・tui 等の Codex のローカル状態は温存する)。
+  approval_policy = "never" で承認プロンプトを無くし、sandbox は workspace-write のままにする。
+  ~/.codex/rules/ の allow に一致するコマンドは sandbox の外で実行され、それ以外で sandbox の外が要るコマンドは失敗する。
+  analytics / otel.metrics_exporter は外部送信を止める (otel のログ・トレースは既定で none)。
+  OpenAI API key がある環境では cli_auth_credentials_store = "file" にし、chezmoi が管理する ~/.codex/auth.json を
+  Codex に読ませる (keyring / auto では読まれない)。
 */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}
-{{- /* codex の trust 照合キーは Windows でもパス区切りを変換しない */ -}}
+{{- /* Codex は trust の照合でパス区切りを正規化しないため、Windows では \ 区切りで書く */ -}}
 {{- if eq .chezmoi.os "windows" -}}
 {{-   $worksSrc = replace "/" "\\" $worksSrc -}}
 {{-   $chezmoiSrc = replace "/" "\\" $chezmoiSrc -}}
@@ -111,9 +107,8 @@ cli_auth_credentials_store = "file"
 {{- /* AGENTS.md は user role で注入され、base prompt (developer role) の既定動作 (質問形を実行指示とみなす・worktree や
       draft PR を自律的に作る等) を上書きできない。衝突する少数の契約だけを developer_instructions に置く */ -}}
 {{- $_ := set $desired "developer_instructions" (includeTemplate "codex/developer-instructions.md" . | trim) -}}
-{{- /* playwright / chrome-devtools は Codex に置かない。Codex は custom agent の mcp_servers を無視し、main に置くと
-      Claude 等から呼ばれる codex exec の毎回の起動で MCP が立ち上がるため。Codex でのブラウザ確認の手段は
-      .chezmoitemplates/codex/instructions.md に書き、以前 main config に入れていた既存エントリは削除する */ -}}
+{{- /* playwright / chrome-devtools は Codex に置かず、適用先に残るエントリも消す。Codex は custom agent の mcp_servers を無視し、
+      main に置くと codex exec の起動のたびに MCP が立ち上がるため */ -}}
 {{- if hasKey $current "mcp_servers" -}}
 {{-   $_ := unset (get $current "mcp_servers") "playwright" -}}
 {{-   $_ := unset (get $current "mcp_servers") "chrome-devtools" -}}
@@ -122,9 +117,7 @@ cli_auth_credentials_store = "file"
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
 {{- end -}}
-{{- /* 以前この template が書いていた key のうち、Codex 0.166 で効果が無いか新しい key に置き換えたもの (deprecated の personality、
-      approval_policy = "never" では使われない approvals_reviewer、既定値と同じ 1 を書いていた (V2 では使われない) agents.max_depth、
-      max_concurrent_threads_per_session の旧名の agents.max_threads、gpt-5.1-codex-max 用の notice) を適用先から消す */ -}}
+{{- /* この template が以前書いていて、今は効果が無いか改名された key を適用先から消す */ -}}
 {{- $_ := unset $current "personality" -}}
 {{- $_ := unset $current "approvals_reviewer" -}}
 {{- if hasKey $current "agents" -}}

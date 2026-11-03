@@ -1,23 +1,17 @@
 # LLM エージェント指示文の構成
 
 このリポジトリが配る LLM エージェント (Claude Code / Codex / Antigravity / Grok) 向けの指示文・skill・サブエージェントの配置と、コードから読み取れない契約をまとめる。
-指示文ファイルを編集・レビューする前に、この文書と `home/dot_claude/rules/agent-config.md` (編集の規範) を読む。
-各ツールの設定 (Claude の settings*.json、Codex の config.toml / rules、Grok の config.toml、Gemini の settings.json) を編集するときは `home/dot_claude/rules/claude-settings.md` も読む。
-Claude Code ではこの 2 つの rule が path-scoped rule として自動で読まれる。
+指示文の編集の規範は `home/dot_claude/rules/agent-config.md`、各ツールの設定 (Claude の settings*.json、Codex の config.toml / rules、Grok の config.toml、Gemini の settings.json) の規範は `home/dot_claude/rules/claude-settings.md` にある (Claude Code では path-scoped rule として自動で読まれる)。
 以下のパスは `home/` を省いて書く。
 
 ## 原則
 
-- 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) にはそのツール固有の機構だけを書く。
-  rule の読み方も共通規約にあり、adapter には MCP の有無の違いや独立レビュー・別モデルの手段など、そのツール固有の機構を書く。
+- 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) には、そのツール固有の機構 (MCP の有無、独立レビュー・別モデルへの相談の手段等) だけを書く。
 - この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
   `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。rule が 1 つも見つからないときは描画を fail で止める。
-- 相談・独立レビューの工程は、共通規約のとおり、成果物をユーザーへ返すエージェントだけが回す。
-  Claude から相談・レビューを頼まれて起動した Codex などが、同じ工程を起動し直さないようにするため。
 - 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、作業を渡す前に読ませる。
   委譲しないセッションと、共通規約を読むサブエージェントの起動のたびに、その分の context を使わないため。
-- 各 `*.tmpl` 先頭の来歴コメントは chezmoi テンプレートコメントなので描画されない。
 
 ## Claude Code
 
@@ -48,7 +42,7 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
   共通規約の `## git` 見出しを変えるときは、分割位置も合わせて直す。
 - Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。rule は補足に生成した一覧から選んで読ませる。
 - サブエージェントの `agent.md` の `tools` は、公式 docs の表で既定値が `[]` (空のときに使える tool は未記載) なので、各 wrapper で列挙する。
-  `find_by_name` / `grep_search` / `list_dir` は agy 1.4.12 で既定の toolset から外れた legacy (同梱の changelog。`tools` で明示すれば使える) で、公式 docs は未対応の tool 名で subagent が hang しうると警告している。agy を更新したら tool 名を点検する。
+  `find_by_name` / `grep_search` / `list_dir` は既定の toolset から外れた legacy の tool で、`tools` で明示すれば使える。公式 docs は未対応の tool 名で subagent が hang しうると警告しているので、agy を更新したら tool 名を点検する。
 
 ## Grok
 
@@ -56,7 +50,7 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 - `compat.claude` (`dot_grok/modify_private_config.toml`) は、`agents = false` (`~/.claude/CLAUDE.md` と project の `.claude/CLAUDE*.md`)・`rules = false` (`~/.claude/rules` と project の `.claude/rules`。有効だと `paths` を無視して全件を常時読む)・`skills = true` にしている。
   project 直下の `CLAUDE.md` と `~/.claude/agents` は、この設定にかかわらず読まれる。
 - project の AGENTS.md / CLAUDE.md は、folder trust (`grok --trust` か対話での許可。`--trust` は `grok --help` に出ない) があるときだけ起動時に読まれる。`grok inspect --json` の `projectTrusted` で確かめる。
-- `~/.grok/skills` のコピーは廃止し、`.chezmoiremove` で配布していた SKILL.md を適用先から消す。
+- `~/.grok/skills` には配らない (以前に配った SKILL.md は `.chezmoiremove` が消す)。
   Grok は `~/.agents/skills` も読み、`~/.claude/skills` と同名の skill は `~/.agents/skills` 側を採る (中身は同じ include)。bundled と同名の skill (pdf) は bundled 側が採られる。
 
 ## skills
@@ -80,7 +74,6 @@ Claude Code ではこの 2 つの rule が path-scoped rule として自動で�
 ## サイズ予算
 
 - Antigravity は rule ファイル 1 つを、include 展開後に 24,000 bytes で切り詰める ([公式 rules](https://antigravity.google/docs/rules))。
-  単位は bytes なので、日本語 (UTF-8 で 1 文字 3 bytes) では約 8,000 文字になる。rules の上限を 12,000 characters とする記述は現行の公式 docs に無い。
   対象は分割した 2 ファイルと、workspace の常時有効な rule として読まれる repo 直下の `AGENTS.md`。
 - Antigravity の global と always_on の rule は、全体で 20,000 tokens の予算を共有する。超過すると、大きいファイルから順に path と description だけの pointer に格下げされ、共通規約が本文として読まれなくなる。
   上の 3 ファイルの合計 bytes も見る (日本語が多いので、bytes の 1/4 程度の tokens になる)。

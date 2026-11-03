@@ -58,7 +58,7 @@ function install_snap_apps() {
 
 # Google Chrome は Ubuntu の apt リポジトリに無い (Google 配布のみ) ため公式 .deb を取得して入れる。
 # .deb が apt リポジトリと署名鍵を自動設定するので、以降は apt upgrade で更新される。
-# Linux 版は amd64 と arm64 のみ提供 (arm64 は 2026 Q2 提供開始)。それ以外や未公開時はスキップする
+# Linux 版は amd64 と arm64 のみ提供。それ以外のアーキテクチャと取得失敗時はスキップする
 function install_chrome() {
     log_step "Installing Google Chrome..."
     if command -v google-chrome &>/dev/null; then

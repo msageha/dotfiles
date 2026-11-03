@@ -1,3 +1,4 @@
+# GitHub ユーザー名 (dot_config/gh/private_hosts.yml.tmpl が読む)
 [github]
 user = "msageha"
 
@@ -42,7 +43,7 @@ openai-codex = "openai/codex-plugin-cc"
 # Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
 [agents]
 browser_debugger = "Browser verification and debugging agent that uses the Playwright and Chrome DevTools MCP servers. Use to keep noisy browser output (snapshots, console logs, traces) out of the caller's context when verifying frontend changes in a real browser or investigating console, network, and performance issues."
-code_reviewer = "Senior code reviewer that reports findings and leaves the fixes to the caller. Use when the user asks for a code review, or to check your own changes in an independent context partway through the work, for correctness, regression, security, performance, and maintainability issues. The review by another model that AGENTS.md calls for on high-cost changes goes to that model's CLI; use this agent in its place only when no other model is available."
+code_reviewer = "Senior code reviewer that reports findings and leaves the fixes to the caller. Use when the user asks for a code review, or to check your own changes in an independent context mid-task, for correctness, regression, security, performance, and maintainability. The other-model review that AGENTS.md requires on high-cost changes goes to that model's CLI; use this agent instead only when no other model is available."
 debugger = "Debugging specialist for failing tests, runtime errors, and CI failures. Use when a concrete failure needs root-cause analysis. It fixes the root cause only when the delegation prompt asks for a fix; otherwise it stays read-only and returns the root cause, evidence, and a proposed fix."
 security_reviewer = "Security reviewer that reports vulnerabilities and leaves the fixes to the caller. Use for authentication, authorization, secrets, dependency, infrastructure, input handling, dangerous-command, LLM-integration (prompts, tool permissions, model output handling), and CI / supply-chain changes."
 source_grounded_researcher = "Researcher that grounds findings in primary sources: official documentation, GitHub repositories (private ones included), and the web, each cited by URL or file:line. Use when a claim about library, SDK, CLI, or service behavior needs verification against primary sources. For local code exploration alone, use the tool's built-in exploration agent instead."
@@ -53,7 +54,7 @@ test_runner = "Runs tests, lint, and verification commands, then summarizes fail
 [codex]
 subagent_model = "gpt-6.1-sol"
 
-# Agent の shell の環境変数 (README「Agent が使う shell」)。editor の自動起動を失敗終了にし、pager と各 CLI の対話 prompt を止める。
+# Agent の shell の環境変数 (docs/agent-shell.md)。editor の自動起動を失敗終了にし、pager と各 CLI の対話 prompt を止める。
 # GIT_EDITOR は Claude Code の既定と同じ true にして、rebase --continue 等が既定のメッセージで進むようにする。
 # dot_config/shell/agent-env.sh.tmpl (bash / zsh と Claude Code の SessionStart hook)、dot_config/fish/agent-env.fish.tmpl、
 # dot_codex/modify_private_config.toml の shell_environment_policy.set が読む。PowerShell は値が異なるため install/windows/setup_powershell.ps1 が別に持つ

@@ -1,6 +1,6 @@
 ---
 name: deps
-description: "Audits a project's dependencies: lists direct and transitive packages, flags outdated ones, surfaces known vulnerabilities, and reports prioritized update actions without changing anything. Use when the user asks for a dependency audit or update review (「依存関係を棚卸しして」「古いパッケージを洗い出して」「アップデートすべきものある？」). It plans updates; for judging whether a vulnerability is exploitable in the code, use the security skill, and for vetting one specific package before adding or upgrading it, use sonatype-guide where available."
+description: "Audits a project's dependencies without changing anything: outdated packages, known vulnerabilities, and prioritized update actions. Use for a dependency audit or update review (「依存関係を棚卸しして」「古いパッケージを洗い出して」「アップデートすべきものある？」). To judge whether a vulnerability is exploitable in the code, use the security skill; to vet one package before adding or upgrading it, use sonatype-guide where available."
 allowed-tools: Read, Glob, Grep, Bash(npm ls:*), Bash(npm outdated:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm list:*), Bash(pnpm outdated:*), Bash(pnpm audit), Bash(pnpm audit --json), Bash(yarn outdated:*), Bash(bun outdated:*), Bash(go list:*), Bash(govulncheck:*), Bash(pip list:*), Bash(pip-audit), Bash(uv tree --locked:*), Bash(uv pip list:*), Bash(cargo tree --locked:*), Bash(cargo outdated:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json), Bash(bundle outdated:*), Bash(dart pub outdated:*), Bash(flutter pub outdated:*)
 disallowed-tools: Edit, Write, NotebookEdit
 ---

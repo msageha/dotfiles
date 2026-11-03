@@ -16,7 +16,7 @@
   },
   "packageRules": [
     {
-      "description": "PR の乱立を防ぐため、major 以外 (minor/patch/pin/digest) の更新は manager・エコシステム横断で 1 つの PR に集約する。major は separateMajorMinor により分離され、グルーピングせず個別 PR で人手レビューする",
+      "description": "major 以外 (minor / patch / pin / digest) の更新を 1 つの PR にまとめる。major は個別 PR で人手レビューする",
       "matchUpdateTypes": [
         "minor",
         "patch",
@@ -28,7 +28,7 @@
       "groupSlug": "all-minor-patch"
     },
     {
-      "description": "patch/minor は minimumReleaseAge (7日) 経過後、CI green を条件に自動マージする。major は供給網攻撃対策の猶予期間だけでは不十分なため対象外とし、人手レビューを必須とする",
+      "description": "patch / minor は minimumReleaseAge (7 日) の経過後、CI green なら自動マージする。major は猶予期間だけでは供給網攻撃に備えきれないので人手レビューにする",
       "matchUpdateTypes": [
         "patch",
         "minor"
@@ -36,7 +36,7 @@
       "automerge": true
     },
     {
-      "description": "gcloud は calver 的にほぼ毎週 major が上がるため、major 更新も non-major と同じグループ PR + automerge で扱う",
+      "description": "gcloud はほぼ毎週 major が上がるので、major も non-major と同じグループ PR で自動マージする",
       "matchDepNames": [
         "google/cloud-sdk"
       ],
@@ -55,7 +55,7 @@
       "versioning": "semver"
     },
     {
-      "description": "op / age / fnox は mise.toml の annotation (regex manager) 側で更新するため、組み込み mise manager との二重検出 (重複 PR) を防いで片側に寄せる。op は GitHub に公開リポジトリが無く組み込み manager では lookup 不能 (no-result 警告) でもある",
+      "description": "op / age / fnox は mise.toml の annotation (regex manager) で更新するので、組み込み mise manager では無効にして重複 PR を防ぐ (op は公開 GitHub リポジトリが無く、組み込み manager では lookup できない)",
       "matchManagers": [
         "mise"
       ],
@@ -67,14 +67,14 @@
       "enabled": false
     },
     {
-      "description": "flarectl (cmd/flarectl) は cloudflare-go の v0 系にのみ存在し、v0.117.0 が最後。v2 以降は Stainless 生成 SDK へ全面置換されて cmd/ ごと削除され、module path も /vN 付きに変わったため、go backend では v1.0.0 以上を install できない (unknown revision で失敗する)。リポジトリのタグを追う github-tags datasource では検知できないので、バージョン範囲で成立しない更新を除外する",
+      "description": "flarectl は cloudflare-go の v0 系にしか無く (v1 以降は cmd/ が削除され module path も変わった)、go backend で v1.0.0 以上を install できない。github-tags datasource ではこれを検知できないので v1 未満に限る",
       "matchDepNames": [
         "cloudflare/cloudflare-go"
       ],
       "allowedVersions": "<1.0.0"
     },
     {
-      "description": "typescript-language-server は JS 版 tsserver 前提のため、typescript は 5 系に留める (mise config.toml.tmpl の pin コメントと同じ理由)",
+      "description": "typescript-language-server は JS 版の tsserver を前提とするので、typescript は 5 系に留める",
       "matchDatasources": [
         "npm"
       ],
@@ -87,7 +87,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "chezmoi workflow (sh / ps1) と両 Dockerfile のインストーラ tag を mise.toml の chezmoi pin と同じグループ PR で追従させる",
+      "description": "chezmoi workflow (sh / ps1) と両 Dockerfile の chezmoi インストーラの tag を、mise.toml の chezmoi と同じグループ PR で更新する",
       "managerFilePatterns": [
         "/^\\.github/workflows/chezmoi\\.yaml$/",
         "/^docker/Dockerfile\\.debian$/",
@@ -103,7 +103,7 @@
     },
     {
       "customType": "regex",
-      "description": "annotation コメント (# renovate: datasource= depName= [packageName=] [versioning=] [extractVersion=]) 直下の `key = \"version\"` 行を追従する。対象は home/.chezmoidata.toml の MCP pin (単一ソース) と mise.toml / mise config.toml.tmpl のツール pin。versioning / extractVersion は annotation に書いたときだけ効き、無ければ Renovate 既定のまま。java は java-version datasource が temurin- prefix なしの版を返すため prefix を currentValue の外に置く",
+      "description": "`# renovate: datasource= depName= [packageName=] [versioning=] [extractVersion=]` の直下の `key = \"version\"` 行を更新する (home/.chezmoidata.toml の MCP pin と mise.toml / mise config.toml.tmpl のツール pin)。java は java-version datasource が temurin- prefix の無い版を返すので、prefix を currentValue の外に置く",
       "managerFilePatterns": [
         "/^home/\\.chezmoidata\\.toml$/",
         "/^mise\\.toml$/",
@@ -115,7 +115,7 @@
     },
     {
       "customType": "regex",
-      "description": "workflow の container.image (digest pin + バージョンコメント) を docker datasource で更新する。ネイティブのgithub-actions managerはdigestのみ追従し、末尾のバージョンコメントを更新しないため必要",
+      "description": "workflow の container.image (digest pin + バージョンコメント) を更新する。組み込みの github-actions manager は digest しか更新せず、バージョンコメントが古いまま残る",
       "managerFilePatterns": [
         "/^\\.github/workflows/.+\\.ya?ml$/"
       ],
@@ -126,7 +126,7 @@
     },
     {
       "customType": "regex",
-      "description": "dprint.json の公式プラグイン (dprint/dprint-plugin-*) の WASM URL を更新する。@ 以降の sha256 checksum は github-release-attachments datasource が release asset (plugin.wasm) の実ハッシュ照合で追従させる",
+      "description": "dprint.json の公式プラグインの WASM URL を更新する。@ 以降の sha256 は release asset (plugin.wasm) の実ハッシュで追従させる",
       "managerFilePatterns": [
         "/(^|/)dprint\\.json$/"
       ],
@@ -139,7 +139,7 @@
     },
     {
       "customType": "regex",
-      "description": "dprint.json の g-plane プラグインの WASM URL を更新する (tag は v prefix 付きなので currentValue に含めて照合する)",
+      "description": "dprint.json の g-plane プラグインの WASM URL を更新する (tag の v prefix を含めて照合する)",
       "managerFilePatterns": [
         "/(^|/)dprint\\.json$/"
       ],
@@ -152,7 +152,7 @@
     },
     {
       "customType": "regex",
-      "description": "Docker ビルドのベースイメージを docker datasource で追従する (docker-image-cd / docker workflow の base: / mise.toml の build-<tag> タスクの variant 表 / Dockerfile の ARG BASE_IMAGE 既定値)",
+      "description": "Docker のベースイメージを更新する (docker-image-cd / docker workflow の base:、mise.toml の build-<tag> タスク、Dockerfile の ARG BASE_IMAGE)",
       "managerFilePatterns": [
         "/^\\.github/workflows/docker-image-cd\\.yaml$/",
         "/^\\.github/workflows/docker\\.yaml$/",
@@ -169,7 +169,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の Nerd Fonts release zip (SourceCodePro / NerdFontsSymbolsOnly) を github-releases で追従させる。2 URL が同一バージョンで一括更新される",
+      "description": "chezmoi external の Nerd Fonts の release zip (SourceCodePro / NerdFontsSymbolsOnly) を同じバージョンで一括更新する",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
@@ -192,7 +192,7 @@
     },
     {
       "customType": "regex",
-      "description": "pre-commit hook の rev (autoupdate --freeze 形式の SHA pin + frozen コメント) を github-tags で更新する。組み込みの pre-commit manager は frozen 形式に未対応 (renovate#22567) のため必要",
+      "description": "pre-commit hook の rev (SHA pin + `# frozen:` コメント) を更新する。組み込みの pre-commit manager は frozen 形式に未対応 (renovate#22567)",
       "managerFilePatterns": [
         "/^\\.pre-commit-config\\.yaml$/"
       ],
@@ -204,7 +204,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/vim commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (archive pin) の dracula/vim の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -218,7 +218,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/delta commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (archive pin) の dracula/delta の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -232,7 +232,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/tmux commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (archive pin) の dracula/tmux の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -246,7 +246,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/dircolors commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (archive pin) の dracula/dircolors の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -260,7 +260,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の git-open commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "description": "chezmoi external (file pin) の git-open の commit SHA を master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -274,7 +274,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の dracula/ghostty commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (file pin) の dracula/ghostty の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -288,7 +288,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の dracula/xcode commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (file pin) の dracula/xcode の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -302,7 +302,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の powerline/fonts commit SHA を git-refs datasource で default branch の最新 commit に追従させる",
+      "description": "chezmoi external (archive pin) の powerline/fonts の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
@@ -316,7 +316,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の source-han-code-jp をタグ追従させる。R 付きタグのみがフォント成果物のリリースで無印はソースのリリースのため、extractVersion で R 付きに限定する (semver ではないので loose versioning)",
+      "description": "chezmoi external の source-han-code-jp を更新する。フォントのリリースは R 付きタグだけ (無印はソースのリリース) なので R 付きに限る。semver ではないので loose versioning",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
@@ -330,7 +330,7 @@
     },
     {
       "customType": "regex",
-      "description": "setup-mise composite action が mise-action に渡す mise 本体バージョン pin (\"latest\" 解決だと上流の release 作成直後の asset 未アップロード等で 404 になりうるため固定) を github-releases で追従させる",
+      "description": "setup-mise action の mise 本体のバージョン pin を更新する",
       "managerFilePatterns": [
         "/^\\.github/actions/setup-mise/action\\.yml$/"
       ],
@@ -343,7 +343,7 @@
     },
     {
       "customType": "regex",
-      "description": "壁紙 URL の dracula/wallpaper commit SHA を git-refs datasource で master の最新 commit に追従させる",
+      "description": "壁紙 URL の dracula/wallpaper の commit SHA を master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^install/macos/system_settings\\.sh$/",
         "/^install/ubuntu/system_settings\\.sh$/"
