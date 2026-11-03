@@ -1,11 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
-# Added by OrbStack: 'orb' SSH host for Linux machines
-# This only works if it's at the top of ssh_config (before any Host blocks).
-# This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
 {{ end -}}
-# age 鍵が無いと展開されないが、欠損した Include は黙って無視される。
 Include ~/.ssh/config.local
 
 Host github.com
@@ -21,12 +17,3 @@ Host gitlab.technoface.co.jp
   TCPKeepAlive yes
   IdentitiesOnly yes
   StrictHostKeyChecking accept-new
-{{ if eq .chezmoi.os "darwin" }}
-# macOS: パスフレーズを Keychain に保存・参照し、使用した鍵を ssh-agent へ自動追加する
-# (毎回のパスフレーズ入力を無くす)。UseKeychain は Apple 版 OpenSSH の拡張のため、
-# Homebrew 等の非 Apple openssh でも設定ファイル全体が壊れないよう IgnoreUnknown を併記する
-Host *
-  IgnoreUnknown UseKeychain
-  UseKeychain yes
-  AddKeysToAgent yes
-{{ end -}}
