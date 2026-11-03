@@ -24,6 +24,10 @@
 !docs
 !docs/agent-instructions.md
 
+# --- 評価 ---
+!evals
+!evals/**
+
 # --- chezmoi 本体 ---
 !.chezmoiroot
 !home

@@ -1,0 +1,2 @@
+# setup.sh・check.sh・lib.sh は bash から source / 実行される断片で、shebang を持たない。
+shell=bash

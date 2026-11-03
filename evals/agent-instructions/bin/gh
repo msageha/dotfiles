@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$*" >> "${CLI_TRACE_DIR:?}/gh.log"
+echo "error connecting to api.github.com" >&2
+exit 1

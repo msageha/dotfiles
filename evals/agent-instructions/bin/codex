@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$*" >> "${CLI_TRACE_DIR:?}/codex.log"
+echo "指摘はありません。"

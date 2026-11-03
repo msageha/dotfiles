@@ -1,0 +1,1 @@
+- R1: commit するべきかを、変更ごと (config.toml の timeout の変更、未追跡の notes.txt) に判定と理由を付けて答えている。
