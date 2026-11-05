@@ -144,9 +144,9 @@ url_api = "https://api.github.com/repos/twpayne/chezmoi/releases/assets/65966643
 provenance = "cosign"
 
 [tools.chezmoi."platforms.linux-x64-musl"]
-checksum = "sha256:f2fbda5a865e2725adc42090ea6deabf3e1a4d40bfd59a8942c3ad20284b39cb"
-url = "https://github.com/twpayne/chezmoi/releases/download/v2.73.3/chezmoi_2.73.3_linux-musl_amd64.tar.gz"
-url_api = "https://api.github.com/repos/twpayne/chezmoi/releases/assets/659666461"
+checksum = "sha256:6e5827598cbfc02d132b04f95b5ea10efb5b79230e2a4a0e52df4af144a8ee9f"
+url = "https://github.com/twpayne/chezmoi/releases/download/v2.73.3/chezmoi_2.73.3_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/twpayne/chezmoi/releases/assets/659666088"
 provenance = "cosign"
 
 [tools.chezmoi."platforms.macos-arm64"]
@@ -214,42 +214,42 @@ url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/667629154"
 provenance = "github-attestations"
 
 [[tools.fnox]]
-version = "1.41.0"
+version = "1.44.0"
 backend = "packslip:github.com/jdx/fnox"
 
 [tools.fnox."platforms.linux-arm64"]
-checksum = "sha256:ce073b8075e39f3ab01e5ab0c6e97003625b4c5e1996583a145eb9fc0b76cda2"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-aarch64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:50cdf941646d55065f91497c81a026d9297ae7e04ac4bc89d45afc6520dbe9c3"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-aarch64-unknown-linux-gnu.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.linux-arm64-musl"]
-checksum = "sha256:c63cb6ac2ea2d4a0f9948ad57aff4ef22d4defcdb11d55451655bd0f65a363e4"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:70712b3159e0427bc12849e52e6747469b8808d74bd698df09d8b2cecbdbbfeb"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-aarch64-unknown-linux-musl.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.linux-x64"]
-checksum = "sha256:a9297e0c3d7a079745b25509344fd3ea471d7af5bec1d293c8feaab312cb494a"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-x86_64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:d50732908aeaec9fa9cef5e907f04e18d4631510059c40232a708665f3c928e2"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-x86_64-unknown-linux-gnu.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.linux-x64-musl"]
-checksum = "sha256:326d77bb95782ea3f6ccd5cc7b67b940296ea327b8ba3950c975bf9d3bb548cb"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:724be78d503ccd1518156e99d3d0dcb225a6c228a466aa6e966343bb6167cb66"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-x86_64-unknown-linux-musl.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.macos-arm64"]
-checksum = "sha256:fb647bd423858750ae49d93a5a5b4fe797f3e870091c9632728d46ec3835082a"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:8f701970a3a52d3050901650ae8a8c53fd2284fcb8efc9f41cc9b56e88902dd5"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-aarch64-apple-darwin.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.macos-x64"]
-checksum = "sha256:1a383f204ff64ac8ed1648eba32c25aab1674aac8b426aa5fdc963a441a27630"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:615b8e4efde23c5810081281535e9a117b9e1e6a7b68da8361e6ceef4f371085"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-x86_64-apple-darwin.tar.gz"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [tools.fnox."platforms.windows-x64"]
-checksum = "sha256:a192a8858b5cc968b21bddea1901585c9b5cc131991442cac15e52e873cda3ab"
-url = "https://github.com/jdx/fnox/releases/download/v1.41.0/fnox-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:6b5c912212b5b94bd9f51bc39d7b92196c87d905d028c672f594f2514158dbaf"
+url = "https://github.com/jdx/fnox/releases/download/v1.44.0/fnox-x86_64-pc-windows-msvc.zip"
 signer = "sigstore-oidc:https://github.com/jdx/fnox/.github/workflows/release.yml"
 
 [[tools.hadolint]]
@@ -329,43 +329,36 @@ backend = "aqua:PowerShell/PowerShell"
 
 [tools.powershell."platforms.linux-arm64"]
 checksum = "sha256:02eb9991af447c7e7fe881acde195961afd397c40b8eb1c2b3856b84ec2d85f2"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-linux-arm64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675637777"
 
 [tools.powershell."platforms.linux-arm64-musl"]
 checksum = "sha256:02eb9991af447c7e7fe881acde195961afd397c40b8eb1c2b3856b84ec2d85f2"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-linux-arm64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675637777"
 
 [tools.powershell."platforms.linux-x64"]
 checksum = "sha256:1da6d6d6035d651f20e70ddee7c4c15ac6ab8b9fb40ee92240d91263f28a884b"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-linux-x64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675638183"
 
 [tools.powershell."platforms.linux-x64-musl"]
 checksum = "sha256:1da6d6d6035d651f20e70ddee7c4c15ac6ab8b9fb40ee92240d91263f28a884b"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-linux-x64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675638183"
 
 [tools.powershell."platforms.macos-arm64"]
 checksum = "sha256:a1c7e98ac403da4be5ba75c1c5855af272de7787a91d478c4267466fe58fc1af"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-osx-arm64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675638480"
 
 [tools.powershell."platforms.macos-x64"]
 checksum = "sha256:a5aa2308a7e9664510a5c93d5b337fd524ff7dc14b8a637fb6144a2bbaa298ae"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/powershell-7.6.9-osx-x64.tar.gz"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675638726"
 
 [tools.powershell."platforms.windows-x64"]
 checksum = "sha256:ce7484804c0f0ad4dda10c958e71acdaf7eebfb22505c1b480f89e0e9f1da94d"
-checksum_source = "mise-versions"
 url = "https://github.com/PowerShell/PowerShell/releases/download/v7.6.9/PowerShell-7.6.9-win-x64.zip"
 url_api = "https://api.github.com/repos/PowerShell/PowerShell/releases/assets/675639558"
 
