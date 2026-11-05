@@ -63,6 +63,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       # mise.toml を変えた PR (Renovate 等) には、同じブランチへ mise.lock を commit する。
+      # この commit で Renovate が PR を「編集された」とみなして rebase と自動 merge をやめないよう、
+      # renovate.json の gitIgnoredAuthors に commit の author を登録している
       - name: Push mise.lock update to the pull request branch
         if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:

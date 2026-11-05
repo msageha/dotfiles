@@ -14,6 +14,7 @@
       "format": "html"
     }
   },
+  "gitIgnoredAuthors": ["github-actions[bot]@users.noreply.github.com"],
   "packageRules": [
     {
       "description": "major 以外 (minor / patch / pin / digest) の更新を 1 つの PR にまとめる。major は個別 PR で人手レビューする",
