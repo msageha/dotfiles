@@ -11,7 +11,7 @@ inputs:
     description: "導入する mise のバージョン"
     required: false
     # "latest" は上流の release 直後に asset が未アップロードで 404 になりうるので、固定して Renovate で更新する。
-    default: "2026.10.23"
+    default: "2026.10.25"
 
 runs:
   using: composite
@@ -20,7 +20,7 @@ runs:
     # 保存するので、install: false にはしない。mise 本体だけを入れるときはリトライが無いので失敗させる。
     - name: Install mise
       id: mise
-      uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
+      uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
       continue-on-error: ${{ inputs.install == 'true' }}
       with:
         version: ${{ inputs.version }}

@@ -50,14 +50,14 @@ yq = "4.54.1"
 # renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
 "go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
-fnox = "1.44.0"
+fnox = "1.45.0"
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
 gh = "2.103.3"
 # renovate: datasource=gitlab-releases depName=gitlab-org/cli extractVersion=^v(?<version>.+)
 glab = "1.126.0"
 # fnox が補完の生成 (fnox completion) で usage を呼ぶ
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "7.1.3"
+usage = "7.1.4"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバーは重いため、skip_cli_tools=false を明示した環境でだけ入れる (dig の既定 true) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
@@ -68,7 +68,7 @@ java = "temurin-26.0.1+8"
 # renovate: datasource=node-version depName=nodejs
 node = "26.13.0"
 # renovate: datasource=npm depName=pnpm versioning=semver
-pnpm = "12.16.1"
+pnpm = "12.17.0"
 {{/* Claude Code の LSP plugin が使う。go / node ランタイムで導入する */ -}}
 # renovate: datasource=go depName=golang.org/x/tools/gopls extractVersion=^v(?<version>.+)
 "go:golang.org/x/tools/gopls" = "0.24.0"
@@ -83,11 +83,11 @@ pnpm = "12.16.1"
 {{/* クラウド / 開発 CLI は macOS で skip_cli_tools=false を明示した環境でだけ入れる */ -}}
 {{ if and (eq .chezmoi.os "darwin") (not (dig "skip_cli_tools" true .)) -}}
 # renovate: datasource=github-tags depName=aws/aws-cli
-awscli = "2.39.1"
+awscli = "2.39.3"
 # renovate: datasource=github-releases depName=synfinatic/aws-sso-cli extractVersion=^v?(?<version>.+)
 aws-sso = "2.3.4"
 # renovate: datasource=flutter-version depName=flutter
-flutter = "3.47.8"
+flutter = "3.47.9"
 # gcloud は GitHub にバージョンタグが無いため、SDK と同じタグが付く Docker Hub の google/cloud-sdk で追従する
 # renovate: datasource=docker depName=google/cloud-sdk
 gcloud = "591.0.0"
