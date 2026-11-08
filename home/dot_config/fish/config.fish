@@ -105,6 +105,9 @@ set -gx GOBIN "$HOME/.local/bin"
 # proxy を迂回できてしまうため URL だけを指定する。認証 token は ~/.netrc (modify_private_dot_netrc)
 set -gx GOPROXY "https://golang.flatt.tech"
 
+# Astro は既定で build の利用状況を telemetry.astro.build へ送る
+set -gx ASTRO_TELEMETRY_DISABLED 1
+
 if test -f /opt/homebrew/opt/openjdk/bin/java
     fish_add_path /opt/homebrew/opt/openjdk/bin
     set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"

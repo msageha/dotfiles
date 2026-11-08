@@ -121,6 +121,9 @@ export GOBIN="$HOME/.local/bin"
 # 認証 token は ~/.netrc (modify_private_dot_netrc)
 export GOPROXY="https://golang.flatt.tech"
 
+# Astro は既定で build の利用状況を telemetry.astro.build へ送る
+export ASTRO_TELEMETRY_DISABLED=1
+
 if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
     export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
     export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
