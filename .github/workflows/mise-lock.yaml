@@ -40,6 +40,12 @@ jobs:
         with:
           install: "false"
 
+      # mise lock は platform ごとの解決を並列に行う。op は vfox plugin なので、clone が終わる前に別の解決が
+      # plugin を読み、"module 'metadata' not found" や "Plugin directory not found" で失敗することがある。
+      # 並列の解決を始める前に直列で導入しておく。
+      - name: Install op plugin
+        run: mise plugin install op
+
       # バージョンの更新は Renovate が行う。ここでは pin のまま mise.lock の checksum / URL だけを再生成する。
       - name: Run mise lock
         env:
