@@ -97,18 +97,22 @@ version = "1.14.0"
 backend = "aqua:bats-core/bats-core"
 
 [tools.bats."platforms.linux-arm64"]
+checksum = "sha256:bb537b70b15b732f6d8827dd6578e3d8ce166636ce1f18ea9a074184fcce9177"
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
 [tools.bats."platforms.linux-arm64-musl"]
+checksum = "sha256:bb537b70b15b732f6d8827dd6578e3d8ce166636ce1f18ea9a074184fcce9177"
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
 [tools.bats."platforms.linux-x64"]
+checksum = "sha256:bb537b70b15b732f6d8827dd6578e3d8ce166636ce1f18ea9a074184fcce9177"
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
 [tools.bats."platforms.linux-x64-musl"]
+checksum = "sha256:bb537b70b15b732f6d8827dd6578e3d8ce166636ce1f18ea9a074184fcce9177"
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
@@ -118,6 +122,7 @@ url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
 [tools.bats."platforms.macos-x64"]
+checksum = "sha256:bb537b70b15b732f6d8827dd6578e3d8ce166636ce1f18ea9a074184fcce9177"
 url = "https://github.com/bats-core/bats-core/archive/refs/tags/v1.14.0.tar.gz"
 url_api = "https://api.github.com/repos/bats-core/bats-core/tarball/v1.14.0"
 
@@ -303,24 +308,31 @@ version = "2.34.1"
 backend = "vfox:op"
 
 [tools.op."platforms.linux-arm64"]
+checksum = "sha256:fd730a28ffa68376ac62b563d30e20e30ef59d3e2f142d9c6a959cfac5b50f60"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_arm64_v2.34.1.zip"
 
 [tools.op."platforms.linux-arm64-musl"]
+checksum = "sha256:fd730a28ffa68376ac62b563d30e20e30ef59d3e2f142d9c6a959cfac5b50f60"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_arm64_v2.34.1.zip"
 
 [tools.op."platforms.linux-x64"]
+checksum = "sha256:b13ed106335419ea0fb0ebd7ebbb3b48cf26a2f214eb4b2fd8d950548e7980ed"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_amd64_v2.34.1.zip"
 
 [tools.op."platforms.linux-x64-musl"]
+checksum = "sha256:b13ed106335419ea0fb0ebd7ebbb3b48cf26a2f214eb4b2fd8d950548e7980ed"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_linux_amd64_v2.34.1.zip"
 
 [tools.op."platforms.macos-arm64"]
+checksum = "sha256:101b54dd194fbb6c63276b84f5eee1968be3558e2212519d9f5e26ab24a4ad05"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_darwin_arm64_v2.34.1.zip"
 
 [tools.op."platforms.macos-x64"]
+checksum = "sha256:ca4e6b00eedc80a9a134297eb2390ca6039d2c9040ac57a80dbb8a1127823a27"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_darwin_amd64_v2.34.1.zip"
 
 [tools.op."platforms.windows-x64"]
+checksum = "sha256:25b25226ae1b5e1d6aa42ee8b9c6d1b956797e495a989b458f1dcc23d17611bf"
 url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.34.1/op_windows_amd64_v2.34.1.zip"
 
 [[tools.powershell]]
