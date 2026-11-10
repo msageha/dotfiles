@@ -10,6 +10,8 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - `.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
   共通規約の「コード」節のとおり、`$HOME` 配下の dotfiles (例: `~/.claude/`・`~/.config/`・`~/.zprofile`) は `home/` 以下の source を編集して `chezmoi apply` で反映する。
   適用先を直接編集しても、次の apply で上書きされる。
+- 共通規約の「git」節に従って worktree で source を編集したときは、反映と `tests/files` の検査を、その worktree を source にして自分の変更が及ぶ target に絞って行う (`chezmoi apply --source <worktree> <target>…`)。
+  `mise run apply` などのタスクと、`--source` を付けない chezmoi コマンドは、この checkout (既定の source) を使う。
 - source はファイルを直接編集する。
   chezmoi の設定が `[git] autoCommit = true / autoPush = true` (`home/.chezmoi.toml.tmpl`) なので、`chezmoi add` / `chezmoi edit` など chezmoi コマンド経由で source を変えると commit + push まで自動で走る。
 - ファイル名は chezmoi の source state 属性 (`dot_`・`private_`・`modify_`・`.tmpl` 等) に従う。このリポジトリ固有の扱いは次の 2 つ。

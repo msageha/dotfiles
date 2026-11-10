@@ -59,7 +59,7 @@ gh api repos/{owner}/{repo}/issues/<pr>/comments --paginate
   gh api 'repos/{owner}/{repo}/pulls/comments?sort=created&direction=desc&per_page=100' --jq '.[] | select(.user.login == "<login>") | {path, body, html_url}'
   ```
 
-- Address the underlying concern: if the same issue appears elsewhere in the PR's diff, the fix covers those places too.
+- Address the underlying concern: the fix covers every place within the PR's scope where the same reason holds, including code the PR did not change; propose places outside that scope instead of fixing them (AGENTS.md「依頼の解釈」).
 
 ### Step 4: Present the comments
 
