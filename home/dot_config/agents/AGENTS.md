@@ -92,6 +92,7 @@ LLM エージェント (Claude Code / Codex / Antigravity / Grok) 共通のユ�
   3. 今回の作業のブランチにいるか、今回の作業の未 commit の変更がある: 今の checkout で続ける
   4. それ以外 (merge されていない別のブランチ・detached HEAD 等): worktree
 
+  worktree はそのリポジトリの `.worktrees/<name>` に作り、作業用の clone は作らない。
   この作業のために自分が作った worktree は、未 commit の変更も push していない commit も残らなければ作業の終わりに片付け、残るなら場所と HEAD を報告して残す。委譲された側は、渡された作業場所で作業する。
 
 ## コード

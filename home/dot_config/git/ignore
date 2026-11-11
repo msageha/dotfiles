@@ -28,6 +28,7 @@ bitbucket_token*
 CLAUDE.md
 .maestro/*
 .playwright-mcp/
+.worktrees/
 .tool-versions
 
 # Python-related
