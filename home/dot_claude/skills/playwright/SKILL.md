@@ -29,12 +29,8 @@ In an existing project, follow its config and conventions (retries, trace, repor
 
 ## Debugging
 
-1. **UI Mode:** `npx playwright test --ui` -- visual test runner with time-travel debugging.
-2. **Trace Viewer:** `npx playwright show-trace trace.zip` -- inspect snapshots, network, console.
-3. **Headed mode:** `npx playwright test --headed` -- watch the browser.
-4. **Console/Network:** Capture logs via `page.on('console', ...)` and `page.on('request', ...)`.
-5. **Codegen:** `npx playwright codegen URL` -- record interactions and generate test code.
+Capture console and network logs via `page.on('console', ...)` and `page.on('request', ...)`.
 
 ## Reference files (read only when needed)
 
-- `references/test-writing.md` -- `@playwright/test` config, locator priority, test structure, Page Object Model, auth state reuse, network mocking, a Python quick-check snippet for local webapps, and a GitHub Actions CI snippet. Read when writing test code, `playwright.config.ts`, or CI config.
+- `references/test-writing.md` -- `@playwright/test` config, locator priority, test structure, Page Object Model, auth state reuse, network mocking, and a GitHub Actions CI snippet. Read when writing test code, `playwright.config.ts`, or CI config.

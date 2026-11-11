@@ -45,4 +45,3 @@ gws gmail +send --to alice@example.com --subject 'Hello' --body 'Hi!' --draft
 - Handles RFC 5322 formatting, MIME encoding, and base64 automatically.
 - Attachments: total size limit 25 MB.
 - With `--html`, use fragment tags (`<p>`, `<b>`, `<a>`, `<br>`); no `<html>`/`<body>` wrapper is needed.
-- `--dry-run` and `--draft` let the user check the message before it is sent.

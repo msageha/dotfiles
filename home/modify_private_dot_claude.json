@@ -3,6 +3,8 @@
   ~/.claude.json を .chezmoitemplates/claude.json の内容に置き換える。
   ただしマシンローカルな状態 (ログイン情報・プロジェクトごとの trust/許可・各種識別子)
   は既存ファイルの値を温存する。
+  modify script ではなく modify-template にしているのは、chezmoi 内部で実行されるので
+  外部 interpreter が要らず、Windows でも動くため。
 */ -}}
 {{- $desired := includeTemplate "claude.json" . | fromJson -}}
 {{- $stdin := trim (dig "stdin" "" .chezmoi) -}}

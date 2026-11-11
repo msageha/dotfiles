@@ -1,6 +1,6 @@
 # dotfiles (chezmoi source)
 
-macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリで、リポジトリ自体が chezmoi の source ディレクトリ。
+dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリで、リポジトリ自体が chezmoi の source ディレクトリ。
 セットアップ手順とディレクトリ構成は README.md にある。
 共通の作業規約は `home/dot_config/agents/AGENTS.md` (適用先 `~/.config/agents/AGENTS.md`) にあり、本書にはこのリポジトリ固有の契約だけを書く。
 `home/` 配下のパス (`dot_*`・`.chezmoi*`・`modify_*` 等) は `home/` を省いて書くことがある。
@@ -18,10 +18,9 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
   - `modify_private_dot_claude.json` は、`~/.claude.json` を `.chezmoitemplates/claude.json` の内容へ置き換える chezmoi:modify-template。
     `.tmpl` を付けると二重にテンプレート処理されるので付けない。
     マシンローカルな状態 (ログイン情報・`projects`・識別子等。キーはテンプレート内の list) だけ既存値を温存し、Claude Code が実行時に書くその他のランタイム状態 (カウンタ・キャッシュ等) は apply のたびにリセットされる。
-    chezmoi 内部で実行されるため外部 interpreter が要らず、Windows でも動く。
   - `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。
     外部ツール (ローカルデーモン等) が実行時に注入する hooks は apply のたびに消える。
-    hooks 配列の部分マージは脆いため意図して全量管理にしており、温存が必要になったら modify-template 化を検討する。
+    hooks 配列の部分マージは脆いため、意図して全量管理にしている。
 - `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
   本文用のファイル (`agents/*.md`・`*/instructions.md` 等) に生の `{{` を書くと、include / includeTemplate のどちらで参照しても全 chezmoi コマンドが失敗するので、必要なら `{{ "{{" }}` でエスケープする。
 - `.gitattributes` が無く Windows の checkout は CRLF になる (CI の `chezmoi-windows` も同じ)。
@@ -36,31 +35,25 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
     同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無いので、prefix で rename しない。
   - 後続スクリプトに波及するため、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は書かない。
   - テンプレートからスクリプトへは環境変数で値を渡す。
-    Claude plugin は `CLAUDE_MARKETPLACES` / `CLAUDE_PLUGINS`、CLI / GUI の導入レベルは `SKIP_CLI_TOOLS` (macOS / Debian) / `SKIP_GUI_TOOLS` (macOS)。
   - `lib.sh` は各テンプレートに展開されるため、変更するとこれを include する `run_once_*` / `run_onchange_*` が全て再実行される。
 - `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。各キーの用途と読み手は同ファイルのコメントにある。
-- bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書き、`dot_bash_profile` / `dot_zprofile` はそれを source する。
+- bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書く。
   Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (`docs/agent-shell.md`)。
 - `tests/install` (install スクリプトの関数をスタブで検査) と `tests/docker` (`mise.toml` のバリアント表と CI matrix の一致) は、apply 済みの環境に依存しないので pre-push hook で回す。
   `tests/files` は apply 後の `$HOME` を検査するので、`mise run test` (`bats -r tests/`。3 つ全てを回す) でだけ回る。
-  skip_* による skip 判定は `tests/test_helper.bash` にある。
 
 ## chezmoi data のフラグ
 
 ツールの導入レベルは chezmoi data のフラグで制御する (プロンプトの詳細は README)。
 
-- macOS / Linux は `skip_cli_tools` / `skip_gui_tools` (デフォルトはともに true = 最小構成。`skip_cli_tools=true` のとき `skip_gui_tools` は質問されず true 固定)、Windows は `skip_windows_extras`。
-- `.chezmoiignore` (コーディングエージェント設定の除外)・`.chezmoiexternal.toml` (+ `.chezmoitemplates/external-fonts.toml`)・`dot_config/mise/config.toml.tmpl`・`run_once_*` / `run_onchange_*` スクリプト・`data.apiKeys` の生成条件・`tests/files/*.bats` の skip 判定が横断的に参照する。
+- macOS / Linux は `skip_cli_tools` / `skip_gui_tools`、Windows は `skip_windows_extras`。
 - テンプレートで参照するときは、キー未定義の旧 config でも動くよう `dig "skip_cli_tools" false .` のフォールバック形を使う (既定 false = 全部入り)。
-- 例外として次は dig の既定を true にし、`skip_cli_tools=false` を明示した環境でのみインストールする。
-  `dot_config/mise/config.toml.tmpl` の言語ランタイム (go / java / node / pnpm)・LSP サーバー群、macOS 限定のクラウド / 開発 CLI 群 (awscli / aws-sso / flutter / gcloud / kubectl / stern / terraform / terragrunt)、node に依存する nanobanana MCP (`.chezmoiexternal.toml` / `run_onchange_after_95` / `.chezmoitemplates/claude.json`)。
+- 例外として、言語ランタイム・LSP サーバー、macOS 限定のクラウド / 開発 CLI、node に依存する nanobanana MCP は dig の既定を true にし、`skip_cli_tools=false` を明示した環境でのみインストールする。
 - `apply_ssh_keys` は、`mise run apply-ssh-keys` が `--override-data` でその invocation だけ true にする data キー。
   `.chezmoi.toml.tmpl` には置かず config にも書かない (書くとそのマシンでは通常の `status` / `diff` でも 1Password から鍵を取得する)。
   参照は `dig "apply_ssh_keys" false .`。
 
 ## mise tasks
-
-タスクは `mise.toml` の `[tasks]` にある (`mise tasks ls`)。
 
 - 平文の IME 辞書 (`settings/common/google.ime.txt`、gitignore 済み) を編集したら、`mise run encrypt-google-ime` で再暗号化してから commit する。
 
@@ -69,9 +62,8 @@ macOS / Ubuntu / Debian / Windows 向け dotfiles を [chezmoi](https://www.chez
 - 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。
 - prek の git hook は、commit 時に lint / format を、push 時にテンプレート全体の描画 (`chezmoi-dry-run` hook) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
-- テンプレートの描画確認は `chezmoi-dry-run` hook (`chezmoi apply --dry-run --force --source .`。既定の source ではなく、push しようとしている checkout を描画する) で行う。
-  `--verbose` が無いので diff を出さない。
-  差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
+- テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。
+  この hook は diff を出さないので、差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
 
 ### secret を出力しうるコマンド
 
@@ -92,12 +84,8 @@ secret の扱いは共通規約の「安全」節に従う。
 
 - sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (`~/Library/Caches/`・`~/.cache/`) への書き込みが "Operation not permitted" で落ちる。
   コード起因と決めつけず、sandbox を外して再実行して切り分ける。
-- `.pre-commit-config.yaml` の dprint hook から `--allow-no-files` を外さない。
-  prek は対象ファイルを複数バッチに分けて並列に `dprint fmt <subset>` を起動するため、あるバッチが `dprint.json` の `excludes` に全部マッチすると "No files found to format" (exit 14) で非決定的に失敗する。
-  sandbox 起因の失敗と紛らわしいが別問題。
 
 ## LLM エージェント指示文
 
 LLM エージェントの指示文 (共通規約・各ツールの AGENTS.md / CLAUDE.md / GEMINI.md と補足・rules・skills・サブエージェント) と各ツールの設定を編集・レビューする前に、`docs/agent-instructions.md` (各ツールへの配り方・コードから読み取れない契約・サイズ予算) と `dot_claude/rules/agent-config.md` (編集の規範) を読む。
 source は `dot_config/agents/`・`dot_claude/`・`dot_codex/`・`dot_gemini/`・`dot_grok/`・`dot_agents/`・`.chezmoitemplates/{agents,codex,gemini,grok}/`・`.chezmoidata.toml` の `[agents]` / `[codex]` にある。
-共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter にはそのツール固有の機構だけを書く。

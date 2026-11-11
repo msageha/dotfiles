@@ -7,10 +7,6 @@ allowed-tools: Bash(gws schema *)
 
 # gws — Shared Reference
 
-## Installation
-
-The `gws` binary must be on `$PATH`.
-
 ## Authentication
 
 ```bash

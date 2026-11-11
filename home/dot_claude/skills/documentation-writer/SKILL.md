@@ -114,7 +114,7 @@ After writing, self-check:
 
 ## Anti-Patterns to Avoid
 
-- Mixing Diataxis types in one document (the most common documentation failure).
+- Mixing Diataxis types in one document.
 - Writing for yourself instead of the reader.
 - "Wall of text" without structure or scanning aids.
 - Outdated code examples that no longer work.
