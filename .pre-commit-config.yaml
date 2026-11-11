@@ -44,6 +44,8 @@ repos:
       - id: dprint-fmt
         name: Format json/yaml/markdown/toml with dprint
         language: system
+        # prek は対象ファイルをバッチに分けて並列に dprint を起動する。dprint.json の excludes に
+        # 全部一致するバッチがあると、--allow-no-files 無しでは exit 14 で非決定的に失敗する
         entry: mise exec -- dprint fmt --allow-no-files
         types_or: [json, yaml, markdown, toml]
       - id: psscriptanalyzer

@@ -1,6 +1,6 @@
 # Test Writing Reference (@playwright/test)
 
-Contents: Project Setup / Recommended Config / Locator Priority / Test Structure / Page Object Model / Authentication / Network Mocking / Local Webapp Testing (Python) / CI (GitHub Actions)
+Contents: Project Setup / Recommended Config / Locator Priority / Test Structure / Page Object Model / Authentication / Network Mocking / CI (GitHub Actions)
 
 ## Project Setup (only when the user explicitly asked to add Playwright to the project; otherwise use the existing test runner and config)
 
@@ -102,27 +102,6 @@ await page.route('**/api/external-service', async route => {
 ```
 
 Mock only external/third-party services. Let requests to your own application endpoints reach the real app, so the test still covers them.
-
-## Local Webapp Testing (Python)
-
-For quick verification of local web applications:
-
-```python
-import os
-from playwright.sync_api import expect, sync_playwright
-
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto('http://localhost:3000')
-    # Wait for an element that appears only after the app has rendered; adjust the role and name to the page.
-    expect(page.get_by_role('heading', name='Dashboard')).to_be_visible()
-    page.screenshot(path=os.path.join(os.environ.get('TMPDIR', '/tmp'), 'inspect.png'), full_page=True)
-    # ... automation logic
-    browser.close()
-```
-
-**Common pitfall:** On dynamic apps, inspecting the DOM right after `goto` sees a half-rendered page. Wait for a specific element as above rather than `wait_for_load_state('networkidle')`, which Playwright discourages and which may never settle on pages that keep polling.
 
 ## CI (GitHub Actions)
 

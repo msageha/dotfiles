@@ -30,8 +30,3 @@ gws sheets +append --spreadsheet <ID>
 gws sheets +append --spreadsheet ID --values 'Alice,100,true'
 gws sheets +append --spreadsheet ID --json-values '[["a","b"],["c","d"]]'
 ```
-
-## Tips
-
-- Use `--values` for simple single-row appends.
-- Use `--json-values` for bulk multi-row inserts.

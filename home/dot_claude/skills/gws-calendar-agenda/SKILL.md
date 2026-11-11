@@ -29,7 +29,6 @@ gws calendar +agenda
 ## Examples
 
 ```bash
-gws calendar +agenda
 gws calendar +agenda --today
 gws calendar +agenda --week --format table
 gws calendar +agenda --days 3 --calendar 'Work'

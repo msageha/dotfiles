@@ -26,7 +26,6 @@ gws gmail +triage
 ## Examples
 
 ```bash
-gws gmail +triage
 gws gmail +triage --max 5 --query 'from:boss'
 gws gmail +triage --format json | jq '.[].subject'
 gws gmail +triage --labels
