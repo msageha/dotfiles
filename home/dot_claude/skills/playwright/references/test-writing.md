@@ -131,7 +131,7 @@ with sync_playwright() as p:
   run: npx playwright install --with-deps
 - name: Run Playwright tests
   run: npx playwright test
-- uses: actions/upload-artifact@v4
+- uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
   if: ${{ !cancelled() }}
   with:
     name: playwright-report
