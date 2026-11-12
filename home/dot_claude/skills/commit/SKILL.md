@@ -53,12 +53,13 @@ Match the format of the recent history from Step 1. If the history uses Conventi
 - type: `feat` / `fix` / `refactor` / `docs` / `style` / `test` / `chore` / `perf` / `ci` / `build` / `revert`.
 - scope: optional; the area of the codebase (e.g. `auth`, `api`, `ui`).
 - subject: imperative mood, no trailing period, at most about 50 characters; in English, start lowercase.
-- body: explain why, not what; wrap at 72 characters; omit it for trivial changes.
+- body: wrap at 72 characters.
 - footer: `BREAKING CHANGE:` when applicable, or `!` after the type/scope (e.g. `feat!:`).
 
 In any format:
 
-- Content: write for a later reader of the history. State the final intent of the change, not how the work went (what was tried and dropped). Leave out IDs and prefixes that only an agent or tool understands (task, worker or session IDs, `[<tool>]` prefixes).
+- Body: write it for a later reader of the history, who has the diff but not this session. State why the change was needed (the problem or requirement in the previous state) and, when the approach is not the obvious one, the constraint that ruled the obvious approach out. Mention what changed only as far as the reason needs it, since the diff shows the rest, and write the reason itself instead of saying that someone asked for the change. Omit the body when the subject already makes the reason clear.
+- Content: state the final intent of the change, not how the work went (what was tried and dropped). Leave out IDs and prefixes that only an agent or tool understands (task, worker or session IDs, `[<tool>]` prefixes).
 - Language: the same as the recent history (Japanese history, Japanese message). If the history is mixed or unclear, use English.
 - Do not add `Co-Authored-By` or other attribution trailers.
 
