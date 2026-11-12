@@ -38,11 +38,13 @@ gh pr checks <pr> --json name,state,bucket,link,startedAt,completedAt,workflow
 
 - `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). Without a push request, stop there with the conflict resolved and verified locally; with one, push and continue. If the conflict needs a design decision, present the options and wait.
 - Checks still pending: `gh pr checks <pr> --watch` and wait; do not diagnose a partial run.
-- For each `bucket: fail` check, take the run ID from `link` (`.../actions/runs/<run_id>/...`):
+- For each check in the `fail` or `cancel` bucket, take the run ID from `link` (`.../actions/runs/<run_id>/...`). A cancelled check is not a pass: when a step cancels the whole run after its job fails (a fail-fast pattern), the failing job itself ends as cancelled and `--log-failed` prints nothing, so also look for jobs with a failed step and read their logs. A check cancelled only because a newer run of the same workflow on the PR's current head commit superseded it needs no diagnosis; look at that run instead. Otherwise treat the check as unverified.
 
   ```bash
   gh run view <run_id> --json name,workflowName,conclusion,status,url,event,headBranch,headSha
   gh run view <run_id> --log-failed
+  gh run view <run_id> --json jobs --jq '.jobs[] | select(any(.steps[]; .conclusion == "failure")) | .databaseId'
+  gh run view --job <job_id> --log
   ```
 
 ### Step 4: Scope non-GitHub Actions checks
