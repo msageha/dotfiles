@@ -3,21 +3,12 @@ name: Secret scan
 on:
   # pull_request / workflow_dispatch では ci.yaml から reusable workflow として呼ばれる。
   workflow_call:
-    inputs:
-      fail-fast:
-        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
-        type: boolean
-        required: false
-        default: false
   # 検知ルールの更新を反映するため、push が無くても main の全履歴を週次で再スキャンする
   schedule:
     - cron: "0 1 * * 1" # 毎週月曜 01:00 UTC
 
 permissions:
   contents: read
-  # fail-fast の run キャンセルに要る。called workflow の GITHUB_TOKEN は caller の権限を
-  # 超えられないので、ci.yaml の job にも同じ権限を付ける。
-  actions: write
 
 jobs:
   gitleaks:
@@ -34,16 +25,3 @@ jobs:
 
       - name: Run gitleaks
         run: gitleaks git --redact -v .
-
-      # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
-      # gitleaks の container には gh CLI が無いため github-script で API を呼ぶ。
-      - name: Cancel the entire run on failure
-        if: failure() && inputs.fail-fast
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            await github.rest.actions.cancelWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });

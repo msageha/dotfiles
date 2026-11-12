@@ -15,38 +15,25 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# 各チェックは workflow_call と fail-fast input を持つ reusable workflow として並列に走り、
-# 1 つでも失敗したら run 全体をキャンセルする。
-# permissions は zizmor (excessive-permissions) に従い job 単位で付ける。actions: write は run のキャンセルに要る。
+# 各チェックは reusable workflow として並列に走る。
+# permissions は zizmor (excessive-permissions) に従い job 単位で付ける。
 jobs:
   prek:
     uses: ./.github/workflows/prek.yaml
     permissions:
       contents: read
-      actions: write
-    with:
-      fail-fast: true
 
   gitleaks:
     uses: ./.github/workflows/gitleaks.yaml
     permissions:
       contents: read
-      actions: write
-    with:
-      fail-fast: true
 
   chezmoi:
     uses: ./.github/workflows/chezmoi.yaml
     permissions:
       contents: read
-      actions: write
-    with:
-      fail-fast: true
 
   docker:
     uses: ./.github/workflows/docker.yaml
     permissions:
       contents: read
-      actions: write
-    with:
-      fail-fast: true
