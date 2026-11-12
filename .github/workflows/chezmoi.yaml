@@ -3,18 +3,9 @@ name: chezmoi
 # ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
 on:
   workflow_call:
-    inputs:
-      fail-fast:
-        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
-        type: boolean
-        required: false
-        default: false
 
 permissions:
   contents: read
-  # fail-fast の run キャンセルに要る。called workflow の GITHUB_TOKEN は caller の権限を
-  # 超えられないので、ci.yaml の job にも同じ権限を付ける。
-  actions: write
 
 jobs:
   chezmoi:
@@ -74,12 +65,6 @@ jobs:
           source ~/.bash_profile
           set -e
           mise run test
-      # run と各 job の conclusion は cancelled になるが、失敗した step は failure として記録に残る。
-      - name: Cancel the entire run on failure
-        if: failure() && inputs.fail-fast
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"
   chezmoi-windows:
     runs-on: windows-latest
     timeout-minutes: 30
@@ -117,9 +102,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: chezmoi apply --source=${{ github.workspace }}
-      - name: Cancel the entire run on failure
-        if: failure() && inputs.fail-fast
-        shell: powershell
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run cancel "$env:GITHUB_RUN_ID" --repo "$env:GITHUB_REPOSITORY"

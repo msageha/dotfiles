@@ -5,17 +5,9 @@ name: docker
 # ユーザーを消す経路、debian-min は素の Debian の経路、alpine は Dockerfile.alpine を通す。
 on:
   workflow_call:
-    inputs:
-      fail-fast:
-        description: "失敗したら呼び出し元の run 全体をキャンセルし、並列の他チェックを止める"
-        type: boolean
-        required: false
-        default: false
 
 permissions:
   contents: read
-  # fail-fast の run キャンセルに要る。ci.yaml の job にも同じ権限を付ける。
-  actions: write
 
 jobs:
   build:
@@ -65,8 +57,3 @@ jobs:
       # docker-image-cd の smoke test と同じ確認
       - name: Smoke test image
         run: docker run --rm dotfiles:${{ matrix.variant.tag }}-ci fish -c 'mise --version'
-      - name: Cancel the entire run on failure
-        if: failure() && inputs.fail-fast
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"
