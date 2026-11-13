@@ -149,6 +149,7 @@ mise -C ~/.local/share/chezmoi run apply-ssh-keys
 - Google 日本語入力: `mise -C ~/.local/share/chezmoi run decrypt-google-ime` で復号した `settings/common/google.ime.txt` を辞書ツールからインポートする。
 - VS Code: Custom CSS の拡張機能から `settings/common/vscode/styles.css` を読み込む。
 - BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に設定ファイルを開くので、各アプリのダイアログで取り込む。BetterTouchTool のライセンスは初回の適用時にだけ登録するので、age 秘密鍵を後から置いた場合は手で登録する。
+- BetterTouchTool (macOS): 適用時にログイン項目へ登録する。初回は適用を実行したターミナルに System Events の操作の許可を求めるダイアログが出るので許可する。許可しなかった場合は警告を出して続行するので、システム設定 > 一般 > ログイン項目 で追加する。
 
 変更を push するマシンでは、SSH 鍵を置いた後に remote を SSH に切り替える。
 

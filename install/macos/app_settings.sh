@@ -54,6 +54,19 @@ function bettertouchtool() {
     fi
 
     open_if_changed "BetterTouchTool" "$CHEZMOI_REPO_ROOT/settings/macos/btt/dotfiles.bttpreset" btt-preset
+
+    # BTT の環境設定にはログイン時の起動を切り替える defaults の key が無いため、macOS のログイン項目に登録する。
+    # 再適用のたびに項目が増えないよう、登録済みなら追加しない。
+    # 初回は呼び出し元のアプリに System Events の Automation 許可を求めるダイアログが出る。
+    # 許可しなかっただけで apply の後続の処理まで止めないよう、失敗は警告にとどめて手順を示す
+    log_step "BetterTouchTool をログイン項目に登録しています..."
+    if ! osascript -e 'tell application "System Events"
+        if not (exists login item "BetterTouchTool") then
+            make login item at end with properties {path:"/Applications/BetterTouchTool.app", hidden:false}
+        end if
+    end tell' >/dev/null; then
+        log_warn "BetterTouchTool をログイン項目に登録できませんでした。システム設定 > 一般 > ログイン項目 で追加してください。"
+    fi
 }
 
 function main() {
