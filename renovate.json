@@ -88,7 +88,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "chezmoi workflow (sh / ps1) と両 Dockerfile の chezmoi インストーラの tag を、mise.toml の chezmoi と同じグループ PR で更新する",
+      "description": "chezmoi.yaml workflow (sh / ps1) と両 Dockerfile で chezmoi インストーラに渡す版を、mise.toml の chezmoi と同じグループ PR で更新する",
       "managerFilePatterns": [
         "/^\\.github/workflows/chezmoi\\.yaml$/",
         "/^docker/Dockerfile\\.debian$/",
@@ -205,7 +205,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/vim の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -219,7 +218,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/delta の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -233,7 +231,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/tmux の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -247,7 +244,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/dircolors の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -261,7 +257,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の git-open の commit SHA を master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -275,7 +270,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/ghostty の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -289,7 +283,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の dracula/xcode の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -303,7 +296,6 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の powerline/fonts の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
@@ -331,7 +323,6 @@
     },
     {
       "customType": "regex",
-      "description": "setup-mise action の mise 本体のバージョン pin を更新する",
       "managerFilePatterns": [
         "/^\\.github/actions/setup-mise/action\\.yml$/"
       ],
@@ -344,7 +335,6 @@
     },
     {
       "customType": "regex",
-      "description": "壁紙 URL の dracula/wallpaper の commit SHA を master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^install/macos/system_settings\\.sh$/",
         "/^install/ubuntu/system_settings\\.sh$/"

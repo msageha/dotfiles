@@ -8,7 +8,7 @@ function setup() {
     # shellcheck source=install/common/claude_plugins.sh
     source "${SCRIPT_PATH}"
     # .chezmoiscripts の export 行と同じ range 式で .chezmoidata.toml から組み立てる
-    # (テンプレート本体は OS gate があり macOS では描画されないため直接は使えない)
+    # (テンプレート本体は OS ごとに分かれ、実行中の OS の分しか描画されないため直接は使えない)
     CLAUDE_MARKETPLACES="$(chezmoi_template '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}')"
     CLAUDE_PLUGINS="$(chezmoi_template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}')"
     export CLAUDE_MARKETPLACES CLAUDE_PLUGINS

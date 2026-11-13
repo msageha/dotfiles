@@ -72,7 +72,7 @@
   },
   "permissions": {
 {{- /* python / node / xargs / timeout / env / source / rm / curl は許可プロンプトの大半を占めるため、危険度より効率を優先して許可する
-       (rm は PreToolUse hook が / ~ $HOME * . .. の再帰削除を止める前提)。sh / bash / zsh / fish は `bash -c '…'` で hook を
+       (rm は、最初の対象が / ~ $HOME * . .. の再帰削除を PreToolUse hook が止める前提)。sh / bash / zsh / fish は `bash -c '…'` で hook を
        素通りさせるため、secret に触る fnox / security / gpg / aws-vault とともに許可しない。
        auto mode では wildcard 付きの interpreter の allow は無視され classifier が判定する (default / acceptEdits では効く)。
        パスや環境変数の値の違いは `*` でまとめる (`*` は空白を含む任意の文字列に一致し、`VAR=* cmd` は `VAR=x PATH=/evil cmd` も通すが許容する)。
@@ -373,7 +373,7 @@
     "defaultMode": "auto"
   },
   "hooks": {
-{{- /* 以下の hooks は POSIX シェル + jq 前提。ネイティブ Windows では毎回エラー (exit≠2 で fail-open) になるだけなので設定しない */}}
+{{- /* 以下の hooks は POSIX シェルと jq に依存するため、ネイティブ Windows には設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
     "SessionStart": [
       {

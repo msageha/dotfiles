@@ -9,7 +9,7 @@ agent の実行が editor・pager・対話 prompt の入力待ちで止まらな
 - 人間: agent ではなく、stdin と stdout が TTY の対話 shell のとき (PowerShell は `-NonInteractive` とスクリプト実行を除く)。
   prompt・補完・alias・theme と、fnox / direnv の hook を初期化する。
 - どちらでもない非対話 shell: 何も足さない。
-  VS Code などは TTY の無いログイン shell から環境を取り込んで統合ターミナルに引き継ぐので、ここで agent 用の値を入れると人間が使うターミナルに残るため。
+  VS Code などは TTY の無いログイン shell から環境を取り込んで統合ターミナルに引き継ぐため、ここで agent 用の値を入れると人間が使うターミナルに残る。
 
 PATH はどの場合も設定する。
 人間の shell 以外では hook が project の環境を読み込まないので、`mise exec --` / `fnox exec --` / `direnv exec .` で明示的に渡す。

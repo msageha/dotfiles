@@ -101,7 +101,7 @@ if $_dotfiles_human_shell; then
     fi
     unset _dircolors_bin
 
-    # LS_COLORS / GREP_COLORS は --color=auto を付けたときだけ効く。login shell は ~/.bashrc を読まないため alias もここで定義する
+    # LS_COLORS / GREP_COLORS は --color を付けないと効かないため alias で付ける。login shell は ~/.bashrc を読まないため alias もここで定義する
     # (--color 非対応の古い BSD ls もあるため、動くことを確かめてから)。
     # macOS の ls は COLORTERM か CLICOLOR が無いと色を出さないため CLICOLOR を設定する (GNU ls は無視する)
     export CLICOLOR=1

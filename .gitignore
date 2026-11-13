@@ -1,4 +1,3 @@
-# 全て無視し、管理するものだけを ! で戻す
 *
 
 !.gitignore
@@ -37,7 +36,6 @@ settings/common/google.ime.txt
 !tests
 !tests/**
 
-# 戻した範囲から、機密・不要なファイルを再び除外する
 **/.DS_Store
 **/Thumbs.db
 

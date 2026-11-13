@@ -42,7 +42,7 @@ if test "$human_shell" = true
     # COLORTERM か CLICOLOR が無いと色を出さず、fish の対処は Terminal.app 限定のため CLICOLOR を設定する
     # (GNU ls は CLICOLOR を無視する)
     set -gx CLICOLOR 1
-    # GREP_COLORS / GREP_COLOR は --color=auto を付けたときだけ効く
+    # GREP_COLORS / GREP_COLOR は --color を付けないと効かないため alias で付ける
     if echo x | grep --color=auto -q x 2>/dev/null
         alias grep='grep --color=auto'
     end
@@ -141,7 +141,6 @@ if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
     fish_add_path -a $DEVELOPER_DIR/usr/bin
 end
 
-# 以降のツール検出は mise 由来のツールも解決できる __tool_path で行う
 if test "$human_shell" = true
     set -l direnv_bin (__tool_path direnv)
     if test -n "$direnv_bin"

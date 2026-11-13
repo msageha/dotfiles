@@ -232,7 +232,6 @@ function Set-WindowsTerminalDraculaFragment {
 }
 '@
     New-Item -ItemType Directory -Force -Path (Split-Path $fragmentPath) | Out-Null
-    # Windows Terminal は BOM 無し UTF-8 の fragment を要求する
     [System.IO.File]::WriteAllText($fragmentPath, $fragmentJson, [System.Text.UTF8Encoding]::new($false))
     Write-Step "Installed Windows Terminal Dracula fragment -> $fragmentPath"
 }
@@ -282,7 +281,6 @@ function Set-WindowsTerminalDefaults {
         # colorScheme 本体 (Dracula) は Set-WindowsTerminalDraculaFragment が fragment として供給する
         $cfg.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $WindowsTerminalColorScheme -Force
 
-        # 5.1 の -Encoding utf8 は BOM を付け、BOM 付き JSON を読めないパーサーがあるため .NET API で書く。
         $json = $cfg | ConvertTo-Json -Depth 32
         [System.IO.File]::WriteAllText($path, $json, [System.Text.UTF8Encoding]::new($false))
         Write-Step "Set Windows Terminal defaults -> font: $WindowsTerminalFont, colorScheme: $WindowsTerminalColorScheme"

@@ -4,8 +4,8 @@
   approval_policy = "never" と workspace-write の組み合わせでは、~/.codex/rules/ の allow に一致するコマンドだけが sandbox の外で動き、
   ほかに sandbox の外が要るコマンドは確認なしで失敗する。
   analytics / otel.metrics_exporter は外部送信を止める (otel のログ・トレースは既定で none)。
-  OpenAI API key がある環境では、chezmoi が管理する ~/.codex/auth.json を読ませるため cli_auth_credentials_store = "file" にする
-  (keyring / auto では読まれない)。
+  OpenAI API key がある環境では cli_auth_credentials_store = "file" にする。keyring は auth.json を読まず、auto は OS の
+  credential store に保存済みの認証情報を優先するため、chezmoi が管理する ~/.codex/auth.json を確実に使わせる。
 */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}

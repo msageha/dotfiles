@@ -29,7 +29,7 @@ function require_command() {
 }
 
 # sudo -v は TTY があればパスワードを聞いて資格情報をキャッシュする。
-# verifypw=all の環境では NOPASSWD でも sudo -v が偽になるため、sudo -n true でも判定する
+# 既定の verifypw=all では、パスワードを要するルールと NOPASSWD のルールが混在すると sudo -v が認証を求めるため、sudo -n true でも判定する
 function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
