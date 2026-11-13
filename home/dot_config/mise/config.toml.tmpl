@@ -26,7 +26,7 @@ dust = "1.2.7"
 # renovate: datasource=github-releases depName=eza-community/eza extractVersion=^v?(?<version>.+)
 eza = "0.23.5"
 # renovate: datasource=github-releases depName=fastfetch-cli/fastfetch extractVersion=^v?(?<version>.+)
-fastfetch = "2.70.0"
+fastfetch = "2.71.0"
 # renovate: datasource=github-releases depName=sharkdp/fd extractVersion=^v?(?<version>.+)
 fd = "10.5.1"
 # renovate: datasource=github-releases depName=sharkdp/hexyl extractVersion=^v?(?<version>.+)
@@ -46,7 +46,7 @@ zoxide = "0.10.0"
 # renovate: datasource=github-releases depName=jqlang/jq extractVersion=^(jq-)?v?(?<version>.+)
 jq = "1.8.2"
 # renovate: datasource=github-releases depName=mikefarah/yq extractVersion=^v(?<version>\S+)
-yq = "4.54.1"
+yq = "4.54.2"
 # renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
 "go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
@@ -57,7 +57,7 @@ gh = "2.103.3"
 glab = "1.128.0"
 # fnox が補完の生成 (fnox completion) で usage を呼ぶ
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "7.2.0"
+usage = "7.3.0"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバーは重いため、skip_cli_tools=false を明示した環境でだけ入れる (dig の既定 true) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}

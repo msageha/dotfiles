@@ -15,9 +15,9 @@
     "**/modify_*"
   ],
   "plugins": [
-    "https://plugins.dprint.dev/json-0.25.2.wasm@811ca4c6f732bcd6f707bc2f42d42395bb4127cdf829960cf628a18fc149777e",
-    "https://plugins.dprint.dev/markdown-0.28.2.wasm@77d0095123be1df7c802ef1b8875433c757f79238c26a58d1c49b8cafca44e2c",
-    "https://plugins.dprint.dev/toml-0.9.0.wasm@776e088ed4255a51a80e3640e5fd20b15661147e86df3e99611aaa37e9c59852",
+    "https://plugins.dprint.dev/json-0.26.0.wasm@9abcd6eb43b3d04655649090c2e7ad14948da6acfe0374cb47ccd9eb3c48903d",
+    "https://plugins.dprint.dev/markdown-0.29.0.wasm@714aea7555dd9831861be466da8b26b2d92316d3cde550ef3e1f63b31f4ea302",
+    "https://plugins.dprint.dev/toml-0.10.0.wasm@0a8af7f5fe70c7ec652d77198867b2a97a1e690d5f3697542c603610aa47d3b3",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm@40a2fdda7040317eb1b23520f3a00769a5571eedb049c4ca9175c1b9eeba01ae"
   ]
 }
