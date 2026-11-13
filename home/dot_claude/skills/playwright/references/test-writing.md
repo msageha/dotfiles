@@ -2,13 +2,13 @@
 
 Contents: Project Setup / Recommended Config / Locator Priority / Test Structure / Page Object Model / Authentication / Network Mocking / CI (GitHub Actions)
 
-## Project Setup (only when the user explicitly asked to add Playwright to the project; otherwise use the existing test runner and config)
+## Project Setup
 
 ```bash
 npm init playwright@latest
 ```
 
-Run this only when the user asked for Playwright tests and the project has no `@playwright/test` yet: it adds a dependency and scaffolds `tests/` and `playwright.config.ts`, so confirm before running it.
+Run this only when the user explicitly asked to add Playwright to a project that has no `@playwright/test` yet, and confirm first: it adds a dependency and scaffolds `tests/` and `playwright.config.ts`. Otherwise use the existing test runner and config.
 
 ## Recommended Config (`playwright.config.ts`)
 
@@ -54,15 +54,21 @@ test.describe('Feature Name', () => {
 });
 ```
 
-## Page Object Model (when test suite grows)
+## Page Object Model
 
 ```typescript
-export class LoginPage {
-  constructor(private page: Page) {}
+import type { Locator, Page } from '@playwright/test';
 
-  readonly email = this.page.getByLabel('Email');
-  readonly password = this.page.getByLabel('Password');
-  readonly submitButton = this.page.getByRole('button', { name: 'Sign in' });
+export class LoginPage {
+  readonly email: Locator;
+  readonly password: Locator;
+  readonly submitButton: Locator;
+
+  constructor(page: Page) {
+    this.email = page.getByLabel('Email');
+    this.password = page.getByLabel('Password');
+    this.submitButton = page.getByRole('button', { name: 'Sign in' });
+  }
 
   async login(email: string, password: string) {
     await this.email.fill(email);
@@ -101,7 +107,7 @@ await page.route('**/api/external-service', async route => {
 });
 ```
 
-Mock only external/third-party services. Let requests to your own application endpoints reach the real app, so the test still covers them.
+Route only external or third-party services; let requests to the app's own endpoints reach the real app so the test still covers them.
 
 ## CI (GitHub Actions)
 
@@ -118,4 +124,4 @@ Mock only external/third-party services. Let requests to your own application en
     retention-days: 30
 ```
 
-**Key CI settings:** `retries: 2`, `workers: 1` (or use sharding for parallelism), `trace: 'on-first-retry'`.
+The Recommended Config above already sets the CI values (`retries` and `workers` through `process.env.CI`, and `trace`); for parallelism in CI, use sharding.

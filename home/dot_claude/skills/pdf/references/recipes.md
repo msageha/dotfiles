@@ -23,15 +23,13 @@ sudo apt-get install -y poppler-utils
 Additional tools as needed:
 
 ```bash
-# For OCR
-uv pip install pytesseract pdf2image
+# For OCR (run the script with: uv run --with pytesseract --with pdf2image python <script>)
 brew install tesseract  # macOS
 
 # For advanced manipulation
 brew install qpdf
 
-# For rendering to images (alternative)
-uv pip install pypdfium2
+# For rendering to images (alternative): uv run --with pypdfium2 python <script>
 ```
 
 ## Extract Text
@@ -96,8 +94,6 @@ c.save()
 
 ## Japanese Text in reportlab
 
-Helvetica and the other standard fonts have no CJK glyphs, so Japanese comes out as black boxes. Register a Japanese font first.
-
 ```python
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
@@ -123,12 +119,10 @@ reader = PdfReader("form.pdf")
 writer = PdfWriter()
 writer.append(reader)
 
-# Get field names
 fields = reader.get_fields()
 for name, field in fields.items():
     print(f"{name}: {field}")
 
-# Fill fields
 writer.update_page_form_field_values(
     writer.pages[0],
     {"field_name": "value"},
