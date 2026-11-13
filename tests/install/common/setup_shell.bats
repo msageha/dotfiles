@@ -31,7 +31,6 @@ function setup() {
     run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
     [ "$status" -ne 0 ]
     grep -Fxq "# machine local line" "${HOME}/.zshrc"
-    # 管理ブロックはマシン固有の追記より前に入る
     [ "$(head -n 1 "${HOME}/.zshrc")" = "# >>> dotfiles zsh init >>>" ]
 }
 
@@ -44,14 +43,12 @@ function setup() {
 }
 
 @test "[install/common] setup_shell - create_zshrc keeps file intact when end marker is missing" {
-    # 終了マーカー欠損時にブロック開始以降のユーザー行を巻き込み削除しないこと
     printf '%s\n' "# >>> dotfiles zsh init >>>" "# stale managed line" "# user line" > "${HOME}/.zshrc"
 
     run create_zshrc
     [ "$status" -eq 0 ]
     [[ "$output" == *"終了マーカー"* ]]
     grep -Fxq "# user line" "${HOME}/.zshrc"
-    # ファイルは書き換えられていない (マーカーの重複挿入もしない)
     [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc")" -eq 1 ]
 }
 

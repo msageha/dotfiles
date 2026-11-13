@@ -7,7 +7,6 @@ function setup() {
     source "${SCRIPT_PATH}"
 }
 
-# 各ツールをスタブし、ツール名と渡された引数を出力させる
 function stub_tools() {
     local tool
     # shellcheck disable=SC2154  # completion_tools は setup() の source で定義される
