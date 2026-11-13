@@ -42,7 +42,7 @@ openai-codex = "openai/codex-plugin-cc"
 # サブエージェントの description。本文は .chezmoitemplates/agents/<name>.md、
 # Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
 [agents]
-browser_debugger = "Verifies frontend changes in a real browser and investigates console, network, and performance issues through the Playwright and Chrome DevTools MCP servers. Use to keep the noisy browser output out of the caller's context."
+browser_debugger = "Verifies frontend changes in a real browser and investigates console, network, and performance issues through the Playwright and Chrome DevTools MCP servers. Delegate to it so that snapshots, console logs, and traces stay out of the caller's context."
 code_reviewer = "Code reviewer that reports findings and leaves fixes to the caller. Use when the user asks for a code review, or to check your own changes in an independent context mid-task. For the other-model review that AGENTS.md requires, use that model's CLI; use this agent for it only when no other model is available."
 debugger = "Finds the root cause of a concrete failure (failing test, runtime error, CI failure). It fixes the cause only when the delegation prompt asks for a fix; otherwise it stays read-only and returns the cause with evidence and a proposed fix."
 security_reviewer = "Security reviewer that reports vulnerabilities and leaves fixes to the caller. Use for changes to authentication, authorization, secrets, dependencies, infrastructure, input handling, dangerous commands, LLM integration (prompts, tool permissions, model output handling), or CI / supply chain."
