@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Runs the pull request / merge request workflow when the user explicitly asks (「PR 作って」「PR に積んで」「push して」「main に積んで」「conflict を解消して」「main を取り込んで」): branches from the latest base, pushes (straight to the base branch only when asked), opens or updates a GitHub PR / GitLab MR with a title and body written for the whole diff, brings the base into a PR branch, and waits for CI and the mergeable state. Loading this skill does not by itself permit a push or a PR."
+description: "Runs the GitHub PR / GitLab MR workflow when the user explicitly asks (「PR 作って」「PR に積んで」「push して」「main に積んで」「conflict を解消して」「main を取り込んで」): pushing (to the base branch directly only when asked), opening or updating a PR, and bringing the base into a PR branch. Loading this skill does not by itself permit a push or a PR."
 allowed-tools: Bash(git remote:*), Bash(git fetch:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git ls-tree:*), Bash(git switch:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git rebase:*), Bash(git merge:*), Bash(git worktree:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo view:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr checks:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh run watch:*), Bash(glab repo view:*), Bash(glab mr list:*), Bash(glab mr create:*), Bash(glab mr update:*), Bash(glab ci status:*), Read, Grep, Glob
 argument-hint: "[base-branch or title hint]"
 ---

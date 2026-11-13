@@ -1,6 +1,6 @@
 ---
 name: explain
-description: Explains a file, symbol, or piece of code in Japanese, covering what it does and why, its structure, control / data flow, dependencies, and pitfalls, scaled to the size of the target. Use when the user wants to understand how some code works (「このコードを解説して」「これ何してる？」「仕組みを教えて」「処理の流れを説明して」).
+description: Explains in Japanese what a file, symbol, or piece of code does and how it works. Use when the user wants to understand some code (「このコードを解説して」「これ何してる？」「仕組みを教えて」「処理の流れを説明して」).
 allowed-tools: Read, Grep, Glob
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: <file-path-or-symbol>

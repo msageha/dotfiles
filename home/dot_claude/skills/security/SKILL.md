@@ -1,6 +1,6 @@
 ---
 name: security
-description: "Reviews a file, directory, or the whole project for vulnerabilities (OWASP Top 10 / CWE Top 25 classes, LLM-integrated apps and agents, CI / supply chain, prompt injection against AI reviewers) and reports each with CWE, severity, confidence, and whether it was verified (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For only the current branch's pending changes, the bundled /security-review fits where available; for an independent-context review of a change, delegate to the security-reviewer agent (security_reviewer in Codex)."
+description: "Reviews a file, directory, or the whole project for vulnerabilities, including LLM-integrated apps and agents, prompt injection, and CI / supply chain (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For only the current branch's pending changes, use the bundled /security-review where available; for an independent-context review of a change, delegate to the security-reviewer agent (security_reviewer in Codex)."
 allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json)
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: "[file-or-directory]"
