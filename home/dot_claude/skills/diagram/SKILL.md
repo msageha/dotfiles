@@ -1,6 +1,6 @@
 ---
 name: diagram
-description: "Analyzes code and generates architecture / structure diagrams in Mermaid (flowchart, class, sequence, ER, state, or C4). Use when the user wants to visualize code structure, flow, or relationships (「図にして」「構成図を描いて」「シーケンス図で見せて」)."
+description: "Generates Mermaid diagrams (flowchart, class, sequence, ER, state, or C4) of code architecture, flow, or relationships. Use when the user wants code visualized (「図にして」「構成図を描いて」「シーケンス図で見せて」)."
 allowed-tools: Read, Grep, Glob
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: "[file-or-directory]"

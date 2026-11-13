@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: "Plans and applies a behavior-preserving refactor of a specified file or symbol, keeping existing tests green and the change to roughly one commit. Use when the user asks to restructure or clean up a given file or symbol without changing its observable behavior (「リファクタして」「整理して」「振る舞いを変えずに書き直して」). For simplifying only the code changed in the current diff, the /simplify skill fits better where available."
+description: "Refactors a specified file or symbol without changing its observable behavior (「リファクタして」「整理して」「振る舞いを変えずに書き直して」). To simplify only the code changed in the current diff, use /simplify where available."
 argument-hint: <file-path-or-symbol>
 ---
 
