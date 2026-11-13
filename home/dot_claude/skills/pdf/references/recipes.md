@@ -96,8 +96,6 @@ c.save()
 
 ## Japanese Text in reportlab
 
-Helvetica and the other standard fonts have no CJK glyphs, so Japanese comes out as black boxes. Register a Japanese font first.
-
 ```python
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
@@ -123,12 +121,10 @@ reader = PdfReader("form.pdf")
 writer = PdfWriter()
 writer.append(reader)
 
-# Get field names
 fields = reader.get_fields()
 for name, field in fields.items():
     print(f"{name}: {field}")
 
-# Fill fields
 writer.update_page_form_field_values(
     writer.pages[0],
     {"field_name": "value"},

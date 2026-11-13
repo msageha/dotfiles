@@ -30,7 +30,7 @@ Before writing, determine:
 4. Scope: What to include and what to exclude.
 5. Context: Is there existing documentation to build on or align with?
 
-Users rarely specify all five, so infer what you can from the request, the existing documentation and the code, and proceed; state the inferred values as assumptions in your report to the user, not in the document. Ask only when the audience or goal can be read in ways that would produce substantially different documents and the sources do not settle it. Then ask once, in one message, giving each open item as labelled options with one recommendation and what each choice changes. Under a full delegation (Goal / Constraints / Acceptance criteria, or 'すべて書いて'), do not ask: proceed on stated assumptions.
+Infer whatever is unstated from the request, the existing documentation and the code, and proceed; state the inferred values as assumptions in your report to the user, not in the document. Ask only when the audience or goal can be read in ways that would produce substantially different documents and the sources do not settle it; then ask once, in one message, giving each open item as labelled options with one recommendation and what each choice changes. When the user delegates the work through to completion (e.g. 'すべて書いて'), do not ask: proceed on stated assumptions.
 
 ### Phase 2: Outline
 
@@ -67,7 +67,8 @@ Generate content in Markdown following these principles:
 - Use admonitions sparingly: `> **Note:**`, `> **Warning:**`, `> **Tip:**`.
 
 #### User-Centricity
-- Front-load the most important information.
+- Document what the reader needs to know, not what the code does.
+- Front-load the most important information instead of opening every document with a paragraph of background.
 - Provide "copy-paste ready" commands and configs.
 - Anticipate common mistakes and address them inline or in a troubleshooting section.
 - Link to related documents rather than duplicating content.
@@ -111,12 +112,3 @@ After writing, self-check:
 - Discuss trade-offs, alternatives, and design decisions.
 - Link to Reference for exact specifications.
 - Leave step-by-step instructions to tutorials and how-to guides and link to them.
-
-## Anti-Patterns to Avoid
-
-- Mixing Diataxis types in one document.
-- Writing for yourself instead of the reader.
-- "Wall of text" without structure or scanning aids.
-- Outdated code examples that no longer work.
-- Documenting what the code does instead of what the user needs to know.
-- Starting every document with a paragraph of context nobody reads.

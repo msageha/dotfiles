@@ -19,14 +19,14 @@ argument-hint: "[file path or description of PDF task]"
 
 ## Workflow
 
-1. **Visual review**: Render PDF pages to PNGs and view them yourself (Read the PNG files).
+1. Visual review: Render PDF pages to PNGs and view them yourself (Read the PNG files).
    - Use `pdftoppm` (from Poppler), or `pypdfium2` if Poppler is unavailable.
    - Do this yourself whenever you created or modified a PDF for delivery (generation, form filling, layout changes). Extraction-only tasks do not need it.
    - Only when neither renderer is available and installing one is not approved, deliver with an explicit note that visual review was not done, and give the user the render command to check locally.
-2. **Create PDFs**: Use `reportlab` for generation.
-3. **Extract text**: Use `pdfplumber` or `pypdf` for text extraction.
-4. **Manipulate**: Use `pypdf` for merge/split/rotate, `qpdf` for advanced operations.
-5. **Validate**: After each meaningful update, re-render pages and verify alignment, spacing, and legibility.
+2. Create PDFs: Use `reportlab` for generation.
+3. Extract text: Use `pdfplumber` or `pypdf` for text extraction.
+4. Manipulate: Use `pypdf` for merge/split/rotate, `qpdf` for advanced operations.
+5. Validate: After each meaningful update, re-render pages and verify alignment, spacing, and legibility.
 
 ## Dependencies
 
@@ -52,9 +52,9 @@ Check availability first. Before installing anything, show the command and get t
 
 ## Gotchas
 
-- **Japanese text**: reportlab's standard fonts (Helvetica etc.) have no CJK glyphs, so Japanese renders as black boxes. Register `UnicodeCIDFont("HeiseiKakuGo-W5")` (not embedded; the viewer substitutes a local font) or a TrueType-outline `.ttf` via `TTFont` (embedded; CFF-outline `.otf` is rejected), then render to PNG and confirm no boxes remain. Code is in `references/recipes.md`.
-- **Sub/superscripts**: Unicode subscript/superscript characters render as black boxes in reportlab. Use `<sub>` and `<super>` XML tags within Paragraph objects instead.
-- **Dashes**: Use ASCII hyphens only; Unicode dashes (U+2011 etc.) can render as black boxes.
+- Japanese text: reportlab's standard fonts (Helvetica etc.) have no CJK glyphs, so Japanese renders as black boxes. Register `UnicodeCIDFont("HeiseiKakuGo-W5")` (not embedded; the viewer substitutes a local font) or a TrueType-outline `.ttf` via `TTFont` (embedded; CFF-outline `.otf` is rejected), then render to PNG and confirm no boxes remain. Code is in `references/recipes.md`.
+- Sub/superscripts: Unicode subscript/superscript characters render as black boxes in reportlab. Use `<sub>` and `<super>` XML tags within Paragraph objects instead.
+- Dashes: Use ASCII hyphens only; Unicode dashes (U+2011 etc.) can render as black boxes.
 
 ## Reference files (read only when needed)
 

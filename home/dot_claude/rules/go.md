@@ -6,7 +6,7 @@ paths:
 # Go
 
 - Error Handling: Return errors explicitly. Check with errors.Is()/errors.As(). Wrap with fmt.Errorf() and %w. Create custom error types when callers need context.
-- Interfaces: Define small interfaces in the package that consumes them, and only in the cases AGENTS.md「コード」 allows; a package that cannot import the implementation because of an import cycle counts as the layering case. Return concrete types. A test fake alone does not justify one: AGENTS.md「検証と完了」 forbids bending production code for tests, which is stricter than Go Code Review Comments, so test through the real implementation (e.g. against an httptest server).
+- Interfaces: Define small interfaces in the package that consumes them, only in the cases AGENTS.md「コード」 allows; a package that cannot import the implementation because of an import cycle counts as the layering case. Return concrete types. A test fake alone does not justify an interface: AGENTS.md「検証と完了」 forbids bending production code for tests (stricter than Go Code Review Comments), so test through the real implementation (e.g. against an httptest server).
 - Package Structure: Avoid deep package hierarchies.
 - Dependency Injection: Pass dependencies explicitly rather than using global state.
 - Context: Pass context.Context as the first parameter for cancelable operations.

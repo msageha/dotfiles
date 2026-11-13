@@ -15,7 +15,7 @@
 
 ## Claude Code
 
-- `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で共通規約を import し、Claude 固有の機構 (Stop hook が実行する `.claude/verify.sh`・Read の再読・sandbox の二重適用・permission に合わせたコマンドの形・Agent tool の `subagent_type`・codex CLI の呼び方・github MCP の認証) を足す。
+- `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で共通規約を import し、Claude 固有の機構だけを足す。
   MCP やサブエージェントの「いつ使うか」は tool の定義・server instructions・agent の description にあるので再掲しない。
 - この repo で作業すると、`home/dot_claude/CLAUDE.md` が nested の CLAUDE.md として読み込まれ、適用済みの `~/.claude/CLAUDE.md` と重複する。
   user settings の `claudeMdExcludes` (`dot_claude/private_settings.json.tmpl`) で外している。
@@ -40,7 +40,7 @@
 - 分割と上限の検査は `.chezmoitemplates/gemini/agents-md-part` が行う。
   見出しが見つからないときと、生成物が 24,000 bytes を超えたときは、テンプレートが fail して描画を止める。
   共通規約の `## git` 見出しを変えるときは、分割位置も合わせて直す。
-- Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。rule は補足に生成した一覧から選んで読ませる。
+- Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。
 - サブエージェントの `agent.md` の `tools` は、公式 docs の表で既定値が `[]` (空のときに使える tool は未記載) なので、各 wrapper で列挙する。
   `find_by_name` / `grep_search` / `list_dir` は既定の toolset から外れた legacy の tool で、`tools` で明示すれば使える。公式 docs は未対応の tool 名で subagent が hang しうると警告しているので、agy を更新したら tool 名を点検する。
 
@@ -50,13 +50,13 @@
 - `compat.claude` (`dot_grok/modify_private_config.toml`) は、`agents = false` (`~/.claude/CLAUDE.md` と project の `.claude/CLAUDE*.md`)・`rules = false` (`~/.claude/rules` と project の `.claude/rules`。有効だと `paths` を無視して全件を常時読む)・`skills = true` にしている。
   project 直下の `CLAUDE.md` と `~/.claude/agents` は、この設定にかかわらず読まれる。
 - project の AGENTS.md / CLAUDE.md は、folder trust (`grok --trust` か対話での許可。`--trust` は `grok --help` に出ない) があるときだけ起動時に読まれる。`grok inspect --json` の `projectTrusted` で確かめる。
-- `~/.grok/skills` には配らない (以前に配った SKILL.md は `.chezmoiremove` が消す)。
+- `~/.grok/skills` には配らない。
   Grok は `~/.agents/skills` も読み、`~/.claude/skills` と同名の skill は `~/.agents/skills` 側を採る (中身は同じ include)。bundled と同名の skill (pdf) は bundled 側が採られる。
 
 ## skills
 
 - 本体は `dot_claude/skills/<name>/SKILL.md`。
-- 共有の 9 本 (commit / deps / explain / improve-pr / pr / refactor / review / security / test) は、本体を include する wrapper で他のツールにも配る。
+- 他のツールと共有する skill は、本体を include する wrapper で配る。
   Codex と Grok は `dot_agents/skills/<name>/SKILL.md.tmpl` → `~/.agents/skills`、Antigravity は `dot_gemini/config/skills/<name>/SKILL.md.tmpl`。
   共有 skill の本文は他のツールからも読まれ、Grok は `compat.claude.skills = true` で `~/.claude/skills` の全件も読む。
   そのため、どの skill も Claude 固有の機構 (`$ARGUMENTS` の置換・Claude Code の tool 名・bundled skill・Stop hook) に依存させず、使うときは「使える環境では」と条件を付ける。

@@ -7,7 +7,7 @@ argument-hint: "[optional PR number or URL]"
 
 # GitHub Actions CI Fix
 
-Locate failing PR checks, read their GitHub Actions logs and summarize the failures. On a fix request, fix the root cause and verify locally; push to the PR branch and confirm CI is green only when the request includes pushing.
+Locate failing PR checks, read their GitHub Actions logs and summarize the failures. Whether to also fix, push or watch depends on the request (Step 1).
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ For each failing check, present the check name and run URL, a short log excerpt 
 ### Step 6: Find the cause and fix it (fix mode)
 
 - Fix what actually broke, within the PR's own scope; do not add files or config whose only purpose is to make the check pass.
-- Flaky tests, timeouts and failures that look external are not dismissed as transient. Identify the cause and where it comes from (this PR, an earlier commit or PR on the base, the runner, or an external service), using the run's `headSha`, the same job's history on the base (`gh run list --workflow <workflow> --branch <base>`) and the log. Fix it when the cause is in code. When it is outside the code, rerun with `gh run rerun <run_id> --failed` only if the request covers acting on the PR's CI (「green にして」「PR に積んで」, or a request to rerun); otherwise report the cause, its evidence and the proposed rerun, because a rerun also repeats jobs such as deploys and consumes CI resources.
+- Do not dismiss flaky tests, timeouts and failures that look external as transient. Identify the cause and where it comes from (this PR, an earlier commit or PR on the base, the runner, or an external service), using the run's `headSha`, the same job's history on the base (`gh run list --workflow <workflow> --branch <base>`) and the log. Fix it when the cause is in code. When it is outside the code, rerun with `gh run rerun <run_id> --failed` only if the request covers acting on the PR's CI (「green にして」「PR に積んで」, or a request to rerun); otherwise report the cause, its evidence and the proposed rerun, because a rerun also repeats jobs such as deploys and consumes CI resources.
 - If an existing test is wrong relative to the intended behavior, fix the test. Add new tests only when the user asks.
 - Pin a tool version only when the failure is caused by an upstream change you can cite (release notes / upstream PR); that pin is within the PR's scope, while any other dependency version change is a bump and pauses per Step 1. Do not mix unrelated pins or CI-config changes into the PR.
 - Run the failing job's commands locally (or the project's equivalents, e.g. `mise run lint` / `mise run test`) and report the results.

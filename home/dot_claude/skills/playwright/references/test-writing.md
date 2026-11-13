@@ -2,13 +2,13 @@
 
 Contents: Project Setup / Recommended Config / Locator Priority / Test Structure / Page Object Model / Authentication / Network Mocking / CI (GitHub Actions)
 
-## Project Setup (only when the user explicitly asked to add Playwright to the project; otherwise use the existing test runner and config)
+## Project Setup
 
 ```bash
 npm init playwright@latest
 ```
 
-Run this only when the user asked for Playwright tests and the project has no `@playwright/test` yet: it adds a dependency and scaffolds `tests/` and `playwright.config.ts`, so confirm before running it.
+Run this only when the user explicitly asked to add Playwright to a project that has no `@playwright/test` yet, and confirm first: it adds a dependency and scaffolds `tests/` and `playwright.config.ts`. Otherwise use the existing test runner and config.
 
 ## Recommended Config (`playwright.config.ts`)
 
@@ -54,7 +54,7 @@ test.describe('Feature Name', () => {
 });
 ```
 
-## Page Object Model (when test suite grows)
+## Page Object Model
 
 ```typescript
 export class LoginPage {
@@ -101,8 +101,6 @@ await page.route('**/api/external-service', async route => {
 });
 ```
 
-Mock only external/third-party services. Let requests to your own application endpoints reach the real app, so the test still covers them.
-
 ## CI (GitHub Actions)
 
 ```yaml
@@ -118,4 +116,4 @@ Mock only external/third-party services. Let requests to your own application en
     retention-days: 30
 ```
 
-**Key CI settings:** `retries: 2`, `workers: 1` (or use sharding for parallelism), `trace: 'on-first-retry'`.
+The config above already covers the CI settings (`retries`, `workers`, `trace`); for parallelism in CI, use sharding.

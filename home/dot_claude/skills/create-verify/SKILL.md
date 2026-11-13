@@ -7,30 +7,30 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 # .claude/verify.sh の作成 / 更新
 
-リポジトリに既に存在する検証手段を呼び出すだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新する。この skill の起動自体を作成の依頼とみなし、候補の一覧を示したうえで確認を待たずに作成 / 更新まで進める (例外は、プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記している場合。Constraints 参照)。
+この skill の起動を作成の依頼とみなし、候補の一覧を示したら確認を待たずに作成 / 更新まで進める。
+ただし、プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記しているときは、その記述を示し、作成するか確認してから進める。
 
 ## Goal
 
-リポジトリに既に存在する検証手段を集約し、`bash .claude/verify.sh` 一発で全部走るようにする。
+リポジトリに既にある検証手段を呼ぶだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新し、`bash .claude/verify.sh` 1 回でそれらが全部走るようにする。
 
 ## Acceptance criteria
 
 - `.claude/verify.sh` が実行可能 (`chmod +x`) で、`set -euo pipefail` を含む。
 - 呼び出すコマンドはすべてリポジトリに既に存在するもの。
 - いずれかの検証が落ちたら exit code 非ゼロで終了する。
-- 依存ツールが PATH に無い場合は warning を出してスキップする (verify.sh 自体は壊れない)。AGENTS.md の「コード」節 (暗黙のデフォルト・フォールバックでごまかさず停止する) の意図的な例外で、Stop hook を環境差で壊さないための設計。
-- 既に `.claude/verify.sh` がある場合は、既存の呼び出しを尊重し、検出結果との差分だけを Edit で反映する (上書きで既存ロジックを壊さない)。既存の呼び出しを削除するときは理由を報告する。
-- 検証手段が 1 つも見つからない場合は何も書かず、その旨と「検証基盤 (テスト / lint / dry-run 等) を整備した後に再度実行する」案内を報告して終了する。
+- 依存ツールが PATH に無い検証は warning を出してスキップする。必須の入力・設定が欠けたら止める AGENTS.md「コード」節の意図的な例外で、Stop hook を環境差で壊さないため。
+- 既に `.claude/verify.sh` があれば、全体を上書きせず、既存の呼び出しを基に検出結果との差分だけを反映する。既存の呼び出しを削除するときは理由を報告する。
+- 検証手段が 1 つも見つからなければ何も書かず、その旨と、検証基盤 (テスト / lint / dry-run 等) を整えてから再実行するよう報告して終える。
 
 ## Constraints
 
 - 新しい検証基盤を作らない。テストファイル、Makefile ターゲット、`package.json` script、pre-commit 設定などは追加せず、検出だけを行う。
-- wrapper は薄く保つ。検証ロジック本体は呼び出し先に委ね、`verify.sh` 内で複雑な分岐や lint ロジックを書かない。
-- 副作用の大きい操作 (deploy / push / migrate / 実機ビルド / 長時間 E2E) は Stop hook で走らせない (Stop hook はターンを終えるたびに走るため)。検出しても呼び出さず、報告にとどめる。
+- `verify.sh` に検証ロジック (複雑な分岐や lint の処理) を書かず、呼び出し先に任せる。
+- 副作用の大きい操作 (deploy / push / migrate / 実機ビルド / 長時間 E2E) は、検出しても呼ばずに報告だけする (Stop hook はターンを終えるたびに走るため)。
 - ファイルを書き換える検査 (formatter の書き換えモード、`--fix` 付きの lint、それらを hook に含む `pre-commit run --all-files` やタスク) は呼ばない。ターンのたびに作業ツリーが変わり、作業中の差分に意図しない変更が混ざるため。代わりに、書き換えが必要なときに非ゼロで終わる check のモード (`--check` 等) を呼び、そのモードが無いものは除外して報告する。
 - `.claude/` ディレクトリが無ければ作成する。`.gitignore` の状態は変更しない (ユーザー判断に委ねる)。
 - 引数は使用しない。
-- プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記している場合だけ、その記述を示して作成するか確認を取ってから進める。
 - secret を出力し得るコマンド (対象ファイルの diff を出す dry-run、環境変数を一覧で出すコマンド等。それらを内包するタスクも含む) は候補にしない。
 - secret を要する検証は、リポジトリが定める secret の注入の経路 (それを通すタスク等) で呼び、`verify.sh` に secret の値や取得処理を書かない。
 
@@ -54,7 +54,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
   - `Cargo.toml` (`cargo test`, `cargo clippy`, `cargo fmt --check`)
   - `pubspec.yaml` (`flutter test` / `dart test`, `dart analyze`)
 - 横断的な lint:
-  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (または `--from-ref`)。ファイルを書き換える hook を含むなら候補にしない (Constraints 参照)
+  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (または `--from-ref`)
   - `shellcheck` 対象の `.sh` がある場合
 - フロントエンド E2E (Playwright / Puppeteer / Chrome DevTools):
   - 既にテストファイル (`*.spec.ts` 等) と設定が揃っている場合のみ採用する。
@@ -83,7 +83,7 @@ warn() { echo "verify.sh: $*" >&2; }
 # fi
 ```
 
-新規作成時はこの雛形を Write し、`chmod +x` で実行権限を付与する。呼び出し行は検出結果に応じて埋める。各ブロックは「ツール存在チェック → 実行 or warn でスキップ」の対称な形を保つ。埋めた後はテンプレートのプレースホルダ行と例コメント (`# --- ... ---`、`# 例:` 以下) を削除する。
+新規作成時はこの雛形に検出した呼び出しを埋めて書き、`chmod +x` を付ける。各ブロックは例と同じ「ツールがあれば実行し、無ければ warn でスキップ」の形にし、埋めた後はプレースホルダ行と例のコメント (`# --- ... ---`・`# 例:` 以下) を消す。
 
 ### 4. 完了報告
 

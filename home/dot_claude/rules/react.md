@@ -5,7 +5,7 @@ paths:
 ---
 # React
 
-- Components: Use functional components and hooks. No class components or legacy APIs (ReactDOM.render, createElement chains), except error boundaries, which React still cannot express as a function component: use react-error-boundary if the project has it, otherwise a single `ErrorBoundary` class.
+- Components: Use functional components and hooks. No class components or legacy APIs (ReactDOM.render, createElement chains), except error boundaries, which React cannot express as a function component: use react-error-boundary if the project has it, otherwise a single `ErrorBoundary` class.
 - State Management: Keep state minimal and colocated. Lift to React Context or a store (e.g. Zustand) only when state is genuinely shared.
 - Effects: Use useEffect only for real side effects, with correct dependency arrays and cleanup functions. Derive values during render instead of syncing them via effects.
 - Composition: Pass JSX as `children` rather than drilling props through intermediate components.

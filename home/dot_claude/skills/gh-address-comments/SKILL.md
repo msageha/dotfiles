@@ -41,7 +41,7 @@ query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
 }'
 ```
 
-A thread whose `comments.pageInfo.hasNextPage` is true has more than 50 comments; take its full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate`), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
+For a thread whose `comments.pageInfo.hasNextPage` is true, take the full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate`), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
 
 Review summaries and general PR comments:
 
@@ -78,7 +78,7 @@ gh api repos/{owner}/{repo}/issues/<pr>/comments --paginate
 
 - For each selected comment, implement the fix for its underlying concern. If while implementing you find the comment is wrong, stop for that item and report the evidence instead of silently skipping or applying it.
 - A comment the user individually selected that asks for new tests counts as their instruction to add them; under a full delegation, report such requests instead of adding tests.
-- Before committing, check that each fix is needed and correct. Commit / push only on request (AGENTS.md `git` section).
+- Commit / push only on request (AGENTS.md `git` section).
 
 ### Step 7: Report a per-comment ledger
 

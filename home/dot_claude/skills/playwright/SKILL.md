@@ -7,7 +7,7 @@ argument-hint: "[scenario description or test file path]"
 
 # Playwright Skill
 
-This skill covers writing and debugging test code with `@playwright/test`. Read `references/test-writing.md` before writing test code, `playwright.config.ts`, or CI config.
+This skill covers writing and debugging test code with `@playwright/test`.
 
 Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run where available.
 
