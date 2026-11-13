@@ -29,7 +29,7 @@ In an existing project, follow its config and conventions (retries, trace, repor
 
 ## Debugging
 
-Capture console and network logs via `page.on('console', ...)` and `page.on('request', ...)`.
+In test code, capture console and network logs via `page.on('console', ...)` and `page.on('request', ...)`.
 
 ## Reference files (read only when needed)
 

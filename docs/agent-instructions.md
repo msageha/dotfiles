@@ -30,7 +30,7 @@
 - custom agent は `dot_codex/agents/*.toml.tmpl`。model は `.chezmoidata.toml` の `[codex] subagent_model` を参照する。
   custom agent のファイルは親の `sandbox_mode`・`approval_policy`・`model_provider`・`mcp_servers` を上書きできず、子は親の設定を継承するので ([公式 subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents))、これらは書かない。
 - Codex には playwright / chrome-devtools MCP を置かない。custom agent の `mcp_servers` は無視され、main config に置くと Claude から呼ぶ `codex exec` の起動のたびに MCP が立ち上がるため。
-  browser_debugger も Codex には置かず、Codex のブラウザ確認は、実行環境が提供するブラウザ・画面操作の tool か、プロジェクトの E2E で行う (`codex/instructions.md`)。
+  Codex のブラウザ確認は、実行環境が提供するブラウザ・画面操作の tool か、プロジェクトの E2E で行う (`codex/instructions.md`)。
 
 ## Antigravity (Gemini)
 

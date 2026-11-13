@@ -23,15 +23,13 @@ sudo apt-get install -y poppler-utils
 Additional tools as needed:
 
 ```bash
-# For OCR
-uv pip install pytesseract pdf2image
+# For OCR (run the script with: uv run --with pytesseract --with pdf2image python <script>)
 brew install tesseract  # macOS
 
 # For advanced manipulation
 brew install qpdf
 
-# For rendering to images (alternative)
-uv pip install pypdfium2
+# For rendering to images (alternative): uv run --with pypdfium2 python <script>
 ```
 
 ## Extract Text

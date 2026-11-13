@@ -19,7 +19,7 @@ lint / test 等の検証は、レビュー対象のファイルを書き換え�
 
 レビュー対象が PR 番号 / URL で指定されたときは、代わりに `gh pr view <pr>` で説明を、`gh pr diff <pr> --exclude '<secret>'` で secret ファイルを除いた差分を取得する。
 
-未 commit の変更が無ければ、base ブランチとの差分 (`git diff origin/<base>...HEAD`) を対象にする。three-dot にするのは、merge-base から比べて base 側だけで進んだ変更を混ぜないため。base は呼び出し元の指定、無ければ `origin/HEAD`。どちらの差分も無ければ、レビュー対象を確認事項として呼び出し元に返す。
+未 commit の変更が無ければ、base ブランチとの差分を対象にし、手順 1〜3 と同じく `git diff --name-only origin/<base>...HEAD` で secret を判定してから `git diff origin/<base>...HEAD -- . ':(exclude)<path>'` で取得する。three-dot にするのは、merge-base から比べて base 側だけで進んだ変更を混ぜないため。`origin/<base>` は呼び出し元が指定した base で、指定が無ければ `origin/HEAD` を使う。どちらの差分も無ければ、レビュー対象を確認事項として呼び出し元に返す。
 
 ## Step 2: レビュー
 

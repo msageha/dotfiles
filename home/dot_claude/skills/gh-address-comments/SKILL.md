@@ -87,4 +87,4 @@ Re-fetch the comments and match every one, resolved threads included, against th
 ## Constraints
 
 - Resolve review threads or post replies only when the user asks.
-- If `gh` hits auth or rate-limit issues, ask the user to re-authenticate with `gh auth login`.
+- If `gh` fails with an auth error, first rule out your own execution environment (AGENTS.md「検証と完了」); ask the user to run `gh auth login` only when `gh auth status` shows the login is invalid. On a rate limit, wait for the reset and resume.

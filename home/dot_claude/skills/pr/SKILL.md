@@ -17,13 +17,13 @@ Loading this skill is not permission to push or to open a PR. Do only the operat
 
 ## Step 1: Decide the mode and its end point
 
-- 「PR 作って」「commit して PR 作って」「〜を直して PR 作って」: a new PR, ending when the PR is open and its CI and mergeable state are checked. It does not include merging, and the PR is not a draft.
+- 「PR 作って」「commit して PR 作って」「〜を直して PR 作って」: a new PR, ending when the PR is open and its CI and mergeable state are checked. It does not include merging.
 - 「PR に積んで」 on a branch with an open PR: commit and push to that PR's branch and rewrite its title and body. If that PR is unrelated to this change (its purpose differs, or the user has just asked for a new PR), do not mix the change in: open a new PR from the latest base and report its URL. When it is unclear whether the PR is related, open a new PR, because closing a PR is easier to undo than commits pushed onto an existing one. If the branch has no open PR, push the branch and ask whether to open one.
 - 「push して」 alone: push the current branch to its upstream and, if it has an open PR, rewrite that PR's title and body. If the open PR is unrelated to this change, stop and report instead of pushing; a bare push request does not permit opening a new PR. On the base branch, stop and report as well, since pushing to the base branch is the 「main に積んで」 mode.
 - A PR whose base the user names as an existing PR or branch (「この PR 向けに修正 PR を作って」「#N に対する PR として出して」「`<branch>` に対しての PR」): a stacked PR. Branch from that PR's branch, open the PR against it, and do not merge it. Do not infer a stacked PR from words such as 「修正 PR」 alone, which often mean a PR against the base branch; if the change cannot be built on the latest base because it depends on an unmerged PR, ask which base to use.
 - 「main に積んで」「main に push して」: commit on the base branch and push to it directly, without a work branch or PR.
 - 「conflict を解消して」「main を取り込んで」: Step 8 (by default, merge `origin/<base>` into the PR branch), then push to the PR branch.
-- Committing is part of the request when it says to commit, uses 「PR に積んで」 or 「main に積んで」 (both mean commit + push), or delegates the work through to a PR (「〜して PR 作って」). Otherwise, if the work has uncommitted changes, stop and report; committing needs its own instruction.
+- Committing is part of the request when it says to commit, uses 「PR に積んで」, 「main に積んで」 or 「main に push して」 (all mean commit + push), delegates the work through to a PR (「〜して PR 作って」), or asks to fix the PR's CI and push the fix (「green にして」, 「直して push して」). Otherwise, if the work has uncommitted changes, stop and report; committing needs its own instruction.
 - 「self merge して」「(問題なければ) merge して」 for an open PR: merge mode, the only mode that merges the PR. Confirm CI is green and the PR is mergeable (Step 9), complete any check the condition names, then merge with the repository's usual method (`gh pr merge <pr>`; GitLab: `glab mr merge <mr>`) and report the merge commit and the base branch's CI. If a check failed or the PR conflicts, do not merge; report instead. 「main を merge して」 means bringing the base into the PR branch (Step 8), not merging the PR.
 - Follow the route the user specified (a direct push to the base branch, keeping the existing branch name, a non-draft PR, a permitted force push) instead of a procedure you consider safer; the user chose it knowing the repository's practice. If something on that route blocks it, such as a hook rejecting the commit or push, show how to clear that obstacle instead of recommending another route.
 
@@ -122,7 +122,7 @@ EOF
 )"
 ```
 
-Existing PR: after the push, rewrite the title and body with `gh pr edit <pr> --title ... --body ...` (GitLab: `glab mr update <mr> --title ... --description ...`).
+Existing PR: after the push, rewrite the title and body with `gh pr edit <pr> --title "<title>" --body "<body>"` (GitLab: `glab mr update <mr> --title "<title>" --description "<body>"`), passing the body the same way as when creating it.
 
 Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh pr edit <pr> --base <base>`) if the host has not done so, rebase only this PR's commits with `git rebase --onto origin/<base> <last-parent-commit>`, and push with `--force-with-lease`, so the diff contains only this PR's changes.
 
@@ -139,6 +139,6 @@ Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh 
 ## Step 9: Wait for CI and report
 
 - GitHub: `gh pr checks <pr> --watch --fail-fast`, then `gh pr view <pr> --json mergeable,mergeStateStatus`. Checks can take a moment to appear after a push, so if none are reported, check again before concluding there is no CI; `mergeable: UNKNOWN` means GitHub is still computing it, so query again. GitLab: `glab ci status --live`. For 「main に積んで」, watch the base branch's runs (`gh run list --branch <base> --limit 5`, then `gh run watch <run_id>`).
-- If a check fails or the PR conflicts, find the root cause, fix it and push again. Do not report completion before CI has finished.
-- A cancelled check is not green, although `gh pr checks` exits 0 for it. Unless a newer run of the same workflow on the PR's current head commit superseded it, find out why, and until then report the check as unverified. When a step cancels the run after a job fails, that job shows as cancelled too, so look for the job with a failed step (`gh run view <run_id> --json jobs`) and read its log (`gh run view --job <job_id> --log`).
+- If a check fails or the PR conflicts, find the root cause, fix it and push again; in merge mode, report instead (Step 1). Do not report completion before CI has finished.
+- A cancelled check is not green, although `gh pr checks` exits 0 for it. Unless a newer run of the same workflow on the PR's current head commit superseded it, find out why, and until then report the check as unverified. When a step in the failing job cancels the run (a fail-fast pattern), that job ends as cancelled rather than failed, so look for the job with a failed step (`gh run view <run_id> --json jobs`) and read its log (`gh run view --job <job_id> --log`).
 - Report the PR / MR URL, title, included commits, CI result (green, or failed with the failing check names), mergeable state and conflicts, whether the change is breaking, and anything left out of the PR with the reason.

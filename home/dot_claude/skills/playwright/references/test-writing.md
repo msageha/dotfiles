@@ -57,12 +57,18 @@ test.describe('Feature Name', () => {
 ## Page Object Model
 
 ```typescript
-export class LoginPage {
-  constructor(private page: Page) {}
+import type { Locator, Page } from '@playwright/test';
 
-  readonly email = this.page.getByLabel('Email');
-  readonly password = this.page.getByLabel('Password');
-  readonly submitButton = this.page.getByRole('button', { name: 'Sign in' });
+export class LoginPage {
+  readonly email: Locator;
+  readonly password: Locator;
+  readonly submitButton: Locator;
+
+  constructor(page: Page) {
+    this.email = page.getByLabel('Email');
+    this.password = page.getByLabel('Password');
+    this.submitButton = page.getByRole('button', { name: 'Sign in' });
+  }
 
   async login(email: string, password: string) {
     await this.email.fill(email);
@@ -101,6 +107,8 @@ await page.route('**/api/external-service', async route => {
 });
 ```
 
+Route only external or third-party services; let requests to the app's own endpoints reach the real app so the test still covers them.
+
 ## CI (GitHub Actions)
 
 ```yaml
@@ -116,4 +124,4 @@ await page.route('**/api/external-service', async route => {
     retention-days: 30
 ```
 
-The config above already covers the CI settings (`retries`, `workers`, `trace`); for parallelism in CI, use sharding.
+The Recommended Config above already sets the CI values (`retries` and `workers` through `process.env.CI`, and `trace`); for parallelism in CI, use sharding.

@@ -56,7 +56,7 @@ Generate content in Markdown following these principles:
 
 #### Accuracy
 - Base content on actual code, APIs, or configurations -- read source files.
-- Include working code examples. Run every example and command that can run in this environment and record the observed output / exit code; mark the rest as unverified instead of testing them mentally.
+- Include working code examples. Run every example and command that can run in this environment instead of testing them mentally. In your report to the user, not in the document, give the observed output / exit code and list the ones you could not run as unverified.
 - Version-pin dependencies and tools when relevant.
 
 #### Structure
@@ -68,7 +68,7 @@ Generate content in Markdown following these principles:
 
 #### User-Centricity
 - Document what the reader needs to know, not what the code does.
-- Front-load the most important information instead of opening every document with a paragraph of background.
+- Front-load the most important information instead of opening with background the reader does not need.
 - Provide "copy-paste ready" commands and configs.
 - Anticipate common mistakes and address them inline or in a troubleshooting section.
 - Link to related documents rather than duplicating content.
@@ -79,7 +79,7 @@ After writing, self-check:
 
 - [ ] Does it match the intended Diataxis type? (Not mixing tutorial with reference.)
 - [ ] Is the audience appropriate? (Not too basic, not too advanced.)
-- [ ] Are all code examples correct and complete (verified by running them, or explicitly marked unverified)?
+- [ ] Are all code examples correct and complete (verified by running them, or reported to the user as unverified)?
 - [ ] Are prerequisites clearly stated?
 - [ ] Is there content this reader does not need (history, internal names, repetition) that should be cut, while the premises, reasons and examples they need stay?
 - [ ] Does it follow the existing documentation's style/conventions?

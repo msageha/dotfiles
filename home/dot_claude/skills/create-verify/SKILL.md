@@ -7,7 +7,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 # .claude/verify.sh の作成 / 更新
 
-この skill の起動を作成の依頼とみなし、候補の一覧を示したら確認を待たずに作成 / 更新まで進める。
+この skill の起動を作成の依頼とみなし、確認を待たずに作成 / 更新まで進める。
 ただし、プロジェクトの CLAUDE.md / AGENTS.md が verify.sh を用意しない方針を明記しているときは、その記述を示し、作成するか確認してから進める。
 
 ## Goal
@@ -19,7 +19,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 - `.claude/verify.sh` が実行可能 (`chmod +x`) で、`set -euo pipefail` を含む。
 - 呼び出すコマンドはすべてリポジトリに既に存在するもの。
 - いずれかの検証が落ちたら exit code 非ゼロで終了する。
-- 依存ツールが PATH に無い検証は warning を出してスキップする。必須の入力・設定が欠けたら止める AGENTS.md「コード」節の意図的な例外で、Stop hook を環境差で壊さないため。
+- 依存ツールが PATH に無い検証は warning を出してスキップする。必須の入力・設定が欠けたら明示的なエラーで止めるという AGENTS.md「コード」節の規範に対する意図的な例外で、Stop hook を環境差で壊さないため。
 - 既に `.claude/verify.sh` があれば、全体を上書きせず、既存の呼び出しを基に検出結果との差分だけを反映する。既存の呼び出しを削除するときは理由を報告する。
 - 検証手段が 1 つも見つからなければ何も書かず、その旨と、検証基盤 (テスト / lint / dry-run 等) を整えてから再実行するよう報告して終える。
 
@@ -38,7 +38,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 ### 1. 既存の `.claude/verify.sh` を確認
 
-存在すれば内容を読み、現状の検証構成を把握する。
+存在すれば内容を読み、現状の検証構成を把握する。プロジェクトの CLAUDE.md / AGENTS.md も読み、verify.sh を用意しない方針が明記されていないかを確かめる。
 
 ### 2. リポジトリの検証手段を検出
 
