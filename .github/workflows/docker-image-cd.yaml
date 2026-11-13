@@ -97,8 +97,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.tag }}-${{ env.PLATFORM_PAIR }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
-      # merge job で tag を付ける前に起動を確かめる。fish -c は config.fish を読むので、
-      # シェル設定や mise の PATH が壊れたイメージを公開前に検出できる。
+      # fish -c は config.fish を読むので、シェル設定や mise の PATH が壊れたイメージを、merge job が tag を付けて
+      # 公開する前に検出できる。
       - name: Smoke test image
         # outputs は run に直接展開せず env で渡す (zizmor template-injection)
         env:

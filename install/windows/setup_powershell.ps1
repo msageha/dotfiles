@@ -1,15 +1,14 @@
 #!/usr/bin/env pwsh
 # Starship・SauceCodePro Nerd Font・PowerShell プロファイル・Windows Terminal の設定。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
-# 単体で実行するときは pwsh を使う (`pwsh -File install/windows/setup_powershell.ps1`)。
-# このファイルは BOM 無し UTF-8 なので、5.1 で直接実行すると日本語コメントが ANSI として読まれ構文が壊れる
-# (chezmoi 経由ではテンプレートが BOM を付ける)。
+# このファイルは BOM 無しの UTF-8 で、5.1 は日本語を ANSI として読み構文が壊れるため、単体で実行するときは pwsh を使う
+# (`pwsh -File install/windows/setup_powershell.ps1`)。chezmoi 経由ではテンプレートが BOM を付ける。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-# winget でインストールしたコマンドを現在のセッションの PATH に反映する。
-# 置換するとプロセス固有の追加分 (CI が GITHUB_PATH で足したパス等) が落ちるため、追記する。
+# winget で入れたコマンドを現在の session の PATH に反映する。
+# 置き換えるとプロセス固有の追加分 (CI が GITHUB_PATH で足したパス等) が落ちるため、足りない分だけ追記する
 function Update-SessionPath {
     $machine = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
     $user    = [System.Environment]::GetEnvironmentVariable('Path', 'User')
@@ -200,8 +199,8 @@ function Set-PowerShellProfile {
 }
 
 function Set-WindowsTerminalDraculaFragment {
-    # https://github.com/dracula/windows-terminal の dracula.json の静的コピー (公式スクリプトは実行時にダウンロードするため使わない)。
-    # fragment は profiles.defaults を変更できないため、既定の配色は Set-WindowsTerminalDefaults が設定する
+    # https://github.com/dracula/windows-terminal の dracula.json の写し (公式スクリプトは実行時にダウンロードするため使わない)。
+    # fragment からは profiles.defaults を変えられないため、既定の配色は Set-WindowsTerminalDefaults が設定する
     $fragmentPath = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\Fragments\chezmoi\dracula.json'
     $fragmentJson = @'
 {
@@ -233,7 +232,6 @@ function Set-WindowsTerminalDraculaFragment {
 }
 '@
     New-Item -ItemType Directory -Force -Path (Split-Path $fragmentPath) | Out-Null
-    # Windows Terminal は BOM 無し UTF-8 の fragment を要求する
     [System.IO.File]::WriteAllText($fragmentPath, $fragmentJson, [System.Text.UTF8Encoding]::new($false))
     Write-Step "Installed Windows Terminal Dracula fragment -> $fragmentPath"
 }
@@ -250,7 +248,7 @@ function Set-WindowsTerminalDefaults {
     }
     try {
         $raw   = Get-Content -Path $path -Raw
-        # JSONC の行コメントと trailing comma を除去してから解析する
+        # 5.1 の ConvertFrom-Json は JSONC の行コメントと末尾カンマを読めないため、除いてから解析する
         $clean = ($raw -split "`n" | Where-Object { $_ -notmatch '^\s*//' }) -join "`n"
         $clean = $clean -replace ',(\s*[}\]])', '$1'
         $cfg   = $clean | ConvertFrom-Json
@@ -283,7 +281,6 @@ function Set-WindowsTerminalDefaults {
         # colorScheme 本体 (Dracula) は Set-WindowsTerminalDraculaFragment が fragment として供給する
         $cfg.profiles.defaults | Add-Member -NotePropertyName colorScheme -NotePropertyValue $WindowsTerminalColorScheme -Force
 
-        # 5.1 の -Encoding utf8 は BOM を付け、BOM 付き JSON を読めないパーサーがあるため .NET API で書く。
         $json = $cfg | ConvertTo-Json -Depth 32
         [System.IO.File]::WriteAllText($path, $json, [System.Text.UTF8Encoding]::new($false))
         Write-Step "Set Windows Terminal defaults -> font: $WindowsTerminalFont, colorScheme: $WindowsTerminalColorScheme"

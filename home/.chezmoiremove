@@ -2,7 +2,7 @@
 .config/fish/functions/faws.fish
 .config/fish/functions/fzf_load_env.fish
 .config/fish/functions/rm_cache.fish
-{{- /* 旧版の複数関数ファイル。残っていると fish が git / docker 等の呼び出し時に autoload し、同名関数を旧定義で上書きする */}}
+{{- /* 残っていると fish が git / docker 等の呼び出し時に autoload し、同名関数を古い定義で上書きする */}}
 .config/fish/functions/clean.fish
 .config/fish/functions/docker.fish
 .config/fish/functions/fzf_environ.fish
@@ -26,10 +26,9 @@
 {{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}
-{{- /* 旧版が dracula テーマを置いた場所 (現在は ~/.local/share/{vim,tmux}) */}}
 .vim
 .tmux
-{{- /* 旧配置。残っていると tmux が ~/.config/tmux/tmux.conf と両方読む */}}
+{{- /* 残っていると tmux が ~/.config/tmux/tmux.conf と両方読む */}}
 .tmux.conf
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
@@ -42,7 +41,7 @@
 {{ $fontDir }}/* For Powerline.otf
 {{ $fontDir }}/PowerlineSymbols.otf
 {{ $fontDir }}/PowerlineExtraSymbols.otf
-{{- /* 旧版が置いた ghostty の設定とテーマ (現在は ~/.config/ghostty)。AppSupport にはアプリの状態も置かれうるためファイル単位で消す */}}
+{{- /* Application Support にはアプリの状態も置かれうるため、ghostty の設定とテーマはファイル単位で消す */}}
 {{- if eq .chezmoi.os "darwin" }}
 Library/Application Support/com.mitchellh.ghostty/config.ghostty
 Library/Application Support/com.mitchellh.ghostty/themes/dracula

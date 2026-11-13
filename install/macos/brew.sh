@@ -2,15 +2,14 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# SKIP_CLI_TOOLS=true でも導入する最小セット。後続の chezmoi スクリプトが前提とする
-# (dockutil: system_settings.sh の dock_apps、fish: setup_shell.sh / fisher.fish、mise: install/common/mise.sh)
+# SKIP_CLI_TOOLS=true でも入れる、後続の chezmoi スクリプトが前提とするツール
+# (dockutil: system_settings.sh の dock_apps、fish: fisher.fish、mise: install/common/mise.sh)
 formulae_base=(
     dockutil
     fish
     mise
 )
 
-# SKIP_CLI_TOOLS=true でまとめてスキップする CLI ツール群
 formulae=(
     exiv2
     git
@@ -30,14 +29,13 @@ formulae=(
     wget
 )
 
-# 配布形態が cask なだけで実体は CLI ツールのため SKIP_CLI_TOOLS で制御する
+# cask で配布される CLI なので、SKIP_GUI_TOOLS ではなく SKIP_CLI_TOOLS で制御する
 casks_coding_agents=(
     antigravity-cli
     claude-code@latest
     codex
 )
 
-# GUI アプリ。SKIP_GUI_TOOLS=true でスキップする
 casks=(
     1password
     1password-cli
@@ -71,10 +69,8 @@ casks=(
     xcodes-app
 )
 
-# brew upgrade から除外するパッケージ。
-# antigravity-cli は agy 自身が /opt/homebrew/bin/agy を上書きする自己更新型 CLI で、
-# brew upgrade と衝突する (Error: It seems there is already a Binary at '/opt/homebrew/bin/agy')。
-# 更新は agy の自己更新に委ね、install だけ brew で行う
+# antigravity-cli は agy が /opt/homebrew/bin/agy を自分で上書きして更新するため、brew upgrade が
+# "Error: It seems there is already a Binary at '/opt/homebrew/bin/agy'" で失敗する。更新は agy に任せる
 upgrade_exclude=(
     antigravity-cli
 )
@@ -146,7 +142,7 @@ function upgrade() {
         log_step "更新対象のパッケージはありません。"
         return 0
     fi
-    # outdated は改行区切りの名前リスト。意図的に word splitting して個別に渡す
+    # 改行区切りの名前を word splitting で個別の引数にする
     # shellcheck disable=SC2086
     brew upgrade $outdated
 }
@@ -157,7 +153,7 @@ function cleanup() {
 }
 
 function main() {
-    # SKIP_CLI_TOOLS / SKIP_GUI_TOOLS は run_once_before テンプレートが必ず export する契約。未設定は設定ミスとして落とす
+    # SKIP_CLI_TOOLS / SKIP_GUI_TOOLS は run_once_before テンプレートが必ず export する
     if [ -z "${SKIP_CLI_TOOLS+x}" ] || [ -z "${SKIP_GUI_TOOLS+x}" ]; then
         log_error "SKIP_CLI_TOOLS / SKIP_GUI_TOOLS are not set; they must be exported by the caller."
         exit 1

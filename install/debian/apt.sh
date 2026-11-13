@@ -2,8 +2,7 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# Docker など非ネイティブ環境では推奨パッケージを入れずイメージを軽量化する
-# (imagemagick / graphviz の推奨で opencv / vtk / gdal / rocm 等が芋づる導入されるのを防ぐ)
+# Docker コンテナ内では推奨パッケージを入れずイメージを軽くする (imagemagick / graphviz の推奨パッケージで opencv / vtk / gdal / rocm 等まで入るため)
 apt_install_opts=()
 if [ -f /.dockerenv ]; then
     apt_install_opts=(--no-install-recommends)
@@ -15,7 +14,6 @@ apt_base=(
     curl
     fish
     zsh
-    # chezmoi apply が .chezmoiexternal.toml の取得に使うため SKIP_CLI_TOOLS の値に関係なく必要
     git
 )
 
@@ -62,13 +60,12 @@ function install_chezmoi() {
         log_step "chezmoi is already installed."
         return 0
     fi
-    # インストール先を明示する (未指定だと ./bin に落ちる)
+    # -b を省くとカレントディレクトリの ./bin に入る
     sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 }
 
-# get.docker.com の curl | sh は未検証スクリプトの root 実行になるため使わず、
-# 公式 apt リポジトリから GPG 署名検証付きで導入する
-# (https://docs.docker.com/engine/install/debian/#install-using-the-repository)
+# get.docker.com の curl | sh は検証していないスクリプトを root で実行することになるため、
+# 公式の apt リポジトリから GPG 署名を検証して入れる (https://docs.docker.com/engine/install/debian/#install-using-the-repository)
 function install_docker() {
     if [ -f /.dockerenv ]; then
         log_step "Running inside Docker, skipping Docker installation."
@@ -96,12 +93,12 @@ function install_docker() {
     run_privileged apt -yq update
     run_privileged apt install -yq "${apt_install_opts[@]}" \
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    # $USER は set -u 環境 (cron・一部コンテナ等) で unbound になり得るため id -un を使う
+    # $USER は cron や一部のコンテナでは未設定で、set -u で落ちるため id -un を使う
     run_privileged usermod -aG docker "$(id -un)"
 }
 
 function upgrade() {
-    # GitHub runner 上の apt upgrade は snap refresh を誘発し、外部 download に長時間依存する
+    # GitHub Actions の runner では apt upgrade が snap refresh を誘発し、外部からのダウンロードに長時間かかる
     if [ -n "${CI:-}" ]; then
         log_step "Skipping APT upgrade in CI."
         return 0
@@ -119,7 +116,7 @@ function clean() {
 }
 
 function main() {
-    # SKIP_CLI_TOOLS は run_once_before テンプレートが必ず export する契約。未設定は設定ミスとして落とす
+    # SKIP_CLI_TOOLS は run_once_before テンプレートが必ず export する
     if [ -z "${SKIP_CLI_TOOLS+x}" ]; then
         log_error "SKIP_CLI_TOOLS is not set; it must be exported by the caller."
         exit 1

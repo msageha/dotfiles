@@ -1,8 +1,8 @@
-# self-repository: zizmor は同一リポジトリの reusable workflow 参照に `$/` を求めるが、actionlint は
-# `./` しか受け付けない。actionlint が `$/` に対応したら有効に戻し、ci.yaml の `./` を `$/` に置き換える。
-# dangerous-triggers: issue_comment を無条件に危険と判定するが、claude.yaml は job の if で
-# OWNER / MEMBER の @claude メンションに限っている。他の trigger を隠さないよう位置 (行:列) で指定するので、
-# claude.yaml の on: の行がずれたら追従させる。
+# self-repository: zizmor は同一リポジトリの reusable workflow 参照に `$/` を求めるが、actionlint は `./` しか
+# 受け付けない。actionlint が `$/` に対応したら有効に戻し、ci.yaml の `./` を `$/` に置き換える。
+# dangerous-triggers: issue_comment を無条件に危険と判定するが、claude.yaml は job の if で OWNER / MEMBER の
+# @claude メンションに限っている。他の trigger の検出を隠さないよう issue_comment: の位置 (行:列) で除外するので、
+# その位置がずれたら追従させる。
 rules:
   self-repository:
     disable: true

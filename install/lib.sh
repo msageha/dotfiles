@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # install/**/*.sh が共有する helper。
-# 各 .chezmoiscripts/*.sh.tmpl が先頭で 1 回 include し、同じプロセスに連結される install スクリプトから使う。
-# 単体で実行・source するときは各スクリプト冒頭の `declare -F log_step ... || source .../lib.sh` が読み込む。
-# macOS 標準の bash 3.2 でも動く構文に限定する。
+# .chezmoiscripts の各テンプレートが先頭で 1 回 include し、単体で実行・source するときは各スクリプト冒頭の行が読み込む。
+# macOS 標準の bash 3.2 でも動く構文だけを使う。
 # 各テンプレートに展開されるため、変更するとこれを include する run_once_* / run_onchange_* が全て再実行される。
 
 RED="\033[0;31m"
@@ -29,8 +28,8 @@ function require_command() {
     fi
 }
 
-# root なら真。非 root は sudo -v (TTY があればパスワードを聞いて資格情報をキャッシュする) で判定し、
-# verifypw=all 環境で sudo -v が偽になる NOPASSWD 構成は sudo -n true で拾う
+# sudo -v は TTY があればパスワードを聞いて資格情報をキャッシュする。
+# 既定の verifypw=all では、パスワードを要するルールと NOPASSWD のルールが混在すると sudo -v が認証を求めるため、sudo -n true でも判定する
 function has_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
@@ -46,8 +45,8 @@ function run_privileged() {
     fi
 }
 
-# chezmoi はスクリプト実行時に CHEZMOI_SOURCE_DIR (= <repo>/home) を渡す。
-# 単体実行・source 時 (bats・CI の checkout 先など配置は任意) はこのファイルの位置から求める
+# chezmoi 経由では一時ファイルとして実行され BASH_SOURCE がリポジトリの外を指すため、chezmoi が渡す
+# CHEZMOI_SOURCE_DIR (= <repo>/home) を使う。単体で実行・source するときはこのファイルの位置から求める
 # shellcheck disable=SC2034  # include 先の各スクリプトが参照する
 if [ -n "${CHEZMOI_SOURCE_DIR:-}" ]; then
     CHEZMOI_REPO_ROOT="$(cd "$CHEZMOI_SOURCE_DIR/.." && pwd)"

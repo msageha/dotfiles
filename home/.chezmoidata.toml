@@ -2,7 +2,7 @@
 [github]
 user = "msageha"
 
-# コーディングエージェント設定が参照する MCP server のバージョン pin (renovate が annotation で追従)
+# コーディングエージェント設定が参照する MCP server のバージョン pin (`# renovate:` 注釈で renovate が更新する)
 [mcp]
 # renovate: datasource=npm depName=@upstash/context7-mcp
 context7 = "4.5.1"

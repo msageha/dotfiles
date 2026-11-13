@@ -27,9 +27,8 @@
     "DISABLE_AUTOUPDATER": "1",
     "DISABLE_AUTO_COMPACT": "1",
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
-{{- /* 空文字の ANTHROPIC_API_KEY は「キー設定済み」と解釈され authMethod: none で認証が落ちるため、
-       鍵未配置の環境ではキー自体を出力しない (出力すると /login の OAuth にフォールバックできない)。
-       SONATYPE_GUIDE_TOKEN も同様に未注入なら出力しない */}}
+{{- /* 空文字の ANTHROPIC_API_KEY は設定済みとみなされ (authMethod: none) 認証が失敗し、/login の OAuth にも戻れないため、
+       鍵が無い環境ではキーごと出力しない。SONATYPE_GUIDE_TOKEN も未注入なら出力しない */}}
 {{- if dig "apiKeys" "anthropic" "" . }}
     "ANTHROPIC_API_KEY": "{{ dig "apiKeys" "anthropic" "" . }}",
 {{- end }}
@@ -72,14 +71,12 @@
     }
   },
   "permissions": {
-{{- /* インタプリタ・ラッパー・削除・ネットワーク取得 (python / node / xargs / timeout / env / source / rm / curl) は、
-       許可プロンプトの大半を占めるため危険度より効率を優先して許可する (rm は PreToolUse hook が / ~ $HOME * . .. の
-       再帰削除を block する前提)。シェル本体 (sh / bash / zsh / fish) は `bash -c '…'` で hook を素通りさせるため、
-       secret に触る fnox / security / gpg / aws-vault とともに allow しない。auto mode では wildcard 付きの
-       interpreter の allow は無視され classifier が判定する (default / acceptEdits モードでは効く)。
-       パスや環境変数の値のバリエーションは `*` でまとめる (`*` は空白を含む任意の文字列に一致し、
-       `VAR=* cmd` は `VAR=x PATH=/evil cmd` も通すが許容する)。先頭の `*` はその文字列を含む任意のコマンドに、
-       `bash` とスクリプトパスの間の `*` は `bash -c '…' path` に一致するため、どちらも使わない */}}
+{{- /* python / node / xargs / timeout / env / source / rm / curl は許可プロンプトの大半を占めるため、危険度より効率を優先して許可する
+       (rm は、最初の対象が / ~ $HOME * . .. の再帰削除を PreToolUse hook が止める前提)。sh / bash / zsh / fish は `bash -c '…'` で hook を
+       素通りさせるため、secret に触る fnox / security / gpg / aws-vault とともに許可しない。
+       auto mode では wildcard 付きの interpreter の allow は無視され classifier が判定する (default / acceptEdits では効く)。
+       パスや環境変数の値の違いは `*` でまとめる (`*` は空白を含む任意の文字列に一致し、`VAR=* cmd` は `VAR=x PATH=/evil cmd` も通すが許容する)。
+       先頭の `*` (その文字列を含む任意のコマンドに一致) と、`bash` とスクリプトパスの間の `*` (`bash -c '…' path` に一致) は使わない */}}
     "allow": [
       "Bash(git:*)",
       "Bash(npm:*)",
@@ -240,9 +237,8 @@
       "Bash(timeout:*)",
       "Bash(env:*)",
       "Bash(source:*)",
-{{- /* 複数行・制御構文は改行と `;` でサブコマンドに分割され各行が独立に照合される。
-       for/while/if の各断片を許可してループ単体の確認を消す。ヘッダ内の `$(…)` 等の
-       コマンド置換は別途照合されるため、これらの断片許可で任意コード実行は通らない */}}
+{{- /* 複数行・制御構文は改行と `;` で分割され各断片が独立に照合されるため、for / while / if 等の断片を許可して確認を減らす。
+       `$(…)` 等のコマンド置換は別に照合されるので、断片の許可で任意のコマンドは通らない */}}
       "Bash(for *)",
       "Bash(while *)",
       "Bash(until *)",
@@ -302,8 +298,8 @@
       "Bash(./.claude/verify.sh *)",
       "Edit(**/.claude/verify.sh)",
       "Edit(.env.template)",
-{{- /* echo 等の出力を一時ディレクトリへ `>` リダイレクトする形は書き先が Edit 判定される。
-       Read 側と対称に一時領域への書き出しを許可する ($TMPDIR 展開先の macOS /var/folders と /tmp) */}}
+{{- /* `>` リダイレクトの書き先は Edit として判定されるため、Read と対称に一時領域 (/tmp と、macOS の $TMPDIR の展開先の
+       /var/folders) への書き込みを許可する */}}
       "Edit(//tmp/**)",
       "Edit(//private/tmp/**)",
       "Edit(//var/folders/*/*/T/**)",
@@ -377,7 +373,7 @@
     "defaultMode": "auto"
   },
   "hooks": {
-{{- /* 以下の hooks は POSIX シェル + jq 前提。ネイティブ Windows では毎回エラー (exit≠2 で fail-open) になるだけなので設定しない */}}
+{{- /* 以下の hooks は POSIX シェルと jq に依存するため、ネイティブ Windows には設定しない */}}
 {{- if ne .chezmoi.os "windows" }}
     "SessionStart": [
       {

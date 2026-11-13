@@ -4,8 +4,7 @@
 # _dotfiles_human_shell と _dotfiles_shell は env.sh が設定する。_fnox_hook でも参照するため unset しない
 # shellcheck disable=SC2154
 
-# mise 経由でのみ導入されるツールは mise activate の PATH 反映がプロンプト時のため、
-# fresh シェルでは command -v が失敗しうる。mise which でフォールバックして実体パスを返す
+# mise activate より前 (starship 等の初期化) では mise だけで入れたツールが PATH に無いため、mise which で実体パスを返す
 _tool_path() {
     command -v "$1" 2>/dev/null && return 0
     command -v mise &>/dev/null && mise which "$1" 2>/dev/null
@@ -108,9 +107,8 @@ if $_dotfiles_human_shell; then
     fi
 fi
 
-# GitHub MCP server (Claude Code の github plugin) が参照する GITHUB_PERSONAL_ACCESS_TOKEN を、
-# gh の OAuth トークンから claude 起動時に注入する (PAT をファイルに置かず、gh auth token の ~170ms を
-# シェル起動毎に払わない。fish の functions/claude.fish と同じ方式)。gh 未導入・未ログイン時は設定しない
+# Claude Code の github plugin (GitHub MCP server) が読む GITHUB_PERSONAL_ACCESS_TOKEN を gh のトークンから入れる。
+# トークンは変わりうるためファイルに置かず、gh auth token はシェル起動を遅くしないよう claude の起動時に呼ぶ (fish は functions/claude.fish)
 claude() {
     if [ -z "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] && command -v gh &>/dev/null; then
         local gh_token

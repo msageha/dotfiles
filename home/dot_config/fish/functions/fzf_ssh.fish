@@ -1,4 +1,4 @@
-function fzf_ssh -d "Select an ssh host from ~/.ssh/config* and connect"
+function fzf_ssh -d "~/.ssh/config と ~/.ssh/config.local のホストを選んで ssh する"
     if not type -q fzf
         echo "fzf_ssh: fzf not found" >&2
         return 1

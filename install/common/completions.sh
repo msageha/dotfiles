@@ -2,10 +2,8 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# 補完を生成するツール。導入されているものだけを対象にする
 completion_tools=(mise fnox uv docker chezmoi gh ruff kubectl ngrok bat fd rg procs op stern yq pnpm)
 
-# $1 = tool, $2 = fish | zsh | bash。補完スクリプトを stdout へ出力する
 function print_completion() {
     local tool="$1" shell="$2"
     case "$tool" in
@@ -16,7 +14,7 @@ function print_completion() {
                 mise completion "$shell"
             fi
             ;;
-        # Docker Compose v2 は Docker CLI プラグインのため docker completion で両方カバーされる
+        # Docker Compose v2 は Docker CLI のプラグインなので、docker の補完に含まれる
         fnox | docker | chezmoi | kubectl | op | pnpm) "$tool" completion "$shell" ;;
         uv | ruff) "$tool" generate-shell-completion "$shell" ;;
         gh) gh completion -s "$shell" ;;
@@ -34,8 +32,8 @@ function print_completion() {
     esac
 }
 
-# 生成途中の失敗で壊れたファイルや空ファイルを残さないよう、一時ファイルへ書いてから置き換える。
-# mv は既存の symlink もリンク先へ書き込まず実体ファイルで置き換える
+# 生成に失敗したとき壊れたファイルや空ファイルを残さないよう、一時ファイルへ書いてから mv で置き換える
+# (mv は既存の symlink のリンク先へは書き込まず、symlink 自体を置き換える)
 function write_completion() {
     local tool="$1" shell="$2" out="$3"
     if print_completion "$tool" "$shell" > "$out.tmp" && [ -s "$out.tmp" ]; then
@@ -46,7 +44,6 @@ function write_completion() {
     fi
 }
 
-# $1 = fish | zsh | bash, $2 = 出力ディレクトリ。ツールごとに並列生成し、失敗は最後にまとめて報告する
 function generate_completions() {
     local shell="$1" comp_dir="$2"
     log_step "Setting up ${shell} completions in parallel..."
@@ -81,7 +78,7 @@ function main() {
     if command -v fish &>/dev/null; then
         generate_completions fish "$HOME/.config/fish/completions"
     fi
-    # zsh は fpath 上で autoload される _<cmd> 形式 (dot_zprofile が fpath に追加済み)
+    # zsh は fpath 上の _<cmd> を autoload する (このディレクトリは dot_zprofile が fpath に足す)
     if command -v zsh &>/dev/null; then
         generate_completions zsh "$HOME/.config/zsh/completions"
     fi

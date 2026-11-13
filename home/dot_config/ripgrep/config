@@ -1,5 +1,5 @@
-# Dracula theme for ripgrep (https://github.com/dracula/ripgrep)
-# RIPGREP_CONFIG_PATH がこのファイルを指す (shell 設定で export)
+# Dracula テーマの配色 (https://github.com/dracula/ripgrep)
+# ripgrep は RIPGREP_CONFIG_PATH が指すときだけこのファイルを読む (shell 設定で export)
 --colors=path:fg:0xbd,0x93,0xf9
 --colors=line:fg:0x50,0xfa,0x7b
 --colors=column:fg:0x50,0xfa,0x7b

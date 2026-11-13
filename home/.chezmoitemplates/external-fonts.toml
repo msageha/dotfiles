@@ -2,13 +2,12 @@
 # Windows は install/windows/setup_powershell.ps1 が Nerd Font を入れる。
 # 導入元ごとのサブディレクトリへ exact = true で展開し、版の更新で旧ファイルを残さず、手動で入れたフォントとも共存させる
 # (macOS の CoreText / Linux の fontconfig はフォントディレクトリを再帰走査する)。
-# Linux は更新後に fc-cache が要るため、run_onchange_after_93_fonts.sh.tmpl がこのファイルの hash で発火する
-# (他の external の更新では発火させないよう別ファイルにしている)。
+# Linux は更新後に fc-cache が要るため、run_onchange_after_93_fonts.sh.tmpl がこのファイルの hash で発火する。
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_gui_tools" false .)) }}
 {{ $fontDir := ".local/share/fonts" }}
 {{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
-# フォントファイルだけを取り出す。include はアーカイブ内のディレクトリエントリも除外し、階層を保つと
-# 中間ディレクトリが作られず apply が失敗するため、stripComponents = 2 でフラットに展開する (ファイル名は全ファミリーで一意)。
+# include はアーカイブ内のディレクトリエントリも除外し、階層を保つと中間ディレクトリが作られず apply が失敗するため、
+# stripComponents = 2 でフラットに展開する (ファイル名は全ファミリーで一意)。
 ["{{ $fontDir }}/powerline-fonts"]
 type = "archive"
 url = "https://github.com/powerline/fonts/archive/a029626780dd4af32f15a3e708a5b00528c22f1d.tar.gz"
@@ -17,8 +16,7 @@ stripComponents = 2
 include = ["*/*/*.ttf", "*/*/*.otf"]
 
 {{ if eq .chezmoi.os "linux" }}
-# Terminus (ビットマップフォント) のみ深さが違う。
-# PCF は fontconfig (Linux) 専用で macOS の CoreText は扱えないため Linux 限定。
+# Terminus の PCF (ビットマップフォント) だけ階層が 1 段深い。PCF は macOS の CoreText が扱えないため Linux に限る。
 ["{{ $fontDir }}/powerline-fonts-terminus-pcf"]
 type = "archive"
 url = "https://github.com/powerline/fonts/archive/a029626780dd4af32f15a3e708a5b00528c22f1d.tar.gz"

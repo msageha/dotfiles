@@ -123,7 +123,7 @@ function Test-DefaultAppsAlreadySet {
 
 function Open-DefaultAppsSettings {
     # 既定のブラウザ・展開ツールは UserChoice のハッシュ保護 (Windows 10/11 では UCPD ドライバも) により
-    # スクリプトから設定できないため、設定アプリを開いてユーザーに選ばせる。毎回開かないよう、設定済みなら開かない。
+    # スクリプトから設定できないため、設定アプリを開いてユーザーに選ばせる
     if (Test-DefaultAppsAlreadySet) {
         Write-Step '既定のブラウザ (Chrome) と展開ツール (7-Zip) は設定済みのため、既定アプリ設定はスキップします。'
         return

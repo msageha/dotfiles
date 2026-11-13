@@ -1,6 +1,5 @@
 name: docker
 
-# ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
 # Dockerfile は他の CI では検証されないので、PR の時点でビルドする。ubuntu-min は既存の ubuntu
 # ユーザーを消す経路、debian-min は素の Debian の経路、alpine は Dockerfile.alpine を通す。
 on:

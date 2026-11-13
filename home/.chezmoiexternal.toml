@@ -1,5 +1,4 @@
-# dracula テーマ群は archive 型で commit SHA に pin し、更新は renovate で追従させる。
-# Windows は展開先 (vim / delta / tmux / dircolors) のいずれも使わない
+# pin した commit SHA は renovate が更新する。Windows は展開先 (vim / delta / tmux / dircolors) を使わない
 {{ if ne .chezmoi.os "windows" }}
 [".local/share/vim/pack/themes/start/dracula"]
 type = "archive"
@@ -34,11 +33,9 @@ executable = true
 
 {{ end }}
 
-{{- /* Claude Code の nano-banana MCP server (gemini-cli-extensions/nanobanana 同梱)。npm 未公開のため
-      release の source archive を展開し、run_onchange_after_95_nanobanana-mcp.sh.tmpl が build する。
-      build 生成物 (dist / node_modules) を apply で消さないよう exact は付けない。
-      条件は build に要る node の導入条件 (mise config と同じ dig 既定 true) に揃え、
-      run_onchange_after_95 と .chezmoitemplates/claude.json も同じ式を使う */}}
+{{- /* Claude Code の nano-banana MCP server。npm に公開されていないため release の source archive を展開し、
+      run_onchange_after_95_nanobanana-mcp.sh.tmpl が build する。build 生成物 (dist / node_modules) を apply で消さないよう exact は付けない。
+      条件は build に要る node の導入条件 (mise config と同じ dig 既定 true) で、run_onchange_after_95 と .chezmoitemplates/claude.json も同じ式を使う */}}
 {{ if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" true .)) }}
 [".local/share/nanobanana-mcp"]
 type = "archive"
@@ -63,5 +60,5 @@ type = "file"
 url = "https://raw.githubusercontent.com/dracula/xcode/fa045e9b1a47d348e8938ad6f14d3ee8a3b40788/Alucard.xccolortheme"
 {{ end }}
 
-# フォント群は .chezmoitemplates/external-fonts.toml で定義する (run_onchange_after_93_fonts が hash を参照するため別ファイル)
+# run_onchange_after_93_fonts がフォント定義だけの hash で発火するよう、フォントは別ファイルに置く
 {{ includeTemplate "external-fonts.toml" . }}

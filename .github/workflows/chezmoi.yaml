@@ -1,6 +1,5 @@
 name: chezmoi
 
-# ci.yaml から reusable workflow として呼ばれる (トリガーは ci.yaml が持つ)。
 on:
   workflow_call:
 

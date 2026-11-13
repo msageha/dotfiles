@@ -1,4 +1,4 @@
-function fzf_gcloud_ssh -d "Select a gcloud compute instance and ssh into it"
+function fzf_gcloud_ssh -d "gcloud の compute instance を選んで ssh する"
     if not type -q gcloud
         echo "fzf_gcloud_ssh: gcloud not found" >&2
         return 1

@@ -45,7 +45,7 @@ export PSQL_HISTFILE="$HOME/.local/state/psql_history"
 export PYTHON_HISTORY="$HOME/.local/state/python_history"
 export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 
-# Dracula テーマの配色 (https://github.com/dracula/ の fzf / eza / ripgrep / grep / man-pages)
+# Dracula テーマの配色 (https://github.com/dracula/ の fzf / eza / grep / man-pages)
 if $_dotfiles_human_shell; then
     export FZF_DEFAULT_OPTS="--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
     export EZA_COLORS="uu=36:uR=31:un=35:gu=37:da=2;34:ur=34:uw=95:ux=36:ue=36:gr=34:gw=35:gx=36:tr=34:tw=35:tx=36:xx=95:"
@@ -55,13 +55,13 @@ if $_dotfiles_human_shell; then
         export GREP_COLOR="1;38;2;255;85;85"
     fi
     export MANPAGER="less -s -M +Gg"
-    export LESS_TERMCAP_mb=$'\e[1;31m'      # begin blink
-    export LESS_TERMCAP_md=$'\e[1;34m'      # begin bold
-    export LESS_TERMCAP_so=$'\e[01;45;37m'  # begin reverse video
-    export LESS_TERMCAP_us=$'\e[01;36m'     # begin underline
-    export LESS_TERMCAP_me=$'\e[0m'         # reset bold/blink
-    export LESS_TERMCAP_se=$'\e[0m'         # reset reverse video
-    export LESS_TERMCAP_ue=$'\e[0m'         # reset underline
+    export LESS_TERMCAP_mb=$'\e[1;31m'      # 点滅の開始
+    export LESS_TERMCAP_md=$'\e[1;34m'      # 太字の開始
+    export LESS_TERMCAP_so=$'\e[01;45;37m'  # 反転表示の開始
+    export LESS_TERMCAP_us=$'\e[01;36m'     # 下線の開始
+    export LESS_TERMCAP_me=$'\e[0m'         # 太字・点滅の終了
+    export LESS_TERMCAP_se=$'\e[0m'         # 反転表示の終了
+    export LESS_TERMCAP_ue=$'\e[0m'         # 下線の終了
     export GROFF_NO_SGR=1                   # groff の SGR 出力を止め、LESS_TERMCAP_* の配色を効かせる
 fi
 
@@ -101,7 +101,7 @@ if $_dotfiles_human_shell; then
     fi
     unset _dircolors_bin
 
-    # LS_COLORS / GREP_COLORS は --color=auto を付けたときだけ効き、login shell は alias を定義する ~/.bashrc を読まないためここで張る
+    # LS_COLORS / GREP_COLORS は --color を付けないと効かないため alias で付ける。login shell は ~/.bashrc を読まないため alias もここで定義する
     # (--color 非対応の古い BSD ls もあるため、動くことを確かめてから)。
     # macOS の ls は COLORTERM か CLICOLOR が無いと色を出さないため CLICOLOR を設定する (GNU ls は無視する)
     export CLICOLOR=1

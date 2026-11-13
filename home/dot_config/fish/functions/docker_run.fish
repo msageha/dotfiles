@@ -1,4 +1,4 @@
-function docker_run -d 'Run a shell (or command) in a container with the current directory mounted'
+function docker_run -d 'カレントディレクトリをマウントしたコンテナでシェル (または指定したコマンド) を実行する'
     set -l image $argv[1]
     set -l cmd bash
 

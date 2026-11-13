@@ -12,14 +12,14 @@ on:
     types: [submitted]
 
 concurrency:
-  # issue / PR 単位で直列化する。実行中ジョブは変更を push しうるためキャンセルしない
+  # 実行中のジョブは変更を push しうるのでキャンセルしない
   group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
   claude:
-    # @claude メンションと author_association による一次フィルタ。COLLABORATOR は read-only の
-    # outside collaborator を含みうるので許可しない。claude-code-action も write / admin 以外の実行を拒否する。
+    # COLLABORATOR は read-only の outside collaborator を含みうるので許可しない。
+    # これは一次フィルタで、claude-code-action も write / admin 以外の実行を拒否する。
     if: |
       (github.event_name == 'issue_comment' &&
         contains(github.event.comment.body, '@claude') &&

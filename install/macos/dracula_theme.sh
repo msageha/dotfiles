@@ -28,8 +28,8 @@ function terminal_app_dracula() {
         return 0
     fi
 
-    # フォントを SauceCodePro Nerd Font Mono 18pt にする (Ghostty と統一)。
-    # Terminal が起動中だと plist を直接書き換えても上書きされるため、import 前のプロファイルに埋め込む。
+    # フォントは Ghostty とそろえて SauceCodePro Nerd Font Mono 18pt にする。
+    # Terminal の起動中は plist を直接書き換えても上書きされるため、import 前のプロファイルに埋め込む。
     # PyObjC は CLT の python3 に無いことがあるため、OS 標準の JXA で NSFont をアーカイブする
     local font_data
     font_data="$(osascript -l JavaScript -e '
