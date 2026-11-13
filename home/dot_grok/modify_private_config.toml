@@ -4,8 +4,7 @@
 auto_update = false
 
 [features]
-# support_permission は undocumented だが、バイナリ同梱の README では「prompt before tool execution」。
-# 自律実行を優先して false (ツール実行前に確認しない) にする
+# support_permission は undocumented で、バイナリ同梱の README では「prompt before tool execution」。自律実行を優先して false にする
 support_permission = false
 telemetry = false
 feedback = false
@@ -40,7 +39,7 @@ args = ["-y", "chrome-devtools-mcp@%s"]
 command = "npx"
 args = ["-y", "@playwright/mcp@%s"]
 ` .mcp.context7 .mcp.chromeDevtools .mcp.playwright | fromToml -}}
-{{- /* dart / xcode MCP は macOS 専用バイナリ (dart, xcrun) に依存する */}}
+{{- /* xcrun は macOS 専用で、dart も flutter とともに macOS にだけ導入する (mise config) */}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $desired = mergeOverwrite $desired (fromToml `
 [mcp_servers.dart]

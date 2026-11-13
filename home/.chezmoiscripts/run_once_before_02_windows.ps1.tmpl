@@ -9,8 +9,8 @@
 {{   include "../install/windows/system_settings.ps1" }}
 {{   include "../install/windows/apps.ps1" }}
 {{   include "../install/windows/coding_agent.ps1" }}
-# 初回の環境では coding_agent.ps1 が入れた claude (%USERPROFILE%\.local\bin) が
-# この session の PATH に無いため、claude_plugins.ps1 から呼べるよう追加する
+# 初回は coding_agent.ps1 が入れた claude (%USERPROFILE%\.local\bin) がこの session の PATH に無いので、
+# claude_plugins.ps1 から呼べるよう足す
 $env:Path = (Join-Path $env:USERPROFILE '.local\bin') + ';' + $env:Path
 $env:CLAUDE_MARKETPLACES = '{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
 $env:CLAUDE_PLUGINS = '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'

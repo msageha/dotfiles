@@ -209,7 +209,7 @@ main への push では、CI が全バリアントを Docker Hub へ push する
 mise trust
 mise install         # ツールの導入と git hook (pre-commit / pre-push) の登録
 mise run pre-commit  # commit 時と同じ lint / format
-mise run pre-push    # push 時と同じ検査 (全テンプレートの描画と、install スクリプトの bats)
+mise run pre-push    # push 時と同じ検査 (全テンプレートの描画と、tests/install・tests/docker の bats)
 mise run test        # 全 bats テスト (適用後の $HOME の検査を含む)
 ```
 

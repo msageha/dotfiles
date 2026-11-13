@@ -1,8 +1,8 @@
 function __source_cached_init
     # usage: __source_cached_init <cache-name> <cmd> [args...]
     # バイナリが同じなら出力も同じ初期化スクリプト (starship init / brew shellenv 等) をキャッシュして
-    # source し、シェル起動ごとの子プロセス (10〜30ms/個) を省く。<cmd> の mtime がキャッシュより
-    # 新しければ作り直すため、<cmd> は絶対パスで渡す (コマンド名だと判定が常に偽になる)。
+    # source し、シェル起動ごとの子プロセスを省く。<cmd> の mtime がキャッシュより新しければ
+    # 作り直すため、<cmd> は絶対パスで渡す (コマンド名だと判定が常に偽になる)。
     # 空出力は失敗扱いにする (brew shellenv は brew が PATH 先頭にあると何も出さず、
     # 空のキャッシュが残ると以後 HOMEBREW_* が設定されない)
     set -l cache_dir $HOME/.cache/fish/init

@@ -31,7 +31,7 @@ function setup() {
     run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
     [ "$status" -ne 0 ]
     grep -Fxq "# machine local line" "${HOME}/.zshrc"
-    # 管理ブロックは機械ローカルな追記より前に挿入される
+    # 管理ブロックはマシン固有の追記より前に入る
     [ "$(head -n 1 "${HOME}/.zshrc")" = "# >>> dotfiles zsh init >>>" ]
 }
 

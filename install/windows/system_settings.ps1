@@ -1,6 +1,5 @@
 #!/usr/bin/env pwsh
-# Windows のシステム設定 (エクスプローラー・壁紙・タスクバー・電源・キーボード・開発者モード・BitLocker 等)。
-# mac (install/macos/system_settings.sh) / ubuntu (install/ubuntu/system_settings.sh) に相当する。
+# Windows のシステム設定。mac (install/macos/system_settings.sh) / ubuntu (install/ubuntu/system_settings.sh) に相当する。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -54,7 +53,6 @@ function Set-WallpaperSettings {
     New-Item -ItemType Directory -Force -Path $picturesDir | Out-Null
     $wallpaperPath = Join-Path $picturesDir 'wallpaper.png'
 
-    # 取得に失敗した本文を壁紙にしないよう、失敗したらスキップする
     try {
         Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/windows.png' -OutFile $wallpaperPath -UseBasicParsing
     }
@@ -81,9 +79,8 @@ public class ChezmoiWallpaper {
     [ChezmoiWallpaper]::SystemParametersInfo(0x14, 0, $wallpaperPath, 3) | Out-Null
 }
 
-# UCPD.sys (User Choice Protection Driver) は、保護対象の値 (TaskbarDa・ShellFeedsTaskbarViewMode 等) への
-# powershell.exe などからの書き込みを ACCESS_DENIED にし、設定アプリからしか変更できない。
-# そのため拒否は警告にして続行し、それ以外の失敗は再スローする。
+# UCPD.sys (User Choice Protection Driver) は保護対象の値 (TaskbarDa・ShellFeedsTaskbarViewMode 等) への powershell.exe などからの
+# 書き込みを ACCESS_DENIED にし、設定アプリからしか変えられないため、拒否だけは警告にして続行する
 function Set-UcpdProtectedDword($path, $name, $value) {
     try {
         Set-RegistryDword $path $name $value

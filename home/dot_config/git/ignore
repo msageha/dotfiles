@@ -1,12 +1,9 @@
-# Security & Credentials
-# SSH keys and actual config
 .ssh/config
 .ssh/*.key
 .ssh/*.pem
 .ssh/known_hosts
 .ssh/authorized_keys
 
-# Environment variables and secrets
 *.env
 .env.*
 .envrc
@@ -14,7 +11,6 @@ secrets/
 credentials/
 *-key.json
 
-# Git credentials and tokens
 .gitconfig.local
 .gitconfig.personal
 github_token*
@@ -23,7 +19,6 @@ bitbucket_token*
 *_token
 *_password
 
-# Tooling / agents
 .claude
 CLAUDE.md
 .maestro/*
@@ -31,7 +26,6 @@ CLAUDE.md
 .worktrees/
 .tool-versions
 
-# Python-related
 *.pyc
 venv/
 .venv/
@@ -40,17 +34,13 @@ Untitled.ipynb
 log_tensorboard/
 mlflow/*
 
-# Build artifacts
 build/
 *.egg-info/
 
-# Modeling-related files
 checkpoint/
 
-# Node.js-related
 node_modules/
 
-# OS-specific files
 .DS_Store
 .Spotlight-V100
 .Trashes
@@ -58,19 +48,16 @@ node_modules/
 Desktop.ini
 Thumbs.db
 
-# IDE/editor settings
 .idea/
 .project
 .vscode/
 *.code-workspace
 
-# DBeaver-related
 .dbeaver/
 
-# Caching and temporary files
 .cache/
 
-# Flutter/Dart/Pub-related files
+# Flutter / Dart / pub のツールが生成するファイル
 **/doc/api/
 .dart_tool/
 .flutter-plugins
@@ -85,7 +72,6 @@ linked_*.ds
 unlinked.ds
 unlinked_spec.ds
 
-# Android-related files
 **/android/**/gradle-wrapper.jar
 .gradle/
 **/android/captures/
@@ -96,7 +82,6 @@ unlinked_spec.ds
 **/android/key.properties
 *.jks
 
-# iOS/XCode-related files
 **/ios/**/*.mode1v3
 **/ios/**/*.mode2v3
 **/ios/**/*.moved-aside

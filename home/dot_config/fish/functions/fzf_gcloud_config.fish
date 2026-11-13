@@ -1,4 +1,4 @@
-function fzf_gcloud_config -d "Select and activate a gcloud configuration"
+function fzf_gcloud_config -d "gcloud の configuration を選んで切り替える"
     if not type -q gcloud
         echo "fzf_gcloud_config: gcloud not found" >&2
         return 1

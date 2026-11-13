@@ -1,4 +1,4 @@
-function fenv -d "Select and load mise/fnox environment for the current directory"
+function fenv -d "カレントディレクトリの mise / fnox の環境を選んで読み込む"
     if not type -q fzf
         echo "fenv: fzf not found" >&2
         return 1

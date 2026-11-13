@@ -1,4 +1,4 @@
-function __repo_search_with_chezmoi -d 'Repository search (ghq + chezmoi source dir)'
+function __repo_search_with_chezmoi -d 'ghq 管理下のリポジトリと chezmoi の source から選んで cd する'
     set -l selector fzf
     if [ -n "$GHQ_SELECTOR" ]
         set selector $GHQ_SELECTOR

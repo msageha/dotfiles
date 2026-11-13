@@ -6,8 +6,7 @@ export LC_ALL=C
 
 input=$(cat)
 
-# statusline は高頻度で呼ばれるため、同一 JSON への jq 起動は 1 回にまとめて
-# 値を行単位で受け取る (各値に改行は含まれない前提)
+# statusline は高頻度で呼ばれるため jq の起動を 1 回にまとめ、値を 1 行ずつ受け取る (各値に改行を含まない前提)
 {
   read -r used
   read -r remaining

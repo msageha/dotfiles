@@ -9,7 +9,7 @@ activate_tool_paths
 export SKIP_CLI_TOOLS={{ dig "skip_cli_tools" false . }}
 export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 {{   include "../install/macos/brew.sh" }}
-# 初回は brew.sh が Homebrew を入れた直後で PATH に無いため、後続の claude / dockutil の probe の前に通す
+# 初回は brew.sh が入れた直後の Homebrew が PATH に無いので、後続で claude / dockutil を探す前に通す
 activate_tool_paths
 {{ if not (dig "skip_cli_tools" false .) -}}
 export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'

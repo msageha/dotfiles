@@ -17,7 +17,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # GITHUB_TOKEN は GitHub API を呼ぶ step (aqua / ubi backend の rate limit 回避) にだけ渡す。
+      # GITHUB_TOKEN は、無認証の rate limit を避けるため GitHub API を呼ぶ step にだけ渡す。
       - name: Install mise
         uses: ./.github/actions/setup-mise
         env:

@@ -2,8 +2,7 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# gsettings を安全に適用する。スキーマ / キーが存在しない GNOME 構成や拡張未導入の環境では
-# スキップし、set -e で apply 全体を止めないようにする
+# スキーマやキーが無い環境 (GNOME の構成の違い・拡張が未導入) では、set -e で apply 全体を止めずにスキップする
 function gset() {
     local schema="$1" key="$2" value="$3"
     if ! gsettings writable "$schema" "$key" &>/dev/null; then
@@ -69,7 +68,7 @@ function wallpaper_settings() {
     local wallpaper_path="$HOME/Pictures/wallpaper.png"
     mkdir -p "$HOME/Pictures"
 
-    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
+    # HTTP エラーの本文を壁紙にしないよう、-f で失敗させてスキップする
     if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/ubuntu-2.png" \
         --output "$wallpaper_path"; then
         log_warn "壁紙のダウンロードに失敗しました。スキップします。"

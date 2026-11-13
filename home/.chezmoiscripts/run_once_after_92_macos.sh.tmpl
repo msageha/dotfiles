@@ -12,8 +12,8 @@ if [ -z "${CI:-}" ]; then
 fi
 
 {{ if not (dig "skip_gui_tools" false .) -}}
-# GUI アプリの設定のため CI ではスキップする。
-# プロファイルに埋め込むフォントは external が配置するので、before ではなく after で実行する
+# GUI アプリの設定なので CI ではスキップする。
+# Terminal のプロファイルに埋め込むフォントは chezmoi external が配置するので、before ではなく after で実行する
 if [ -z "${CI:-}" ]; then
 {{   include "../install/macos/dracula_theme.sh" }}
 fi

@@ -1,6 +1,6 @@
 function claude --wraps claude
-    # GitHub MCP server (Claude Code の github plugin) が使うトークンを注入する。gh の OAuth トークンは
-    # 回転しうるためファイルに置かず、gh auth token (~170ms) はシェル起動時ではなくここで払う
+    # Claude Code の github plugin (GitHub MCP server) が読む GITHUB_PERSONAL_ACCESS_TOKEN を gh のトークンから入れる。
+    # トークンは変わりうるためファイルに置かず、gh auth token はシェル起動を遅くしないよう claude の起動時に呼ぶ
     if not set -q GITHUB_PERSONAL_ACCESS_TOKEN; and type -q gh
         set -l gh_token (gh auth token 2>/dev/null)
         if test -n "$gh_token"

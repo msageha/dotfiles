@@ -1,10 +1,7 @@
 #!/usr/bin/env pwsh
-# winget (Windows Package Manager) のブートストラップ。
-# Microsoft Store が無い環境 (Windows Server 2022・Windows Sandbox 等) には winget が同梱されないため、
-# GitHub リリースの App Installer パッケージから導入する。
-# winget を使う setup_powershell.ps1 と apps.ps1 より先に実行すること。
-# 公式手順の Repair-WinGetPackageManager は Windows Server 2022 で WinRT の初期化に失敗する
-# 既知問題 (microsoft/winget-cli#4502) があるため、最後の手段としてだけ使う。
+# winget (Windows Package Manager) を導入する。winget を使う setup_powershell.ps1 と apps.ps1 より先に実行する。
+# Microsoft Store が無い環境 (Windows Server 2022・Windows Sandbox 等) には winget が同梱されないため、GitHub リリースの App Installer から入れる。
+# 公式手順の Repair-WinGetPackageManager は Windows Server 2022 で WinRT の初期化に失敗する (microsoft/winget-cli#4502) ため、最後の手段にする。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -24,14 +21,13 @@ function Update-WinGetSessionPath {
 }
 
 function Register-ExistingAppInstaller {
-    # App Installer は配置済みだが、初回サインイン後の非同期な Store 登録がまだ
-    # 済んでいないだけのケースがある。登録はネットワーク不要で数秒で終わるため先に試す
+    # App Installer は配置済みで、初回サインイン後の非同期な Store 登録が済んでいないだけのことがある。
+    # 登録はネットワーク不要ですぐ終わるので先に試す
     try {
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
     }
     catch {
-        # App Installer 自体が無い環境 (Windows Server 等) では失敗するが、
-        # 呼び出し元が GitHub リリースからの導入に進むため何も出力しない
+        # App Installer 自体が無い環境 (Windows Server 等) では失敗するが、呼び出し元が GitHub リリースからの導入に進むので何も出さない
         return
     }
     Update-WinGetSessionPath
@@ -64,7 +60,7 @@ function Install-WinGetFromGitHubRelease {
         $bundlePath  = Join-Path $tmp $assets.bundle.name
         $depsZip     = Join-Path $tmp $assets.deps.name
         $licensePath = Join-Path $tmp $assets.license.name
-        # -UseBasicParsing: 5.1 は IE エンジン未初期化のクリーン環境だとこれ無しで失敗する
+        # 5.1 は IE エンジンが未初期化の環境では -UseBasicParsing が無いと失敗する
         Invoke-WebRequest -Uri $assets.bundle.browser_download_url -OutFile $bundlePath -UseBasicParsing
         Invoke-WebRequest -Uri $assets.deps.browser_download_url -OutFile $depsZip -UseBasicParsing
         Invoke-WebRequest -Uri $assets.license.browser_download_url -OutFile $licensePath -UseBasicParsing
@@ -75,12 +71,11 @@ function Install-WinGetFromGitHubRelease {
         if (Test-IsAdmin) {
             Add-AppxProvisionedPackage -Online -PackagePath $bundlePath `
                 -DependencyPackagePath $depPaths -LicensePath $licensePath | Out-Null
-            # 配置 (provision) は次回サインイン時に登録される。現在のユーザーへ即時反映する
+            # provision したパッケージは次回のサインインで登録されるので、現在のユーザーにはここで登録する
             Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         }
         else {
-            # 非管理者はユーザー単位で導入する。Windows Server ではライセンス制約で
-            # 失敗することがある (その場合は管理者 PowerShell で再実行する)
+            # Windows Server ではライセンスの制約で失敗することがある (その場合は管理者の PowerShell で再実行する)
             foreach ($dep in $depPaths) {
                 Add-AppxPackage -Path $dep
             }
@@ -126,8 +121,7 @@ function Install-WinGet {
         return
     }
 
-    # Windows PowerShell 5.1 の既定では GitHub / PSGallery への接続に TLS 1.2 が
-    # 使われないことがあるため明示的に有効化する (現在セッションのみ)
+    # Windows PowerShell 5.1 の既定では GitHub / PSGallery への接続に TLS 1.2 が使われないことがある
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
     Install-WinGetFromGitHubRelease

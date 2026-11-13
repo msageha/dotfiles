@@ -5,8 +5,7 @@ on:
   # gitleaks.yaml の週次 schedule が行う。
   pull_request:
     types: [opened, synchronize, reopened]
-  # mise-lock.yaml が GITHUB_TOKEN で push / 作成した PR では CI が自動で走らないため、
-  # PR の head ブランチへ dispatch できるようにする
+  # mise-lock.yaml が GITHUB_TOKEN で push / 作成した PR では CI が自動で走らないので、そのブランチへ dispatch する
   workflow_dispatch:
 
 permissions: {}
@@ -15,7 +14,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# 各チェックは reusable workflow として並列に走る。
 # permissions は zizmor (excessive-permissions) に従い job 単位で付ける。
 jobs:
   prek:

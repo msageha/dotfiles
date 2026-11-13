@@ -12,8 +12,7 @@
 
 # 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で op read が走らないよう、
 # apply_ssh_keys が true の実行 (mise run apply-ssh-keys が --override-data で渡す) 以外では ignore する。
-# 子が全て ignore でも親ディレクトリは作られるため、サブディレクトリも明示する。
-# apply_ssh_keys は bool の true と比較する (文字列を渡すと template error)。
+# 子が全て ignore でも親ディレクトリは作られるため、サブディレクトリも列挙する。apply_ssh_keys は bool の true と比較する (文字列を渡すと template error)。
 # Windows は private_ 属性で NTFS ACL を制御できないため常に ignore する
 {{ if or (eq .chezmoi.os "windows") (ne (dig "apply_ssh_keys" false .) true) }}
 {{-   range .ssh_keys.items }}
@@ -25,8 +24,8 @@
 {{-   end }}
 {{ end }}
 
-# Windows では unix 向け dotfiles (シェル設定・vim・unix ツールの .config) は展開しない。
-# git / ssh / starship / コーディングエージェント設定は Windows でも使うため管理を続ける
+# Windows では unix 向けの dotfiles (シェル設定・vim・unix ツールの .config) を展開しない
+# (git / ssh / starship / コーディングエージェント設定は Windows でも使う)
 {{ if eq .chezmoi.os "windows" }}
 .alias
 .bash_profile
@@ -55,9 +54,8 @@
 .config/gh/hosts.yml
 {{ end }}
 
-# Takumi Guard の registry 設定 (npm / pip / uv / Go)。Windows は設定ファイルの配置先が異なるため対象外。
-# パッケージマネージャーを導入しない最小構成 (skip_cli_tools) でも展開しない。
-# Go の token を置く .netrc は token が無い環境では触らない
+# Takumi Guard (悪性パッケージを遮断するパッケージレジストリ) の設定 (npm / pip / uv / Go)。Windows は設定ファイルの配置先が異なるため対象外。
+# パッケージマネージャーを入れない構成 (skip_cli_tools) でも展開せず、Go の token を置く .netrc は token が無ければ触らない
 {{ if or (eq .chezmoi.os "windows") (dig "skip_cli_tools" false .) }}
 .npmrc
 .netrc
@@ -76,9 +74,8 @@
 
 # コーディングエージェント設定 (.claude / .codex / .gemini / .grok / .agents / .claude.json / .config/agents) は
 # unix は skip_cli_tools、Windows は skip_windows_extras で管理対象外にする (片方しか定義されないため or で拾う)。
-# 管理するときも各ディレクトリを X/* で ignore し、管理するトップレベル項目だけを ! で戻す
-# (chezmoi add がランタイムファイルを source に取り込んで autoPush するのを防ぎ、source に残った不要ファイルも展開しない)。
-# X/* は深さ 1 にしか効かないので、配下のファイルは戻さなくてよい
+# 管理するときも各ディレクトリを X/* で ignore し、管理する直下の項目だけを ! で戻す (chezmoi add がランタイムファイルを
+# source に取り込んで autoPush するのを防ぎ、source に残った不要ファイルも展開しない)。X/* は直下にしか効かないので、戻した項目の配下は戻さなくてよい
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 {{ if $skipCodingAgent }}
 .claude
@@ -137,7 +134,6 @@
 !.gemini/config
 {{ end }}
 
-# auth・sessions・logs 等のランタイム状態を含むため .grok/* を ignore する
 .grok/*
 {{ if not $skipCodingAgent }}
 !.grok/AGENTS.md

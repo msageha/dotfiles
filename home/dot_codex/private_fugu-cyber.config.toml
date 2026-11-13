@@ -1,4 +1,4 @@
-# codex --profile <name> が読む profile-v2 overlay。base の config.toml に再帰マージされるため上書きしたいキーだけを書く
+# codex --profile <name> が base の config.toml に再帰マージする overlay なので、上書きするキーだけを書く
 model = "fugu-cyber"
 model_reasoning_effort = "high"
 model_provider = "fugu_cyber"

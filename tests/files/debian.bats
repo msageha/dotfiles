@@ -25,7 +25,7 @@ function setup() {
 @test "[files] debian - coding agent CLIs installed (skip_cli_tools=false)" {
     # skip_cli_tools=true では run_once_before_02_debian が coding_agent.sh を include しない
     cli_tools_skipped && skip "coding agents are not installed (skip_cli_tools=true)"
-    # インストーラが配置する CLI 名は agy (install_antigravity_cli の probe と揃える)
+    # antigravity のインストーラが配置する CLI 名は agy (install_antigravity_cli の判定とそろえる)
     for cli in agy claude codex; do
         echo "Checking ${cli}"
         command -v "${cli}" &>/dev/null

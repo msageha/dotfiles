@@ -29,7 +29,6 @@ function install_apt_apps() {
     run_privileged apt install -yq "${apt_apps[@]}"
 }
 
-# $1 = snap 名、残りは snap install へ渡すオプション (--classic 等)
 function install_snap_app() {
     local app="$1"
     shift
@@ -56,9 +55,8 @@ function install_snap_apps() {
     done
 }
 
-# Google Chrome は Ubuntu の apt リポジトリに無い (Google 配布のみ) ため公式 .deb を取得して入れる。
-# .deb が apt リポジトリと署名鍵を自動設定するので、以降は apt upgrade で更新される。
-# Linux 版は amd64 と arm64 のみ提供。それ以外のアーキテクチャと取得失敗時はスキップする
+# Google Chrome は Ubuntu の apt リポジトリに無いため、Google の .deb から入れる。
+# .deb が Google の apt リポジトリと署名鍵を登録するので、以降は apt upgrade で更新される
 function install_chrome() {
     log_step "Installing Google Chrome..."
     if command -v google-chrome &>/dev/null; then
@@ -68,6 +66,7 @@ function install_chrome() {
 
     local arch
     arch="$(dpkg --print-architecture)"
+    # Linux 版は amd64 と arm64 だけが配布されている
     case "$arch" in
         amd64 | arm64) ;;
         *)

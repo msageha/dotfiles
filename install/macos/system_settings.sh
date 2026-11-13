@@ -2,8 +2,8 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# macOS の既定 sudoers は %admin なので admin 所属で判定し、NOPASSWD 等の個別付与は sudo -n で拾う。
-# lib.sh の has_privilege (sudo -v) を使わないのは、非 sudoer にも TTY パスワードプロンプトを出してしまうため
+# macOS の既定の sudoers は %admin なので admin への所属で判定し、個別の NOPASSWD 等は sudo -n で拾う。
+# lib.sh の has_privilege (sudo -v) は sudoer でないユーザーにもパスワードを聞くため使わない
 function has_admin_privilege() {
     if [ "$(id -u)" -eq 0 ]; then
         return 0
@@ -14,7 +14,7 @@ function has_admin_privilege() {
 function computer_name() {
     log_step "Setting computer name..."
 
-    # config に computer_name が無い場合は空で渡ってくる。空名を scutil に設定しない
+    # chezmoi の config に computer_name が無いと空文字が渡る
     if [ -z "${COMPUTER_NAME:-}" ]; then
         log_step "COMPUTER_NAME が未設定のためスキップ"
         return 0
@@ -42,8 +42,8 @@ function computer_name() {
 function user_icon() {
     local icon="$CHEZMOI_REPO_ROOT/settings/common/icon.png"
 
-    # Picture が同じパスで、JPEGPhoto (System Settings による上書き) が無ければスキップ。
-    # dscl -read は属性が無くても exit 0 で "No such key" を返すため、出力で存在判定する
+    # JPEGPhoto (System Settings で設定した画像) は Picture より優先されるため、これが残っていれば Picture が同じでも設定し直す。
+    # dscl -read は属性が無くても exit 0 で "No such key" を返すので、出力で有無を判定する
     local current
     current="$(dscl . -read "/Users/$USER" Picture 2>/dev/null | sed -n 's/^Picture: //p')"
     if [[ "$current" == "$icon" ]] && ! dscl . -read "/Users/$USER" JPEGPhoto 2>/dev/null | grep -q '^JPEGPhoto:'; then
@@ -153,7 +153,7 @@ function screensaver_settings() {
 function wallpaper_settings() {
     log_step "壁紙の設定を行っています..."
     mkdir -p "$HOME/Pictures"
-    # 取得失敗時に壊れた本文を壁紙にしないよう -f で HTTP エラーを検知し、失敗時はスキップする
+    # HTTP エラーの本文を壁紙にしないよう、-f で失敗させてスキップする
     if ! curl -fsSL "https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/macos.png" --output "$HOME/Pictures/wallpaper.png"; then
         log_warn "壁紙のダウンロードに失敗しました。スキップします。"
         return 0

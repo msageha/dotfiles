@@ -17,7 +17,7 @@
   "gitIgnoredAuthors": ["github-actions[bot]@users.noreply.github.com"],
   "packageRules": [
     {
-      "description": "major 以外 (minor / patch / pin / digest) の更新を 1 つの PR にまとめる。major は個別 PR で人手レビューする",
+      "description": "major 以外の更新を 1 つの PR にまとめる。major は個別の PR で人手レビューする",
       "matchUpdateTypes": [
         "minor",
         "patch",
@@ -29,7 +29,7 @@
       "groupSlug": "all-minor-patch"
     },
     {
-      "description": "patch / minor は minimumReleaseAge (7 日) の経過後、CI green なら自動マージする。major は猶予期間だけでは供給網攻撃に備えきれないので人手レビューにする",
+      "description": "patch / minor は minimumReleaseAge の経過後、CI green なら自動マージする。major は猶予期間だけでは supply chain 攻撃に備えきれないので人手レビューにする",
       "matchUpdateTypes": [
         "patch",
         "minor"
@@ -56,7 +56,7 @@
       "versioning": "semver"
     },
     {
-      "description": "op / age / fnox は mise.toml の annotation (regex manager) で更新するので、組み込み mise manager では無効にして重複 PR を防ぐ (op は公開 GitHub リポジトリが無く、組み込み manager では lookup できない)",
+      "description": "op / age / fnox は mise.toml の `# renovate:` 注釈 (regex manager) で更新するので、組み込みの mise manager では無効にして重複 PR を防ぐ (op は公開 GitHub リポジトリが無く、組み込み manager では lookup できない)",
       "matchManagers": [
         "mise"
       ],
@@ -68,7 +68,7 @@
       "enabled": false
     },
     {
-      "description": "flarectl は cloudflare-go の v0 系にしか無く (v1 以降は cmd/ が削除され module path も変わった)、go backend で v1.0.0 以上を install できない。github-tags datasource ではこれを検知できないので v1 未満に限る",
+      "description": "flarectl は cloudflare-go の v0 系にしか無く、v1.0.0 以上は go backend で install できない。github-tags datasource ではこれを検知できないので v1 未満に限る",
       "matchDepNames": [
         "cloudflare/cloudflare-go"
       ],
@@ -104,7 +104,7 @@
     },
     {
       "customType": "regex",
-      "description": "`# renovate: datasource= depName= [packageName=] [versioning=] [extractVersion=]` の直下の `key = \"version\"` 行を更新する (home/.chezmoidata.toml の MCP pin と mise.toml / mise config.toml.tmpl のツール pin)。java は java-version datasource が temurin- prefix の無い版を返すので、prefix を currentValue の外に置く",
+      "description": "`# renovate: datasource= depName= [packageName=] [versioning=] [extractVersion=]` 注釈の直下の `key = \"version\"` 行を更新する。java-version datasource は temurin- prefix の無い版を返すので、prefix を currentValue の外に置く",
       "managerFilePatterns": [
         "/^home/\\.chezmoidata\\.toml$/",
         "/^mise\\.toml$/",
@@ -205,7 +205,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/vim の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/vim の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -219,7 +219,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/delta の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/delta の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -233,7 +233,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/tmux の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/tmux の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -247,7 +247,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の dracula/dircolors の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/dircolors の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -261,7 +261,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の git-open の commit SHA を master の最新 commit に追従させる",
+      "description": "chezmoi external の git-open の commit SHA を master の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -275,7 +275,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の dracula/ghostty の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/ghostty の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -289,7 +289,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (file pin) の dracula/xcode の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の dracula/xcode の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoiexternal\\.toml$/"
       ],
@@ -303,7 +303,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external (archive pin) の powerline/fonts の commit SHA を default branch の最新 commit に追従させる",
+      "description": "chezmoi external の powerline/fonts の commit SHA を default branch の最新 commit に追従させる",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],
@@ -317,7 +317,7 @@
     },
     {
       "customType": "regex",
-      "description": "chezmoi external の source-han-code-jp を更新する。フォントのリリースは R 付きタグだけ (無印はソースのリリース) なので R 付きに限る。semver ではないので loose versioning",
+      "description": "chezmoi external の source-han-code-jp を更新する。フォントのリリースは R 付きタグだけ (無印はソースのリリース) なので R 付きに限る",
       "managerFilePatterns": [
         "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
       ],

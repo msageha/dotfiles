@@ -49,13 +49,13 @@ if test "$human_shell" = true
 
     # man ページの Dracula テーマ (https://github.com/dracula/man-pages)
     set -gx MANPAGER "less -s -M +Gg"
-    set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # begin blink
-    set -gx LESS_TERMCAP_md (printf '\e[1;34m') # begin bold
-    set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # begin reverse video
-    set -gx LESS_TERMCAP_us (printf '\e[01;36m') # begin underline
-    set -gx LESS_TERMCAP_me (printf '\e[0m') # reset bold/blink
-    set -gx LESS_TERMCAP_se (printf '\e[0m') # reset reverse video
-    set -gx LESS_TERMCAP_ue (printf '\e[0m') # reset underline
+    set -gx LESS_TERMCAP_mb (printf '\e[1;31m') # 点滅の開始
+    set -gx LESS_TERMCAP_md (printf '\e[1;34m') # 太字の開始
+    set -gx LESS_TERMCAP_so (printf '\e[01;45;37m') # 反転表示の開始
+    set -gx LESS_TERMCAP_us (printf '\e[01;36m') # 下線の開始
+    set -gx LESS_TERMCAP_me (printf '\e[0m') # 太字・点滅の終了
+    set -gx LESS_TERMCAP_se (printf '\e[0m') # 反転表示の終了
+    set -gx LESS_TERMCAP_ue (printf '\e[0m') # 下線の終了
     set -gx GROFF_NO_SGR 1
 
     alias fgc=fzf_gcloud_config
@@ -222,7 +222,7 @@ if test "$human_shell" = true; and type -q fnox
         return 1
     end
 
-    # op whoami は 1 回 ~70ms かかるため結果を TTL 付きでキャッシュする。
+    # op whoami をプロンプトのたびに呼ぶと遅いため、結果を TTL 付きでキャッシュする。
     # 失効側の TTL は、別タブでの signin を早く拾えるよう短くする
     set -g __fnox_op_session_status 1
     set -g __fnox_op_session_expires 0

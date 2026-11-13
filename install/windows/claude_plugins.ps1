@@ -5,7 +5,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
-# marketplace add / plugin install / update は導入済みでもエラーにならず冪等なため、分岐せず常に実行して最新化する。
+# marketplace add / plugin install / update は導入済みでも成功するので、分岐せず毎回実行して最新にする
 function Install-Plugin([string]$PluginId) {
     claude plugin install $PluginId
     if ($LASTEXITCODE -ne 0) { throw "claude plugin install failed ($PluginId): exit code $LASTEXITCODE" }
@@ -15,8 +15,8 @@ function Install-Plugin([string]$PluginId) {
 
 function Main {
     # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
-    # run_once_before テンプレートが .chezmoidata.toml の claude.* から必ず渡す。
-    # PowerShell は空文字を代入した環境変数を削除するため、CLAUDE_PLUGINS が無いときは有効な plugin 0 件として扱う
+    # run_once_before テンプレートが .chezmoidata.toml の claude.* から渡す。
+    # PowerShell は空文字を代入した環境変数を削除するので、CLAUDE_PLUGINS が無いときは 0 件とする
     $marketplaces = @($env:CLAUDE_MARKETPLACES -split '\s+' | Where-Object { $_ })
     $plugins = @($env:CLAUDE_PLUGINS -split '\s+' | Where-Object { $_ })
     if (-not $marketplaces) {

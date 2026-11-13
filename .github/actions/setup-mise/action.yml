@@ -27,10 +27,9 @@ runs:
         install: ${{ inputs.install }}
         cache: ${{ inputs.install == 'true' }}
 
-    # aqua backend の attestation 検証は、Immutable Releases の attestation が aqua registry の
-    # signer_workflow と一致しないため sigstore 署名の検証に回り、tuf-repo-cdn.sigstore.dev への到達性に
-    # 依存する。mise の http_retries はこの取得に効かないので、ツール導入だけをやり直す
-    # (mise 本体と PATH は前の step で設定済み)。
+    # aqua backend は、Immutable Releases の attestation が aqua registry の signer_workflow と一致しないと
+    # sigstore 署名の検証に回り、tuf-repo-cdn.sigstore.dev への接続で失敗しうる。mise の http_retries は
+    # この取得に効かないので、ツール導入だけをやり直す (mise 本体と PATH は前の step で設定済み)。
     - name: Retry mise install
       if: inputs.install == 'true' && steps.mise.outcome == 'failure'
       shell: bash

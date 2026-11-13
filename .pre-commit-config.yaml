@@ -1,6 +1,6 @@
 # Claude Code にそのまま渡すファイルなので formatter に書き換えさせない
 exclude: ^home/dot_claude/CLAUDE\.md$
-# stages 未指定の hook は commit 時に走る。push 時は stages: [pre-push] の hook を追加で回す
+# stages を指定しない hook は既定で全 stage (push 時を含む) で走るので、commit 時に限る
 default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -44,8 +44,8 @@ repos:
       - id: dprint-fmt
         name: Format json/yaml/markdown/toml with dprint
         language: system
-        # prek は対象ファイルをバッチに分けて並列に dprint を起動する。dprint.json の excludes に
-        # 全部一致するバッチがあると、--allow-no-files 無しでは exit 14 で非決定的に失敗する
+        # prek はファイルをバッチに分けて dprint を並列に起動する。全ファイルが dprint.json の excludes に
+        # 当たるバッチは、--allow-no-files が無いと exit 14 で非決定的に失敗する
         entry: mise exec -- dprint fmt --allow-no-files
         types_or: [json, yaml, markdown, toml]
       - id: psscriptanalyzer

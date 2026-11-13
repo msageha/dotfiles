@@ -19,8 +19,8 @@ function create_zshrc() {
         log_error "${HOME}/.zshrc の管理ブロック終了マーカー (${block_end}) が見つかりません。巻き込み削除を避けるため更新をスキップします。手動で修復してください。"
         return 0
     fi
-    # 管理ブロックは機械ローカルな追記 (installer 由来のブロック等) より先に実行されるよう先頭に置き、
-    # 既存ブロックと旧形式の無条件 source (login shell で初期化が二重実行される) は取り除いて書き直す
+    # 管理ブロックはマシン固有の追記 (installer が足すブロック等) より先に実行されるよう先頭に置く。
+    # 既存の管理ブロックと、login shell で初期化を二重に実行させる無条件の source 行は取り除いて書き直す
     {
         printf '%s\n' "$block_begin"
         cat <<'EOF'

@@ -1,7 +1,7 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- /*
-  ~/.npmrc の registry と npm.flatt.tech の _authToken の行だけを差し替える。
-  strict-ssl 等のマシンローカルな設定行は空行も含めて温存する (npm / pnpm / yarn v1 が読む)。
+  ~/.npmrc (npm / pnpm / yarn v1 が読む) の registry と npm.flatt.tech の _authToken の行だけを差し替え、
+  strict-ssl 等のマシンローカルな行は空行も含めて温存する。
 */ -}}
 {{- $token := dig "apiKeys" "takumiGuard" "" . -}}
 {{- $lines := list -}}

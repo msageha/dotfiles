@@ -58,7 +58,7 @@ description = "IME 辞書を平文 (gitignore 済み) に復号する"
 run = "chezmoi decrypt settings/common/encrypted_google.ime.txt.age > settings/common/google.ime.txt"
 
 # 使い方: mise run docker-build <tag> <base-image> <skip_cli_tools> <dockerfile> [--push]
-# GUI ツールはどのバリアントにも入れない。gh の token は GitHub API のレート制限を避けるために渡す。
+# gh の token は GitHub API のレート制限を避けるために渡す。
 # --push は amd64 / arm64 の manifest list を push する (manifest list はローカルに load できない)。
 # 事前に docker login と buildx-setup が要る。
 [tasks.docker-build]
@@ -74,7 +74,6 @@ image="${DOCKER_REPOSITORY:-msageha/dotfiles}:$tag"
 GITHUB_TOKEN="$(gh auth token -h github.com)"
 export GITHUB_TOKEN
 if [ "${5:-}" = "--push" ]; then
-    # GPU バリアントは amd64 のみ (CI の matrix も arm64 を除く)
     if [ "$tag" = ubuntu-gpu ]; then
         echo "$tag is amd64 only and cannot be built multi-arch" >&2
         exit 1
@@ -103,36 +102,36 @@ fi
 # バリアント表 (tag / base image / skip_cli_tools / Dockerfile) の単一ソース。
 # docker-image-cd.yaml / docker.yaml の matrix はこれを写す。-min は CLI ツールも省く最小構成、無印は CLI ツール入り。
 [tasks.build-ubuntu-min]
-description = "Ubuntu / 最小 (CLI ツールも省く)"
+description = "Ubuntu の最小構成のイメージをビルドする"
 run = "mise run docker-build ubuntu-min ubuntu:26.04 true docker/Dockerfile.debian"
 
 [tasks.build-ubuntu]
-description = "Ubuntu / CLI"
+description = "Ubuntu の CLI ツール入りのイメージをビルドする"
 run = "mise run docker-build ubuntu ubuntu:26.04 false docker/Dockerfile.debian"
 
 [tasks.build-debian-min]
-description = "Debian / 最小"
+description = "Debian の最小構成のイメージをビルドする"
 run = "mise run docker-build debian-min debian:trixie true docker/Dockerfile.debian"
 
 [tasks.build-debian]
-description = "Debian / CLI"
+description = "Debian の CLI ツール入りのイメージをビルドする"
 run = "mise run docker-build debian debian:trixie false docker/Dockerfile.debian"
 
 [tasks.build-debian-slim-min]
-description = "Debian slim / 最小"
+description = "Debian slim の最小構成のイメージをビルドする"
 run = "mise run docker-build debian-slim-min debian:trixie-slim true docker/Dockerfile.debian"
 
 # Alpine は musl 環境なので最小構成だけを作る
 [tasks.build-alpine]
-description = "Alpine / 最小"
+description = "Alpine の最小構成のイメージをビルドする"
 run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 
 [tasks.build-ubuntu-gpu]
-description = "Ubuntu + CUDA + CLI (amd64 のみ)"
+description = "Ubuntu + CUDA の CLI ツール入りのイメージをビルドする (amd64 のみ)"
 run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.5.0-base-ubuntu26.04 false docker/Dockerfile.debian"
 
 [tasks.buildx-setup]
-description = "buildx ビルダー mybuilder を作成して有効にする"
+description = "multi-platform ビルド用の buildx ビルダー mybuilder を用意する"
 run = '''
 #!/usr/bin/env bash
 set -euo pipefail
@@ -144,7 +143,7 @@ fi
 '''
 
 [tasks.build-multi-platform]
-description = "GPU を除く 6 バリアントを amd64 / arm64 でビルドして push する"
+description = "GPU 以外の全バリアントを amd64 / arm64 でビルドして push する"
 depends = ["buildx-setup"]
 run = '''
 #!/usr/bin/env bash
