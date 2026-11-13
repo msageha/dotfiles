@@ -129,7 +129,7 @@ run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 
 [tasks.build-ubuntu-gpu]
 description = "Ubuntu + CUDA + CLI (amd64 のみ)"
-run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.4.3-base-ubuntu26.04 false docker/Dockerfile.debian"
+run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.5.0-base-ubuntu26.04 false docker/Dockerfile.debian"
 
 [tasks.buildx-setup]
 description = "buildx ビルダー mybuilder を作成して有効にする"
