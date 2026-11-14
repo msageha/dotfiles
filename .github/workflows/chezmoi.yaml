@@ -33,6 +33,8 @@ jobs:
           # GUI 系 (フォント・ghostty・cask) だけを省いて検証する
           skip_cli_tools = false
           skip_gui_tools = true
+          # 1Password を使えないので secret は展開しない (skip_cli_tools=false では chezmoi init が対話で尋ねるため、事前に設定する)
+          skip_secrets = true
           EOF
       - name: Initialize chezmoi
         run: chezmoi init --source=${{ github.workspace }}
