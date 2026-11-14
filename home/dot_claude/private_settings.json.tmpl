@@ -27,11 +27,6 @@
     "DISABLE_AUTOUPDATER": "1",
     "DISABLE_AUTO_COMPACT": "1",
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
-{{- /* 空文字の ANTHROPIC_API_KEY は設定済みとみなされ (authMethod: none) 認証が失敗し、/login の OAuth にも戻れないため、
-       鍵が無い環境ではキーごと出力しない。SONATYPE_GUIDE_TOKEN も未注入なら出力しない */}}
-{{- if dig "apiKeys" "anthropic" "" . }}
-    "ANTHROPIC_API_KEY": "{{ dig "apiKeys" "anthropic" "" . }}",
-{{- end }}
 {{- if dig "apiKeys" "sonatypeGuide" "" . }}
     "SONATYPE_GUIDE_TOKEN": "{{ dig "apiKeys" "sonatypeGuide" "" . }}",
 {{- end }}

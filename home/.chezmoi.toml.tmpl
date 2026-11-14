@@ -50,13 +50,10 @@ skip_windows_extras = {{ $skipWindowsExtras }}
 # API キーは fnox が環境変数として注入する (README)。fnox / 1Password 未導入の初回 bootstrap でも
 # 通るよう、未注入の変数は空文字で展開する
 [data.apiKeys]
-anthropic = {{ env "ANTHROPIC_API_KEY" | quote }}
-openai = {{ env "OPENAI_API_KEY" | quote }}
 gemini = {{ env "GEMINI_API_KEY" | quote }}
 googleMaps = {{ env "GOOGLE_MAP_API_KEY" | quote }}
 fugu = {{ env "FUGU_API_KEY" | quote }}
 fuguCyber = {{ env "FUGU_PAYG_API_KEY" | quote }}
-openRouter = {{ env "OPENROUTER_API_KEY" | quote }}
 sonatypeGuide = {{ env "SONATYPE_GUIDE_TOKEN" | quote }}
 takumiGuard = {{ env "TAKUMI_GUARD_API_KEY" | quote }}
 {{- end }}

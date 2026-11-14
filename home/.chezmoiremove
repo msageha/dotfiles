@@ -23,6 +23,14 @@
 .grok/skills/test/SKILL.md
 {{- /* Codex は custom agent の mcp_servers を無視し、browser_debugger がブラウザ MCP を使えない */}}
 .codex/agents/browser-debugger.toml
+{{- /* OpenRouter の fusion / pareto-code 用の設定。settings.fusion.json は OpenRouter の API key を含む */}}
+.claude/settings.fusion.json
+.codex/fusion.config.toml
+.codex/fusion.json
+.codex/pareto-code.config.toml
+.codex/pareto-code.json
+{{- /* GEMINI_API_KEY を含む。Antigravity はログインで使うので置かない */}}
+.gemini/.env
 {{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}
