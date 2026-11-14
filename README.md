@@ -45,6 +45,8 @@ $env:Path = "$HOME\.local\bin;$env:Path"
 chezmoi init --apply --depth=1 https://github.com/msageha/dotfiles.git
 ```
 
+macOS / Linux で `skip_secrets=false` を選ぶときは、先に SSH 秘密鍵を 1Password に取り込んでおく ([SSH 秘密鍵](#ssh-秘密鍵))。
+
 OS の設定も書き換わる。
 macOS では Dock のアプリを決まったものだけに並べ直し、Finder やキーボード等の設定を変える。
 Windows (`skip_windows_extras=false`) では OneDrive をアンインストールし、システムドライブで BitLocker が有効なら全ドライブの BitLocker を無効にする。
@@ -57,8 +59,16 @@ Windows (`skip_windows_extras=false`) では OneDrive をアンインストー�
 | --------------------- | ------------- | ------------------------------------------------------------------------------------------------------- |
 | `skip_cli_tools`      | macOS / Linux | CLI ツール (docker・gh・言語ランタイム等) とコーディングエージェント (本体と設定)                       |
 | `skip_gui_tools`      | macOS / Linux | GUI アプリ・フォント・アプリ設定・Ubuntu のシステム設定 (`skip_cli_tools=true` なら常に `true`)         |
-| `skip_secrets`        | macOS / Linux | [3. secret の展開](#3-secret-の展開) (`skip_cli_tools=true` なら常に `true`)                            |
+| `skip_secrets`        | macOS / Linux | 1Password からの age 秘密鍵・API キー・SSH 秘密鍵の取得 (`skip_cli_tools=true` なら常に `true`)         |
 | `skip_windows_extras` | Windows       | コーディングエージェント (本体と設定)・GUI アプリ・システム設定 (mise とシェル補完は値によらず入らない) |
+
+`skip_secrets` を後から `false` にしたときは、次で secret を取得する。
+
+```sh
+bash ~/.local/share/chezmoi/install/common/secrets.sh
+```
+
+Windows と `skip_cli_tools=true` の macOS / Linux では、[secret を手で取得する](#secret-を手で取得する) の手順で取得する。
 
 適用が終わったら、新しいシェルを開く。
 Windows では、配置した PowerShell プロファイルを読み込めるよう、一度だけ次を実行する (GPO で実行ポリシーが強制されている環境では変えられない)。
@@ -74,49 +84,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --one-shot https://github.com/msageha/dotfiles.git
 ```
 
-### 3. secret の展開
-
-初回の `chezmoi apply` では age 秘密鍵が無いので、暗号化したファイルは展開されず、API キーは空になり、SSH 秘密鍵も置かれない。
-
-`skip_secrets=false` なら、2 のコマンドの後半の `secrets.sh` が 1Password からこれらを取得して適用する。
-途中で 1Password へのサインインを求められる (1Password アプリの 設定 > 開発者 で CLI 連携を有効にしていれば求められない)。
-SSH 秘密鍵は、先に 1Password に取り込んでおく ([SSH 秘密鍵](#ssh-秘密鍵))。
-後から実行するときは、`chezmoi.toml` の `skip_secrets` を `false` にしてから次を実行する。
-
-```sh
-bash ~/.local/share/chezmoi/install/common/secrets.sh
-```
-
-Windows と、`skip_cli_tools=true` の macOS / Linux では、次を 1 つのシェルで順に実行する (サインインの session token は環境変数で渡るため)。
-Windows ではこのリポジトリが 1Password CLI (`op`) と `fnox` を入れないので、先に入れておく。
-
-```sh
-# op が無い macOS / Linux の場合 (以降もこのディレクトリで実行する)
-cd ~/.local/share/chezmoi && mise trust && mise install
-
-# CLI にアカウントを登録していなければ、op signin の代わりに op account add --signin を使う
-eval "$(op signin)"               # bash / zsh / fish
-Invoke-Expression "$(op signin)"  # PowerShell
-
-# PowerShell では mkdir -p の代わりに New-Item -ItemType Directory -Force
-mkdir -p ~/.config/chezmoi
-op read --out-file ~/.config/chezmoi/key.txt --file-mode 0600 'op://Private/age-identity/password'
-chezmoi apply
-
-# Windows (skip_windows_extras=false) の場合、API キーを入れる
-fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --init
-
-# macOS / Linux の場合、SSH 秘密鍵を置く
-mise -C ~/.local/share/chezmoi run apply-ssh-keys
-```
-
-変更を push するマシンでは、SSH 秘密鍵を置いた後に remote を SSH に切り替える。
-
-```sh
-git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfiles.git
-```
-
-### 4. 手動で行う設定
+### 3. 手動で行う設定
 
 - macOS の外付けキーボード: システム設定で Caps Lock → Control、Option → Command、Command → Option に入れ替える。
 - Google 日本語入力: 次で復号した `settings/common/google.ime.txt` を、辞書ツールからインポートする。
@@ -128,6 +96,11 @@ git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfi
 - VS Code: Custom CSS の拡張機能から `settings/common/vscode/styles.css` を読み込む。
 - BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に開く各アプリのダイアログで、設定を取り込む。
   初回の適用中に出る System Events の操作の許可も許可する (BetterTouchTool をログイン項目に登録するのに使う)。
+- 変更を push するマシン: SSH 秘密鍵を置いた後に、remote を SSH に切り替える。
+
+  ```sh
+  git -C ~/.local/share/chezmoi remote set-url origin git@github.com:msageha/dotfiles.git
+  ```
 
 ## 日常の操作
 
@@ -172,14 +145,19 @@ Go は Takumi Guard から取得できないものを直接取りに行かない
 
 ### SSH 秘密鍵
 
-`~/.ssh` の鍵は、1Password の SSH Key item から取得してファイルとして置く (1Password の SSH agent を使えない headless Linux やバックグラウンドの git でも使うため)。
-取得する鍵は `home/.chezmoidata.toml` の `[ssh_keys]` で定義する。1Password アプリで、`vault` に指定した vault へ、`[ssh_keys.items]` の `item` の名前の SSH Key item として取り込んでおく (取り込むと passphrase が外れる)。
+`~/.ssh` の鍵は、1Password から取得してファイルとして置く (1Password の SSH agent を使えない環境でも使うため)。
 Windows には置かない (chezmoi が NTFS の権限を絞れないため)。
+置く鍵は `home/.chezmoidata.toml` の `[ssh_keys]` で決まる。
+各鍵は 1Password アプリで、`vault` の vault に `item` の名前の SSH Key item として取り込んでおく (passphrase は外れる)。
 
-鍵は通常の `chezmoi apply` では置かれず、`secrets.sh` か `mise run apply-ssh-keys` でだけ配置・更新する。
-1Password 側で鍵を変えたら、`mise run apply-ssh-keys` を実行し直す。
+鍵は `secrets.sh` か次のタスクでだけ置かれる。1Password 側で鍵を変えたときも、これを実行し直す。
+
+```sh
+mise -C ~/.local/share/chezmoi run apply-ssh-keys
+```
+
 chezmoi が管理していない別内容の鍵が既にあると、何も表示せずに exit 1 で止まる。
-次で対象を確かめ、上書きしてよければ `--force` を付けて実行し直す。
+対象を確かめ、上書きしてよければ `--force` を付ける。
 
 ```sh
 chezmoi status --override-data '{"apply_ssh_keys": true}' ~/.ssh
@@ -189,10 +167,34 @@ mise -C ~/.local/share/chezmoi run apply-ssh-keys -- --force
 `apply_ssh_keys` は `chezmoi.toml` に書かない (通常の操作でも 1Password を呼ぶようになる)。
 これを付けた `chezmoi diff` / `chezmoi apply --verbose` は、秘密鍵を平文で表示する。
 
+### secret を手で取得する
+
+`secrets.sh` を使えない Windows と `skip_cli_tools=true` の macOS / Linux では、次を 1 つのシェルで順に実行する (サインインの session token は環境変数で渡るため)。
+Windows ではこのリポジトリが 1Password CLI (`op`) と `fnox` を入れないので、先に入れておく。
+
+```sh
+# op が無い macOS / Linux の場合 (以降もこのディレクトリで実行する)
+cd ~/.local/share/chezmoi && mise trust && mise install
+
+# CLI にアカウントを登録していなければ、op signin の代わりに op account add --signin を使う
+eval "$(op signin)"               # bash / zsh / fish
+Invoke-Expression "$(op signin)"  # PowerShell
+
+# PowerShell では mkdir -p の代わりに New-Item -ItemType Directory -Force
+mkdir -p ~/.config/chezmoi
+op read --out-file ~/.config/chezmoi/key.txt --file-mode 0600 'op://Private/age-identity/password'
+chezmoi apply
+
+# Windows (skip_windows_extras=false) の場合、API キーを入れる
+fnox --config "$HOME/.local/share/chezmoi/fnox.toml" exec -- chezmoi apply --init
+
+# macOS / Linux の場合、SSH 秘密鍵を置く
+mise -C ~/.local/share/chezmoi run apply-ssh-keys
+```
+
 ## Docker
 
-この dotfiles を適用したイメージを、リポジトリのディレクトリでビルドできる。
-Docker と、GitHub にログイン済みの `gh` が要る。
+この dotfiles を適用したイメージを、リポジトリのディレクトリでビルドできる (Docker と、ログイン済みの `gh` が要る)。
 
 ```sh
 mise run build-ubuntu
@@ -209,8 +211,8 @@ docker container run -it msageha/dotfiles:ubuntu
 | `mise run build-alpine`          | Alpine / 最小                               |
 | `mise run build-ubuntu-gpu`      | Ubuntu + CUDA / CLI ツール入り (amd64 のみ) |
 
-amd64 / arm64 のイメージを registry へ push するときは、次を実行する (GPU のイメージは対象外)。
-イメージ名は `DOCKER_REPOSITORY` で変えられる (既定は `msageha/dotfiles`)。
+amd64 / arm64 のイメージを registry へ push するときは、次を実行する。
+GPU のイメージは対象外で、イメージ名は `DOCKER_REPOSITORY` で変えられる (既定は `msageha/dotfiles`)。
 
 ```sh
 docker login
