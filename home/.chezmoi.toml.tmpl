@@ -1,5 +1,8 @@
 {{/* age は単一共有鍵で全マシン共通 (秘密鍵の配置手順は README) */ -}}
 encryption = "age"
+# 既定 (auto) は PATH に age があればそれを使う。age は repo の mise.toml にしか無いので、
+# mise の shim が PATH にあると $HOME で動くスクリプトからの復号が失敗する。常に内蔵の age を使う
+useBuiltinAge = true
 [age]
     identity = {{ (joinPath .chezmoi.homeDir ".config" "chezmoi" "key.txt") | quote }}
     recipient = "age100fze4m9k88fyzpg2z5l2hfmk9f299mzl63sjz3s9gk0s8hkt94smeccd0"
