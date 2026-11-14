@@ -47,6 +47,8 @@
 [submodule]
     # checkout / fetch / pull 等で --recurse-submodules を既定にする (clone と ls-files は対象外)
     recurse = true
+    # submodule の clone / fetch を並列にする (既定は 1)
+    fetchJobs = 8
 
 [color]
     ui = auto
