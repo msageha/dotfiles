@@ -4,8 +4,6 @@
   approval_policy = "never" と workspace-write の組み合わせでは、~/.codex/rules/ の allow に一致するコマンドだけが sandbox の外で動き、
   ほかに sandbox の外が要るコマンドは確認なしで失敗する。
   analytics / otel.metrics_exporter は外部送信を止める (otel のログ・トレースは既定で none)。
-  OpenAI API key がある環境では cli_auth_credentials_store = "file" にする。keyring は auth.json を読まず、auto は OS の
-  credential store に保存済みの認証情報を優先するため、chezmoi が管理する ~/.codex/auth.json を確実に使わせる。
 */ -}}
 {{- $worksSrc := joinPath .chezmoi.homeDir "Works" "src" -}}
 {{- $chezmoiSrc := joinPath .chezmoi.homeDir ".local" "share" "chezmoi" -}}
@@ -53,13 +51,6 @@ env_key = "FUGU_PAYG_API_KEY"
 wire_api = "responses"
 stream_idle_timeout_ms = 600000
 
-[model_providers.openrouter]
-name = "OpenRouter"
-base_url = "https://openrouter.ai/api/v1"
-env_key = "OPENROUTER_API_KEY"
-wire_api = "responses"
-stream_idle_timeout_ms = 600000
-
 [projects.%q]
 trust_level = "trusted"
 
@@ -94,11 +85,6 @@ args = ["mcpbridge"]
 startup_timeout_ms = 20_000
 `) -}}
 {{- end -}}
-{{- if dig "apiKeys" "openai" "" . -}}
-{{-   $desired = mergeOverwrite $desired (fromToml `
-cli_auth_credentials_store = "file"
-`) -}}
-{{- end -}}
 {{- $current := dict -}}
 {{- $stdin := trim (dig "stdin" "" .chezmoi) -}}
 {{- if $stdin -}}
@@ -120,6 +106,9 @@ cli_auth_credentials_store = "file"
 {{- /* この template が以前書いていて、今は効果が無いか改名された key を適用先から消す */ -}}
 {{- $_ := unset $current "personality" -}}
 {{- $_ := unset $current "approvals_reviewer" -}}
+{{- if hasKey $current "model_providers" -}}
+{{-   $_ := unset (get $current "model_providers") "openrouter" -}}
+{{- end -}}
 {{- if hasKey $current "agents" -}}
 {{-   $_ := unset (get $current "agents") "max_threads" -}}
 {{-   $_ := unset (get $current "agents") "max_depth" -}}

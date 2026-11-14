@@ -125,19 +125,16 @@ mise run encrypt-google-ime
 ### API キー
 
 API キーは `fnox.toml` に暗号化して置き、`chezmoi.toml` と、キーを使う各ツールの設定ファイルに展開する。
-空のキーを使う設定は認証なしで展開する (`~/.codex/auth.json` と `~/.netrc` は、キーが空なら既存のファイルを残す)。
+空のキーを使う設定は認証なしで展開する (`~/.netrc` は、キーが空なら既存のファイルを残す)。
 
-| 環境変数               | 用途                                                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `ANTHROPIC_API_KEY`    | Claude Code を API 従量課金で使う ([Claude Console](https://platform.claude.com/settings/keys))。空ならサブスクリプションで `/login` |
-| `OPENAI_API_KEY`       | Codex を API 従量課金で使う ([OpenAI Platform](https://platform.openai.com/api-keys))。`codex login` で変えても適用時に戻る          |
-| `GEMINI_API_KEY`       | Antigravity CLI・nano-banana MCP ([Google AI Studio](https://aistudio.google.com/apikey))                                            |
-| `GOOGLE_MAP_API_KEY`   | maps-grounding-lite MCP ([Google Cloud Console](https://console.cloud.google.com/apis/credentials))                                  |
-| `FUGU_API_KEY`         | Codex の Sakana プロバイダ                                                                                                           |
-| `FUGU_PAYG_API_KEY`    | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ)                                                                          |
-| `OPENROUTER_API_KEY`   | Codex / Claude Code の OpenRouter プロバイダ                                                                                         |
-| `SONATYPE_GUIDE_TOKEN` | Claude Code の sonatype-guide plugin                                                                                                 |
-| `TAKUMI_GUARD_API_KEY` | Takumi Guard (下記) の token。空なら匿名で使う                                                                                       |
+| 環境変数               | 用途                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`       | Antigravity CLI・nano-banana MCP ([Google AI Studio](https://aistudio.google.com/apikey))           |
+| `GOOGLE_MAP_API_KEY`   | maps-grounding-lite MCP ([Google Cloud Console](https://console.cloud.google.com/apis/credentials)) |
+| `FUGU_API_KEY`         | Codex の Sakana プロバイダ                                                                          |
+| `FUGU_PAYG_API_KEY`    | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ)                                         |
+| `SONATYPE_GUIDE_TOKEN` | Claude Code の sonatype-guide plugin                                                                |
+| `TAKUMI_GUARD_API_KEY` | Takumi Guard (下記) の token。空なら匿名で使う                                                      |
 
 macOS / Linux では、パッケージを悪性パッケージを遮断する [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) 経由で取得する。
 Go (`GOPROXY`) はどの構成でも、npm / pip / uv は `skip_cli_tools=false` のときだけ設定する。

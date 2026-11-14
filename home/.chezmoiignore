@@ -92,11 +92,12 @@
 {{ if not $skipCodingAgent }}
 !.claude/CLAUDE.md
 !.claude/settings.json
-!.claude/settings.fusion.json
 !.claude/statusline-command.sh
 !.claude/agents
 !.claude/skills
 !.claude/rules
+{{- /* ignore に一致するパスには .chezmoiremove が効かないため、.chezmoiremove で消すファイルを外す */}}
+!.claude/settings.fusion.json
 {{ end }}
 {{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない */}}
 {{ if ne .chezmoi.os "darwin" }}
@@ -110,20 +111,16 @@
 !.codex/config.toml
 !.codex/fugu.config.toml
 !.codex/fugu-cyber.config.toml
-!.codex/fusion.config.toml
-!.codex/pareto-code.config.toml
 !.codex/fugu.json
 !.codex/fugu-cyber.json
-!.codex/fusion.json
-!.codex/pareto-code.json
 !.codex/.env
-{{- /* auth.json は Codex CLI の credential store。OpenAI API key が注入された環境だけ管理し、
-       鍵が空なら既存の login 状態を消したり空鍵で上書きしたりしないよう管理外にする */}}
-{{ if dig "apiKeys" "openai" "" . }}
-!.codex/auth.json
-{{ end }}
 !.codex/agents
 !.codex/rules
+{{- /* .chezmoiremove で消すファイル */}}
+!.codex/fusion.config.toml
+!.codex/fusion.json
+!.codex/pareto-code.config.toml
+!.codex/pareto-code.json
 {{ end }}
 
 .gemini/*
