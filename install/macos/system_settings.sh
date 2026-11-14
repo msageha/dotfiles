@@ -176,6 +176,21 @@ function keyboard_settings() {
     defaults write -g InitialKeyRepeat -int 15
     defaults write -g KeyRepeat -int 2
     defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない (キーリピート優先)
+
+    # 外付けキーボード (VendorID 0x04D9 / ProductID 0x2011) の修飾キーを、システム設定 > キーボード > 修飾キー と同じ形式で入れ替える。
+    # キーは <VendorID>-<ProductID>-0 (10 進) で、値は HID usage (0x700000000 + usage ID)。Caps Lock の行き先は、システム設定が書く値と同じ右 Control にする。
+    local caps_lock=30064771129 right_control=30064771300
+    local left_option=30064771298 left_command=30064771299 right_option=30064771302 right_command=30064771303
+    defaults -currentHost write -g com.apple.keyboard.modifiermapping.1241-8209-0 -array \
+        "$(modifier_mapping "$caps_lock" "$right_control")" \
+        "$(modifier_mapping "$left_option" "$left_command")" \
+        "$(modifier_mapping "$left_command" "$left_option")" \
+        "$(modifier_mapping "$right_option" "$right_command")" \
+        "$(modifier_mapping "$right_command" "$right_option")"
+}
+
+function modifier_mapping() {
+    printf '<dict><key>HIDKeyboardModifierMappingSrc</key><integer>%s</integer><key>HIDKeyboardModifierMappingDst</key><integer>%s</integer></dict>' "$1" "$2"
 }
 
 function trackpad_settings() {

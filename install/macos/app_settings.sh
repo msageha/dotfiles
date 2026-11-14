@@ -32,26 +32,6 @@ function bettertouchtool() {
         return 1
     fi
 
-    # BTT のアクティベート状態は CLI から確実に判定できないため、初回にリンクを開いたらマーカーを作り、以降は開かない。
-    # 再アクティベートするときはマーカーを消す
-    local marker="$state_dir/btt-activated"
-    if [ -f "$marker" ]; then
-        log_step "BetterTouchTool は既にアクティベート済み (マーカーあり)。アクティベートをスキップします。"
-    else
-        log_step "BetterTouchTool のライセンスを Activate します..."
-        open /Applications/BetterTouchTool.app
-        # ライセンスの btt://license/... リンクは age で暗号化してあり、平文をディスクに残さないよう
-        # chezmoi の config に設定した age 鍵でその場で復号して開く
-        local license_url
-        if license_url="$(chezmoi decrypt "$CHEZMOI_REPO_ROOT/settings/macos/btt/encrypted_licence.txt.age" 2>/dev/null)" && [ -n "$license_url" ]; then
-            open "$license_url"
-            mkdir -p "$state_dir"
-            touch "$marker"
-        else
-            log_step "ライセンスの復号に失敗しました (age 鍵が未設定の可能性)。アクティベートをスキップします。"
-        fi
-    fi
-
     open_if_changed "BetterTouchTool" "$CHEZMOI_REPO_ROOT/settings/macos/btt/dotfiles.bttpreset" btt-preset
 
     # BTT にはログイン時の起動を設定する defaults の key が無いため、macOS のログイン項目に登録する。

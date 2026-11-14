@@ -16,7 +16,9 @@ macOS / Ubuntu / Debian / Windows の開発環境を [chezmoi](https://www.chezm
 
 `curl` と `git` が要る。
 
-- macOS: `xcode-select --install`
+- macOS: `xcode-select --install` を実行し、表示されるダイアログから Command Line Tools をインストールする。
+  ダイアログが出ないとき (SSH 越し等) は、`softwareupdate --list` が表示する `Command Line Tools for Xcode` の `Label` の値を `sudo softwareupdate --install "<Label>"` に渡す。
+  `xcode-select -p` が `/Library/Developer/CommandLineTools` を返せば完了。
 - Ubuntu / Debian: `sudo apt update && sudo apt install -y curl git`
 - Windows: `winget install --id Git.Git --exact --source winget` を実行し、PowerShell を開き直す。
   winget が無い環境 (Windows Server・Windows Sandbox 等) では、[Git for Windows](https://gitforwindows.org/) を使う。
@@ -75,6 +77,13 @@ Windows は `skip_windows_extras=false` でも、mise やシェル補完など�
 初回の適用では age 秘密鍵が無いので、暗号化されたファイルは飛ばされる (適用は失敗しない)。
 1Password CLI (`op`) にサインインしてから、鍵を置いて再適用する。
 `op` が無い環境 (Linux や、GUI アプリを入れない macOS) では、`cd ~/.local/share/chezmoi && mise trust && mise install` でリポジトリの開発ツールとして入れ、このディレクトリで実行する。
+1Password アプリの CLI 連携 (設定 > 開発者) を使わない環境では、`op read` の前に手でサインインする。
+session token は環境変数で渡るので、以降の手順 (5 の SSH 鍵の配置まで) も同じシェルで実行する。
+
+```bash
+eval $(op signin)   # zsh / bash
+op signin | source  # fish
+```
 
 ```bash
 mkdir -p ~/.config/chezmoi
@@ -137,7 +146,7 @@ mise -C ~/.local/share/chezmoi run apply-ssh-keys
 ```
 
 - 鍵は先に 1Password アプリで、`[ssh_keys]` の `vault` に SSH Key item として取り込んでおく (item 名は `[ssh_keys.items]` の `item`)。取り込み時に passphrase が外れる。
-- 手で signin する環境では、先に `eval $(op signin)` を実行する。
+- 手で signin する環境では、先に 4 と同じ方法で、同じシェルからサインインしておく。
 - chezmoi が管理していない既存の鍵と内容が違うと、何も表示せずに exit 1 で止まる。`chezmoi status --override-data '{"apply_ssh_keys": true}' ~/.ssh` で対象を確かめ、上書きしてよければ `-- --force` を付けて再実行する。
 - 鍵を rotation したら item を更新して再実行する。通常の `chezmoi status` は 1Password 側の変更を検知しない。
 - `apply_ssh_keys` を `chezmoi.toml` に書かない (通常の操作でも 1Password を呼ぶようになる)。これを付けた `chezmoi diff` / `apply --verbose` は秘密鍵を平文で表示する。
@@ -145,11 +154,9 @@ mise -C ~/.local/share/chezmoi run apply-ssh-keys
 
 ### 6. 手動で行う設定
 
-- macOS の外付けキーボード: システム設定で Caps Lock → Control、Option → Command、Command → Option に入れ替える。
 - Google 日本語入力: `mise -C ~/.local/share/chezmoi run decrypt-google-ime` で復号した `settings/common/google.ime.txt` を辞書ツールからインポートする。
 - VS Code: Custom CSS の拡張機能から `settings/common/vscode/styles.css` を読み込む。
-- BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に設定ファイルを開くので、各アプリのダイアログで取り込む。BetterTouchTool のライセンスは初回の適用時にだけ登録するので、age 秘密鍵を後から置いた場合は手で登録する。
-- BetterTouchTool (macOS): 適用時にログイン項目へ登録する。初回は適用を実行したターミナルに System Events の操作の許可を求めるダイアログが出るので許可する。許可しなかった場合は警告を出して続行するので、システム設定 > 一般 > ログイン項目 で追加する。
+- BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に設定ファイルを開くので、各アプリのダイアログで取り込む。
 
 変更を push するマシンでは、SSH 鍵を置いた後に remote を SSH に切り替える。
 
