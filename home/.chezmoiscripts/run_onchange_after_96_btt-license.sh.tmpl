@@ -6,5 +6,8 @@ set -euo pipefail
 
 {{ include "../install/lib.sh" }}
 activate_tool_paths
+# GUI アプリを開くので CI ではスキップする (CI では brew.sh も cask を入れない)
+if [ -z "${CI:-}" ]; then
 {{ include "../install/macos/btt_license.sh" }}
+fi
 {{ end -}}

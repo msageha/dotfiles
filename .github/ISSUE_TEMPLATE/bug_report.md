@@ -20,4 +20,4 @@ assignees: ""
 
 - OS / アーキテクチャ:
 - chezmoi のバージョン (`chezmoi --version`):
-- `chezmoi data` の `skip_cli_tools` / `skip_gui_tools` / `skip_windows_extras`:
+- `chezmoi data` の `skip_cli_tools` / `skip_gui_tools` / `skip_secrets` / `skip_windows_extras`:

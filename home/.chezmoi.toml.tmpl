@@ -31,10 +31,13 @@ computer_name = {{ promptStringOnce . "computer_name" (printf "e.g.: %s***-<user
 {{-   $skipCliTools = promptBoolOnce . "skip_cli_tools" "Skip CLI tool installation? (default: yes)" true }}
 skip_cli_tools = {{ $skipCliTools }}
 {{-   $skipGuiTools := true }}
+{{-   $skipSecrets := true }}
 {{-   if not $skipCliTools }}
 {{-     $skipGuiTools = promptBoolOnce . "skip_gui_tools" "Skip GUI tool installation? (default: yes)" true }}
+{{-     $skipSecrets = promptBoolOnce . "skip_secrets" "Skip setting up secrets from 1Password (age key / API keys / SSH keys)? (default: yes)" true }}
 {{-   end }}
 skip_gui_tools = {{ $skipGuiTools }}
+skip_secrets = {{ $skipSecrets }}
 {{- end }}
 
 {{ $skipWindowsExtras := false -}}

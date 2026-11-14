@@ -51,6 +51,11 @@ yq = "4.54.2"
 "go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.47.0"
+{{/* fnox と install/common/secrets.sh が 1Password から secret を取得するのに使う。GUI アプリを入れる macOS では、1Password アプリと一緒に Homebrew の cask で入れる */ -}}
+{{ if or (ne .chezmoi.os "darwin") (dig "skip_gui_tools" true .) -}}
+# renovate: datasource=custom.onepassword-cli depName=1password-cli
+op = "2.34.1"
+{{ end -}}
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
 gh = "2.103.3"
 # renovate: datasource=gitlab-releases depName=gitlab-org/cli extractVersion=^v(?<version>.+)

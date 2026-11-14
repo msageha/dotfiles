@@ -46,10 +46,11 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 
 ツールの導入レベルは chezmoi data のフラグで制御する (プロンプトの詳細は README)。
 
-- macOS / Linux は `skip_cli_tools` / `skip_gui_tools`、Windows は `skip_windows_extras`。
+- macOS / Linux は `skip_cli_tools` / `skip_gui_tools` / `skip_secrets`、Windows は `skip_windows_extras`。
 - テンプレートで参照するときは、キー未定義の旧 config でも動くよう `dig "skip_cli_tools" false .` のフォールバック形を使う (既定 false = 全部入り)。
 - 例外として、言語ランタイム・LSP サーバー、macOS 限定のクラウド / 開発 CLI、node に依存する nanobanana MCP は dig の既定を true にし、`skip_cli_tools=false` を明示した環境でのみインストールする。
-- `apply_ssh_keys` は、`mise run apply-ssh-keys` が `--override-data` でその invocation だけ true にする data キー。
+- `skip_secrets` は `install/common/secrets.sh` (`chezmoi init --apply` の後に単体で実行し、1Password から age 秘密鍵・API キー・SSH 秘密鍵を取得して適用する) だけが読む。キー未定義の旧 config で 1Password を呼ばないよう、既定を true にする。
+- `apply_ssh_keys` は、`mise run apply-ssh-keys` と `install/common/secrets.sh` が `--override-data` でその invocation だけ true にする data キー。
   `.chezmoi.toml.tmpl` には置かず config にも書かない (書くとそのマシンでは通常の `status` / `diff` でも 1Password から鍵を取得する)。
   参照は `dig "apply_ssh_keys" false .`。
 

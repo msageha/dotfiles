@@ -11,7 +11,7 @@
 {{ end }}
 
 # 1Password から取得する SSH 鍵 (.chezmoidata.toml の ssh_keys) は、通常の status / diff / apply で op read が走らないよう、
-# apply_ssh_keys が true の実行 (mise run apply-ssh-keys が --override-data で渡す) 以外では ignore する。
+# apply_ssh_keys が true の実行 (mise run apply-ssh-keys と install/common/secrets.sh が --override-data で渡す) 以外では ignore する。
 # 子が全て ignore でも親ディレクトリは作られるため、サブディレクトリも列挙する。apply_ssh_keys は bool の true と比較する (文字列を渡すと template error)。
 # Windows は private_ 属性で NTFS ACL を制御できないため常に ignore する
 {{ if or (eq .chezmoi.os "windows") (ne (dig "apply_ssh_keys" false .) true) }}
