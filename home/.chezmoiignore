@@ -126,6 +126,7 @@
 .gemini/*
 {{ if not $skipCodingAgent }}
 !.gemini/settings.json
+{{- /* .chezmoiremove で消すファイル */}}
 !.gemini/.env
 !.gemini/antigravity-cli
 !.gemini/config

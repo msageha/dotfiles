@@ -29,6 +29,8 @@
 .codex/fusion.json
 .codex/pareto-code.config.toml
 .codex/pareto-code.json
+{{- /* GEMINI_API_KEY を含む。Antigravity はログインで使うので置かない */}}
+.gemini/.env
 {{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}

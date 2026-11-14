@@ -129,7 +129,7 @@ API キーは `fnox.toml` に暗号化して置き、`chezmoi.toml` と、キー
 
 | 環境変数               | 用途                                                                                                |
 | ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `GEMINI_API_KEY`       | Antigravity CLI・nano-banana MCP ([Google AI Studio](https://aistudio.google.com/apikey))           |
+| `GEMINI_API_KEY`       | nano-banana MCP ([Google AI Studio](https://aistudio.google.com/apikey))                            |
 | `GOOGLE_MAP_API_KEY`   | maps-grounding-lite MCP ([Google Cloud Console](https://console.cloud.google.com/apis/credentials)) |
 | `FUGU_API_KEY`         | Codex の Sakana プロバイダ                                                                          |
 | `FUGU_PAYG_API_KEY`    | Codex の `fugu-cyber` プロファイル (Sakana PAYG プロバイダ)                                         |
