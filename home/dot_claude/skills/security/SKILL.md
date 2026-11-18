@@ -1,7 +1,7 @@
 ---
 name: security
-description: "Reviews a file, directory, or the whole project for vulnerabilities, including LLM-integrated apps and agents, prompt injection, and CI / supply chain (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For only the current branch's pending changes, use the bundled /security-review where available; for an independent-context review of a change, delegate to the security-reviewer agent (security_reviewer in Codex)."
-allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json)
+description: "Reviews a file, directory, or the whole project for vulnerabilities, including LLM-integrated apps and agents, prompt injection, and CI / supply chain (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For a review of a change (working-tree or branch diff), delegate to the security-reviewer agent (security_reviewer in Codex)."
+allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(uv audit --frozen), Bash(uv audit --frozen --output-format json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json)
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: "[file-or-directory]"
 ---
@@ -12,6 +12,7 @@ argument-hint: "[file-or-directory]"
 
 - 作業ツリーや環境への書き込み (一時ディレクトリへの展開は除く)、パッケージのインストール、audit ツールの fix 系 (`npm audit fix` 等)、advisory データベース以外への通信はしない。これらが要る検証は実行せず、呼び出し元が実行できる手順として所見に添える。
 - 開始時に `git status --porcelain` を記録し、報告の前にそれが変わっていないことと、展開した一時物 (アーカイブ・一時ディレクトリ) を削除したことを確かめ、両方を報告の冒頭に書く。
+- secret ファイル (AGENTS.md「安全」の定義) は中身を出さず、追跡されているか・どこから参照されるかだけを見る。コードや履歴に見つけた credential は値を写さず、`path:行` と種別で報告する。
 
 ## 検査項目
 
@@ -39,7 +40,7 @@ OWASP Top 10・OWASP Top 10 for LLM Applications・OWASP Top 10 for Agentic Appl
 - セキュリティヘッダーの欠落
 
 ### 依存関係とインフラ
-- 既知の脆弱性を含む依存パッケージ (`npm audit` / `pnpm audit` / `pip-audit` / `govulncheck` / `cargo audit --file Cargo.lock` が使えれば実行し、無ければ lock ファイルのバージョンを advisory と照合する。`cargo audit` は lock が無いと生成するので、`--file` で既存の lock を読ませ、lock が無ければ生成せずにその旨を報告する)
+- 既知の脆弱性を含む依存パッケージ (`npm audit` / `pnpm audit` / `uv audit --frozen` / `pip-audit` / `govulncheck` / `cargo audit --file Cargo.lock` が使えれば実行し、無ければ lock ファイルのバージョンを advisory と照合する。`uv audit` は、フラグなしでは lock を生成・更新し、`--locked` でも lock の検証のために依存を解決し直す (dependencies が dynamic なプロジェクトでは対象の build backend を実行する) ので、`--frozen` で既存の `uv.lock` をそのまま読ませる。引数なしの `pip-audit` は、`pip-audit` 自身が動いている Python の環境を監査する (venv を activate しても変わらない) ので、プロジェクトの venv に入っている `pip-audit` を使うか、`PIPAPI_PYTHON_LOCATION` に venv の Python を指定して実行する。`pip-audit -r` は `pip install -r` と同等の依存解決をするので、pin 済みのファイルに `--no-deps --disable-pip` を付けたときだけ使う。`cargo audit` は lock が無いと生成するので、`--file` で既存の lock を読ませ、lock が無ければ生成せずにその旨を報告する)
 - 安全でないデシリアライゼーション
 - デバッグモードや verbose エラーの本番環境露出
 - 安全でないデフォルト設定
@@ -61,7 +62,7 @@ OWASP Top 10・OWASP Top 10 for LLM Applications・OWASP Top 10 for Agentic Appl
 
 ## 出力フォーマット
 
-冒頭に、実行して観測した検証 (コマンド・PoC とその結果) と読解のみの範囲を区別して明記する。各脆弱性に通番を付け、確度が低いもの・軽微なものも省かず (絞り込みは別工程で行う)、以下の形式で報告する:
+報告の先頭にリスクの総合評価を書き、続けて、実行して観測した検証 (コマンド・PoC とその結果) と読解のみの範囲を区別して明記する。各脆弱性に通番を付け、確度が低いもの・軽微なものも省かず (絞り込みは別工程で行う)、以下の形式で報告する:
 
 ### N. [Critical / High / Medium / Low] 脆弱性タイトル
 - **CWE**: 該当する CWE 番号 (判明する場合)
@@ -71,4 +72,4 @@ OWASP Top 10・OWASP Top 10 for LLM Applications・OWASP Top 10 for Agentic Appl
 - **説明**: 何が脆弱で、どう悪用されうるか
 - **修正方法**: 具体的な修正コードまたは修正手順
 
-最後に、検証したが問題なしと判断した観点を根拠付きで列挙し、リスクの総合評価を記載する。脆弱性が検出されなかった場合もその旨と確認した範囲を明記する。
+最後に、検証したが問題なしと判断した観点を根拠付きで列挙する。脆弱性が検出されなかった場合もその旨と確認した範囲を明記する。

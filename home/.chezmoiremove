@@ -21,6 +21,15 @@
 .grok/skills/review/SKILL.md
 .grok/skills/security/SKILL.md
 .grok/skills/test/SKILL.md
+{{- /* gws の helper コマンドごとの skill。service ごとの skill (gws-calendar 等) が同じ helper を扱うので、残っていると起動先が割れる。
+       上と同じ理由で SKILL.md だけを指定する */}}
+.claude/skills/gws-calendar-agenda/SKILL.md
+.claude/skills/gws-calendar-insert/SKILL.md
+.claude/skills/gws-docs-write/SKILL.md
+.claude/skills/gws-gmail-send/SKILL.md
+.claude/skills/gws-gmail-triage/SKILL.md
+.claude/skills/gws-sheets-append/SKILL.md
+.claude/skills/gws-sheets-read/SKILL.md
 {{- /* Codex は custom agent の mcp_servers を無視し、browser_debugger がブラウザ MCP を使えない */}}
 .codex/agents/browser-debugger.toml
 {{- /* OpenRouter の fusion / pareto-code 用の設定。settings.fusion.json は OpenRouter の API key を含む */}}

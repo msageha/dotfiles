@@ -1,7 +1,7 @@
 ---
 name: gws-sheets
-description: "Google Sheets: Creates spreadsheets, applies batch formatting/structural updates, or updates/clears existing values using gws CLI — for simply reading a range or appending a row, use gws-sheets-read or gws-sheets-append instead."
-allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+description: "Google Sheets: Reads a range, appends rows, updates or clears values, creates spreadsheets, and applies formatting or structural changes using gws CLI."
+allowed-tools: Bash(gws schema *), Bash(gws sheets +read *)
 argument-hint: "[spreadsheet ID or action description]"
 ---
 
@@ -10,15 +10,21 @@ argument-hint: "[spreadsheet ID or action description]"
 Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.md`) for auth, global flags, and when to confirm sends and writes.
 
 ```bash
-gws sheets <resource> <method> [flags]
+gws sheets <resource> [<sub-resource>] <method> [flags]
 ```
 
 ## Helper Commands
 
 | Command | Description |
 |---------|-------------|
-| `gws sheets +read` | Read values from a spreadsheet (see `gws-sheets-read` skill) |
-| `gws sheets +append` | Append a row (see `gws-sheets-append` skill) |
+| `gws sheets +read --spreadsheet <ID> --range <RANGE>` | Read the values of a range (`<sheet>!A1:D10`) or of a whole sheet (`<sheet>`); read-only |
+| `gws sheets +append --spreadsheet <ID> --values <CSV>` | Append one row, or several with `--json-values '<JSON array of rows>'` instead of `--values` |
+
+- `+read` takes only the range. For an option it has no flag for (such as `valueRenderOption` to get formulas instead of displayed values), use `spreadsheets values get`.
+- `+append` targets the range `A1`, so rows are appended to the table on the first visible sheet. To append to another sheet, use `spreadsheets values append` with a `range`.
+- `+append --values` splits on every comma; pass a value that contains a comma through `--json-values`.
+- `+append --json-values` accepts strings only, so quote numbers and booleans (`"100"`, `"true"`); `USER_ENTERED` still stores them as a number and a boolean. With an unquoted one the helper only prints `Warning: --json-values is not valid JSON` and sends an empty `values`, so no row is appended.
+- `+append` sends `valueInputOption` `USER_ENTERED`, so values are parsed as if typed into the UI and text that starts with `=` becomes a formula. To store text unparsed, use `spreadsheets values append` with `RAW`.
 
 ## Key Resources
 
@@ -32,5 +38,5 @@ gws sheets <resource> <method> [flags]
 
 ```bash
 gws sheets --help
-gws schema sheets.<resource>.<method>
+gws schema sheets.<resource>[.<sub-resource>].<method>
 ```

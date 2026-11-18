@@ -1,6 +1,6 @@
 # Test Writing Reference (@playwright/test)
 
-Contents: Project Setup / Recommended Config / Locator Priority / Test Structure / Page Object Model / Authentication / Network Mocking / CI (GitHub Actions)
+Contents: Project Setup / Recommended Config / Locator Priority / Page Object Model / Authentication / Network Mocking / CI (GitHub Actions)
 
 ## Project Setup
 
@@ -23,9 +23,14 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: '<local URL of the app>',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+  },
+  webServer: {
+    command: '<command that starts the app>',
+    url: '<local URL of the app>',
+    reuseExistingServer: !process.env.CI,
   },
 });
 ```
@@ -38,21 +43,6 @@ export default defineConfig({
 4. `page.getByText('Welcome')` -- for visible text content
 5. `page.getByTestId('submit-btn')` -- when semantic locators aren't possible
 6. CSS/XPath -- last resort only
-
-## Test Structure
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Feature Name', () => {
-  test('should do expected behavior', async ({ page }) => {
-    await page.goto('/path');
-    await expect(page.getByRole('heading', { name: 'Title' })).toBeVisible();
-    await page.getByRole('button', { name: 'Action' }).click();
-    await expect(page).toHaveURL(/\/expected-path/);
-  });
-});
-```
 
 ## Page Object Model
 
@@ -84,16 +74,25 @@ Use POM when 3+ tests share the same page interactions. For simple, one-off test
 
 ```typescript
 // auth.setup.ts
-import { test as setup } from '@playwright/test';
+import { test as setup, expect } from '@playwright/test';
 
 setup('authenticate', async ({ page }) => {
+  const { E2E_USER, E2E_PASSWORD } = process.env;
+  if (!E2E_USER || !E2E_PASSWORD) throw new Error('E2E_USER and E2E_PASSWORD must be set');
+
   await page.goto('/login');
-  await page.getByLabel('Email').fill('user@example.com');
-  await page.getByLabel('Password').fill('password');
+  await page.getByLabel('Email').fill(E2E_USER);
+  await page.getByLabel('Password').fill(E2E_PASSWORD);
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.context().storageState({ path: '.auth/user.json' });
+  // The click returns before the login redirects finish; wait for a signed-in element so the saved state includes the session cookies.
+  await expect(page.getByRole('button', { name: '<button shown only when signed in>' })).toBeVisible();
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
 });
 ```
+
+Run this file from a `setup` project (`{ name: 'setup', testMatch: /.*\.setup\.ts/ }`) and give each test project `dependencies: ['setup']` and `use.storageState: 'playwright/.auth/user.json'`; the default `testMatch` does not pick the file up, and tests start signed out unless they load the saved state.
+
+The state file holds session cookies, so add `playwright/.auth/` to `.gitignore`.
 
 ## Network Mocking
 
@@ -116,12 +115,14 @@ Route only external or third-party services; let requests to the app's own endpo
   run: npx playwright install --with-deps
 - name: Run Playwright tests
   run: npx playwright test
-- uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+- uses: actions/upload-artifact@<40-char commit SHA> # <tag>
   if: ${{ !cancelled() }}
   with:
     name: playwright-report
     path: playwright-report/
     retention-days: 30
 ```
+
+Fill `<40-char commit SHA>` and `<tag>` when writing the workflow, not from memory: reuse the pin the repository already has for the action, otherwise resolve them from the action's newest release.
 
 The Recommended Config above already sets the CI values (`retries` and `workers` through `process.env.CI`, and `trace`); for parallelism in CI, use sharding.

@@ -1,3 +1,29 @@
+# allow に一致したコマンドは、sandbox の外で承認なしに実行される (read-only の session でも同じ)。
+# pattern は token の前方一致で、一致した後ろの引数は絞れない。git は実行した repo の hook と config にも従うので、
+# allow は sandbox を抜けようとする agent を止める境界にはならない。
+# 次の操作は、後ろに付けられる引数を理由に載せない。
+# - git rebase <upstream>: --exec が任意のコマンドを実行する (origin の branch への rebase は、--exec を受け付けない git pull --rebase で通す)
+# - git worktree remove: --force が workspace の外の worktree も未 commit の変更ごと消す
+# - git branch: -D が merge していない branch を消す
+# 載せた操作にも、絞れない破壊的な引数が残る。共通規約の作業場所の手順 (branch の切り替え・worktree の作成) に要るので載せている。
+# - git switch: -C が既存の branch を付け替え (merge していない commit が branch から外れる)、--discard-changes / -f が未 commit の変更を捨てる
+# - git worktree add: -B が既存の branch を付け替え、-f / --force が別の worktree で checkout 中の branch も checkout する。path も絞れず、workspace の外に作業ツリーを作れる
 prefix_rule(pattern=["git", "add"], decision="allow")
 prefix_rule(pattern=["git", "commit"], decision="allow")
+prefix_rule(pattern=["git", "switch"], decision="allow")
+prefix_rule(pattern=["git", "merge"], decision="allow")
+# worktree の片付けは、ディレクトリを消してから prune で登録を外す。
+prefix_rule(pattern=["git", "worktree", ["add", "prune"]], decision="allow")
+# fetch / push は remote 名を origin に固定し、URL・path を直接渡す形を外す (fetch の --multiple は、設定済みのほかの remote も取れる)。
+# origin の指す先は実行した repo の config で決まり、後ろの --upload-pack / --receive-pack も絞れないので、
+# 宛先とコマンド実行は制限できない (origin が local path か未定義の repo では、その引数のコマンドが手元で動く)。
+# push は network_access = true の sandbox の中でも送信でき (--force も同じ)、allow が要るのは
+# remote-tracking ref と upstream の更新のため。
+prefix_rule(pattern=["git", "fetch", "origin"], decision="allow")
+prefix_rule(pattern=["git", "push", "origin"], decision="allow")
+prefix_rule(pattern=["git", "push", "-u", "origin"], decision="allow")
+# pull --rebase も fetch と同じで、後ろの --upload-pack と refspec は絞れない (--exec は受け付けない)。
+prefix_rule(pattern=["git", "pull", "--rebase", "origin"], decision="allow")
+# rebase の続行と中止は、ほかの引数を受け付けない action の形だけを通す。
+prefix_rule(pattern=["git", "rebase", ["--continue", "--abort", "--skip"]], decision="allow")
 prefix_rule(pattern=["xcodebuild"], decision="allow")

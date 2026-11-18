@@ -2,7 +2,7 @@
 name: create-verify
 description: Creates or updates .claude/verify.sh, the script Claude Code's Stop hook runs for self-verification, as a thin wrapper around the repository's existing checks. Use when the user runs /create-verify.
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write
+allowed-tools: Read, Grep, Glob, Bash(mkdir -p .claude), Bash(chmod +x .claude/verify.sh), Bash(bash .claude/verify.sh), Edit(.claude/verify.sh)
 ---
 
 # .claude/verify.sh の作成 / 更新
@@ -30,7 +30,6 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 - 副作用の大きい操作 (deploy / push / migrate / 実機ビルド / 長時間 E2E) は、検出しても呼ばずに報告だけする (Stop hook はターンを終えるたびに走るため)。
 - ファイルを書き換える検査 (formatter の書き換えモード、`--fix` 付きの lint、それらを hook に含む `pre-commit run --all-files` やタスク) は呼ばない。ターンのたびに作業ツリーが変わり、作業中の差分に意図しない変更が混ざるため。代わりに、書き換えが必要なときに非ゼロで終わる check のモード (`--check` 等) を呼び、そのモードが無いものは除外して報告する。
 - `.claude/` ディレクトリが無ければ作成する。`.gitignore` の状態は変更しない (ユーザー判断に委ねる)。
-- 引数は使用しない。
 - secret を出力し得るコマンド (対象ファイルの diff を出す dry-run、環境変数を一覧で出すコマンド等。それらを内包するタスクも含む) は候補にしない。
 - secret を要する検証は、リポジトリが定める secret の注入の経路 (それを通すタスク等) で呼び、`verify.sh` に secret の値や取得処理を書かない。
 
@@ -45,7 +44,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 以下を順に調査し、該当するものだけを採用する:
 
 - タスクランナー / Makefile:
-  - `Makefile` → `make test`, `make lint`, `make check`, `make verify`, `make pre-commit`, `make dry_run` など verify 系ターゲット
+  - `Makefile` → `make test`, `make lint`, `make check`, `make verify` など verify 系ターゲット
   - `Taskfile.yml`, `Justfile`, `mise.toml` の tasks
 - 言語別テストランナー / lint (該当言語のマニフェストがある場合のみ):
   - `package.json` の `scripts` (test / lint / typecheck / check)
@@ -54,7 +53,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
   - `Cargo.toml` (`cargo test`, `cargo clippy`, `cargo fmt --check`)
   - `pubspec.yaml` (`flutter test` / `dart test`, `dart analyze`)
 - 横断的な lint:
-  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (または `--from-ref`)
+  - `.pre-commit-config.yaml` → `pre-commit run --all-files`
   - `shellcheck` 対象の `.sh` がある場合
 - フロントエンド E2E (Playwright / Puppeteer / Chrome DevTools):
   - 既にテストファイル (`*.spec.ts` 等) と設定が揃っている場合のみ採用する。
@@ -68,7 +67,9 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 # Claude Code の Stop hook から実行される。リポジトリ既存の検証手段を呼ぶだけの wrapper で、検証ロジックはここに書かない。
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# 別のディレクトリから呼ばれても、この verify.sh がある場所を検査する (git の toplevel は呼び出し元の cwd から決まる)。
+# CDPATH を空にするのは、相対パスの cd が CDPATH の先へ移らないようにするため
+CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 have() { command -v "$1" >/dev/null 2>&1; }
 run()  { echo "==> $*"; "$@"; }
@@ -76,10 +77,10 @@ warn() { echo "verify.sh: $*" >&2; }
 
 # --- 検出された検証手段をここに列挙する ---
 # 例:
-# if have make && grep -q '^test:' Makefile; then
+# if have make; then
 #   run make test
 # else
-#   warn "skip: make test (unavailable)"
+#   warn "skip: make test (make not found)"
 # fi
 ```
 

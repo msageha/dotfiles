@@ -7,7 +7,7 @@ argument-hint: "[optional commit message hint]"
 
 # Git Commit
 
-Loading this skill is not permission to commit. Commit only when the user explicitly asked for it, and do only the git operations the request names (AGENTS.md `git` section). This skill does not push: when the request also asks to push or to update a PR, finish the commit here and continue with the pr skill.
+Loading this skill is not permission to commit. Commit only when the AGENTS.md `git` section allows it, and do only the git operations it allows. This skill does not push: when the request also asks for a push or a PR, start with the pr skill, which chooses the branch and then commits by these steps.
 
 Git safety:
 
@@ -38,13 +38,13 @@ The whole work goes in, secrets and local artifacts stay out, and unrelated chan
 
 - The work includes staged and unstaged changes, new untracked files and directories, the user's uncommitted hand edits, and tracked files even when they match `.gitignore` (`.gitignore` does not apply to tracked files, so `git add <path>` works for them). Include the user's edits and untracked files once Step 2 has checked their content, without asking whose they are.
 - Besides secrets and the artifacts below, leave out only what the user excluded by limiting the scope, and changes in paths unrelated to the work (e.g. another session's). Do not touch those; report them.
-- Leave out, and report with the reason: agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files; not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the work), screenshots, local settings (`.idea/`, `.envrc`, `*.local.json`), OS or editor files (`.DS_Store`), build artifacts and large binaries, and unrelated lock-file or CI changes.
+- Leave out, and report with the reason: agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files; not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the work), screenshots the work does not use, local settings (`.idea/`, `.envrc`, `*.local.json`), OS or editor files (`.DS_Store`), build artifacts and large binaries, and unrelated lock-file or CI changes.
 
 ## Step 4: Stage
 
 Stage by pathspec (`git add <path>...`). Do not use `git add -A`, `git add .` or `git commit -a`, which pick up unrelated changes, secrets and artifacts along with the work, nor `git add -i`, which waits for interactive input.
 
-Commit the requested work as one commit unless the user asks to split it. When splitting, stage, write and commit each part in turn (Steps 4-6). `git commit` records the whole index, so before each commit compare `git diff --cached --name-only` with that commit's paths; if other paths are already staged, commit with `git commit --only -- <paths>` so they stay staged for their own commit.
+Commit the requested work as one commit unless the user asks to split it. When splitting, stage, write and commit each part in turn (Steps 4-6). `git commit` records the whole index, so before every commit, a single one included, compare `git diff --cached --name-only` with that commit's paths; if other paths are already staged, commit with `git commit --only -- <paths>` so they stay staged.
 
 ## Step 5: Write the message
 
@@ -65,7 +65,7 @@ In any format:
 
 ## Step 6: Commit and confirm
 
-Pass the message with a quoted heredoc to avoid shell escaping problems:
+Pass the message with a quoted heredoc to avoid shell escaping problems, unless your tool's own instructions give another way (such as `git commit -F <file>`):
 
 ```bash
 git commit -m "$(cat <<'EOF'

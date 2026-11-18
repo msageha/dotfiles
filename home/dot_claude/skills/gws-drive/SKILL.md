@@ -1,7 +1,7 @@
 ---
 name: gws-drive
 description: "Google Drive: Manages files, folders, and shared drives using gws CLI."
-allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+allowed-tools: Bash(gws schema *)
 argument-hint: "[file ID, search query, or action description]"
 ---
 
@@ -13,6 +13,12 @@ Before the first gws command, read the `gws-shared` skill (`../gws-shared/SKILL.
 gws drive <resource> <method> [flags]
 ```
 
+## Helper Commands
+
+| Command | Description |
+|---------|-------------|
+| `gws drive +upload <FILE>` | Upload a local file, taking its name and MIME type from the file (`--parent <ID>`, `--name <NAME>`) |
+
 ## Key Resources
 
 ### files
@@ -22,7 +28,6 @@ gws drive <resource> <method> [flags]
 - `copy` — Copy a file with patch semantics.
 - `update` — Update metadata/content.
 - `export` — Export Google Workspace document to requested MIME type (max 10 MB).
-- `download` — Download file content.
 
 ### drives
 - `list` — List shared drives. Supports `q` for search.

@@ -7,16 +7,14 @@ paths:
 
 - Null Safety: Make a type nullable only when null is a distinct state that callers handle.
 - Immutability: Prefer final fields and const constructors. Use named parameters for functions with many arguments.
-- Type Annotations: Annotate public APIs and return types; locals may rely on inference (Effective Dart).
 - Linting: Follow Effective Dart via analysis_options.yaml.
 
 # Flutter for Mobile Apps
 
 This section applies only to projects whose `pubspec.yaml` depends on the `flutter` SDK.
 
-- State Management: Use Riverpod + hooks_riverpod whenever possible.
-- Widget Structure: Composition over inheritance. Split a large build() into separate widget classes (not helper methods) along the parts that rebuild independently.
-- Performance: Use ListView.builder for long lists.
+- State Management: Use Riverpod + hooks_riverpod.
+- Widget Structure: Split a large build() into separate widget classes (not helper methods) along the parts that rebuild independently.
 - Navigation/Routing: Use go_router when the app needs deep links, URL sync or nested navigation; plain Navigator with MaterialPageRoute is enough for simple flows.
 - API Integration: Use dio and Retrofit for network requests.
 - Data Classes: Use freezed and json_serializable.

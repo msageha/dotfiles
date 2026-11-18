@@ -33,4 +33,4 @@ In test code, capture console and network logs via `page.on('console', ...)` and
 
 ## Reference files (read only when needed)
 
-- `references/test-writing.md` -- `@playwright/test` config, locator priority, test structure, Page Object Model, auth state reuse, network mocking, and a GitHub Actions CI snippet. Read when writing test code, `playwright.config.ts`, or CI config.
+- `references/test-writing.md` -- `@playwright/test` config, locator priority, Page Object Model, auth state reuse, network mocking, and a GitHub Actions CI snippet. Read when writing test code, `playwright.config.ts`, or CI config.

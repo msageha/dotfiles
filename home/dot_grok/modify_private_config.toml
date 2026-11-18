@@ -20,7 +20,7 @@ enabled = true
 # 共通 AGENTS.md のとおり対象に当たる rule だけを読ませる
 rules = false
 # agents は ~/.claude/CLAUDE.md (Claude Code 用の補足) と project の .claude/CLAUDE*.md を読み込むため止める
-# (project 直下の CLAUDE.md と ~/.claude/agents は false でも読まれる)
+# (~/.claude/agents は false でも読まれる)
 agents = false
 mcps = false
 # false だと ~/.claude/skills は無効になり ~/.agents/skills しか使えない。true は Claude plugin の skill・command も読み込む
