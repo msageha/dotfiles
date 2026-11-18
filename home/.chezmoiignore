@@ -112,7 +112,6 @@
 !.claude-private/rules
 !.claude-private/skills
 !.claude-private/agents
-!.claude-private/plugins
 .codex-private/*
 !.codex-private/config.toml
 !.codex-private/AGENTS.md

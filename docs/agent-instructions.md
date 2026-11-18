@@ -32,7 +32,9 @@
   マシンローカルな状態 (ログイン情報・`projects`・識別子等。キーはテンプレート内の list) だけ既存値を温存し、Claude Code が実行時に書くその他のランタイム状態 (カウンタ・キャッシュ等) は apply のたびにリセットされる。
 - `claude-private` (bash / zsh は `dot_config/shell/integrations.sh`、fish は `dot_config/fish/functions/claude-private.fish`) は、`CLAUDE_CONFIG_DIR=~/.claude-private` で Claude Code を個人アカウント用に起動する。
   claude.ai のログイン (macOS では Keychain のエントリ) は `CLAUDE_CONFIG_DIR` ごとに分かれるので、`claude` と再ログインなしで使い分けられる ([公式 authentication](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts))。
-  `~/.claude-private/` の `settings.json`・`CLAUDE.md`・`rules`・`skills`・`agents`・`plugins` は `~/.claude` への symlink で、`.claude.json` は `~/.claude.json` と同じ template で描画する。セッション履歴・ログイン・`projects` の trust は分かれる。
+  `~/.claude-private/` の `settings.json`・`CLAUDE.md`・`rules`・`skills`・`agents` は `~/.claude` への symlink で、`.claude.json` は `~/.claude.json` と同じ template で描画する。セッション履歴・ログイン・`projects` の trust は分かれる。
+  `plugins/` は共有せず、`.chezmoiscripts/run_onchange_after_97_claude-private-plugins.sh.tmpl` が `install/common/claude_plugins.sh` で同じ plugin を別にインストールする。`plugins/data/` (plugin の永続データ。codex plugin は workspace ごとの broker の状態を置き、session の終了時にそれを止める) を共有すると、アカウントをまたいで broker を使い回し・停止しうるため。Claude Code は `installed_plugins.json` 等を一時ファイルからの rename で書き換えるので、ファイル単位の symlink でも共有を保てない。
+  同じ理由で、`claude-private` の中で user settings を書き換える操作 (`/config` 等) は `settings.json` の symlink を実ファイルに置き換えうる。置き換わっても、次の apply で symlink に戻る (`~/.claude/settings.json` への書き込みが apply で消えるのと同じ)。
   `claude-private` と `codex-private` は `CLAUDE_CONFIG_DIR` と `CODEX_HOME` の両方を渡す。session の中から呼ぶもう一方の CLI (Claude から `codex`、Codex から `claude`) が環境変数を継承し、同じ個人アカウントで動く。
   起動する関数が POSIX のシェルにしか無いので、Windows には配らない (`.chezmoiignore`)。
 - `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。

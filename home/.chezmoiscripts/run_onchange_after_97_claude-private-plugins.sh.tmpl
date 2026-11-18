@@ -1,0 +1,17 @@
+{{- /* 条件は .chezmoiignore の ~/.claude-private を配る条件と同じ式にそろえる */}}
+{{- if and (ne .chezmoi.os "windows") (not (dig "skip_cli_tools" false .)) (not (dig "skip_windows_extras" false .)) -}}
+#!/bin/bash
+set -euo pipefail
+
+{{ include "../install/lib.sh" }}
+activate_tool_paths
+
+# claude-private (CLAUDE_CONFIG_DIR=~/.claude-private) に、~/.claude と同じ plugin を別にインストールする。
+# plugins/ は ~/.claude と共有しない。plugin の永続データ (plugins/data/。codex plugin の broker の状態等) がアカウントをまたいで
+# 混ざり、Claude Code は installed_plugins.json 等を rename で書き換えるので、ファイル単位の symlink でも共有を保てないため。
+# marketplace と plugin の一覧を埋め込んでいるので、.chezmoidata.toml の claude.* を変えると再実行される
+export CLAUDE_CONFIG_DIR="$HOME/.claude-private"
+export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
+export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
+{{ include "../install/common/claude_plugins.sh" }}
+{{ end -}}
