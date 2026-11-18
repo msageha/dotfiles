@@ -63,7 +63,7 @@ secret の扱いは共通規約の「安全」節に従う。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env`: secret を復号した値を返す。
 - `pip config list` / `pip config debug`: `~/.config/pip/pip.conf` の token 入り index-url をそのまま出す。
 - `chezmoi apply --verbose` / `chezmoi diff` と、それを使う `mise run apply` / `mise run dry-run`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る (`mise run dry-run` を使うなら、出力を捨てて exit code だけを見る)。
-  secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml` と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.gemini/settings.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
+  secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml` と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.claude-private/.claude.json`・`~/.gemini/settings.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
   secret ファイルが対象範囲に入るときは `chezmoi apply` に `--verbose` を付けず、`chezmoi diff` は target を絞るか出力をマスクする。
 - `cat` / `git diff` で secret ファイルを直接読む。
 - `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。検証コマンド (pre-push / test / dry-run) には渡さない。

@@ -1,0 +1,2 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- includeTemplate "codex/config.toml.modify" (merge (dict "codexModel" .codex.private_model) .) -}}

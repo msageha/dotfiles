@@ -15,7 +15,7 @@
   "fallbackModel": [],
   "switchModelsOnFlag": false,
   "skipDangerousModePermissionPrompt": true,
-  "model": "fable",
+  "model": "claude-opus-5-5",
   "includeGitInstructions": false,
   "language": "japanese",
 {{- /* この repo の home/dot_claude/CLAUDE.md (~/.claude/CLAUDE.md の source) は、repo での作業中に nested の CLAUDE.md として読み込まれ、
@@ -78,6 +78,7 @@
         "~/.config/chezmoi/chezmoi.toml",
         "~/.claude/settings.json",
         "~/.claude.json",
+        "~/.claude-private/.claude.json",
         "~/.gemini/settings.json",
         "~/.gemini/config/mcp_config.json"
       ]
@@ -394,7 +395,14 @@
       "Read(~/.bash_history)",
       "Read(~/.zsh_history)",
       "Read(~/.claude/.credentials.json)",
+{{- /* claude-private (CLAUDE_CONFIG_DIR=~/.claude-private) の同じ役割のファイル。settings.json は ~/.claude/settings.json への symlink */}}
+      "Read(~/.claude-private/settings.json)",
+      "Read(~/.claude-private/.claude.json)",
+      "Read(~/.claude-private/.claude.json.backup)",
+      "Read(~/.claude-private/backups/**)",
+      "Read(~/.claude-private/.credentials.json)",
       "Read(~/.codex/auth.json)",
+      "Read(~/.codex-private/auth.json)",
       "Read(~/.grok/auth.json)",
 {{- /* 復号した credential を標準出力に出す */}}
       "Bash(gws auth export:*)"

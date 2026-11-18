@@ -53,6 +53,10 @@ test_runner = "Runs tests, lint, and verification commands, then summarizes fail
 # .chezmoitemplates/codex/instructions.md もこの値を main agent への説明に描画する
 [codex]
 subagent_model = "gpt-6.1-sol"
+# main agent の既定モデル。~/.codex (会社の ChatGPT Business) と ~/.codex-private (codex-private の個人アカウント) では
+# 使えるモデルが異なるため分ける。dot_codex/ と private_dot_codex-private/ の modify_private_config.toml が読む
+model = "gpt-6.1-sol"
+private_model = "gpt-6.2-sol"
 
 # Agent の shell の環境変数 (docs/agent-shell.md)。editor の自動起動を失敗終了にし、pager と各 CLI の対話 prompt を止める。
 # GIT_EDITOR は Claude Code の既定と同じ true にして、rebase --continue 等が既定のメッセージで進むようにする。
