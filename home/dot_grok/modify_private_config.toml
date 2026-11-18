@@ -33,11 +33,11 @@ args = ["-y", "@upstash/context7-mcp@%s"]
 
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@%s"]
+args = ["-y", "chrome-devtools-mcp@%s", "--headless"]
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@%s"]
+args = ["-y", "@playwright/mcp@%s", "--headless"]
 ` .mcp.context7 .mcp.chromeDevtools .mcp.playwright | fromToml -}}
 {{- /* xcrun は macOS 専用で、dart も flutter とともに macOS にだけ導入する (mise config) */}}
 {{- if eq .chezmoi.os "darwin" -}}

@@ -22,7 +22,8 @@
       "command": "npx",
       "args": [
         "-y",
-        "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"
+        "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}",
+        "--headless"
       ]
     },
     "antigravity": {
@@ -38,7 +39,8 @@
       "command": "npx",
       "args": [
         "-y",
-        "@playwright/mcp@{{ .mcp.playwright }}"
+        "@playwright/mcp@{{ .mcp.playwright }}",
+        "--headless"
       ]
     },
 {{- /* xcrun は macOS 専用で、dart も flutter とともに macOS にだけ導入する (mise config) */}}
