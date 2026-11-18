@@ -9,15 +9,6 @@ argument-hint: "[topic, file path, or document type]"
 
 Writes documentation with the Diataxis framework (https://diataxis.fr/), tailored to the audience and purpose.
 
-## Document Types (Diataxis)
-
-| Type | Orientation | Purpose | Style |
-|---|---|---|---|
-| Tutorial | Learning | Teach by doing | Step-by-step, hand-holding, "follow me" |
-| How-to Guide | Problem | Solve a specific task | Goal-oriented, practical, "do this" |
-| Reference | Information | Describe the machinery | Accurate, complete, "dry" facts |
-| Explanation | Understanding | Clarify concepts | Discursive, contextual, "why" |
-
 ## Workflow
 
 ### Phase 1: Clarify
@@ -30,7 +21,7 @@ Before writing, determine:
 4. Scope: What to include and what to exclude.
 5. Context: Is there existing documentation to build on or align with?
 
-Infer whatever is unstated from the request, the existing documentation and the code, and proceed; state the inferred values as assumptions in your report to the user, not in the document. Ask only when the audience or goal can be read in ways that would produce substantially different documents and the sources do not settle it; then ask once, in one message, giving each open item as labelled options with one recommendation and what each choice changes. When the user delegates the work through to completion (e.g. 'すべて書いて'), do not ask: proceed on stated assumptions.
+Infer whatever is unstated from the request, the existing documentation and the code, and proceed; state the inferred values as assumptions in your report to the user, not in the document. Ask only when the audience or goal can be read in ways that would produce substantially different documents and the sources do not settle it; then ask once, in one message, giving each open item as labelled options with one recommendation and what each choice changes.
 
 ### Phase 2: Outline
 
@@ -48,12 +39,6 @@ When Phase 1 needs a question, include the outline in that same message and wait
 
 Generate content in Markdown following these principles:
 
-#### Clarity
-- Use short sentences and paragraphs.
-- One idea per paragraph.
-- Active voice. Present tense.
-- Define jargon on first use or link to a glossary.
-
 #### Accuracy
 - Base content on actual code, APIs, or configurations -- read source files.
 - Include working code examples. Run every example and command that can run in this environment instead of testing them mentally. In your report to the user, not in the document, give the observed output / exit code and list the ones you could not run as unverified.
@@ -64,7 +49,7 @@ Generate content in Markdown following these principles:
 - Use bullet lists for scanning; numbered lists for sequences.
 - Use tables for comparisons and reference data.
 - Use code blocks with language hints for syntax highlighting.
-- Use admonitions sparingly: `> **Note:**`, `> **Warning:**`, `> **Tip:**`.
+- Use admonitions sparingly, in the syntax the document's renderer supports (e.g. `> [!NOTE]` on GitHub).
 
 #### User-Centricity
 - Document what the reader needs to know, not what the code does.

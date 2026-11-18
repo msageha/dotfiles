@@ -1,6 +1,6 @@
 ---
 name: test
-description: "Runs the project's tests and fixes failures at their root cause until they pass. Use when the user asks to make tests pass or fix them (「通して」「直して」「green にして」), or to verify your own change. For a request only to run tests and report (「テスト回して」「結果見せて」), use the test-runner agent where available; without it, this skill runs the tests and reports without editing files."
+description: "Runs the project's tests and fixes failures at their root cause until they pass. Use when the user asks to make tests pass or fix them (「テストを通して」「テストを直して」), or to verify your own change. For a request only to run tests and report (「テスト回して」「結果見せて」), use the test-runner agent where available; without it, this skill runs the tests and reports without editing files."
 argument-hint: "[test-pattern-or-file]"
 ---
 
@@ -10,14 +10,8 @@ argument-hint: "[test-pattern-or-file]"
 
 ## 手順
 
-### 1. テスト環境の検出
-プロジェクトの構成ファイルからテストフレームワークとランナーを特定する:
-- package.json → Jest / Vitest / Mocha
-- pyproject.toml / setup.cfg → pytest
-- go.mod → go test
-- pubspec.yaml → flutter test / dart test
-- Cargo.toml → cargo test
-- Makefile / Taskfile → カスタムターゲット
+### 1. テストコマンドの特定
+プロジェクトが定義するテストコマンド (README・AGENTS.md・CI 設定・mise / make / package scripts 等) を使う。定義が無ければ、構成ファイル (`package.json`・`pyproject.toml`・`go.mod` 等) からランナーを特定する。
 
 ### 2. テストの実行
 - 引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) でテスト名・パターン・ファイルが指定されていればそれに合うテストを、無ければスイート全体を実行する
@@ -34,7 +28,7 @@ Goal: 対象範囲のテストが通り、ベースライン (base ブランチ 
 Acceptance criteria:
 - 新規失敗がゼロ (ベースラインで既に落ちていた失敗は分けて報告し、依頼範囲に含まれるか不明なら修正前に確認する)
 - 修正によって他のテストが破壊されていない
-- 最終レポートに「失敗の根本原因」「適用した修正」「再実行結果 (コマンドと件数)」「pre-existing 失敗の一覧」が含まれている
+- 最終レポートに「失敗の根本原因」「適用した修正」「再実行結果 (コマンドと件数。取得できればカバレッジも)」「pre-existing 失敗の一覧」が含まれている
 
 Constraints:
 - 失敗したテストと対応するソースを読み、根本原因 (テスト側か実装側か) を特定してから修正に入る
@@ -45,5 +39,3 @@ Constraints:
   - 依頼が「テストを直して」とテスト側に限定されているときの実装側の修正 (項目ごとに報告して許可を得る)
 - それ以外の修正 (実装のバグ、誤った assertion など) は委譲の範囲とみなし、修正・再実行・成功の確認まで続けてから結果を報告する
 - 新しいテストはユーザーの指示があるときだけ足す
-
-全テストが通ったら、件数とカバレッジ (取得できれば) を報告して完了する。

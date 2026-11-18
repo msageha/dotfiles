@@ -1,7 +1,7 @@
 ---
 name: gws-docs
-description: "Google Docs: Gets document contents, creates new documents, or applies rich batchUpdate formatting using gws CLI — for simply appending plain text, use gws-docs-write instead."
-allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+description: "Google Docs: Reads a document, creates one, appends text, or writes formatted content (headings, lists, tables) using gws CLI."
+allowed-tools: Bash(gws schema *)
 argument-hint: "[document ID or action description]"
 ---
 
@@ -17,7 +17,9 @@ gws docs <resource> <method> [flags]
 
 | Command | Description |
 |---------|-------------|
-| `gws docs +write` | Append text to a document (see `gws-docs-write` skill) |
+| `gws docs +write --document <ID> --text <TEXT>` | Append plain text to the end of the document body |
+
+`+write` inserts `--text` literally, so Markdown syntax in it shows up as-is. For content with headings, lists, emphasis or tables (Markdown sources included), use `documents.batchUpdate` instead (Writing Content below).
 
 ## Key Resources
 

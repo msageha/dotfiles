@@ -1,11 +1,21 @@
 # Codex 固有の補足
 
+- AGENTS.md が無いディレクトリでは、代わりに `CLAUDE.md` が読み込まれる。その `@<path>` 行は Claude Code の import 記法で Codex は展開しないので、必要に応じてその path を読む。
+
 ## サブエージェント
 
-- Codex の中から `codex exec -s read-only` を起動しても、sandbox が二重にかかって失敗しうる。
+- Codex の中から `codex exec` は起動しない (sandbox が二重にかかって失敗しうる)。
 - 独立レビュー (code_reviewer / security_reviewer) は `fork_turns="none"` で spawn し、必要な事実は message で渡す。既定の全履歴の fork は生成側の推論を引き継ぐので、独立にならない。
 - 別モデルへの相談・独立レビュー (AGENTS.md「事実と判断」「検証と完了」) には、shell から `claude -p --permission-mode plan --settings '{"disableAllHooks":true}' "<PROMPT>"` で Claude Code を使う (Stop hook の `.claude/verify.sh` に作業ツリーを変えさせないため、hook を止める)。PROMPT の冒頭に、相談・レビューだけの依頼で結果を返せばよいことを書く。
 - 組み込みの agent (explorer / worker / default) に探索を任せるときは低めの reasoning effort を、レビュー・セキュリティなど誤りが高くつく作業には {{ .codex.subagent_model }} と xhigh を指定する。
+
+## git
+
+- この設定の sandbox は `.git` への書き込みを拒否し、承認を求めることもできない。sandbox の外で動く git の操作は、`~/.codex/rules/` の allow に先頭の語が一致するコマンドだけ: `git add`・`git commit`・`git switch`・`git merge`・`git worktree add`・`git worktree prune`・`git fetch origin`・`git push origin`・`git push -u origin`・`git pull --rebase origin`・`git rebase --continue` / `--abort` / `--skip`。
+- 一致させるために、option は上の語の後ろに置き (`git fetch origin --prune`。`git fetch --prune origin` は一致しない)、作業ディレクトリは `cd` や `git -C` ではなく `workdir` で指定する。ほかのコマンド・pipe・redirect・変数や `$(…)` の展開・heredoc を同じ呼び出しに混ぜると、全体が sandbox の中で動く。一致しなかった `git push` は送信だけ成功し、remote-tracking ref と upstream が更新されない。
+- commit message は、heredoc や `$(…)` を使わず、ファイルに書いて `git commit -F <path>` で渡す。
+- 自分が作った worktree は、ディレクトリを `rm -r` で消してから (`-f` を付けた `rm` はこの設定では拒否される) `git worktree prune` で片付ける。
+- rebase は `git pull --rebase origin <base>` で行う。`.git` に書くほかの操作 (`--onto` を使う rebase・`git branch`・`git tag`・`git stash` 等) は失敗する。上の形で同じ結果にできなければ、実行するコマンドをユーザーに渡す。
 
 ## ブラウザ
 

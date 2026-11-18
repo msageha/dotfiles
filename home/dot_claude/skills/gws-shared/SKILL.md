@@ -2,7 +2,7 @@
 name: gws-shared
 description: "gws CLI: Shared reference for authentication, global flags, output formatting, and when to confirm sends and writes. Read it before the first gws command in a task, or when a gws command fails with an auth or flag error."
 user-invocable: false
-allowed-tools: Bash(gws schema *)
+allowed-tools: Bash(gws auth status)
 ---
 
 # gws — Shared Reference
@@ -30,7 +30,6 @@ GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/path/to/key.json gws drive files list
 |------|-------------|
 | `--format <FORMAT>` | Output format: `json` (default), `table`, `yaml`, `csv` |
 | `--dry-run` | Validate locally without calling the API |
-| `--sanitize <TEMPLATE>` | Screen responses through a Model Armor template (requires cloud-platform scope) |
 
 ## CLI Syntax
 
@@ -50,7 +49,7 @@ gws <service> <resource> [sub-resource] <method> [flags]
 | `--page-limit <N>` | Max pages when using --page-all (default: 10) |
 | `--page-delay <MS>` | Delay between pages in ms (default: 100) |
 
-## Sends, Writes, and Content Screening
+## Sends and Writes
 
 - Sending mail and writing or deleting data leave changes other people can see. Unless the user has asked for this send or write and stated its content and its recipient or target, show the `--dry-run` result (for mail, `--draft` also works) and confirm before running the real command. Changes to sharing or access permissions always follow the AGENTS.md `安全` section: show the current and resulting entries and confirm, even when the request is specific.
-- Pass `--sanitize` only when the user provides a Model Armor template. If `GOOGLE_WORKSPACE_CLI_SANITIZE_TEMPLATE` is set, the CLI already screens with it and no flag is needed.
+- To delete, use the recoverable method where the API has one: Gmail `trash`, Drive `files update` with body `{"trashed": true}`. The `delete` methods of Gmail messages / threads and Drive files erase the item permanently, bypassing the trash; use them only when the user asks for permanent deletion.

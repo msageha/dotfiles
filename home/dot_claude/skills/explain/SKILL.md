@@ -2,13 +2,12 @@
 name: explain
 description: Explains in Japanese what a file, symbol, or piece of code does and how it works. Use when the user wants to understand some code (「このコードを解説して」「これ何してる？」「仕組みを教えて」「処理の流れを説明して」).
 allowed-tools: Read, Grep, Glob
-disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: <file-path-or-symbol>
 ---
 
 # コード解説
 
-引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) で指定されたコードを解説する。ファイルと環境は変更しない。
+引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) で指定されたコードを解説する。解説のためにファイルや環境は変更しない。
 
 ## 手順
 

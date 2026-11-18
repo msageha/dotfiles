@@ -9,7 +9,7 @@
 {{- end -}}
 ## 言語・ファイル種別の rules
 
-rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter の `paths` が示す。編集・レビューの対象に当たる rule を、着手前に次の一覧から選んで読む (paths が多い rule は先頭の 6 件だけを示す)。作業中の project に `.claude/rules/` があれば、`paths` が対象に一致するものと `paths` の無いものも読む。
+rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter の `paths` が示す。編集・レビューの対象に当たる rule を、着手前に次の一覧から選んで読む (先頭の `**/` は省き、paths が多い rule は先頭の 6 件だけを示す)。作業中の project に `.claude/rules/` があれば、`paths` が対象に一致するものと `paths` の無いものも読む。
 
 {{ range $rules -}}
 {{- $text := replace "\r\n" "\n" (include .) -}}
@@ -38,5 +38,7 @@ rule は `~/.claude/rules/` にあり、適用対象は各 rule の frontmatter 
 {{- end -}}
 {{- $titles := list -}}
 {{- range regexFindAll "(?m)^# .*$" $body -1 }}{{ $titles = append $titles (trimPrefix "# " .) }}{{ end -}}
-- `{{ base . }}`{{ with $titles }} — {{ join " / " . }}{{ end }}: {{ if not $paths }}paths 無し (常に適用){{ else if gt (len $paths) 6 }}`{{ join "`・`" (slice $paths 0 6) }}` 等{{ else }}`{{ join "`・`" $paths }}`{{ end }}
+{{- $shown := list -}}
+{{- range $paths }}{{ $shown = append $shown (trimPrefix "**/" .) }}{{ end -}}
+- `{{ base . }}`{{ with $titles }} — {{ join " / " . }}{{ end }}: {{ if not $shown }}paths 無し (常に適用){{ else if gt (len $shown) 6 }}`{{ join " " (slice $shown 0 6) }}` 等{{ else }}`{{ join " " $shown }}`{{ end }}
 {{ end -}}

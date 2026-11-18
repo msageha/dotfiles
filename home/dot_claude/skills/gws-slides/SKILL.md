@@ -1,7 +1,7 @@
 ---
 name: gws-slides
 description: "Google Slides: Reads and writes presentations using gws CLI."
-allowed-tools: Read, Grep, Glob, Bash(gws schema *)
+allowed-tools: Bash(gws schema *)
 argument-hint: "[presentation ID or action description]"
 ---
 

@@ -8,7 +8,7 @@ Run these only after showing the command and getting the user's go-ahead (see SK
 
 ```bash
 # One-off script without touching the project's dependencies
-uv run --with reportlab --with pdfplumber --with pypdf python script.py
+uv run --no-project --with reportlab --with pdfplumber --with pypdf python <script>
 
 # Into the project environment
 uv pip install reportlab pdfplumber pypdf
@@ -23,13 +23,13 @@ sudo apt-get install -y poppler-utils
 Additional tools as needed:
 
 ```bash
-# For OCR (run the script with: uv run --with pytesseract --with pdf2image python <script>)
-brew install tesseract  # macOS
+# For OCR (run the script with: uv run --no-project --with pytesseract --with pdf2image python <script>)
+brew install tesseract  # macOS; English only, other languages need tesseract-lang
 
 # For advanced manipulation
 brew install qpdf
 
-# For rendering to images (alternative): uv run --with pypdfium2 python <script>
+# For rendering to images (alternative): uv run --no-project --with pypdfium2 python <script>
 ```
 
 ## Extract Text
@@ -124,7 +124,7 @@ for name, field in fields.items():
     print(f"{name}: {field}")
 
 writer.update_page_form_field_values(
-    writer.pages[0],
+    None,  # all pages; pass a page or a list of pages to limit the update
     {"field_name": "value"},
 )
 writer.write("filled.pdf")
@@ -138,7 +138,7 @@ import pytesseract
 
 images = convert_from_path("scanned.pdf")
 for img in images:
-    text = pytesseract.image_to_string(img)
+    text = pytesseract.image_to_string(img, lang="<lang>")  # e.g. "jpn"; the default is "eng"
     print(text)
 ```
 
