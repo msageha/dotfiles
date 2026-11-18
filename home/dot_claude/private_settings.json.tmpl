@@ -68,8 +68,10 @@
        (開け直したパスは、sandbox の中の `cat` 等からも読める)。
        同じパスの allowRead が deny に勝つことは公式 docs に記載が無く、Claude Code 2.1.325 (macOS) の実装で確かめた挙動に依る。
        sandbox の中で chezmoi が設定を開けなくなったら (uv / pip は失敗せず既定の index に落ちる)、この対を見直す。
-       chezmoi の age 鍵 (`~/.config/chezmoi/key.txt`) は開け直さない。使うのは暗号化した target の復号だけで、それを伴う chezmoi の操作は
-       sandbox の中では元々動かない (deny した `~/.codex/.env`・`~/.gemini/.env` を lstat できない) */}}
+       chezmoi の age 鍵 (`~/.config/chezmoi/key.txt`) は開け直さない。鍵は暗号化した target の復号に使い、`.chezmoiignore` と一部の template が
+       有無を `stat` で見る。`.chezmoiignore` を通る `chezmoi apply` / `diff` / `status` は、開け直しても sandbox の中では動かない (deny した
+       `~/.codex/.env`・`~/.gemini/.env` を lstat できない)。開け直さないので、鍵を `stat` する template の `chezmoi execute-template` は
+       sandbox の中で失敗する */}}
       "allowRead": [
         "~/.config/pip/pip.conf",
         "~/.config/uv/uv.toml",
@@ -357,7 +359,8 @@
       "Read(**/.env.*)",
 {{- /* 値を持たない雛形は secret ではないので、.env 系の deny から外す。`!` (gitignore の否定) は、同じ設定ファイルの deny で
        前に並ぶ cwd 相対の rule だけを打ち消すので、上の rule より後ろに置く。managed settings など別の設定ファイルが `.env.*` を deny している環境では効かず、
-       雛形は読めないままになる */}}
+       雛形は読めないままになる。否定が sandbox の read の deny にも効くかは公式 docs に記載が無く、sandbox の中のコマンドからは
+       雛形を読めないままになりうる */}}
       "Read(!.env.template)",
       "Read(!.env.example)",
       "Read(!.env.sample)",
@@ -381,7 +384,7 @@
       "Read(~/.config/chezmoi/key.txt)",
       "Read(~/.claude/settings.json)",
       "Read(~/.claude.json)",
-{{- /* Claude Code が ~/.claude.json の写しを置く場所。`Read(~/.claude/**)` の allow に入るので、deny しないと同じ中身を確認なしで読める */}}
+{{- /* Claude Code が ~/.claude.json の写しを置く場所。`~/.claude/backups/` は `Read(~/.claude/**)` の allow に入るので、deny しないと同じ中身を確認なしで読める */}}
       "Read(~/.claude.json.backup)",
       "Read(~/.claude/backups/**)",
       "Read(~/.codex/.env)",
@@ -392,6 +395,7 @@
       "Read(~/.zsh_history)",
       "Read(~/.claude/.credentials.json)",
       "Read(~/.codex/auth.json)",
+      "Read(~/.grok/auth.json)",
 {{- /* 復号した credential を標準出力に出す */}}
       "Bash(gws auth export:*)"
     ],
@@ -487,10 +491,9 @@
        上の照合を通るため。toplevel で止めるのは、checkout の中に作った worktree から親の checkout の verify.sh へ遡らないため。
        `cd -P` で物理パスへ移るのは、symlink 経由の cwd からでも `cd ..` で toplevel に行き着くため。`$PWD != /` の条件は、toplevel の名前が
        改行で終わり `$(…)` がそれを落とすときにも止まるため。失敗時に stdout へ 1 行出すのは、stdout が空で stderr に no such file 等を含む
-       exit 2 が、hook のスクリプトが無い場合として扱われて Claude に返らないことがあるため */}}
+       exit 2 が、hook のスクリプトが無い場合として扱われて Claude に返らないため (Claude Code 2.1.325 の実装。公式 docs に記載は無い) */}}
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",

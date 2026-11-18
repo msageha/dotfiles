@@ -7,7 +7,7 @@ argument-hint: "[optional commit message hint]"
 
 # Git Commit
 
-Loading this skill is not permission to commit. Commit only when the AGENTS.md `git` section allows it (an explicit request, or a standing procedure in the repository's own instructions), and do only the git operations that request or procedure names. This skill does not push: when the request also asks for a push or a PR, start with the pr skill, which chooses the branch and then commits by these steps.
+Loading this skill is not permission to commit. Commit only when the AGENTS.md `git` section allows it, and do only the git operations it allows. This skill does not push: when the request also asks for a push or a PR, start with the pr skill, which chooses the branch and then commits by these steps.
 
 Git safety:
 

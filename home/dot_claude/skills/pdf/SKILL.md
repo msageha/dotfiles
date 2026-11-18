@@ -23,7 +23,7 @@ Check availability first. Before installing anything, `uv run --with` included, 
 
 | Task | Best Tool |
 |---|---|
-| Extract text | `pdfplumber` (layout-aware) or `pypdf` |
+| Extract text | `pdftotext` (Poppler), `pdfplumber` (layout-aware) or `pypdf` |
 | Extract tables | `pdfplumber` (`.extract_tables()`) |
 | Create new PDF | `reportlab` |
 | Merge PDFs | `pypdf` or `qpdf` |

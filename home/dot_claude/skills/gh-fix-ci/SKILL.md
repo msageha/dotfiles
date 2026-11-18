@@ -21,7 +21,7 @@ Decide this before touching anything, and stay within it:
 
 - Question (「原因分かる？」「どうして failed している？」): read-only. Report the root cause and fix options; do not change files, branches or runs.
 - Fix (「failed しているから修正して」): fix the root cause and verify locally, without a plan-approval round. Pause when the fix needs a decision outside the PR's scope (e.g. workflow permissions, dependency version bumps, deleting tests).
-- Commit and push are included only when the AGENTS.md `git` section allows them: the request says so (「PR に積んで」「green にして」, or 「push して」 together with the fix request), the failing check follows a push or PR that the same request made (pr skill Step 9), or the repository's own instructions make them a standing procedure. Otherwise stop at a commit-ready state.
+- Commit and push are included only when the AGENTS.md `git` section allows them; otherwise stop at a commit-ready state. A request includes them when it says so (「PR に積んで」「green にして」, or 「push して」 together with the fix request), or when the failing check follows a push or PR that the same request made and committing is part of that request (pr skill Step 1).
 - Watch (「CI を監視して」): see Step 8.
 
 ### Step 2: Resolve the PR
@@ -36,7 +36,7 @@ gh pr view <pr> --json mergeable,mergeStateStatus,headRefName,baseRefName
 gh pr checks <pr> --json name,state,bucket,link,startedAt,completedAt,workflow
 ```
 
-- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). Without a push request, merge with `--no-commit` and stop with the resolution staged and verified locally; with one, commit the merge, push and continue. If the conflict needs a design decision, present the options and wait.
+- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). When Step 1 does not include pushing, merge with `--no-commit` and stop with the resolution staged and verified locally; when it does, commit the merge, push and continue. If the conflict needs a design decision, present the options and wait.
 - Checks still pending: `gh pr checks <pr> --watch` and wait; do not diagnose a partial run.
 - For each check in the `fail` or `cancel` bucket, take the run ID from `link` (`.../actions/runs/<run_id>/...`). A cancelled check is not a pass: when a step cancels the whole run after its job fails (a fail-fast pattern), the failing job itself ends as cancelled and `--log-failed` prints nothing, so also look for jobs with a failed step and read their logs. A check cancelled only because a newer run of the same workflow on the PR's current head commit superseded it needs no diagnosis; look at that run instead. Otherwise treat the check as unverified.
 

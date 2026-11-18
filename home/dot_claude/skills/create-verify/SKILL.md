@@ -67,7 +67,9 @@ allowed-tools: Read, Grep, Glob, Bash(mkdir -p .claude), Bash(chmod +x .claude/v
 # Claude Code の Stop hook から実行される。リポジトリ既存の検証手段を呼ぶだけの wrapper で、検証ロジックはここに書かない。
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# 別のディレクトリから呼ばれても、この verify.sh がある場所を検査する (git の toplevel は呼び出し元の cwd から決まる)。
+# CDPATH を空にするのは、相対パスの cd が CDPATH の先へ移らないようにするため
+CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 have() { command -v "$1" >/dev/null 2>&1; }
 run()  { echo "==> $*"; "$@"; }

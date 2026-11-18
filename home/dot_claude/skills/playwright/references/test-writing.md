@@ -90,6 +90,8 @@ setup('authenticate', async ({ page }) => {
 });
 ```
 
+Run this file from a `setup` project (`{ name: 'setup', testMatch: /.*\.setup\.ts/ }`) and give each test project `dependencies: ['setup']` and `use.storageState: 'playwright/.auth/user.json'`; the default `testMatch` does not pick the file up, and tests start signed out unless they load the saved state.
+
 The state file holds session cookies, so add `playwright/.auth/` to `.gitignore`.
 
 ## Network Mocking

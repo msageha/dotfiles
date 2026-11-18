@@ -19,7 +19,7 @@ gws docs <resource> <method> [flags]
 |---------|-------------|
 | `gws docs +write --document <ID> --text <TEXT>` | Append plain text to the end of the document body |
 
-`+write` inserts `--text` literally, so Markdown syntax in it shows up as-is. For content with headings, lists, emphasis or tables (Markdown sources included), use `documents.batchUpdate` instead (Writing Content below).
+`+write` inserts `--text` literally, so Markdown syntax in it shows up as-is; for formatted content, see Writing Content below.
 
 ## Key Resources
 

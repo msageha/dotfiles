@@ -32,7 +32,7 @@ query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
       reviewThreads(first: 50, after: $endCursor) {
         pageInfo { hasNextPage endCursor }
         nodes {
-          id isResolved isOutdated path line startLine originalLine
+          id isResolved isOutdated path line startLine originalLine originalStartLine
           comments(first: 50) { pageInfo { hasNextPage } nodes { fullDatabaseId author { login } authorAssociation body createdAt url } }
         }
       }
@@ -76,7 +76,7 @@ gh api repos/{owner}/{repo}/issues/<pr>/comments --paginate --jq '.[] | {id, aut
 ### Step 6: Apply fixes
 
 - For each comment you address, implement the fix for its underlying concern. If while implementing you find the comment is wrong, stop for that item and report the evidence instead of silently skipping or applying it.
-- A comment the user named that asks for new tests counts as their instruction to add them; otherwise report such requests instead of adding tests.
+- A comment the user named individually that asks for new tests counts as their instruction to add them; otherwise report such requests instead of adding tests.
 - Commit / push only when the AGENTS.md `git` section allows it.
 
 ### Step 7: Report a per-comment ledger
@@ -85,4 +85,4 @@ Re-fetch the comments and match every one, resolved threads included, against th
 
 ## Constraints
 
-- Resolve review threads or post replies only when the user asks or the repository's own instructions make it a standing procedure.
+- Resolve review threads or post replies only when the user asks.

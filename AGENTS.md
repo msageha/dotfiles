@@ -51,6 +51,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。
   この hook は diff を出さないので、差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
+- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (macOS は `~/Library/Caches/`。Codex では `~/.cache/` も) への書き込みが "Operation not permitted" で落ちる (コード起因ではない)。
 
 ### secret を出力しうるコマンド
 
@@ -60,7 +61,7 @@ secret の扱いは共通規約の「安全」節に従う。
 - `chezmoi execute-template --init`: `home/.chezmoi.toml.tmpl` が fnox 注入の API キー (`GEMINI_API_KEY` 等) を `data.apiKeys` に平文展開する。
 - `chezmoi data` / `chezmoi cat-config` / `chezmoi dump-config`: config に書かれた `data.apiKeys` を平文で出す。フラグの値は `chezmoi execute-template '{{ dig "skip_cli_tools" false . }}'` のようにキーを指定して読む。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env`: secret を復号した値を返す。
-- `pip config list` / `pip config debug`: `~/.config/pip/pip.conf` の token 入り index-url をそのまま出す (`PIP_CONFIG_FILE` で別の設定を指しても、user の設定を併せて出す)。
+- `pip config list` / `pip config debug`: `~/.config/pip/pip.conf` の token 入り index-url をそのまま出す。
 - `chezmoi apply --verbose` / `chezmoi diff` と、それを使う `mise run apply` / `mise run dry-run`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る (`mise run dry-run` を使うなら、出力を捨てて exit code だけを見る)。
   secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml` と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.gemini/settings.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
   secret ファイルが対象範囲に入るときは `chezmoi apply` に `--verbose` を付けず、`chezmoi diff` は target を絞るか出力をマスクする。

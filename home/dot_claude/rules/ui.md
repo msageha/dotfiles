@@ -1,14 +1,14 @@
 ---
 paths:
   - "**/*.html"
+  - "**/*.astro"
+  - "**/*.jsx"
+  - "**/*.tsx"
+  - "**/*.css"
+  - "**/*.scss"
   - "**/*.htm"
   - "**/*.ejs"
   - "**/*.hbs"
-  - "**/*.jsx"
-  - "**/*.tsx"
-  - "**/*.astro"
-  - "**/*.css"
-  - "**/*.scss"
 ---
 # Web UI (templates, components, stylesheets)
 

@@ -1,7 +1,7 @@
 ---
 name: security
 description: "Reviews a file, directory, or the whole project for vulnerabilities, including LLM-integrated apps and agents, prompt injection, and CI / supply chain (「セキュリティレビューして」「脆弱性がないか見て」「セキュリティ診断して」). For a review of a change (working-tree or branch diff), delegate to the security-reviewer agent (security_reviewer in Codex)."
-allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(uv audit --locked), Bash(uv audit --locked --output-format json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json)
+allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(npm audit), Bash(npm audit --json), Bash(pnpm audit), Bash(pnpm audit --json), Bash(uv audit --frozen), Bash(uv audit --frozen --output-format json), Bash(pip-audit), Bash(govulncheck:*), Bash(cargo audit --file Cargo.lock), Bash(cargo audit --file Cargo.lock --json)
 disallowed-tools: Edit, Write, NotebookEdit
 argument-hint: "[file-or-directory]"
 ---
@@ -40,7 +40,7 @@ OWASP Top 10・OWASP Top 10 for LLM Applications・OWASP Top 10 for Agentic Appl
 - セキュリティヘッダーの欠落
 
 ### 依存関係とインフラ
-- 既知の脆弱性を含む依存パッケージ (`npm audit` / `pnpm audit` / `uv audit --locked` / `pip-audit` / `govulncheck` / `cargo audit --file Cargo.lock` が使えれば実行し、無ければ lock ファイルのバージョンを advisory と照合する。引数なしの `pip-audit` は、`pip-audit` 自身が動いている Python の環境を監査する (venv を activate しても変わらない) ので、プロジェクトの venv に入っている `pip-audit` を使うか、`PIPAPI_PYTHON_LOCATION` に venv の Python を指定して実行する。`pip-audit -r` は `pip install -r` と同等の依存解決をするので、pin 済みのファイルに `--no-deps --disable-pip` を付けたときだけ使う。`cargo audit` は lock が無いと生成するので、`--file` で既存の lock を読ませ、lock が無ければ生成せずにその旨を報告する)
+- 既知の脆弱性を含む依存パッケージ (`npm audit` / `pnpm audit` / `uv audit --frozen` / `pip-audit` / `govulncheck` / `cargo audit --file Cargo.lock` が使えれば実行し、無ければ lock ファイルのバージョンを advisory と照合する。`uv audit` は、フラグなしでは lock を生成・更新し、`--locked` でも lock の検証のために依存を解決し直す (dependencies が dynamic なプロジェクトでは対象の build backend を実行する) ので、`--frozen` で既存の `uv.lock` をそのまま読ませる。引数なしの `pip-audit` は、`pip-audit` 自身が動いている Python の環境を監査する (venv を activate しても変わらない) ので、プロジェクトの venv に入っている `pip-audit` を使うか、`PIPAPI_PYTHON_LOCATION` に venv の Python を指定して実行する。`pip-audit -r` は `pip install -r` と同等の依存解決をするので、pin 済みのファイルに `--no-deps --disable-pip` を付けたときだけ使う。`cargo audit` は lock が無いと生成するので、`--file` で既存の lock を読ませ、lock が無ければ生成せずにその旨を報告する)
 - 安全でないデシリアライゼーション
 - デバッグモードや verbose エラーの本番環境露出
 - 安全でないデフォルト設定
@@ -62,7 +62,7 @@ OWASP Top 10・OWASP Top 10 for LLM Applications・OWASP Top 10 for Agentic Appl
 
 ## 出力フォーマット
 
-冒頭に、リスクの総合評価を書き、実行して観測した検証 (コマンド・PoC とその結果) と読解のみの範囲を区別して明記する。各脆弱性に通番を付け、確度が低いもの・軽微なものも省かず (絞り込みは別工程で行う)、以下の形式で報告する:
+報告の先頭にリスクの総合評価を書き、続けて、実行して観測した検証 (コマンド・PoC とその結果) と読解のみの範囲を区別して明記する。各脆弱性に通番を付け、確度が低いもの・軽微なものも省かず (絞り込みは別工程で行う)、以下の形式で報告する:
 
 ### N. [Critical / High / Medium / Low] 脆弱性タイトル
 - **CWE**: 該当する CWE 番号 (判明する場合)

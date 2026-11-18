@@ -17,7 +17,7 @@ lint / test 等の検証は、レビュー対象のファイルを書き換え�
 2. 中身を出す前に secret ファイル (AGENTS.md「安全」の定義) を判定する。出力した secret は取り消せないため。secret ファイルは中身を出さず、変更の有無だけを見る。
 3. 差分本体を、secret ファイルを除いて取得する (`git diff HEAD -- . ':(exclude)<path>'`)。untracked の新規ファイルは、secret でないものの中身を読む。
 
-レビュー対象が PR 番号 / URL で指定されたときは、代わりに `gh pr view <pr>` で説明を、`gh pr diff <pr> --exclude '<secret>'` で secret ファイルを除いた差分を取得する。作業ツリーが PR の head (`gh pr view <pr> --json headRefOid`) でないときは、内容と行番号が PR と食い違うので、ファイルは `git show <headRefOid>:<path>` で読む (その commit が手元に無ければ `git fetch origin pull/<pr>/head` で取る。PR が作業ツリーとは別のリポジトリのものなら、`gh api -H 'Accept: application/vnd.github.raw+json' 'repos/<owner>/<repo>/contents/<path>?ref=<headRefOid>'` で読む)。
+レビュー対象が PR 番号 / URL で指定されたときは、代わりに `gh pr view <pr>` で説明を、`gh pr diff <pr> --exclude '<secret>'` で secret ファイルを除いた差分を取得する。作業ツリーが PR の head (`gh pr view <pr> --json headRefOid`) でないときは、内容と行番号が PR と食い違うので、ファイルは `git show <headRefOid>:<path>` で読む (その commit が手元に無ければ `git fetch origin pull/<pr>/head` で取る。fetch できないとき (read-only の sandbox 等) と、PR が作業ツリーとは別のリポジトリのものであるときは、`gh api -H 'Accept: application/vnd.github.raw+json' 'repos/<owner>/<repo>/contents/<path>?ref=<headRefOid>'` で読む)。このとき lint / test は、作業ツリーで回しても PR の結果にならないので回さず、実行しなかったと報告する。
 
 未 commit の変更が無ければ、base ブランチとの差分を対象にし、手順 1〜3 と同じく `git diff --name-only origin/<base>...HEAD` で secret を判定してから `git diff origin/<base>...HEAD -- . ':(exclude)<path>'` で取得する。three-dot にするのは、merge-base から比べて base 側だけで進んだ変更を混ぜないため。`origin/<base>` は呼び出し元が指定した base で、指定が無ければ現在のブランチの PR の base (`gh pr view --json baseRefName`)、PR も無ければ `origin/HEAD` を使う。どちらの差分も無ければ、レビュー対象を確認事項として呼び出し元に返す。
 
@@ -51,7 +51,7 @@ lint / test 等の検証は、レビュー対象のファイルを書き換え�
 ## Step 4: PR へのレビューコメント投稿 (依頼されたときだけ)
 
 - 投稿の前と文面を書き直した後に、各指摘の主張と修正案の両方を一次証拠 (コード・実行結果・公式ドキュメント) で裏取りし直す。誤り・不要な指摘・その分野の専門家から見て初歩的な指摘は投稿せず、計測できる懸念は計測してから書く。
-- 既定では pending (draft) review として作り、submit しない。ユーザーが最終確認してから submit するためで、submit まで明示的に依頼されたときだけ submit する。`gh pr review` は pending を作れず、実行した時点で submit される。pending review を作る tool が無ければ、GitHub の review 作成 API (`gh api` で `POST repos/{owner}/{repo}/pulls/<pr>/reviews`) を `event` を付けずに呼ぶ (`event` が無いと PENDING になる)。
+- 既定では pending (draft) review として作り、submit しない。ユーザーが最終確認してから submit するためで、submit まで明示的に依頼されたときだけ submit する。`gh pr review` は pending を作れず、実行した時点で submit される。pending review を作る tool が無ければ、GitHub の review 作成 API (`gh api` で `POST repos/<owner>/<repo>/pulls/<pr>/reviews`。`<owner>/<repo>` は PR のあるリポジトリ) を `event` を付けずに呼ぶ (`event` が無いと PENDING になる)。
 - 各コメントは該当する file:line に付け、他のコメントを参照せずに単独で読めるように、何が問題か、放置すると何が困るか、どう直すかを書く。
 - 強さのラベル (must / IMO / nits 等) は重大度と、そのリポジトリ・その PR の既存コメントの流儀に合わせる。PR が持ち込んだ回帰か、PR 以前からある問題かを区別して書く。
-- 投稿後は、投稿したコメントの一覧 (file:line と要旨) と、pending のまま残っていることを報告する。
+- 投稿後は、投稿したコメントの一覧 (file:line と要旨) と、review が pending のままか submit 済みかを報告する。

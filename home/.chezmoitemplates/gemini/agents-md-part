@@ -7,10 +7,11 @@
 {{- if ne (len $parts) 2 -}}
 {{-   fail "dot_config/agents/AGENTS.md: no \"## git\" heading to split the Antigravity rule files at" -}}
 {{- end -}}
-{{- /* rule 全体が token の予算を超えると、大きいファイルから path だけの pointer に格下げされるので、後半を読みに行けるよう前半の末尾に所在を書く */ -}}
+{{- /* rule 全体が token の予算を超えると、大きいファイルから path だけの pointer に格下げされるので、もう一方を読みに行けるよう、
+       前半の末尾に後半の所在を、後半の見出しに前半の所在を書く (後半は前半の前文を参照する) */ -}}
 {{- $body := printf "%s\n「git」節以降と Antigravity 固有の補足は `~/.gemini/config/GEMINI.md` にある。本文が読み込まれていなければ、着手前に読む。\n" $parts._0 -}}
 {{- if eq .part "1" -}}
-{{-   $body = printf "# AGENTS.md — 作業規約 (続き: git 節以降)\n\n## git\n%s\n%s" $parts._1 (replace "\r\n" "\n" .suffix) -}}
+{{-   $body = printf "# AGENTS.md — 作業規約 (続き: git 節以降。前文と前半は `~/.gemini/config/AGENTS.md`。読み込まれていなければ着手前に読む)\n\n## git\n%s\n%s" $parts._1 (replace "\r\n" "\n" .suffix) -}}
 {{- end -}}
 {{- if gt (len $body) 24000 -}}
 {{-   fail (printf "%s would be %d bytes; Antigravity truncates rule files at 24000 bytes" .target (len $body)) -}}
