@@ -93,8 +93,8 @@
   Claude (`dot_claude/agents/*.md.tmpl`)・Codex (`dot_codex/agents/*.toml.tmpl`。`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が、include と `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
 - browser-debugger の定義は Claude 用 (`dot_claude/agents/`) だけに置き、Codex と Antigravity には置かない。Grok は `~/.claude/agents` を読むので、Grok の設定にある playwright / chrome-devtools MCP と合わせて使える。
 - playwright / chrome-devtools MCP は、Claude (`.chezmoitemplates/claude.json`)・Grok (`dot_grok/modify_private_config.toml`)・Antigravity (`dot_gemini/config/private_mcp_config.json.tmpl`) のどれでも `--headless` を付けて起動する。
-  どちらの server も既定は headed で、headless かは起動時の引数で決まり、agent は実行中に切り替えられない。共通規約の「ブラウザの自動操作は headless で行う」を MCP 経由の確認でも成り立たせるために、設定の側で固定している。
-  MCP のブラウザの画面を見るか手動で操作する (ログイン等) には、その設定から `--headless` を外して apply し、ツールを起動し直す。
+  どちらの server も既定は headed で、agent は実行中に切り替えられないので、共通規約「検証と完了」の headless の規範を MCP 経由の確認に効かせるには、起動の設定で指定するしかない。同じ規範が、MCP が headless で起動する設定であることを受け手に伝えている (受け手は、headed が要るときにウィンドウでの操作を頼まず報告する)。
+  MCP のブラウザの画面を見るか手動で操作する (ログイン等) には、設定から `--headless` を外して apply し、ツールを起動し直す。
 - Codex / Gemini の code-reviewer・security-reviewer は、review / security skill の本文を frontmatter を剥いで追記する (`regexReplaceAll` は明示引数形で書く。パイプ形は空文字になる)。
   skill 本文に `'''` を含めると Codex の TOML が壊れる。
 
