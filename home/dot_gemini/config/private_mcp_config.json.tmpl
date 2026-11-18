@@ -6,11 +6,11 @@
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}"]
+      "args": ["-y", "chrome-devtools-mcp@{{ .mcp.chromeDevtools }}", "--headless"]
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@{{ .mcp.playwright }}"]
+      "args": ["-y", "@playwright/mcp@{{ .mcp.playwright }}", "--headless"]
     },
     "maps-grounding-lite": {
       "httpUrl": "https://mapstools.googleapis.com/mcp",
