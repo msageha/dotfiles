@@ -99,6 +99,25 @@
 {{- /* ignore に一致するパスには .chezmoiremove が効かないため、.chezmoiremove で消すファイルを外す */}}
 !.claude/settings.fusion.json
 {{ end }}
+{{- /* claude-private / codex-private (個人アカウント用の CLAUDE_CONFIG_DIR / CODEX_HOME) の設定ディレクトリ。
+       起動する claude-private / codex-private は bash / zsh / fish の関数にしか無い */}}
+{{ if or $skipCodingAgent (eq .chezmoi.os "windows") }}
+.claude-private
+.codex-private
+{{ else }}
+.claude-private/*
+!.claude-private/.claude.json
+!.claude-private/settings.json
+!.claude-private/CLAUDE.md
+!.claude-private/rules
+!.claude-private/skills
+!.claude-private/agents
+.codex-private/*
+!.codex-private/config.toml
+!.codex-private/AGENTS.md
+!.codex-private/agents
+!.codex-private/rules
+{{ end }}
 {{- /* gws-* skills は Homebrew の googleworkspace-cli 前提のため macOS 以外では展開しない */}}
 {{ if ne .chezmoi.os "darwin" }}
 .claude/skills/gws-*

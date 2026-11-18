@@ -1,0 +1,17 @@
+{{- /*
+  Claude Code の global config (~/.claude.json と ~/.claude-private/.claude.json) の chezmoi:modify-template が include する本体。
+  .chezmoitemplates/claude.json の内容に置き換え、マシンローカルな状態 (下の list のキー。
+  ログイン情報・プロジェクトごとの trust と許可・識別子等) だけ既存の値を温存する。
+  modify script ではなく modify-template にするのは、chezmoi 内部で動くので外部 interpreter が要らず Windows でも動くため。
+*/ -}}
+{{- $desired := includeTemplate "claude.json" . | fromJson -}}
+{{- $stdin := trim (dig "stdin" "" .chezmoi) -}}
+{{- if $stdin -}}
+{{-   $current := fromJson $stdin -}}
+{{-   range $key := list "oauthAccount" "projects" "userID" "machineID" "officialMarketplaceAutoInstallAttempted" "officialMarketplaceAutoInstalled" -}}
+{{-     if hasKey $current $key -}}
+{{-       $_ := set $desired $key (get $current $key) -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{- $desired | toPrettyJson }}

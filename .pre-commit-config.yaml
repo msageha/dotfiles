@@ -12,9 +12,9 @@ repos:
       - id: check-yaml
       - id: check-json
         # Go テンプレート構文を含み JSON として不正なため除外する
-        exclude: ^home/(\.chezmoitemplates/|modify_)
+        exclude: ^home/(\.chezmoitemplates/|(private_dot_claude-private/)?modify_)
       - id: check-toml
-        exclude: ^home/((dot_codex|dot_grok)/modify_private_config\.toml|\.chezmoiexternal\.toml|\.chezmoitemplates/)
+        exclude: ^home/((dot_codex|private_dot_codex-private|dot_grok)/modify_private_config\.toml|\.chezmoiexternal\.toml|\.chezmoitemplates/)
       - id: check-added-large-files
         args: [--maxkb=1000]
       - id: check-case-conflict

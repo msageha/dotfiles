@@ -120,4 +120,16 @@ claude() {
     command claude "$@"
 }
 
+# 個人アカウントで Claude Code / Codex を使う。ログインは CLAUDE_CONFIG_DIR / CODEX_HOME ごとに保存されるので、
+# claude / codex と再ログインなしで使い分けられる。設定・skill 等は ~/.claude / ~/.codex への symlink で共有する。
+# 両方の変数を渡すのは、session の中から呼ぶもう一方の CLI (claude から codex 等) も個人アカウントで動かすため
+# (fish は functions/claude-private.fish・codex-private.fish)
+claude-private() {
+    CLAUDE_CONFIG_DIR="$HOME/.claude-private" CODEX_HOME="$HOME/.codex-private" claude "$@"
+}
+
+codex-private() {
+    CLAUDE_CONFIG_DIR="$HOME/.claude-private" CODEX_HOME="$HOME/.codex-private" codex "$@"
+}
+
 unset _bin

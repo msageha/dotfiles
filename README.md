@@ -96,6 +96,7 @@ sh -c "$(curl -fsSL get.chezmoi.io)" -- -b "$HOME/.local/bin" init --one-shot ht
 - VS Code: Custom CSS の拡張機能から `settings/common/vscode/styles.css` を読み込む。
 - BetterTouchTool / Raycast / Stream Deck (macOS): 適用時に開く各アプリのダイアログで、設定を取り込む。
   初回の適用中に出る System Events の操作の許可も許可する (BetterTouchTool をログイン項目に登録するのに使う)。
+- 個人アカウントの Claude Code / Codex を使うマシン (macOS / Linux): `claude-private` / `codex-private` は、既定の `claude` / `codex` と設定を共有し、ログインだけを分けて起動する。初回に、`claude-private` の中で `/login` を、`codex-private login` を実行して、個人アカウントでログインする。
 - 変更を push するマシン: SSH 秘密鍵を置いた後に、remote を SSH に切り替える。
 
   ```sh

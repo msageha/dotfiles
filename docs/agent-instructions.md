@@ -27,8 +27,16 @@
 - この repo で作業すると、`home/dot_claude/CLAUDE.md` が nested の CLAUDE.md として読み込まれ、適用済みの `~/.claude/CLAUDE.md` と重複する。
   user settings の `claudeMdExcludes` (`dot_claude/private_settings.json.tmpl`) で外している。
 - `modify_private_dot_claude.json` は、`~/.claude.json` を `.chezmoitemplates/claude.json` の内容へ置き換える chezmoi:modify-template。
+  本体は `.chezmoitemplates/claude.json.modify` にあり、`private_dot_claude-private/modify_private_dot_claude.json` も同じ本体を include する。
   `.tmpl` を付けると二重にテンプレート処理されるので付けない。
   マシンローカルな状態 (ログイン情報・`projects`・識別子等。キーはテンプレート内の list) だけ既存値を温存し、Claude Code が実行時に書くその他のランタイム状態 (カウンタ・キャッシュ等) は apply のたびにリセットされる。
+- `claude-private` (bash / zsh は `dot_config/shell/integrations.sh`、fish は `dot_config/fish/functions/claude-private.fish`) は、`CLAUDE_CONFIG_DIR=~/.claude-private` で Claude Code を個人アカウント用に起動する。
+  claude.ai のログイン (macOS では Keychain のエントリ) は `CLAUDE_CONFIG_DIR` ごとに分かれるので、`claude` と再ログインなしで使い分けられる ([公式 authentication](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts))。
+  `~/.claude-private/` の `settings.json`・`CLAUDE.md`・`rules`・`skills`・`agents` は `~/.claude` への symlink で、`.claude.json` は `~/.claude.json` と同じ template で描画する。セッション履歴・ログイン・`projects` の trust は分かれる。
+  `plugins/` は共有せず、`.chezmoiscripts/run_onchange_after_97_claude-private-plugins.sh.tmpl` が `install/common/claude_plugins.sh` で同じ plugin を別にインストールする。`plugins/data/` (plugin の永続データ。codex plugin は workspace ごとの broker の状態を置き、session の終了時にそれを止める) を共有すると、アカウントをまたいで broker を使い回し・停止しうるため。Claude Code は `installed_plugins.json` 等を一時ファイルからの rename で書き換えるので、ファイル単位の symlink でも共有を保てない。
+  同じ理由で、`claude-private` の中で user settings を書き換える操作 (`/config` 等) は `settings.json` の symlink を実ファイルに置き換えうる。置き換わっても、次の apply で symlink に戻る (`~/.claude/settings.json` への書き込みが apply で消えるのと同じ)。
+  `claude-private` と `codex-private` は `CLAUDE_CONFIG_DIR` と `CODEX_HOME` の両方を渡す。session の中から呼ぶもう一方の CLI (Claude から `codex`、Codex から `claude`) が環境変数を継承し、同じ個人アカウントで動く。
+  起動する関数が POSIX のシェルにしか無いので、Windows には配らない (`.chezmoiignore`)。
 - `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。
   外部ツール (ローカルデーモン等) が実行時に注入する hooks は apply のたびに消える。
   hooks 配列の部分マージは脆いため、意図して全量管理にしている。
@@ -47,6 +55,12 @@
   各項目は共通規約の該当する規範と同じ条件で書き、共通規約を変えたら同じ変更で直す。Codex ではこちらが AGENTS.md より優先されるので、条件がずれると Codex だけ振る舞いが変わる。
 - Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan --settings '{"disableAllHooks":true}'` を使う (`.chezmoitemplates/codex/instructions.md`)。plan だけでは Stop hook が止まらず、`.claude/verify.sh` が作業ツリーを変えうるので、hook も止める。`disableAllHooks` は user settings の PreToolUse hook (危険なコマンドの遮断) も止め、plan が塞ぐのは編集で、shell コマンドは通常の permission の判定を通るので、この起動は `codex exec -s read-only` と違い capability としての read-only ではない。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
 - `dot_codex/rules/default.rules` の allow は、共通規約と commit / pr skill が求める git の操作のうち、sandbox の中では `.git` に書けず失敗するものを sandbox の外で通す (git のほかに `xcodebuild` も allow している)。後ろに付けられる引数を理由に載せていない操作があるので (対象と理由は rules のコメント)、pr skill の `--onto` の rebase と `git branch -f` は Codex では実行できない。`.git` に書く git 以外のコマンドも載せていないので、improve-pr skill の `gh pr checkout` も実行できない。載せた操作も後ろの引数は絞れず (`git fetch origin --upload-pack=<command>`・`git push origin --force`・`git switch -C` も一致する)、allow は sandbox を抜けようとする agent を止める境界にはならない。`approval_policy = "never"` では allow の一覧が Codex の prompt に出ないので、一致する形は `.chezmoitemplates/codex/instructions.md` の「git の実行形」節が列挙する (見出しを共通規約の「git」節と分けているのは、skill の「AGENTS.md の `git` 節」という参照の先を 1 つにするため)。rules を変えたら同じ変更で直す。`codex execpolicy check` は argv を直接照合するので、実行時に shell の書き方で一致しなくなる条件 (同節にある、quote していない `~` `^` `*` 等・環境変数の前置き・redirect) は確かめられない。allow は read-only の session にも効き、Claude Code の codex plugin と top-level の `codex review` は `--ignore-rules` を渡せないので、これらの read-only の review でも allow のコマンドは sandbox の外で動く。
+- `dot_codex/modify_private_config.toml` の本体は `.chezmoitemplates/codex/config.toml.modify` にあり、`private_dot_codex-private/modify_private_config.toml` も同じ本体を include する。
+- `codex-private` (`claude-private` と同じ場所に定義する) は、`CODEX_HOME=~/.codex-private` で Codex を個人アカウント用に起動する。ログイン (`auth.json`) は `CODEX_HOME` ごとに分かれる。
+  `~/.codex-private/` の `AGENTS.md`・`agents`・`rules` は `~/.codex` への symlink で、`config.toml` は `~/.codex/config.toml` と同じ template で描画する。user の skill は `CODEX_HOME` によらず `~/.agents/skills` から読まれる。
+  fugu の profile と、その鍵を持つ `.env` は会社の Sakana API 用なので置かない。
+  アカウントごとに使えるモデルが異なるので、既定のモデルは `.chezmoidata.toml` の `[codex] model` (`~/.codex`) と `private_model` (`~/.codex-private`) で分ける。
+  会社の ChatGPT ワークスペースが配る requirements (`~/.codex/cloud-config-bundle-cache.json`) は `approval_policy = "never"` を許さないので、`~/.codex` の session は `on-request` で動く。
 - custom agent は `dot_codex/agents/*.toml.tmpl`。model は `.chezmoidata.toml` の `[codex] subagent_model` を参照する。
   custom agent のファイルは親の `sandbox_mode`・`approval_policy`・`model_provider`・`mcp_servers` を上書きできず、子は親の設定を継承するので ([公式 subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents))、これらは書かない。
 - Codex には playwright / chrome-devtools MCP を置かない。custom agent の `mcp_servers` は無視され、main config に置くと Claude から呼ぶ `codex exec` の起動のたびに MCP が立ち上がるため。
