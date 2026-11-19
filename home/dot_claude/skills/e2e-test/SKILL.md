@@ -1,0 +1,46 @@
+---
+name: e2e-test
+description: "Designs, writes and fixes end-to-end (E2E) tests that drive a running system from its user-facing entry point (a UI, an API endpoint, a CLI or a batch job) to the results its contract specifies: choosing scenarios and expected results, keeping them fast, stable and maintainable, and investigating their failures (「E2E テストを書いて」「E2E のシナリオを考えて」「E2E が遅い / flaky」). Which level a behavior is tested at follows the tests rule (`~/.claude/rules/tests.md`); for `@playwright/test` code, also use the playwright skill where available."
+argument-hint: "[feature, flow or E2E test path]"
+---
+
+# E2E Tests
+
+An E2E test drives the system from an entry point its users use, runs the components on the flow's path (application, database, queue) for real, and checks the results the contract specifies (persisted state, output, exit code, messages sent). The contract is as the tests rule's Contract defines it. A dependency may be replaced at an existing boundary only under the tests rule's Test Doubles conditions (e.g. a third-party API, real email delivery). A UI test that isolates components from the rest of the system (a component catalog, a visual regression test of isolated components) is not an E2E test.
+
+Which behaviors are tested at which level follows the tests rule (`~/.claude/rules/tests.md`; read it first if it is not in context); this skill covers how to design and write the E2E tests once that is decided. For `@playwright/test` code, also read the playwright skill (`~/.claude/skills/playwright/SKILL.md`) where it exists. Adding, editing and removing tests, harnesses or dependencies follows AGENTS.md and the request.
+
+## Costs to design around
+
+Every component a test passes through adds run time, a chance of a spurious failure, and a place a real failure can come from, so E2E tests are slower, flakier and harder to diagnose than tests that go through fewer components. Branches also multiply across steps, so covering every combination end to end grows far faster than covering each step's branches on its own. A change to a step many scenarios share can break all of them at once.
+
+## Choosing scenarios
+
+- Start from the requirements, not from the code. Prefer the flows whose failure would cost users most (the main business flows, money, authorization, data loss), and the hand-offs between components where each side can be correct on its own yet their assumptions disagree. How to cover them (fixed cases, generated inputs) and which other cases to add follows the tests rule's Coverage.
+- Do not enumerate cross-step branch combinations end to end by default. Leave each step's own branches to the level and case selection the tests rule chooses, and keep in E2E the combinations the request or specification requires and those where the combination can break the contract in a way existing tests do not catch (e.g. a double charge that only concurrent resubmissions cause).
+- Drive through the UI what the UI is responsible for (the flow users go through and what they see). Check server-side branches through the API endpoint when it is a supported entry point whose contract covers them, since it is faster and more stable than the browser and still runs the real backend; when the UI is the only supported entry point, or the requirement is about what the UI does with the server's answer, check them through the UI.
+- When asked to add scenarios, give priority to the weak points the project's bug reports or incident history show in the flows under test (special characters, retries, repeated back navigation, concurrent edits), unless existing tests already catch them through the same entry point and condition.
+- When a requirement states measurable usability (the number of steps to reach a goal, what must be reachable from where), check it; judging whether users get lost is for people operating the product, not for an automated test.
+
+## Expected results
+
+- Derive expected results from the contract. When writing tests for code that already exists, do not copy its current output as the expectation, which locks a bug in as the specification; when the contract does not settle a result, report it as an open question.
+- Make each scenario check the result it protects: for an operation the system must accept, that it completes with the specified result; for one it must refuse, that it is refused. In either case, check that the state changes and side effects the contract forbids for that operation do not occur (such as a second charge when the order is resubmitted, or a charge without an order). When the contract forbids a side effect from occurring at all, assert that no record of it exists for that operation (a sent-message log, the requests a payment provider received), not only that the final state is right, since a later correction can restore it. Check an asynchronous side effect, or its absence, only after observing that every processing step that could cause it, downstream workers included, has finished, or after the observation period the contract defines (a requirement, unlike a fixed sleep used to wait for readiness). Checking right after the response misses one that arrives later; when neither is available, report the absence of that side effect as unverified.
+- Assert what users observe and the results the system persists or sends (stored records, emitted messages, files), not internal state or markup structure.
+- When a requirement sets a performance criterion (a time limit, resource use, a baseline to compare against), measure under the conditions it states and judge against that criterion. When the test environment cannot reproduce those conditions, report the criterion as unverified instead of loosening it. A runner timeout that only bounds the wait is not this check.
+- When a test fails, find whether the system, the setup or the test disagrees with the contract, and fix that within what the request and AGENTS.md allow you to change. Do not change an expected result the contract supports to make a failure go away, which hides the defect the test found; correcting an expectation the contract does not support follows the tests rule. Updating a locator after a UI change is maintenance when the scenario still operates on the same element and checks the same expected results; when the locator itself checked something the contract promises users (such as an accessible name), keep that check.
+
+## Structure
+
+- Put the mapping from user-level operations that several scenarios share (sign in, add to cart, submit an order) to low-level UI actions in one place, such as page objects or operation helpers, following the pattern the project already uses. A UI change then touches that place instead of every scenario.
+- When the path that would create a precondition is not what the scenario tests, set it up through a supported entry point (the API, a CLI command) or the project's existing fixtures rather than the UI where one exists; when the UI is the only way to create it, drive the UI in a setup step (such as a shared sign-in step). A fixture must not bypass the processing the scenario verifies, and may set up only a prior state the contract allows; one that writes past the system's validation can create a state real use cannot reach.
+- Before running scenarios, whether against a running server or one the test runner starts, confirm that the system under test and everything it connects or writes to (database, queues, mail delivery) are meant for testing. Affecting a shared or production environment needs the permission AGENTS.md requires.
+- Give each scenario its own data and leave nothing that another scenario depends on, so scenarios run in any order and in parallel.
+- Wait for readiness by observable conditions (an element, a response, a record), never for a fixed time; the observation period a contract defines is a requirement, not such a wait.
+
+## Running and investigating
+
+- While changing code, run the scenarios the change affects and the faster tests at lower levels rather than the whole E2E suite after every edit. Before reporting the work as done, run what the request covers and the project's documented verification (which may include the full suite).
+- When the runner retries failed tests, read which tests passed only on retry (reported as flaky) before reporting results, since the exit code alone counts them as passing. Treat such a test as flaky with an unknown cause: find the nondeterminism (a missing wait condition, shared data, time, ordering of asynchronous work) from the logs and artifacts of the failed attempt, reproducing the scenario with recording enabled for the failing attempt when they are not enough, instead of adding retries or sleeps, and report flakiness you could not remove.
+- When asked why E2E tests are slow, measure where the time goes (setup, each scenario's steps, waits) under the same conditions before and after a change, rather than guessing.
+- When a scenario fails, narrow down the failing component from the trace, logs and the resulting state before changing code. Reproducing the failure at a lower level can isolate it faster; keeping that reproduction as a test follows the tests rule and AGENTS.md.

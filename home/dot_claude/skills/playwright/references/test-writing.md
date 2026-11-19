@@ -92,6 +92,8 @@ setup('authenticate', async ({ page }) => {
 
 Run this file from a `setup` project (`{ name: 'setup', testMatch: /.*\.setup\.ts/ }`) and give each test project `dependencies: ['setup']` and `use.storageState: 'playwright/.auth/user.json'`; the default `testMatch` does not pick the file up, and tests start signed out unless they load the saved state.
 
+Sharing one account this way suits tests that do not change server-side state another test reads (the account's settings, its cart). When tests change such state, isolate it, for example by authenticating one account per parallel worker and passing its `storageState` to that worker's tests through a worker-scoped fixture, with each test resetting the server-side state it changes ([one account per parallel worker](https://playwright.dev/docs/auth#moderate-one-account-per-parallel-worker)); otherwise the results depend on execution order when tests run in parallel. This isolates only per-account state: no two runs in progress at once (CI shards included) may use the same account, and state shared across accounts (a tenant's settings, shared inventory) needs its own separation.
+
 The state file holds session cookies, so add `playwright/.auth/` to `.gitignore`.
 
 ## Network Mocking
@@ -122,6 +124,8 @@ Match the external service's origin and the endpoint the condition needs rather 
     path: playwright-report/
     retention-days: 30
 ```
+
+The uploaded report includes traces, screenshots and logs, which can contain credentials and tokens, and anyone who can read the repository's workflow runs can download it; upload it only when its contents and audience satisfy AGENTS.md's rules for secrets.
 
 Fill `<40-char commit SHA>` and `<tag>` when writing the workflow, not from memory: reuse the pin the repository already has for the action, otherwise resolve them from the action's newest release.
 
