@@ -8,7 +8,7 @@ inputs:
     required: false
     default: "true"
   cache:
-    description: "導入したツールを Actions cache に保存・復元するか (install が true のときだけ効く)"
+    description: "mise のデータディレクトリ (mise 本体と導入したツール) を Actions cache に保存・復元するか (install が true のときだけ効く)"
     required: false
     default: "true"
   version:
