@@ -20,7 +20,7 @@ In an existing project, follow its config and conventions for retries, trace, re
 3. Assert through `expect(locator)`, which retries until the condition holds; `expect(await locator.textContent())` checks once and does not retry.
 4. Keep each test independent, with no shared state or dependence on execution order.
 5. Set `baseURL` in the config and use relative paths in tests rather than hardcoded URLs.
-6. Use `retries: 2` in CI and `0` locally, so flakiness shows up in local runs and CI does not fail on a single flaky attempt.
+6. Use `retries: 2` in CI and `0` locally, so flakiness shows up in local runs and CI does not fail on a single flaky attempt; before reporting a CI result, read which tests passed only on retry.
 7. Use `trace: 'on-first-retry'`, which records debugging artifacts only for retried tests and keeps passing runs fast.
 8. Share setup through fixtures (`test.extend()`) rather than module-level variables.
 9. Cover one behavior per test; several related `expect()` calls are fine.

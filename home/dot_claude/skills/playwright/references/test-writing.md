@@ -21,7 +21,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  // The html reporter's default opens a report server on failure and waits, which blocks a non-interactive run.
+  reporter: [['html', { open: 'never' }]],
   use: {
     baseURL: '<local URL of the app>',
     trace: 'on-first-retry',
@@ -30,6 +31,7 @@ export default defineConfig({
   webServer: {
     command: '<command that starts the app>',
     url: '<local URL of the app>',
+    // A reused server must run this checkout's code against test data; check that before relying on it.
     reuseExistingServer: !process.env.CI,
   },
 });
@@ -127,6 +129,6 @@ Match the external service's origin and the endpoint the condition needs rather 
 
 The uploaded report includes traces, screenshots and logs, which can contain credentials and tokens, and anyone who can read the repository's workflow runs can download it; upload it only when its contents and audience satisfy AGENTS.md's rules for secrets.
 
-Fill `<40-char commit SHA>` and `<tag>` when writing the workflow, not from memory: reuse the pin the repository already has for the action, otherwise resolve them from the action's newest release.
+Fill `<40-char commit SHA>` and `<tag>` when writing the workflow, not from memory: reuse the pin the repository already has for the action, otherwise resolve them as the GitHub Actions rule (`~/.claude/rules/github-actions.md`) describes.
 
 The Recommended Config above already sets the CI values (`retries` and `workers` through `process.env.CI`, and `trace`); for parallelism in CI, use sharding.

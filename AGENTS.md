@@ -8,7 +8,8 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 ## source の編集
 
 - `.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
-- 共通規約の「git」節に従って worktree で source を編集したときは、反映と `tests/files` の検査を、その worktree を source にして自分の変更が及ぶ target に絞って行う (`chezmoi apply --source <worktree> <target>…`)。
+- 共通規約の「git」節に従って worktree で source を編集したときは、反映と `tests/files` の検査を、その worktree を source にして自分の変更が及ぶ target に絞って行う。
+  `chezmoi status --source <worktree> --path-style absolute` で target を見て、`chezmoi apply --source <worktree> <target>…` で反映し、その target を検査する `tests/files/<name>.bats` を `bats` で回す。`$PWD` を source とみなすテストがあるので、`bats` は worktree の root で実行する。
   `mise run apply` などのタスクと、`--source` を付けない chezmoi コマンドは、この checkout (既定の source) を使う。
 - source はファイルを直接編集する。
   chezmoi の設定が `[git] autoCommit = true / autoPush = true` (`home/.chezmoi.toml.tmpl`) なので、`chezmoi add` / `chezmoi edit` など chezmoi コマンド経由で source を変えると commit + push まで自動で走る。
@@ -16,11 +17,11 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 ## コードから読み取れない契約
 
 - 対象は macOS / Ubuntu / Debian / Windows の amd64 と arm64。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
-- `install/` の OS 別スクリプトは、`.chezmoiscripts` の各テンプレートが include して 1 つの bash プロセスに順に連結する。
+- `install/` の OS 別スクリプトは、`.chezmoiscripts` の各テンプレートが include して 1 つのプロセス (POSIX は bash、Windows は PowerShell) に順に連結する。
   共通 helper の `install/lib.sh` (Windows は `install/windows/lib.ps1`) は各テンプレートが先頭で 1 回 include し (変更すると、include する `run_once_*` / `run_onchange_*` が次の apply で全て再実行される)、各スクリプトは単体実行時だけ冒頭のガードで読み込む。
-  - 各スクリプトは関数を定義し、末尾の `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから自分の entry (`main` 等) を呼んで終える。
+  - 各スクリプトは関数を定義し、末尾で自分の entry を呼んで終える (POSIX は `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから `main` 等を、Windows はガード無しで `Main` 等を呼ぶ)。
     同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無いので、prefix で rename しない。
-  - 後続スクリプトに波及するため、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は書かない。
+  - 後続スクリプトに波及するため、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は書かない (後続へ引き渡すための変更は除く。例: `winget.ps1` は、後続が `winget` を見つけられるよう `$env:Path` に足す)。
   - テンプレートからスクリプトへは環境変数で値を渡す。
 - `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。各キーの用途と読み手は同ファイルのコメントにある。
 - bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書く。
@@ -46,7 +47,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 
 ## 検証
 
-- 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。
+- 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。worktree で編集したときは、`mise run test` の代わりに「source の編集」の手順で対象の `tests/files` を回す。
 - prek の git hook は、commit 時に lint / format を、push 時にテンプレート全体の描画 (`chezmoi-dry-run` hook) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。

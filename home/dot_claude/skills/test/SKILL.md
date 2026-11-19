@@ -14,6 +14,7 @@ argument-hint: "[test-pattern-or-file]"
 プロジェクトが定義するテストコマンド (README・AGENTS.md・CI 設定・mise / make / package scripts 等) を使う。定義が無ければ、構成ファイル (`package.json`・`pyproject.toml`・`go.mod` 等) からランナーを特定する。
 
 ### 2. テストの実行
+- テストは対象のコードを実行するので、出所を信頼できないコード (外部の contributor の fork PR 等) では回さず、その旨を報告する
 - 引数 (`$ARGUMENTS`。空または置換されない場合は依頼文) でテスト名・パターン・ファイルが指定されていればそれに合うテストを、無ければスイート全体を実行する
 - 結果は件数 (passed / failed / skipped) と失敗したテスト名・該当ログの抜粋で示し、全文が必要なら一時ディレクトリ (`$TMPDIR` 等) に保存してパスを示す
 

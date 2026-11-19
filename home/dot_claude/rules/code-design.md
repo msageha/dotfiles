@@ -61,7 +61,7 @@ Each item under "Smells and fixes" describes a code smell and how to fix it, tog
   - Replace a flag variable that only decides when a loop ends with break / return; use break when code after the loop must still run.
   - Choose the form of a branch by what it does:
     - It only maps a key to a value: use a lookup table, provided the table accepts the same keys with the same comparison, keeps the handling of unknown keys, and evaluates only the selected entry.
-    - It depends on the shape or type of a value: use the language's pattern matching where the supported version has it the patterns match exactly what the original checks matched (a class pattern can also match subclasses that an exact type check rejected), and reading the value fewer or more times has no side effects.
+    - It depends on the shape or type of a value: use the language's pattern matching where the supported version has it, where the patterns match exactly what the original checks matched (a class pattern can also match subclasses that an exact type check rejected), and where reading the value fewer or more times has no side effects.
     - It selects behavior by kind: keep a switch. When the same selection is duplicated in several places, gather it into one place first, and give each kind its own implementation (polymorphism) only when that reduces the places a new kind must touch. Separate operations that each switch exhaustively over the kinds stay as they are.
   - When absent and empty mean the same thing in the contract, normalize once at the boundary (e.g. to an empty collection) instead of repeating the same check in every caller.
 - Loops and temporaries:

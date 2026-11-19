@@ -27,13 +27,13 @@ Infer whatever is unstated from the request, the existing documentation and the 
 
 Plan the structure before writing full content:
 
-- Present a numbered outline with section headings and brief descriptions.
+- Draft a numbered outline with section headings and brief descriptions.
 - For tutorials: list the steps and the end state.
 - For how-to guides: list prerequisites and the problem being solved.
 - For reference: list the entities/APIs/concepts to cover.
 - For explanations: list the key concepts and their relationships.
 
-When Phase 1 needs a question, include the outline in that same message and wait once; otherwise write without waiting for approval of the outline.
+When Phase 1 needs a question, include the outline in that same message and wait once; otherwise go on to write without presenting the outline for approval.
 
 ### Phase 3: Write
 
@@ -41,7 +41,7 @@ Generate content in Markdown following these principles:
 
 #### Accuracy
 - Base content on actual code, APIs, or configurations -- read source files.
-- Include working code examples. Run every example and command that can run in this environment instead of testing them mentally. In your report to the user, not in the document, give the observed output / exit code and list the ones you could not run as unverified.
+- Include working code examples. Run every example and command that can run safely in this environment (in a disposable environment or with dry-run when it changes shared state) instead of testing them mentally. In your report to the user, not in the document, give the observed output / exit code and list the ones you could not run as unverified.
 - Version-pin dependencies and tools when relevant.
 
 #### Structure

@@ -12,7 +12,7 @@ allowed-tools: Read, Grep, Glob, Bash(mkdir -p .claude), Bash(chmod +x .claude/v
 
 ## Goal
 
-リポジトリに既にある検証手段を呼ぶだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新し、`bash .claude/verify.sh` 1 回でそれらが全部走るようにする。
+リポジトリに既にある検証手段を呼ぶだけの薄い wrapper として `.claude/verify.sh` を作成 / 更新し、`bash .claude/verify.sh` 1 回で、そのうち Constraints を満たすものが全部走るようにする。
 
 ## Acceptance criteria
 
@@ -20,8 +20,8 @@ allowed-tools: Read, Grep, Glob, Bash(mkdir -p .claude), Bash(chmod +x .claude/v
 - 呼び出すコマンドはすべてリポジトリに既に存在するもの。
 - いずれかの検証が落ちたら exit code 非ゼロで終了する。
 - 依存ツールが PATH に無い検証は warning を出してスキップする。必須の入力・設定が欠けたら明示的なエラーで止めるという AGENTS.md「コード」節の規範に対する意図的な例外で、Stop hook を環境差で壊さないため。
-- 既に `.claude/verify.sh` があれば、全体を上書きせず、既存の呼び出しを基に検出結果との差分だけを反映する。既存の呼び出しを削除するときは理由を報告する。
-- 検証手段が 1 つも見つからなければ何も書かず、その旨と、検証基盤 (テスト / lint / dry-run 等) を整えてから再実行するよう報告して終える。
+- 既に `.claude/verify.sh` があれば、全体を上書きせず、既存の呼び出しを基に検出結果との差分だけを反映する。Constraints に反する既存の呼び出しは check のモード等の同じ検査に置き換え、置き換えられないものは、外すと失われる検査を示して確認してから外す。既存の呼び出しを削除したときは理由を報告する。
+- 新規作成で採用できる検証手段が 1 つも無ければ (見つからないか、すべて Constraints で除外したとき) 何も書かず、その旨と、検証基盤 (テスト / lint / dry-run 等) を整えてから再実行するよう報告して終える。
 
 ## Constraints
 
@@ -53,7 +53,7 @@ allowed-tools: Read, Grep, Glob, Bash(mkdir -p .claude), Bash(chmod +x .claude/v
   - `Cargo.toml` (`cargo test`, `cargo clippy`, `cargo fmt --check`)
   - `pubspec.yaml` (`flutter test` / `dart test`, `dart analyze`)
 - 横断的な lint:
-  - `.pre-commit-config.yaml` → `pre-commit run --all-files`
+  - `.pre-commit-config.yaml` → `pre-commit run --all-files` (ファイルを書き換える hook を含むなら Constraints により除外する)
   - `shellcheck` 対象の `.sh` がある場合
 - フロントエンド E2E (Playwright / Puppeteer / Chrome DevTools):
   - 既にテストファイル (`*.spec.ts` 等) と設定が揃っている場合のみ採用する。
