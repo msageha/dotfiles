@@ -12,6 +12,7 @@
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。一覧は `paths` の先頭 6 件だけを出すので、代表的な pattern を先頭に置く。rule が 1 つも見つからないときは描画を fail で止める。
 - 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、依頼を出す前に読ませる。
   委譲しないセッションと、共通規約を読むサブエージェントの起動のたびに、その分の context を使わないため。
+  測れる指標の改善を長く繰り返させる委譲の手順は、ほかの委譲でその分の context を使わないよう `dot_config/agents/improvement-loop.md` に分け、`delegation.md` には使う場面だけを書いて、使うときだけ読ませる。
 - `.chezmoiignore` は、`~/.claude`・`~/.codex`・`~/.gemini`・`~/.grok`・`~/.agents` の直下を `<dir>/*` で ignore し、管理する項目だけを `!` で戻している。直下に項目を足すときは `!` の行も足す (無くても描画の検査は通り、適用されないだけになる)。
 - `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
   本文用のファイル (`agents/*.md`・`*/instructions.md` 等) に生の `{{` を書くと、include / includeTemplate のどちらで参照しても全 chezmoi コマンドが失敗するので、必要なら `{{ "{{" }}` でエスケープする。
