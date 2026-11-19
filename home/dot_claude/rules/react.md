@@ -9,7 +9,7 @@ paths:
 - State Management: Keep state minimal and colocated. Lift to React Context or a store (e.g. Zustand) only when state is genuinely shared.
 - Effects: Use useEffect only for real side effects, with correct dependency arrays and cleanup functions. Derive values during render instead of syncing them via effects.
 - Composition: Pass JSX as `children` rather than drilling props through intermediate components.
-- Data Fetching: Handle loading, error, and empty states explicitly. Ignore or cancel stale responses on unmount.
+- Data Fetching: Do not update the view with a response that no longer matches what it shows (after unmount, changed inputs or a newer request); use the project's data-fetching library for this where it has one.
 - Lists: Use stable, unique keys for dynamic lists. Do not use array indexes as keys for reorderable data.
 - Accessibility: Use semantic elements, and ARIA only for what native semantics cannot express. Ensure interactive components are keyboard-operable.
 - Performance: Memoize (memo/useMemo/useCallback) only for measured bottlenecks. Reserve space for async content to avoid layout shifts (CLS).
