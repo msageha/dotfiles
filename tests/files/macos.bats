@@ -19,12 +19,10 @@ function brew_installed() {
 function assert_brew_installed() {
     local installed="$1"
     shift
-    local package name
+    local package
     for package in "$@"; do
-        # tap 付き名 ("satococoa/tap/wtp" -> "wtp") は末尾要素で照合する
-        name="${package##*/}"
         echo "Checking ${package}"
-        echo "${installed}" | grep -qx "${name}"
+        echo "${installed}" | grep -qx "${package}"
     done
 }
 

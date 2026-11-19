@@ -11,12 +11,10 @@ formulae_base=(
 )
 
 formulae=(
-    exiv2
     git
     git-secrets
     gnupg
     googleworkspace-cli
-    graphviz
     htop
     httpie
     imagemagick
@@ -24,7 +22,6 @@ formulae=(
     mysql-client
     poppler
     pv
-    satococoa/tap/wtp
     tree
     wget
 )
