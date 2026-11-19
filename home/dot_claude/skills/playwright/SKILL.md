@@ -1,15 +1,15 @@
 ---
 name: playwright
-description: "Writes, fixes, and debugs Playwright tests (@playwright/test) in TypeScript / JavaScript, including their config and CI setup (「E2E テストを書いて」「Playwright のテストを直して」「flaky なテストを調べて」). To operate or check a running app in a real browser, delegate to the browser-debugger agent; to launch the app to see a change working, use /run where available."
+description: "Writes, fixes, and debugs Playwright tests (@playwright/test) in TypeScript / JavaScript, including their config and CI setup (「Playwright で E2E テストを書いて」「Playwright のテストを直して」「Playwright の flaky なテストを調べて」). When the Playwright tests are E2E tests, also use the e2e-test skill to design, write and fix them and to investigate their failures; to operate or check a running app in a real browser, delegate to the browser-debugger agent where available; to launch the app to see a change working, use /run where available."
 allowed-tools: Read, Grep, Glob
 argument-hint: "[scenario description or test file path]"
 ---
 
 # Playwright Skill
 
-This skill covers writing and debugging test code with `@playwright/test`.
+This skill covers writing and debugging test code with `@playwright/test`. For E2E tests, the e2e-test skill covers which scenarios to write, what to expect from them, and how to investigate their failures.
 
-Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run where available.
+Operating a real browser interactively (navigating, filling forms, scraping, inspecting a local webapp, reading console / network logs) is not done here: delegate it to the browser-debugger agent where available, because page snapshots and logs are noisy and would flood the main context. To launch the project's app and see a change working, use /run where available.
 
 ## Defaults
 
@@ -29,7 +29,7 @@ In an existing project, follow its config and conventions for retries, trace, re
 
 ## Debugging
 
-In test code, capture console and network logs via `page.on('console', ...)` and `page.on('request', ...)`.
+In test code, capture console and network logs via `page.on('console', ...)` and `page.on('request', ...)`. With `trace: 'on-first-retry'`, a test that fails once and passes on retry records only the passing attempt; to capture the failing one, first copy the first run's report and artifacts aside (`playwright-report/` and `test-results/` by default; the next run replaces both), then rerun with `--trace retain-on-failure`, which overrides the config for that run only, keeping the conditions of the failing run (the tests run alongside it, workers, environment) so that a failure caused by shared data or ordering can still occur. Traces, screenshots and logs can contain credentials and tokens, so view and share them under AGENTS.md's rules for secrets.
 
 ## Reference files (read only when needed)
 
