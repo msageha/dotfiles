@@ -97,7 +97,7 @@ The state file holds session cookies, so add `playwright/.auth/` to `.gitignore`
 ## Network Mocking
 
 ```typescript
-await page.route('**/api/external-service', async route => {
+await page.route('https://api.<third-party>.example/<endpoint>', async route => {
   await route.fulfill({
     status: 200,
     contentType: 'application/json',
@@ -106,7 +106,7 @@ await page.route('**/api/external-service', async route => {
 });
 ```
 
-Route only external or third-party services; let requests to the app's own endpoints reach the real app so the test still covers them.
+Match the external service's origin and the endpoint the condition needs rather than a path alone, which can also match the app's own endpoints, or a whole origin, which replaces every other call to it, and route only services that item 10 in SKILL.md allows mocking; let requests to the app's own endpoints reach the real app so the test still covers them. `page.route()` affects only requests the page makes; replace calls the app's server makes to an external service at the server's existing dependency boundary instead.
 
 ## CI (GitHub Actions)
 

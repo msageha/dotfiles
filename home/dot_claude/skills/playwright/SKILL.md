@@ -13,7 +13,7 @@ Operating a real browser interactively (navigating, filling forms, scraping, ins
 
 ## Defaults
 
-In an existing project, follow its config and conventions (retries, trace, reporter, locator style, fixtures) instead of rewriting them to match this list; the values below are the defaults for a new suite or config.
+In an existing project, follow its config and conventions for retries, trace, reporter, locator style, fixtures and `baseURL` instead of rewriting them to match this list; for those, the values below are the defaults for a new suite or config. The other items apply to every suite.
 
 1. Prefer `getByRole()` over CSS / XPath selectors: it survives markup changes and mirrors how users perceive the page.
 2. Wait with web-first assertions (`expect(locator).toBeVisible()`) or `page.waitForURL()` instead of `page.waitForTimeout()`, because fixed sleeps are flaky and slow. Do not wait for `networkidle` either: Playwright discourages it for testing.
@@ -24,8 +24,8 @@ In an existing project, follow its config and conventions (retries, trace, repor
 7. Use `trace: 'on-first-retry'`, which records debugging artifacts only for retried tests and keeps passing runs fast.
 8. Share setup through fixtures (`test.extend()`) rather than module-level variables.
 9. Cover one behavior per test; several related `expect()` calls are fine.
-10. Mock external services (third-party APIs, payment gateways, email) and leave the app under test unmocked, since a mocked app no longer tests the app.
-11. Assert on what the user sees and does rather than on internal state or DOM structure, so tests survive refactoring.
+10. Mock an external service only where the real one cannot be controlled, must not be reached, or cannot safely produce the condition under test (e.g. a third-party API without a test environment, a payment failure its sandbox cannot trigger, real email delivery), and leave the app under test unmocked, since a mocked app no longer tests the app.
+11. Assert on what the user sees and does, and on the side effects the contract specifies (e.g. a downloaded file, a stored record), rather than on internal state or DOM structure, so tests survive refactoring.
 
 ## Debugging
 
