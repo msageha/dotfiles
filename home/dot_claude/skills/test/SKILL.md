@@ -1,6 +1,6 @@
 ---
 name: test
-description: "Runs the project's tests and fixes failures at their root cause until they pass. Use when the user asks to make tests pass or fix them (「テストを通して」「テストを直して」), or to verify your own change. For a request only to run tests and report (「テスト回して」「結果見せて」), use the test-runner agent where available; without it, this skill runs the tests and reports without editing files."
+description: "Runs the project's tests and fixes failures at their root cause until they pass. Use when the user asks to make tests pass or fix them (「テストを通して」「テストを直して」), or to verify your own change. For a request only to run tests and report (「テスト回して」「結果見せて」), use the test-runner agent where available; without it, this skill runs the tests and reports without editing files. To write new tests, use the write-tests skill."
 argument-hint: "[test-pattern-or-file]"
 ---
 
@@ -26,7 +26,7 @@ argument-hint: "[test-pattern-or-file]"
 Goal: 対象範囲のテストが通り、ベースライン (base ブランチ / 直近 green) に無かった失敗が残っていない状態にする
 
 Acceptance criteria:
-- 新規失敗がゼロ (ベースラインで既に落ちていた失敗は分けて報告し、依頼範囲に含まれるか不明なら修正前に確認する)
+- 新規失敗がゼロ (ベースラインで既に落ちていた失敗は分けて報告し、依頼範囲に含まれるか不明なら修正前に確認する。テストを書く依頼で足したテストが、変更前からある実装の契約違反で落ちたものは、write-tests skill の手順どおり期待値を保って報告し、失敗のまま残してよい)
 - 修正によって他のテストが破壊されていない
 - 最終レポートに「失敗の根本原因」「適用した修正」「再実行結果 (コマンドと件数。取得できればカバレッジも)」「pre-existing 失敗の一覧」が含まれている
 
@@ -36,6 +36,6 @@ Constraints:
   - 外から観測できる仕様の変更 (公開 API のシグネチャ・外部から観測できる挙動)
   - データ構造やマイグレーションの破壊的変更のうち、AGENTS.md「コード」が確認を求めるもの
   - テスト自体の削除・スキップ (自分の変更で検査として意味を失ったテストの削除は除く。AGENTS.md「検証と完了」)
-  - 依頼が「テストを直して」とテスト側に限定されているときの実装側の修正 (項目ごとに報告して許可を得る)
+  - 依頼がテスト側に限定されているとき (「テストを直して」、テストを書く・足す依頼等) の実装側の修正 (項目ごとに報告して許可を得る)
 - それ以外の修正 (実装のバグ、誤った assertion など) は委譲の範囲とみなし、修正・再実行・成功の確認まで続けてから結果を報告する
 - 新しいテストはユーザーの指示があるときだけ足す
