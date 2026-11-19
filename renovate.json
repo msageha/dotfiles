@@ -68,7 +68,7 @@
       "enabled": false
     },
     {
-      "description": "flarectl は cloudflare-go の v0 系にしか無く、v1.0.0 以上は go backend で install できない。github-tags datasource ではこれを検知できないので v1 未満に限る",
+      "description": "flarectl は cloudflare-go の v0 系にしか無く、v1.0.0 以上の release には flarectl の binary が無い。github-releases datasource ではこれを検知できないので v1 未満に限る",
       "matchDepNames": [
         "cloudflare/cloudflare-go"
       ],

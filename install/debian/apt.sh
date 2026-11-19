@@ -2,7 +2,7 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-# Docker コンテナ内では推奨パッケージを入れずイメージを軽くする (imagemagick / graphviz の推奨パッケージで opencv / vtk / gdal / rocm 等まで入るため)
+# Docker コンテナ内では推奨パッケージを入れずイメージを軽くする (imagemagick の推奨パッケージで依存が大きく増えるため)
 apt_install_opts=()
 if [ -f /.dockerenv ]; then
     apt_install_opts=(--no-install-recommends)
@@ -23,9 +23,7 @@ apt_tools=(
     pkgconf
     unzip
     wget
-    exiv2
     git-secrets
-    graphviz
     htop
     imagemagick
     mupdf-tools

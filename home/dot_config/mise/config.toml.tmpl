@@ -47,8 +47,9 @@ zoxide = "0.10.0"
 jq = "1.8.2"
 # renovate: datasource=github-releases depName=mikefarah/yq extractVersion=^v(?<version>\S+)
 yq = "4.54.3"
-# renovate: datasource=github-tags depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
-"go:github.com/cloudflare/cloudflare-go/cmd/flarectl" = "0.119.0"
+# flarectl を入れる。go backend はソースからのビルドに 1 分以上かかるので、release の binary を使う
+# renovate: datasource=github-releases depName=cloudflare/cloudflare-go extractVersion=^v?(?<version>.+)
+"github:cloudflare/cloudflare-go" = "0.119.0"
 # renovate: datasource=github-releases depName=jdx/fnox extractVersion=^v?(?<version>.+)
 fnox = "1.48.0"
 {{/* fnox と install/common/secrets.sh が使う。GUI アプリを入れる macOS では 1Password アプリと一緒に Homebrew の cask で入れる */ -}}

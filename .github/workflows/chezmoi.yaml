@@ -49,8 +49,12 @@ jobs:
       # mise-action が設定する環境は apply 内の nested mise install (go backend) と干渉するので、apply の後に置く。
       # apply が書いた ~/.config/mise/config.toml は mise.lock に無いツールを含み lockfile の強制で
       # 解決に失敗するので、MISE_CONFIG_DIR を空の場所に向けて repo の mise.toml だけを読ませる。
+      # cache は apply の後に復元されて apply を速くせず、保存すると apply が入れた全ツール (macOS で数 GB) を
+      # upload するので使わない。repo の mise.toml のツールは cache なしでも数秒で入る。
       - name: Install mise
         uses: ./.github/actions/setup-mise
+        with:
+          cache: "false"
         env:
           MISE_CONFIG_DIR: ${{ runner.temp }}/mise-ci-config
           GITHUB_TOKEN: ${{ github.token }}

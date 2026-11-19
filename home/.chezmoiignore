@@ -41,12 +41,13 @@
 .config/ripgrep
 {{ end }}
 
-# self-hosted runner の実行ユーザー (runner) には個人用の mise / git 設定を展開しない。
+# self-hosted runner の実行ユーザー (runner) には個人用の mise / git 設定と、mise 設定の変更で mise install を走らせる script を展開しない。
 # global の mise の [tools] / [plugins] が CI の mise に混入して install が失敗し、
 # git は個人の identity と credential helper が共有 runner に残るため。
 # GitHub-hosted runner も実行ユーザーが runner なので、GitHub Actions の job 内 (GITHUB_ACTIONS が立つ) は除く。
 {{ if and (eq .chezmoi.username "runner") (not (env "GITHUB_ACTIONS")) }}
 .config/mise
+.chezmoiscripts/91_mise.sh
 .config/git
 {{ end }}
 

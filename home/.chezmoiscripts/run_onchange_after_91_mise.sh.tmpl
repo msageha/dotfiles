@@ -1,0 +1,16 @@
+{{ if ne .chezmoi.os "windows" -}}
+#!/bin/bash
+set -euo pipefail
+
+# mise の global config の描画結果の hash を埋め込み、config が変わると再実行させる。github: など registry に無い backend の
+# ツールは command-not-found からの自動導入が効かないので、追加や backend の切り替えをここで導入する。
+# 使わなくなった版の prune は他のプロジェクトが使う版を消しうるので、config の変更では走らせず run_once_after_91_common に残す。
+# config hash: {{ includeTemplate "dot_config/mise/config.toml.tmpl" . | sha256sum }}
+
+{{ include "../install/lib.sh" }}
+activate_tool_paths
+
+require_command mise
+log_step "Installing mise tools..."
+mise install --yes
+{{ end -}}
