@@ -17,9 +17,10 @@
     [ "${#tools[@]}" -gt 0 ]
 
     # CI は bats に隔離用 MISE_CONFIG_DIR (repo の mise.toml のみ) を渡すため、期待値と同じ
-    # user config が効く状態 ($HOME で、隔離を外して) で一覧を取る
+    # user config が効く状態 ($HOME で、隔離を外して) で一覧を取る。--current だけでは未導入のツールも (missing) 付きで出るので、
+    # --installed で導入済みのものに絞る
     local installed
-    installed="$(cd "$HOME" && env -u MISE_CONFIG_DIR mise list --current 2>/dev/null)"
+    installed="$(cd "$HOME" && env -u MISE_CONFIG_DIR mise list --current --installed 2>/dev/null)"
     for tool in "${tools[@]}"; do
         echo "Checking ${tool}"
         echo "${installed}" | grep -q "^${tool} "
