@@ -23,7 +23,8 @@
 - `dot_claude/CLAUDE.md` が `@~/.config/agents/AGENTS.md` で共通規約を import し、Claude 固有の機構だけを足す。
   MCP やサブエージェントの「いつ使うか」は tool の定義・server instructions・agent の description にあるので再掲しない。
 - Claude Code が `~/.claude/rules/` の rule を自動で読み込むのは、primary working directory の下で `paths` に一致するファイルを読み書きした時点だけ。
-  その外のファイル (追加の作業ディレクトリ等) と diff だけで見るファイルでは読み込まれず、新規のファイルでは書き込んだ後になることを `dot_claude/CLAUDE.md` が述べ、共通規約の前文が、context に無い rule を着手前に読ませる。
+  その外のファイル (追加の作業ディレクトリ等) と diff だけで見るファイルでは読み込まれず、新規のファイルでは書き込んだ後になる。
+  Claude Code には rule の一覧を配っていないので、`dot_claude/CLAUDE.md` がこの読み込みの条件を述べ、そうした対象では `~/.claude/rules/` と project の `.claude/rules/` から `paths` が一致する rule と `paths` の無い rule を手を付ける前に読ませる (共通規約の前文の「context に無い rule を着手前に読む」を Claude で実行できるようにするため)。
 - この repo で作業すると、`home/dot_claude/CLAUDE.md` が nested の CLAUDE.md として読み込まれ、適用済みの `~/.claude/CLAUDE.md` と重複する。
   user settings の `claudeMdExcludes` (`dot_claude/private_settings.json.tmpl`) で外している。
 - `modify_private_dot_claude.json` は、`~/.claude.json` を `.chezmoitemplates/claude.json` の内容へ置き換える chezmoi:modify-template。
