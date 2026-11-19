@@ -1,6 +1,6 @@
 ---
 name: documentation-writer
-description: "Creates or improves technical documentation (README, tutorial, how-to guide, API reference, design explanation) with the Diataxis framework (「ドキュメントを書いて」「README を整備して」「手順書を作って」). For a requirements document or design doc that an agent will implement, use design-doc. For Japanese prose style (文体・整形・推敲), also use japanese-tech-writing where available."
+description: "Creates or improves technical documentation (README, tutorial, how-to guide, API reference, design explanation) with the Diataxis framework (「ドキュメントを書いて」「README を整備して」「手順書を作って」). For a requirements document or design doc that an agent will implement, use design-doc. When writing several paragraphs of Japanese prose, also use clear-writing; to only improve the wording of existing Japanese prose, use clear-writing instead; for prose style in manuscripts (文体・整形・推敲), japanese-tech-writing where available."
 allowed-tools: Read, Grep, Glob
 argument-hint: "[topic, file path, or document type]"
 ---
