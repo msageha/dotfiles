@@ -49,7 +49,7 @@ Each item under "Smells and fixes" describes a common code smell and how to fix 
 ## Smells and fixes
 
 - Functions:
-  - Split a function that mixes stages with separate responsibilities (input and parsing, computation, output) into functions named after each stage, so each can be read and tested alone.
+  - Split a function that mixes stages with separate responsibilities (input and parsing, computation, output) into functions named after each stage when each stage is large enough that the split makes it easier to read alone; a short function stays whole rather than becoming a chain of few-line helpers.
   - Keep computation apart from I/O and mutation, so the computing part returns the same result for the same input.
   - Do not hide a state change behind a name that reads as a query; name the side effect, or split the query from the command when the split keeps atomicity and failure behavior.
   - Group values that share an invariant or are always passed together as one concept (start and end, host and port) into one type.
@@ -58,7 +58,7 @@ Each item under "Smells and fixes" describes a common code smell and how to fix 
   - Handle exceptional and early-exit cases first with return / continue (guard clauses), so the main path stays at the shallowest nesting.
   - Name a whole compound condition with a variable or function at the point where it is evaluated, and merge conditions that lead to the same result.
   - Replace a flag variable that only decides when a loop ends with break / return; use break when code after the loop must still run.
-  - Choose the form by what the branches do: a branch that only maps a key to a value becomes a lookup table that keeps the handling of unknown keys and evaluates only the selected entry; branching on the shape or type of a value uses the language's pattern matching where it has one; a branch on a kind that selects behavior stays a switch, unless several switches on the same kind select behavior for the same responsibility, in which case each kind gets its own implementation (polymorphism), because adding a kind would otherwise need an edit in every switch.
+  - Choose the form by what the branches do: a branch that only maps a key to a value becomes a lookup table when the table accepts the same keys with the same comparison, keeps the handling of unknown keys and evaluates only the selected entry; branching on the shape or type of a value uses the language's pattern matching where it has one; a branch on a kind that selects behavior stays a switch, unless several switches on the same kind select behavior for the same responsibility, in which case each kind gets its own implementation (polymorphism), because adding a kind would otherwise need an edit in every switch.
   - When absent and empty mean the same thing in the contract, normalize once at the boundary (e.g. to an empty collection) instead of repeating the same check in every caller.
 - Loops: give each loop one job, and write filtering and transformation as the language's pipeline or comprehension where that reads more directly. Move work whose result does not change per iteration (compiling a pattern, a lookup) out of the loop only when it has no side effects and cannot fail, because the loop may run zero times.
 - Variables and constants:
