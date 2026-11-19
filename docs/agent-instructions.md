@@ -10,7 +10,7 @@
 - この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
   `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。一覧は `paths` の先頭 6 件だけを出すので、代表的な pattern を先頭に置く。rule が 1 つも見つからないときは描画を fail で止める。
-- 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、依頼を出す前に読ませる。
+- 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方・測れる指標の改善を長く繰り返させる手順) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、依頼を出す前に読ませる。
   委譲しないセッションと、共通規約を読むサブエージェントの起動のたびに、その分の context を使わないため。
 - `.chezmoiignore` は、`~/.claude`・`~/.codex`・`~/.gemini`・`~/.grok`・`~/.agents` の直下を `<dir>/*` で ignore し、管理する項目だけを `!` で戻している。直下に項目を足すときは `!` の行も足す (無くても描画の検査は通り、適用されないだけになる)。
 - `.chezmoitemplates/` 配下は chezmoi が起動時に全件 template として parse する。
