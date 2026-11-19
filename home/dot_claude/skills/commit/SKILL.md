@@ -37,7 +37,7 @@ Classify each path (untracked ones included) before printing any diff, because a
 The whole work goes in, secrets and local artifacts stay out, and unrelated changes are left untouched and reported.
 
 - The work includes staged and unstaged changes, new untracked files and directories, the user's uncommitted hand edits, and tracked files even when they match `.gitignore` (`.gitignore` does not apply to tracked files, so `git add <path>` works for them). Include the user's edits and untracked files once Step 2 has checked their content, without asking whose they are.
-- Besides secrets and the artifacts below, leave out only what the user excluded by limiting the scope, and changes in paths unrelated to the work (e.g. another session's). Do not touch those; report them.
+- Besides secrets and the artifacts below, leave out only what the user excluded by limiting the scope, and changes in paths unrelated to the work (e.g. another session's). Do not touch those; report them. If one file mixes the work's hunks with unrelated changes, staging it by path would commit both: leave it as it is in the index and the working tree, and if the work needs its hunks, stop before committing and report it.
 - Leave out, and report with the reason: agent runtime artifacts (e.g. `.claude/settings.local.json`, session or state files; not a `.claude/verify.sh` or project `.claude/settings.json` that belongs to the work), screenshots the work does not use, local settings (`.idea/`, `.envrc`, `*.local.json`), OS or editor files (`.DS_Store`), build artifacts and large binaries, and unrelated lock-file or CI changes.
 
 ## Step 4: Stage

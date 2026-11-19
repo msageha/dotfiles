@@ -32,11 +32,12 @@ Decide this before touching anything, and stay within it:
 ### Step 3: Inspect the checks
 
 ```bash
-gh pr view <pr> --json mergeable,mergeStateStatus,headRefName,baseRefName
+gh pr view <pr> --json mergeable,mergeStateStatus,headRefName,headRefOid,baseRefName
 gh pr checks <pr> --json name,state,bucket,link,startedAt,completedAt,workflow
 ```
 
-- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). When Step 1 does not include pushing, merge with `--no-commit` and stop with the resolution staged and verified locally; when it does, commit the merge, push and continue. If the conflict needs a design decision, present the options and wait.
+- Run `gh pr view` again after `gh pr checks`; if `headRefOid` changed, the checks may belong to another commit, so start this step again. The head SHA recorded here is the one you diagnose.
+- `mergeable: CONFLICTING`: `pull_request`-triggered checks do not run while the PR conflicts. In question mode, report the conflict. In fix mode, first choose where to work and confirm `HEAD` as the first item of Step 6 describes, then resolve it with the pr skill's conflict procedure (merge the freshly fetched `origin/<base>` into the PR branch, keep the base's fixes, run lint / test). When Step 1 does not include pushing, merge with `--no-commit` and stop with the resolution staged and verified locally; when it does, commit the merge, push and continue. If the conflict needs a design decision, present the options and wait.
 - Checks still pending: `gh pr checks <pr> --watch` and wait; do not diagnose a partial run.
 - For each check in the `fail` or `cancel` bucket, take the run ID from `link` (`.../actions/runs/<run_id>/...`). A cancelled check is not a pass: when a step cancels the whole run after its job fails (a fail-fast pattern), the failing job itself ends as cancelled and `--log-failed` prints nothing, so also look for jobs with a failed step and read their logs. A check cancelled only because a newer run of the same workflow on the PR's current head commit superseded it needs no diagnosis; look at that run instead. Otherwise treat the check as unverified.
 
@@ -57,6 +58,7 @@ For each failing check, present the check name and run URL, a short log excerpt 
 
 ### Step 6: Fix the cause (fix mode)
 
+- Before changing anything, choose where to work as in the AGENTS.md `git` section and confirm that `HEAD` there and the PR's current head (`gh pr view <pr> --json headRefOid`) are both the head SHA whose checks you diagnosed, so the fix and its verification apply to that diagnosis. If the PR has moved, go back to Step 3.
 - Fix what actually broke, within the PR's own scope; do not add files or config whose only purpose is to make the check pass.
 - Fix the cause when it is in code. When it is outside the code, rerun with `gh run rerun <run_id> --failed` only if the request covers acting on the PR's CI (「green にして」「PR に積んで」, or a request to rerun); otherwise report the cause, its evidence and the proposed rerun, because a rerun also repeats jobs such as deploys and consumes CI resources.
 - If an existing test is wrong relative to the intended behavior, fix the test. Add new tests only when the user asks.

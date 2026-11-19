@@ -9,17 +9,22 @@ disallowed-tools: Edit, Write, NotebookEdit
 
 作業ツリーの未 commit の変更 (unstaged・staged の変更と untracked の新規ファイル)、それが無ければ base ブランチとの差分、または指定された PR をレビューする。ソースや追跡ファイルは編集しない (PR へのコメント投稿は、依頼されたときだけ Step 4 で行う)。
 
-lint / test 等の検証は、レビュー対象のファイルを書き換えない形で実行する。書き換えは未 commit の変更に混ざり、後から切り分けられないため。formatter や lint は、タスクや hook から呼ぶものも含めて check のモード (`--check` 等。`--fix` は付けない) か使い捨てのコピーで回し、どちらもできない検査は実行しなかったと報告する。キャッシュ・ビルド出力ができるのは想定内とし、それでも追跡ファイルが変わったら報告する。
+lint / test 等の検証は、レビュー対象のファイルを書き換えない形で実行する。書き換えは未 commit の変更に混ざり、後から切り分けられないため。formatter や lint は、タスクや hook から呼ぶものも含めて check のモード (`--check` 等。`--fix` は付けない) か使い捨てのコピーで回し、どちらもできない検査は実行しなかったと報告する。キャッシュ・ビルド出力ができるのは想定内とし、それでも追跡ファイルが変わったら報告する。検査は対象のコードを実行するので、出所を信頼できると確かめられたコード (ユーザー自身の作業ツリー、リポジトリに書き込み権限を持つ人の PR 等) にだけ回し、外部の contributor の fork PR など確かめられないものは回さずに理由を報告する。
 
 ## Step 1: 変更の取得
 
 1. 中身を出さずにパスを把握する: `git status --short` (untracked の新規ファイルを含む)、`git diff HEAD --stat`、`git diff HEAD --name-only` (PR は `gh pr diff <pr> --name-only`)。`git diff` だけでは staged の変更が漏れるので、`HEAD` と比べる。
-2. 中身を出す前に secret ファイル (AGENTS.md「安全」の定義) を判定する。出力した secret は取り消せないため。secret ファイルは中身を出さず、変更の有無だけを見る。
-3. 差分本体を、secret ファイルを除いて取得する (`git diff HEAD -- . ':(exclude)<path>'`)。untracked の新規ファイルは、secret でないものの中身を読む。
+2. 中身を出す前に secret ファイル (AGENTS.md「安全」の定義) を判定する。出力した secret は取り消せないため。rename は `git diff HEAD --name-status -M` で元と先の両方のパスを見て、片方でも secret なら両方を secret として扱う (`--name-only` には元のパスが出ない)。secret ファイルは中身を出さず、変更の有無だけを見る。
+3. 差分本体を、secret ファイルを除いて取得する (`git diff HEAD -- ':(top)' ':(top,exclude)<path>'`。`:(top)` は、サブディレクトリから実行しても対象をリポジトリ全体にし、除外のパスを `--name-status` が出すリポジトリ root からのパスで解釈させる)。untracked の新規ファイルは、secret でないものの中身を読む (`?? <dir>/` は `git ls-files --others --exclude-standard -- <dir>` でファイルに展開してから判定する)。
 
-レビュー対象が PR 番号 / URL で指定されたときは、代わりに `gh pr view <pr>` で説明を、`gh pr diff <pr> --exclude '<secret>'` で secret ファイルを除いた差分を取得する。作業ツリーが PR の head (`gh pr view <pr> --json headRefOid`) でないときは、内容と行番号が PR と食い違うので、ファイルは `git show <headRefOid>:<path>` で読む (その commit が手元に無ければ `git fetch origin pull/<pr>/head` で取る。fetch できないとき (read-only の sandbox 等) と、PR が作業ツリーとは別のリポジトリのものであるときは、`gh api -H 'Accept: application/vnd.github.raw+json' 'repos/<owner>/<repo>/contents/<path>?ref=<headRefOid>'` で読む)。このとき lint / test は、作業ツリーで回しても PR の結果にならないので回さず、実行しなかったと報告する。
+レビュー対象が PR 番号 / URL で指定されたときは、代わりに次の手順で取得する。
 
-未 commit の変更が無ければ、base ブランチとの差分を対象にし、手順 1〜3 と同じく `git diff --name-only origin/<base>...HEAD` で secret を判定してから `git diff origin/<base>...HEAD -- . ':(exclude)<path>'` で取得する。three-dot にするのは、merge-base から比べて base 側だけで進んだ変更を混ぜないため。`origin/<base>` は呼び出し元が指定した base で、指定が無ければ現在のブランチの PR の base (`gh pr view --json baseRefName`)、PR も無ければ `origin/HEAD` を使う。どちらの差分も無ければ、レビュー対象を確認事項として呼び出し元に返す。
+- `gh pr view <pr> --json body,baseRefName,headRefOid` で説明・base のブランチ名・head の SHA (`<headRefOid>`) を取る。以降の secret の判定・差分・ファイルの読解・Step 4 の投稿は、すべてこの SHA に対して行う。
+- head の commit が手元に無ければ `git fetch origin <base> pull/<pr>/head` で取る。比較の起点は `git merge-base origin/<base> <headRefOid>` の SHA (`<merge-base>`) で一度決め、`git diff --name-status -M <merge-base> <headRefOid>` で secret を判定してから、同じ 2 つの SHA で `git diff <merge-base> <headRefOid> -- ':(top)' ':(top,exclude)<path>'` の差分を取る。ファイルは `git show <headRefOid>:<path>` で読む (作業ツリーの内容と行番号は PR と食い違いうる)。
+- fetch できないとき (read-only の sandbox 等)・PR が作業ツリーとは別のリポジトリのものであるとき・PR が merge 済みのとき (base が head を含むので、上の比較は空になる) は、secret を `gh api repos/<owner>/<repo>/pulls/<pr>/files --paginate --jq '.[] | [.filename, .previous_filename]'` で rename の元のパスも含めて判定し (`gh pr diff --name-only` には元のパスが出ない)、`gh pr diff <pr> --exclude '<secret>'` で差分を取り、ファイルは `gh api -H 'Accept: application/vnd.github.raw+json' 'repos/<owner>/<repo>/contents/<path>?ref=<headRefOid>'` で読む。この経路は SHA を固定できないので、判定の直前と差分の取得の直後に `gh pr view <pr> --json headRefOid` が `<headRefOid>` と同じことを確かめ、変わっていれば新しい head で判定からやり直す。
+- lint / test は、作業ツリーが `<headRefOid>` で未 commit の変更も無いときだけ回す。それ以外では、作業ツリーで回しても PR の結果にならないので回さず、実行しなかったと報告する。
+
+未 commit の変更が無ければ、base ブランチとの差分を対象にし、手順 1〜3 と同じく `git diff --name-status -M origin/<base>...HEAD` で secret を判定してから `git diff origin/<base>...HEAD -- ':(top)' ':(top,exclude)<path>'` で取得する。three-dot にするのは、merge-base から比べて base 側だけで進んだ変更を混ぜないため。`origin/<base>` は呼び出し元が指定した base で、指定が無ければ現在のブランチの PR の base (`gh pr view --json baseRefName`)、PR も無ければ `origin/HEAD` を使う。どちらの差分も無ければ、レビュー対象を確認事項として呼び出し元に返す。
 
 ## Step 2: レビュー
 
@@ -75,7 +80,7 @@ lint / test 等の検証は、レビュー対象のファイルを書き換え�
 ## Step 4: PR へのレビューコメント投稿 (依頼されたときだけ)
 
 - 投稿の前と文面を書き直した後に、各指摘の主張と修正案の両方を一次証拠 (コード・実行結果・公式ドキュメント) で裏取りし直す。誤り・不要な指摘・その分野の専門家から見て初歩的な指摘は投稿せず、計測できる懸念は計測してから書く。
-- 既定では pending (draft) review として作り、submit しない。ユーザーが最終確認してから submit するためで、submit まで明示的に依頼されたときだけ submit する。`gh pr review` は pending を作れず、実行した時点で submit される。pending review を作る tool が無ければ、GitHub の review 作成 API (`gh api` で `POST repos/<owner>/<repo>/pulls/<pr>/reviews`。`<owner>/<repo>` は PR のあるリポジトリ) を `event` を付けずに呼ぶ (`event` が無いと PENDING になる)。
+- 既定では pending (draft) review として作り、submit しない。ユーザーが最終確認してから submit するためで、submit まで明示的に依頼されたときだけ submit する。`gh pr review` は pending を作れず、実行した時点で submit される。pending review を作る tool が無ければ、GitHub の review 作成 API (`gh api` で `POST repos/<owner>/<repo>/pulls/<pr>/reviews`。`<owner>/<repo>` は PR のあるリポジトリ) を `event` を付けずに呼ぶ (`event` が無いと PENDING になる)。`commit_id` にはレビューした head の SHA を渡し、作る前に PR の head がその SHA から動いていないことを確かめる (動いていれば差分を取り直して所見を確かめ直す)。`commit_id` を省くと、コメントは投稿時点の head に付く。
 - 各コメントは該当する file:line に付け、他のコメントを参照せずに単独で読めるように、何が問題か、放置すると何が困るか、どう直すかを書く。差分の外の箇所に影響する指摘は、原因になった差分の行に付けて影響する箇所を本文に書き、付けられる行が無ければ総評の中に同じ形で書く。
 - コメントの冒頭の 1〜2 文で、どの条件で何が起きて何が困るかと、どう直すかが分かるようにし、それを裏付ける詳細 (再現の手順・長いコード例・調べた根拠) が数行を超えるときは `<details>` に折りたたむ (`<summary>` に中身を書き、`</summary>` の後と `</details>` の前後に空行を入れる。空行が無いと、折りたたみの中と後の Markdown が表示されない)。読む人が要点を先に判断でき、詳細は要るときだけ開けば済むようにするため。
 - review の本文 (総評) は、冒頭に結論・判断が要る論点・判断に影響する未確認の事項を書き、行に付けたコメントの中身は繰り返さない。

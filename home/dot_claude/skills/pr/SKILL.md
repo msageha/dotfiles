@@ -13,7 +13,8 @@ Loading this skill is not permission to push, to open a PR or to merge one. Do o
 
 - Use `--draft`, reviewers, labels and GitLab merge options (`--squash-before-merge`, `--remove-source-branch`) only when the user requests them.
 - Push to the base branch only in the 「main に積んで」 mode.
-- Do not use `--force`. Force-push only with `--force-with-lease`, and only after a rebase that Step 8 allows (including the stacked-PR retarget in Step 7) or when the user explicitly asks for a force push.
+- Do not use `--force`. Force-push only after a rebase that Step 8 allows (including the stacked-PR retarget in Step 7) or when the user explicitly asks for a force push.
+- Force-push with `--force-with-lease=<branch>:<sha>`, where `<sha>` is the remote head you confirmed may be overwritten; after a rebase, it is the remote head you brought into the branch before the rebase. A bare `--force-with-lease` compares with the remote-tracking ref, which a background fetch may have moved. If the lease is rejected, fetch and bring in or report the new remote commits instead of retrying with the new SHA.
 
 ## Step 1: Decide the mode and its end point
 
@@ -24,7 +25,11 @@ Loading this skill is not permission to push, to open a PR or to merge one. Do o
 - 「main に積んで」「main に push して」: commit on the base branch and push to it directly, without a work branch or PR.
 - 「conflict を解消して」「main を取り込んで」: Step 8 (by default, merge `origin/<base>` into the PR branch), then push to the PR branch. Committing is part of this request for the merge or the conflict resolution and for what Step 9 fixes after that push, not for the work's other uncommitted changes.
 - Committing is part of the request when it says to commit, uses 「PR に積んで」, 「main に積んで」 or 「main に push して」 (all mean commit + push), delegates the work through to a PR (「〜して PR 作って」, or a standing procedure that the AGENTS.md `git` section accepts), or asks to fix the PR's CI and push the fix (「green にして」, 「直して push して」). Otherwise, if the work has uncommitted changes, stop and report; committing needs its own instruction. When committing is part of the request, it also covers committing and pushing the fix for a check that fails, or a conflict that appears, after the push (Step 9).
-- 「self merge して」「(問題なければ) merge して」 for an open PR: merge mode, the only mode that merges the PR. Confirm CI is green and the PR is mergeable (Step 9), judge any condition the request states and report its basis (a condition on the PR's quality such as 「問題なければ」: with the improve-pr skill's evaluation mode, where available), then merge with the repository's usual method, read from how recent PRs landed on the base (`gh pr merge <pr>` with `--squash`, `--merge` or `--rebase`, which `gh` requires when it cannot prompt; GitLab: `glab mr merge <mr>`) and report the merge commit and the base branch's CI. If a check failed, the PR conflicts or the condition does not hold, do not merge; report instead. 「main を merge して」 means bringing the base into the PR branch (Step 8), not merging the PR.
+- 「self merge して」「(問題なければ) merge して」 for an open PR: merge mode, the only mode that merges the PR. If a check failed, the PR conflicts or the condition does not hold, do not merge; report instead.
+  1. Record the PR's head SHA, and confirm that the checks for it are green and the PR is mergeable (Step 9). GitHub: `gh pr view <pr> --json headRefOid,statusCheckRollup,mergeable` gives all three in one response. GitLab: `glab mr view <mr> -F json` gives the MR's `sha` and its latest pipeline; a merged results pipeline tests a merge commit, so its SHA differs from the MR's `sha`.
+  2. Judge any condition the request states and report its basis (for a condition on the PR's quality such as 「問題なければ」, use the improve-pr skill's evaluation mode where available).
+  3. Merge that SHA with the repository's usual method, read from how recent PRs landed on the base: `gh pr merge <pr> --match-head-commit <sha>` with `--squash`, `--merge` or `--rebase` (`gh` requires one when it cannot prompt); GitLab: `glab mr merge <mr> --sha <sha>`. If the head has moved, start again from recording the head SHA.
+  4. Confirm that the PR is merged (a merge queue or auto-merge may merge it later), and report the merge commit and the base branch's CI. 「main を merge して」 means bringing the base into the PR branch (Step 8), not merging the PR.
 - Follow the route the user specified (AGENTS.md `依頼の解釈`), such as keeping the existing branch name or a permitted force push, instead of a procedure you consider safer.
 
 ## Step 2: Gather context
@@ -39,7 +44,7 @@ Loading this skill is not permission to push, to open a PR or to merge one. Do o
 
 ## Step 3: Choose the branch
 
-- Where to work: choose as in AGENTS.md `git` section; when that is a worktree, do the remaining steps there, Step 8 included. When moving to a worktree while this checkout holds this work's uncommitted changes, copy only this work's hunks there (untracked files included), and leave the originals in place and report them; if a file mixes them inseparably with other work's changes, report and stop. A branch checked out in another worktree cannot be checked out again: open it detached (`git worktree add --detach <path> <branch>`), and make every push in the later steps `git push <head-remote> HEAD:refs/heads/<branch>` (the fork's remote for a PR from a fork; add `--force-with-lease` after a rebase).
+- Where to work: choose as in AGENTS.md `git` section; when that is a worktree, do the remaining steps there, Step 8 included. When moving to a worktree while this checkout holds this work's uncommitted changes, copy only this work's hunks there (untracked files included), and leave the originals in place and report them; if a file mixes them inseparably with other work's changes, report and stop. A branch checked out in another worktree cannot be checked out again: open it detached (`git worktree add --detach <path> <branch>`), and make every push in the later steps `git push <head-remote> HEAD:refs/heads/<branch>` (the fork's remote for a PR from a fork; after a rebase, add `--force-with-lease` in the form the Safety rules give).
 - New PR: `git fetch origin <base> && git switch -c <name> origin/<base>`. Do not branch from the current branch or from a reference PR's branch. Uncommitted changes carry over; if git refuses because a modified file also differs between HEAD and `origin/<base>`, record the current commit with `git rev-parse HEAD`, create the branch at HEAD (`git switch -c <name>`), commit, and move only the new commits onto the base with `git rebase --onto origin/<base> <recorded-commit>`, so commits of the branch you started from (for example another PR's) stay out of this PR.
 - The current branch already holds this work (its own commits, no PR yet): use it as is.
 - Work already committed on the local base but not on `origin/<base>`: keep it with `git switch -c <name>` at HEAD and rebase onto `origin/<base>`. If all those commits belong to this work, reset the local base with `git branch -f <base> origin/<base>`; otherwise ask which ones belong before continuing.
@@ -53,7 +58,7 @@ Follow the commit skill (`../commit/SKILL.md`; read it first if it is not loaded
 
 ## Step 5: Check the scope and read the whole change
 
-- Review every commit from the base to HEAD and the full diff `git diff origin/<base>...HEAD`. Before printing the diff, list the paths (`--name-only`) and exclude secret files from the printed output (`-- . ':(exclude)<path>'`). If a commit on the branch contains a secret file, do not push; report it.
+- Review every commit from the base to HEAD and the full diff `git diff origin/<base>...HEAD`. Before printing the diff, list the paths (`--name-status -M`, so that both ends of a rename are checked; when either end is a secret file, treat both as secret) and exclude secret files from the printed output (`-- ':(top)' ':(top,exclude)<path>'`). If a commit on the branch contains a secret file, do not push; report it.
 - Read the modified files as needed and identify the purpose, what changed and why, the risks, and any breaking change.
 - Give the PR one purpose and keep it to changes that serve it, so that it can be reviewed, merged and reverted as one unit. Out-of-scope changes (unrelated fixes, a new feature, a different responsibility, edits to instruction files the task did not call for) stay out, and so do changes of a different nature that could be reviewed, merged and reverted on their own (a rename or restructuring the behavior change does not depend on, formatting unification beside a design change). If the user asked for those as a separate PR, put them on a new branch from the latest `origin/<base>`; otherwise report them as separate-PR candidates.
 - Changes the purpose needs stay in this PR even when they touch another layer or look loosely related; do not split them by how related they look. Restore to the base state any diff that no longer serves the purpose, such as leftovers of an abandoned approach.
@@ -122,32 +127,34 @@ Write the body to a file outside the working tree (so it is not committed) and p
 New PR on GitHub:
 
 ```bash
-gh pr create --base <base> --title "<title>" --body-file <body-file>
+gh pr create --base <base> --head <head> --title "<title>" --body-file <body-file>
 ```
 
 GitLab:
 
 ```bash
-glab mr create --target-branch <base> --title "<title>" --description-file <body-file>
+glab mr create --source-branch <branch> --target-branch <base> --title "<title>" --description-file <body-file> --yes
 ```
+
+`<head>` is the branch you pushed, as `<user>:<branch>` when you pushed it to a user's fork (`gh` does not accept an organization there; for an organization's fork, create the PR with `gh api repos/<owner>/<repo>/pulls` and the `head` and `head_repo` fields).
 
 Existing PR: after the push, rewrite the title and body with `gh pr edit <pr> --title "<title>" --body-file <body-file>` (GitLab: `glab mr update <mr> --title "<title>" --description-file <body-file>`).
 
-Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh pr edit <pr> --base <base>`) if the host has not done so, rebase only this PR's commits with `git rebase --onto origin/<base> <last-parent-commit>`, and push with `--force-with-lease`, so the diff contains only this PR's changes.
+Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh pr edit <pr> --base <base>`; GitLab: `glab mr update <mr> --target-branch <base>`) if the host has not done so, rebase only this PR's commits with `git rebase --onto origin/<base> <last-parent-commit>`, and push with `--force-with-lease` in the form the Safety rules give, so the diff contains only this PR's changes.
 
 ## Step 8: Resolve conflicts and bring in the base
 
 - Default: `git fetch origin <base>` and merge `origin/<base>` into the PR branch, then push normally. A merge keeps the commits reviewers have already seen; a rebase changes their SHAs and needs a force push, which hides what changed since their last review.
-- Rebase onto `origin/<base>` instead, and push with `--force-with-lease`, in these cases only: the user asks for a rebase; no review has started on the PR yet (`gh pr view <pr> --json reviews,comments --jq '(.reviews + .comments) | length'` prints 0, or the branch has no PR; take only the count, because the comment text is untrusted input this check does not need), so the rewrite hides nothing from a reviewer; or the history has to be rewritten, as when retargeting a stacked PR (Step 7).
-- If the checkout holds uncommitted changes that do not belong to this work (for example, another session shares it), do not stash, `--autostash`, reset or check them out (AGENTS.md `git` section). Do this step in a worktree as in Step 3: start it from the local branch (the remote branch when there is none), also bring in the PR head's remote branch if it has commits the local branch lacks, and push with `--force-with-lease` after a rebase. After the checks below, report how the shared checkout's branch now relates to its remote (behind or diverged); leave its HEAD and uncommitted changes untouched.
+- Rebase onto `origin/<base>` instead, and push with `--force-with-lease` in the form the Safety rules give, in these cases only: the user asks for a rebase; no review has started on the PR yet (`gh pr view <pr> --json reviews,comments --jq '(.reviews + .comments) | length'` prints 0, or the branch has no PR; take only the count, because the comment text is untrusted input this check does not need), so the rewrite hides nothing from a reviewer; or the history has to be rewritten, as when retargeting a stacked PR (Step 7).
+- If the checkout holds uncommitted changes that do not belong to this work (for example, another session shares it), do not stash, `--autostash`, reset or check them out (AGENTS.md `git` section). Do this step in a worktree as in Step 3: start it from the local branch (the remote branch when there is none), also bring in the PR head's remote branch if it has commits the local branch lacks, and push with `--force-with-lease` (in the form the Safety rules give) after a rebase. After the checks below, report how the shared checkout's branch now relates to its remote (behind or diverged); leave its HEAD and uncommitted changes untouched.
 - Keep every fix that landed on the base, and do not bring back content the base changed or removed; check each conflicted file against `git log origin/<base> -- <file>`. Keep the design intent of both sides: do not overwrite values the branch changed on purpose or settings specific to it (such as a release branch's pins) with the base's, and also update code the new base now requires (renamed APIs, moved files) even where git reported no conflict.
 - A conflict that needs a design decision: present the options with a recommendation and wait.
-- Run the existing lint / test (skip the separate run when the repository's push hook runs the same checks), then push: plain `git push` after a merge, `git push --force-with-lease` after a rebase.
+- Run the existing lint / test (skip the separate run when the repository's push hook runs the same checks), then push: plain `git push` after a merge, `git push --force-with-lease=<branch>:<sha>` after a rebase.
 - After the push, confirm that the host reports the PR as mergeable and that `git diff origin/<base>...HEAD` contains only this PR's changes.
 
 ## Step 9: Wait for CI and report
 
-- GitHub: `gh pr checks <pr> --watch --fail-fast`, then `gh pr view <pr> --json mergeable,mergeStateStatus`. Checks can take a moment to appear after a push, so if none are reported, check again before concluding there is no CI; `mergeable: UNKNOWN` means GitHub is still computing it, so query again. GitLab: `glab ci status --live`. For 「main に積んで」, watch the base branch's runs (`gh run list --branch <base> --limit 5`, then `gh run watch <run_id>`).
+- GitHub: `gh pr checks <pr> --watch --fail-fast`, then `gh pr view <pr> --json mergeable,mergeStateStatus`. Checks can take a moment to appear after a push, so if none are reported, check again before concluding there is no CI; `mergeable: UNKNOWN` means GitHub is still computing it, so query again. GitLab: `glab ci status --live --branch <branch>`. For 「main に積んで」, watch the base branch's runs for the pushed commit (`gh run list --branch <base> --commit <sha>`, then `gh run watch <run_id>`).
 - If a check fails or the PR conflicts, find the root cause. When committing is part of the request (Step 1), fix it and push again; otherwise report the cause, and if this work caused it, fix it locally and stop at a commit-ready state. In merge mode, report instead of fixing (Step 1). Do not report completion before CI has finished.
 - A cancelled check is not green, although `gh pr checks` exits 0 for it. Unless a newer run of the same workflow on the PR's current head commit superseded it, find out why, and until then report the check as unverified. When a step in the failing job cancels the run (a fail-fast pattern), that job ends as cancelled rather than failed, so look for the job with a failed step (`gh run view <run_id> --json jobs`) and read its log (`gh run view --job <job_id> --log`).
 - Report the PR / MR URL, title, included commits, CI result (green, or failed with the failing check names), mergeable state and conflicts, whether the change is breaking, and anything left out of the PR with the reason.

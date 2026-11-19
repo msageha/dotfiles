@@ -8,6 +8,7 @@ paths:
   - "**/.gemini/**/settings.json"
   - "**/dot_claude/*settings*.json.tmpl"
   - "**/dot_codex/*config.toml"
+  - "**/.chezmoitemplates/codex/config.toml.modify"
   - "**/dot_codex/rules/**"
   - "**/dot_grok/*config.toml"
   - "**/dot_gemini/**/*settings.json.tmpl"
