@@ -6,12 +6,49 @@ paths:
   - "**/*_test.*"
   - "**/*.test.*"
   - "**/*.spec.*"
-  - "**/test_*.py"
+  - "**/spec/**"
+  - "**/*_spec.*"
+  - "**/test*.py"
   - "**/conftest.py"
+  - "**/*Test.*"
+  - "**/*Tests.*"
+  - "**/src/*Test*/**"
+  - "**/integration_test/**"
+  - "**/test.*"
+  - "**/test-*.*"
+  - "**/*-test.*"
+  - "**/*.cy.*"
+  - "**/spec.*"
+  - "**/t/**"
+  - "**/*.robot"
+  - "**/__mocks__/**"
+  - "**/cypress/**"
+  - "**/*.feature"
+  - "**/features/step_definitions/**"
+  - "**/features/support/**"
+  - "**/src/testFixtures/**"
+  - "**/*Test/**"
+  - "**/*Tests/**"
+  - "**/test_driver/**"
+  - "**/e2e/**"
+  - "**/*.phpt"
+  - "**/*.bats"
+  - "**/*_unittest.*"
+  - "**/tests.rs"
 ---
 # Tests
 
-- Coverage: When asked to write tests, cover normal, error and boundary cases and assert externally observable behavior; do not pin implementation strings or unreachable branches. Where the project can run property-based tests (see below), use them for behavior the specification guarantees for every input in a domain (e.g. a lossless round trip, an invariant the output keeps, agreement with a simpler reference implementation), unless example cases already cover every input. Use example-based tests for behavior the specification defines for particular inputs or situations, and keep boundary cases and counterexamples found earlier (by a generator or a bug report) as fixed cases that the usual test command runs every time, even when a property covers them, instead of depending on what the generator draws. A fixed input attached to the property (an explicit example or seed the framework runs with it) counts when the property's assertions are enough for it and the usual test command runs it through those assertions.
+- Level: A test should need changing only when the requirements it protects change. Tests of internal modules, classes and functions constrain the implementation and can break on refactors, bug fixes and new features that keep the existing requirements, and because they check parts rather than the features users use, passing them does not show that those features work. Their cost therefore usually exceeds what they catch.
+  - Test the system the way its users call it: through its public API, with the code behind it running for real. For an application this is the entry points its users call in a supported way (e.g. HTTP or RPC endpoints, a CLI, a UI, a message queue a worker consumes); for a library, the API it offers its users, judged from its documentation, its declared exports and the project's visibility conventions, not every symbol other packages in the repository import.
+  - Write a test below the public API only with a clear reason. A user's explicit request for a test at that level (e.g. a unit test of a named function, a component test) is one. Otherwise the reason must be either that the public API cannot be called from a test (next item), or that the part has a specification of its own that does not depend on how the code is currently split (e.g. an algorithm or a parser of a defined format), that specification matters to the requirements, and checking it through the public API is impractical (its cases are too costly to set up there, or the results it guarantees are not observable there).
+  - When the level is left to you and the project's existing runner, test client or startup scripts cannot call the public API from a test even with test-local setup (e.g. running the CLI as a subprocess, the test client the web framework provides), write the requested tests at the highest boundary they can reach where the contract can still be checked, report the part of the public path they leave unverified (e.g. argument parsing and wiring of a CLI), and propose the missing harness instead of building it on your own. If no reachable boundary can check the contract, report that instead of testing internals. When the user asked for a level whose harness is missing, whether to add it follows the request and the rules for adding tests and dependencies, not this fallback.
+  - Below, the interface under test means the public API, or the part's interface when a lower-level test is justified.
+- Contract: Derive each test from the contract it protects: what the requirements, specification and documentation guarantee, and what existing users, external users of a public interface included, depend on. Do not write a test that protects no part of the contract; it adds maintenance cost without guarding anything. Assert the results the contract covers, such as return values, errors, output, the state the system leaves and the side effects it specifies, and set up each condition through the interface under test and existing dependency boundaries rather than by patching internals. Do not assert details the contract leaves open (internal call order, exact log text, the order of elements in an unordered result), because such tests fail on changes that keep the behavior.
+- Implementation-dependent tests: When a test fails because it depends on implementation details although the requirements and the behavior it protects still hold, and the rules for editing existing tests (AGENTS.md and the skill in use) allow you to edit it:
+  - Find the behavior the test protects and make its assertions, inputs, fixtures and doubles check that behavior through the interface under test, instead of making the test follow the current internals. The rewritten test must still set up the same condition in contract terms (the same input, prior state or dependency failure), not the same internal path, and keep every expected result in the contract the test checked, so that it fails when the contract breaks there; when checking through the interface under test would lose either, report it instead of rewriting.
+  - Remove an assertion that protected nothing in the contract, since it tested only the implementation. Do not leave a test with no check: whether to remove such a test follows the rules for removing existing tests.
+  - When a failing check asserts a detail the specification does not define, edit it only when you can confirm that users do not depend on it. If a caller or documented usage relies on it, treat the failure as a behavior change and report it; if you cannot tell (e.g. the interface is used outside the repository), report it as an open question without editing the check.
+- Coverage: Tests trade maintenance cost for confidence, so choose cases by what a contract violation would cost users, whether existing tests already catch it through the same entry point and condition, and what the test costs to write, run and maintain. When asked to write tests, cover the normal, error and boundary cases of the contract on that basis; do not add cases that existing tests already catch that way or test unreachable branches. Where the project can run property-based tests (see below), use them for behavior the specification guarantees for every input in a domain and worth testing on that basis (e.g. a lossless round trip, an invariant the output keeps, agreement with a simpler reference implementation), unless example cases already cover every input. Use example-based tests for behavior the specification defines for particular inputs or situations, and keep boundary cases and counterexamples found earlier (by a generator or a bug report) as fixed cases that the usual test command runs every time, even when a property covers them, instead of depending on what the generator draws. A fixed input attached to the property (an explicit example or seed the framework runs with it) counts when the property's assertions are enough for it and the usual test command runs it through those assertions.
 - Property-based tests:
   - Generate the inputs each property covers across the range the specification allows rather than a convenient subset (when the range is unbounded, keep sizes practical without losing its boundaries), including the inputs the code must reject when the property is about rejection, and make the generator produce the input shapes the property depends on (e.g. duplicates, empty and extreme values, related fields), which drawing values independently rarely hits. Prefer generating inputs inside the property directly to discarding the others. Discard a generated input only when the specification puts it outside the property, deciding that from the input itself, not from the result of the code under test or with the validation logic it uses, and run the assertions on every other input: discarding can drop exactly the inputs that trigger a bug. Discard through the framework's per-input mechanism (an assume-style call that marks the input invalid, or a generator filter), not an early return, which counts the input as passed, or a skip that ends the whole test.
   - Make sure the tests together would fail on plausible wrong implementations. A property that checks only a weak consequence passes broken code: a sort test that checks only the length passes an implementation that returns its input unchanged, so also check the order and that each element occurs as many times as in the input before the call.
@@ -20,4 +57,4 @@ paths:
 - Names: Within the project's naming convention, name each test (or table case / subtest) after the behavior it checks: the condition and the expected outcome in the specification's terms, so the names read as what the code under test must do. Do not name it after the function or the implementation steps.
 - Isolation: Run against temporary directories and fixtures; never write to real data in the repository or to production output locations. In a property-based test, start each input, generated or fixed, from a fresh copy of the mutable state that affects its result and leave nothing it changed behind, instead of setting up state once per test function (e.g. in a fixture scoped to the test function).
 - Regression Tests: When asked to add a test for a bug fix, confirm that it fails on the code before the fix because of the bug (not because of an import or fixture error) and passes after the fix; a test that passes either way does not detect the bug.
-- Test Doubles: Run the code under test for real. Replace a dependency with a fake or mock only where the real one cannot be controlled, must not be reached, or cannot safely produce the condition under test (external services, the clock, randomness, a dependency's failure), and replace it at an existing boundary. Fix the time and random values an assertion depends on, except those a property-based or generated-input test generates as inputs; for those tests, make failing inputs reproducible.
+- Test Doubles: Run the code under test for real. Replace a dependency with a fake or mock only where the real one cannot be controlled, must not be reached, or cannot safely produce the condition under test (external services, the clock, randomness, a dependency's failure), and replace it at an existing boundary. Assert whether, how often, in what order and with what arguments a double is called only as far as the contract includes it (e.g. a request that must or must not reach an external service). Fix the time and random values an assertion depends on, except those a property-based or generated-input test generates as inputs; for those tests, make failing inputs reproducible.
