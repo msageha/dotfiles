@@ -7,6 +7,10 @@ inputs:
     description: "mise.toml のツールを導入するか (false なら mise 本体のみ)"
     required: false
     default: "true"
+  cache:
+    description: "導入したツールを Actions cache に保存・復元するか (install が true のときだけ効く)"
+    required: false
+    default: "true"
   version:
     description: "導入する mise のバージョン"
     required: false
@@ -25,7 +29,7 @@ runs:
       with:
         version: ${{ inputs.version }}
         install: ${{ inputs.install }}
-        cache: ${{ inputs.install == 'true' }}
+        cache: ${{ inputs.install == 'true' && inputs.cache == 'true' }}
 
     # aqua backend は、Immutable Releases の attestation が aqua registry の signer_workflow と一致しないと
     # sigstore 署名の検証に回り、tuf-repo-cdn.sigstore.dev への接続で失敗しうる。mise の http_retries は
