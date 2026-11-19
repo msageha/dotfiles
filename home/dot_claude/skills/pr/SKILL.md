@@ -57,7 +57,7 @@ Follow the commit skill (`../commit/SKILL.md`; read it first if it is not loaded
 - Read the modified files as needed and identify the purpose, what changed and why, the risks, and any breaking change.
 - Give the PR one purpose and keep it to changes that serve it, so that it can be reviewed, merged and reverted as one unit. Out-of-scope changes (unrelated fixes, a new feature, a different responsibility, edits to instruction files the task did not call for) stay out, and so do changes of a different nature that could be reviewed, merged and reverted on their own (a rename or restructuring the behavior change does not depend on, formatting unification beside a design change). If the user asked for those as a separate PR, put them on a new branch from the latest `origin/<base>`; otherwise report them as separate-PR candidates.
 - Changes the purpose needs stay in this PR even when they touch another layer or look loosely related; do not split them by how related they look. Restore to the base state any diff that no longer serves the purpose, such as leftovers of an abandoned approach.
-- List the problems this PR leaves open (unresolved review points, known gaps) under Follow-ups instead of fixing them in this flow, unless the request delegates that work (「残りも対応して PR に積んで」), in which case fix the ones the PR's purpose needs. File them as GitHub issues, one issue each, and close issues, only when the AGENTS.md `git` section allows it; close a PR only when the user asks.
+- List the problems this PR leaves open (unresolved review points, known gaps) under Follow-ups instead of fixing them in this flow (those that bear on whether to merge this PR go to the visible judgment requests instead), unless the request delegates that work (「残りも対応して PR に積んで」), in which case fix the ones the PR's purpose needs. File them as GitHub issues, one issue each, and close issues, only when the AGENTS.md `git` section allows it; close a PR only when the user asks.
 - When work is split into several PRs, each PR stands alone: it includes the supporting changes (shared layers, config) its purpose needs, and its body names any PR it depends on.
 
 ## Step 6: Write the title and body
@@ -78,22 +78,33 @@ If one exists, fill its structure (with several, the one that fits the change). 
 ## Purpose
 - What this PR achieves, and the problem in the current state (or in the previous PR) that it solves
 
-## Changes
+## Reviewer requests
+- Points that need the reviewer's judgment: open questions, risks that bear on whether to merge, and what is left unverified (omit if none)
+
+<details>
+<summary>Changes, testing and follow-ups</summary>
+
+### Changes
 - Grouped by concept, not by file: what changed, and where and how it takes effect
 
-## Reviewer requests
-- Points that need the reviewer's judgment (omit if none)
-
-## Testing
+### Testing
 - How the change was tested, as far as a reviewer needs it to trust the change, in a line or two (omit if nothing beyond CI)
 
-## Follow-ups
+### Follow-ups
 - Out-of-scope findings and residual risks (omit if none)
+
+</details>
 ```
 
 - Write for a reviewer who has not seen this conversation (AGENTS.md `成果物と報告`): lead with what the PR achieves, and make clear what this PR does on its own.
+- Keep the visible part short and fold the detail, as the default body above does, because an agent-written body is accurate but long, and a reviewer who cannot read all of it skims past what needs their judgment:
+  - The visible part says in a few lines what the PR does and why, and what needs the reviewer's judgment. With a template, its required order and the content it asks for under each heading (checkboxes, test results, migration steps and the like) come first and stay visible: put the summary and the judgment requests in its summary section (an overview or description), or in a short paragraph at the top when it has none, and fold only optional detail.
+  - The visible part reads as the author's own statement: state as fact only what you confirmed, and write undecided points as questions and unverified points as unverified there, instead of leaving them in the fold.
+  - Fold the rest into one `<details>` whose `<summary>` names its content in the body's language. Leave a blank line after `</summary>`, before `</details>`, and after `</details>` when Markdown follows, as in the default body; without them, GitHub and GitLab do not render the Markdown inside or after the fold.
+  - When the whole body fits in a few lines, do not fold.
+- When rewriting the body of an existing PR, read the current body first and carry over what still holds there (judgment requests, constraints, dependent PRs, links), whoever wrote it.
 - Leave out the history of the work (abandoned attempts, closed predecessor PRs), logs and command transcripts, and third-person references to the author or the user (e.g. "<user>'s concern is ..."); write as the author.
-- When a mechanical bulk replacement also contains substantive edits, list each substantive edit (before → after) under "Reviewer requests", apart from the mechanical part, and ask the reviewer to confirm them.
+- When a mechanical bulk replacement also contains substantive edits, ask the reviewer in the visible judgment requests to confirm them, and list each substantive edit (before → after) apart from the mechanical part: where the template asks for it, otherwise in the fold.
 - Do not append attribution footers ("Generated with ...", `Co-Authored-By`).
 
 ## Step 7: Push and open or update the PR
@@ -106,25 +117,21 @@ Push to the branch of the same name on `origin`, unless Step 1 or Step 3 chose a
 git push -u origin <branch>
 ```
 
+Write the body to a file outside the working tree (so it is not committed) and pass the file, not the text, on the command line. The body can carry text from the template and the current PR body, and text embedded in a shell command (a heredoc included) can end early at a matching line and run the rest as commands. Delete the file afterwards.
+
 New PR on GitHub:
 
 ```bash
-gh pr create --base <base> --title "<title>" --body "$(cat <<'EOF'
-<body>
-EOF
-)"
+gh pr create --base <base> --title "<title>" --body-file <body-file>
 ```
 
 GitLab:
 
 ```bash
-glab mr create --target-branch <base> --title "<title>" --description "$(cat <<'EOF'
-<body>
-EOF
-)"
+glab mr create --target-branch <base> --title "<title>" --description-file <body-file>
 ```
 
-Existing PR: after the push, rewrite the title and body with `gh pr edit <pr> --title "<title>" --body "<body>"` (GitLab: `glab mr update <mr> --title "<title>" --description "<body>"`), passing the body the same way as when creating it.
+Existing PR: after the push, rewrite the title and body with `gh pr edit <pr> --title "<title>" --body-file <body-file>` (GitLab: `glab mr update <mr> --title "<title>" --description-file <body-file>`).
 
 Stacked PR whose parent PR has been merged: retarget it to the base branch (`gh pr edit <pr> --base <base>`) if the host has not done so, rebase only this PR's commits with `git rebase --onto origin/<base> <last-parent-commit>`, and push with `--force-with-lease`, so the diff contains only this PR's changes.
 

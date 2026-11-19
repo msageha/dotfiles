@@ -86,3 +86,4 @@ Re-fetch the comments and match every one, resolved threads included, against th
 ## Constraints
 
 - Resolve review threads or post replies only when the user asks.
+- Start a reply with the outcome in a sentence or two: what was changed and in which commit on this PR's head (or that the change is not in this PR yet), or why not, and anything left unverified that bears on the reviewer's judgment, so the reader gets the outcome first. When the supporting detail runs longer than a few lines, fold it into `<details>` with a `<summary>` that names it, and leave a blank line after `</summary>` and before and after `</details>`; without them, GitHub does not render the Markdown inside or after the fold.
