@@ -2,12 +2,12 @@ function __fenv_load_fnox
     set -l selected "$argv[1]"
     type -q fnox; or return 0
 
-    # fenv の候補には mise だけの環境の名前も入るので、fnox.<名前>.toml が無ければ default の profile を読む
+    test -f fnox.toml; or test -f fnox.$selected.toml; or return 0
+    # fenv の候補には mise だけの環境の名前も入るので、fnox に無い profile なら default を読む。profile は fnox.<名前>.toml か
+    # fnox.toml の [profiles.<名前>] で定義され、fnox profiles は後者だけを列挙する (secret を解決しないので wrapper を通さない)
     set -l fnox_profile default
-    if test -f fnox.$selected.toml
+    if test -f fnox.$selected.toml; or command fnox profiles 2>/dev/null | string match -qr -- '^\s+'(string escape --style=regex -- $selected)' \('
         set fnox_profile $selected
-    else if not test -f fnox.toml
-        return 0
     end
     if not type -q jq
         echo "fenv: jq not found" >&2
@@ -33,7 +33,7 @@ function __fenv_load_fnox
         return 1
     end
     while set -q pairs[2]
-        set -gx $pairs[1] $pairs[2]
+        set -gx $pairs[1] $pairs[2]; or return
         set -e pairs[1..2]
     end
 end
