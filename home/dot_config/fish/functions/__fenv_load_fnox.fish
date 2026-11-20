@@ -3,10 +3,9 @@ function __fenv_load_fnox
     type -q fnox; or return 0
 
     test -f fnox.toml; or test -f fnox.$selected.toml; or return 0
-    # fenv の候補には mise だけの環境の名前も入るので、fnox に無い profile なら default を読む。profile は fnox.<名前>.toml か
-    # fnox.toml の [profiles.<名前>] で定義され、fnox profiles は後者だけを列挙する (secret を解決しないので wrapper を通さない)
+    # fenv の候補には mise だけの環境の名前も入るので、fnox に無い profile なら default を読む
     set -l fnox_profile default
-    if test -f fnox.$selected.toml; or command fnox profiles 2>/dev/null | string match -qr -- '^\s+'(string escape --style=regex -- $selected)' \('
+    if test -f fnox.$selected.toml; or contains -- $selected (__fenv_fnox_inline_profiles)
         set fnox_profile $selected
     end
     if not type -q jq

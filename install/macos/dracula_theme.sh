@@ -21,8 +21,8 @@ function terminal_app_dracula() {
     local tmp_dir
     tmp_dir="$(mktemp -d)"
     # RETURN の trap は関数を抜けた後も残り、後続の source の終了でも発火するので、発火時に自分を外す。
-    # shellcheck disable=SC2064  # $tmp_dir を今展開して trap に固定する
-    trap "rm -rf '$tmp_dir'; trap - RETURN" RETURN
+    # 発火時も関数の local の変数を読めるので、パスは trap の文字列に埋め込まず発火時に展開する
+    trap 'rm -rf "$tmp_dir"; trap - RETURN' RETURN
 
     if ! git clone --depth 1 https://github.com/dracula/terminal-app.git "$tmp_dir" 2>/dev/null; then
         log_warn "  リポジトリのクローンに失敗しました。スキップ"

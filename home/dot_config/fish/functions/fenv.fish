@@ -11,6 +11,8 @@ function fenv -d "カレントディレクトリの mise / fnox の環境を選�
         set -l name (string replace -r '^(mise|fnox)\.' '' -- "$env_file" | string replace -r '\.toml$' '')
         contains -- "$name" $candidates; or set -a candidates "$name"
     end
+    # fnox.toml の中で定義した profile はファイルを持たないので、fnox から名前を取る
+    set -a candidates (__fenv_fnox_inline_profiles)
 
     set -l selected (printf '%s\n' $candidates | sort -u | fzf --select-1 --prompt='env> ')
     if test -z "$selected"

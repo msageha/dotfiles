@@ -14,7 +14,8 @@ concurrency:
 jobs:
   build:
     runs-on: ${{ matrix.platform.runner }}
-    timeout-minutes: 60
+    # Ubuntu の apt ミラーが遅い日は、full 構成の build が apt の取得だけで 1 時間を超えても成功するので、それを打ち切らない長さにする
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
