@@ -73,29 +73,26 @@ dockerfile="$4"
 image="${DOCKER_REPOSITORY:-msageha/dotfiles}:$tag"
 GITHUB_TOKEN="$(gh auth token -h github.com)"
 export GITHUB_TOKEN
+build_args=(
+    -f "$dockerfile"
+    --secret id=github_token,env=GITHUB_TOKEN
+    --build-arg "BASE_IMAGE=$base_image"
+    --build-arg "SKIP_CLI_TOOLS=$skip_cli_tools"
+    --build-arg "SKIP_GUI_TOOLS=true"
+    -t "$image"
+)
 if [ "${5:-}" = "--push" ]; then
     if [ "$tag" = ubuntu-gpu ]; then
         echo "$tag is amd64 only and cannot be built multi-arch" >&2
         exit 1
     fi
-    docker buildx build -f "$dockerfile" \
+    docker buildx build "${build_args[@]}" \
         --builder mybuilder \
-        --secret id=github_token,env=GITHUB_TOKEN \
-        --build-arg "BASE_IMAGE=$base_image" \
-        --build-arg "SKIP_CLI_TOOLS=$skip_cli_tools" \
-        --build-arg "SKIP_GUI_TOOLS=true" \
         --platform linux/amd64,linux/arm64 \
         --provenance=false \
-        --push \
-        -t "$image" .
+        --push .
 else
-    DOCKER_BUILDKIT=1 docker build \
-        --secret id=github_token,env=GITHUB_TOKEN \
-        -f "$dockerfile" \
-        --build-arg "BASE_IMAGE=$base_image" \
-        --build-arg "SKIP_CLI_TOOLS=$skip_cli_tools" \
-        --build-arg "SKIP_GUI_TOOLS=true" \
-        -t "$image" .
+    DOCKER_BUILDKIT=1 docker build "${build_args[@]}" .
 fi
 '''
 

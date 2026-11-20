@@ -72,8 +72,6 @@ end
 set -l brew_bin (command -v brew 2>/dev/null)
 if test -z "$brew_bin"; and test -x /opt/homebrew/bin/brew
     set brew_bin /opt/homebrew/bin/brew
-else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
-    set brew_bin /usr/local/bin/brew
 end
 if test -n "$brew_bin"
     __source_cached_init brew-shellenv "$brew_bin" shellenv fish

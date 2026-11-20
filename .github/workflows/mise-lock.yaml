@@ -94,8 +94,8 @@ jobs:
               --body "mise lock の自動実行による mise.lock の更新です。差分を確認してください。"
           fi
 
-      # GITHUB_TOKEN による push / PR 作成では workflow が発火しない (GitHub の再帰防止)。
-      # workflow_dispatch はその例外なので、更新したブランチで ci.yaml を起動して required check を付ける。
+      # GITHUB_TOKEN による push / PR 作成では、pull_request の run が承認待ちになり、ほかの workflow は発火しない (GitHub の再帰防止)。
+      # workflow_dispatch はその例外なので、更新したブランチで ci.yaml を承認なしで起動して required check を付ける。
       - name: Dispatch CI workflows for the updated branch
         if: steps.diff.outputs.changed == 'true'
         env:

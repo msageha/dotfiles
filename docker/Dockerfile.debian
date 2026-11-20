@@ -42,17 +42,17 @@ ENV LC_ALL=ja_JP.UTF-8
 
 WORKDIR $HOME
 
-COPY --chown=${USERNAME}:${USERNAME} ./ ./dotfiles/
-
 USER ${USERNAME}
 
+# リポジトリは COPY せず bind mount で渡す。COPY すると、後で消してもその層に残ってイメージに入る。
 # github_token は GitHub API のレート制限を避けるための token。BuildKit の secret は既定で root 所有 0400 で、
 # 非 root ユーザーが読めないと匿名枠で 403 になるので mode=0444 にする。
 # GITHUB_TOKEN ではなく MISE_GITHUB_TOKEN で渡し、GITHUB_TOKEN を読む第三者のインストーラ (curl | sh) や gh に
 # 使わせない (子プロセスへは継承されるので隔離ではない)。
 # DL3004: sudo は USER 切替後の strip 用 binutils の出し入れにだけ使う
 # hadolint ignore=DL3004
-RUN --mount=type=secret,id=github_token,mode=0444,required=false \
+RUN --mount=type=bind,target=/tmp/dotfiles \
+  --mount=type=secret,id=github_token,mode=0444,required=false \
   if [ -f /run/secrets/github_token ]; then MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)" && export MISE_GITHUB_TOKEN; fi && \
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.74.1 && \
   export PATH="$HOME/.local/bin:$PATH" && \
@@ -62,8 +62,8 @@ RUN --mount=type=secret,id=github_token,mode=0444,required=false \
   "skip_cli_tools = ${SKIP_CLI_TOOLS}" \
   "skip_gui_tools = ${SKIP_GUI_TOOLS}" \
   > "$HOME/.config/chezmoi/chezmoi.toml" && \
-  chezmoi apply --source="$HOME/dotfiles" && \
-  rm -rf "$HOME/dotfiles" "$HOME/.cache" && \
+  chezmoi apply --source=/tmp/dotfiles && \
+  rm -rf "$HOME/.cache" && \
   # java の src.zip はランタイムに要らない
   rm -f "$HOME/.local/share/mise/installs/java/"*/lib/src.zip && \
   # chezmoi は provisioning にしか使わない (再適用するなら get.chezmoi.io で入れ直す)

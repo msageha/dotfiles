@@ -54,7 +54,7 @@ function Set-WallpaperSettings {
     $wallpaperPath = Join-Path $picturesDir 'wallpaper.png'
 
     try {
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/dracula/wallpaper/master/first-collection/windows.png' -OutFile $wallpaperPath -UseBasicParsing
+        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/dracula/wallpaper/f2b8cc4223bcc2dfd5f165ab80f701bbb84e3303/first-collection/windows.png' -OutFile $wallpaperPath -UseBasicParsing
     }
     catch {
         Write-Warn "壁紙のダウンロードに失敗しました。スキップします: $($_.Exception.Message)"

@@ -99,11 +99,12 @@ function dock_apps() {
         return 1
     fi
     dockutil --remove all --no-restart
+    local app
     local -a apps=(
         "/Applications/Google Chrome.app"
         "/Applications/DataGrip.app"
         "/Applications/PyCharm.app"
-        "/Applications/Goland.app"
+        "/Applications/GoLand.app"
         "/Applications/WebStorm.app"
         "/Applications/Visual Studio Code.app"
         "/Applications/Discord.app"
@@ -173,8 +174,8 @@ function screenshot_settings() {
 
 function keyboard_settings() {
     log_step "キーボード設定を行っています..."
-    defaults write -g InitialKeyRepeat -int 15
-    defaults write -g KeyRepeat -int 2
+    defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    defaults write NSGlobalDomain KeyRepeat -int 2
     defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false  # 長押しで特殊文字パネルを出さない (キーリピート優先)
 }
 

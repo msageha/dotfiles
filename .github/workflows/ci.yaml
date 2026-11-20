@@ -5,7 +5,7 @@ on:
   # gitleaks.yaml の週次 schedule が行う。
   pull_request:
     types: [opened, synchronize, reopened]
-  # mise-lock.yaml が GITHUB_TOKEN で push・作成した PR では CI が自動で走らないため、mise-lock.yaml がそのブランチで起動する
+  # mise-lock.yaml が GITHUB_TOKEN で push・作成した PR では pull_request の run が承認待ちになるため、mise-lock.yaml がそのブランチで承認なしに起動する
   workflow_dispatch:
 
 permissions: {}

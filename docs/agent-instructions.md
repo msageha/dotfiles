@@ -74,7 +74,7 @@
   前半は `dot_gemini/config/AGENTS.md.tmpl` → `~/.gemini/config/AGENTS.md`、後半と `.chezmoitemplates/gemini/instructions.md` は `dot_gemini/config/GEMINI.md.tmpl` → `~/.gemini/config/GEMINI.md`。
   どちらも frontmatter 無しの常時有効な global rule で、この 2 つのパスを読むのは App と CLI (IDE / extensions の global rule は `~/.gemini/AGENTS.md`・`~/.gemini/GEMINI.md`・`~/.gemini/config/rules/*.md`)。
 - 分割と上限の検査は `.chezmoitemplates/gemini/agents-md-part` が行う。
-  見出しが見つからないときと、生成物が 24,000 bytes を超えたときは、テンプレートが fail して描画を止める。
+  見出しが見つからないとき、生成物か repo 直下の `AGENTS.md` が 24,000 bytes を超えたとき、3 ファイルの合計が下記「サイズ予算」の 20,000 tokens 相当を超えたときは、テンプレートが fail して描画を止める (push 時の `chezmoi-dry-run` hook で検出される)。
   共通規約の `## git` 見出しを変えるときは、分割位置も合わせて直す。
 - Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。
   project 直下の CLAUDE.md は、補足 (`.chezmoitemplates/gemini/instructions.md`) が着手前に読ませる。
@@ -119,12 +119,11 @@
 - Antigravity は rule ファイル 1 つを、include 展開後に 24,000 bytes で切り詰める ([公式 rules](https://antigravity.google/docs/rules))。
   対象は分割した 2 ファイルと、workspace の常時有効な rule として読まれる repo 直下の `AGENTS.md`。
 - Antigravity の global と always_on の rule は、全体で 20,000 tokens の予算を共有する。超過すると、大きいファイルから順に path と description だけの pointer に格下げされ、共通規約が本文として読まれなくなる。
-  上の 3 ファイルの合計 bytes も見る。token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、合計 bytes の 1/3 が 20,000 を下回るようにする。
+  token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、上の 3 ファイルの合計 bytes の 1/3 が 20,000 を下回るようにする。
 - Antigravity は skill の本文にも 24 KB の上限を持つ (agy 同梱の changelog。`agy plugin validate` が超過を警告する。公式 docs には記載が無く、超過分の扱いは不明)。Antigravity に配る共有 skill (`dot_gemini/config/skills/`) はこれに収める。
 - Codex は project doc (repo root から作業ディレクトリまでの AGENTS.md の連結) を `project_doc_max_bytes` (既定 32 KiB) で切り詰める。`~/.codex/AGENTS.md` は切り詰めの対象外。ただし Codex (0.169) は、global を含む指示文の合計がこの値を超えると warning (`Combined user instructions use <N> bytes ...`) を出す。共通規約と Codex の補足の合計は既定値を超えるので、`codex exec` の出力を含めて session ごとに出るが、切り詰めを示すものではない。
 - Grok は指示文のファイルを全文読み込み、上限も切り詰めも無い ([公式 project rules](https://docs.x.ai/build/features/project-rules))。同梱の `~/.grok/README.md` にある 1 ファイル 10,000 文字の上限は、公式 docs と同梱の user guide に合わないので根拠にしない。
-- 共通規約・`.chezmoitemplates/gemini/instructions.md`・repo 直下の `AGENTS.md` を増やしたときと、rule を足すか rule の見出し・`paths` を変えたとき (rule の一覧が後半のファイルに入る) は、bytes を計測する。
-  `wc -c` は LANG に依らず bytes を数える (`wc -m` は locale 依存)。
+- 残りの余裕は描画した bytes で測る (`wc -c` は LANG に依らず bytes を数え、`wc -m` は locale 依存)。後半のファイルには rule の一覧も入るので、rule の追加と見出し・`paths` の変更でも増える。
 
   ```sh
   chezmoi execute-template --source . < home/dot_gemini/config/AGENTS.md.tmpl | wc -c

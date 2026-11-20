@@ -74,8 +74,6 @@ fi
 _brew_bin="$(command -v brew || true)"
 if [ -z "$_brew_bin" ] && [ -x /opt/homebrew/bin/brew ]; then
     _brew_bin="/opt/homebrew/bin/brew"
-elif [ -z "$_brew_bin" ] && [ -x /usr/local/bin/brew ]; then
-    _brew_bin="/usr/local/bin/brew"
 fi
 if [ -n "$_brew_bin" ]; then
     eval "$("$_brew_bin" shellenv)"

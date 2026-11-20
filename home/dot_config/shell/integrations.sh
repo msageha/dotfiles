@@ -108,13 +108,15 @@ if $_dotfiles_human_shell; then
 fi
 
 # Claude Code の github plugin (GitHub MCP server) が読む GITHUB_PERSONAL_ACCESS_TOKEN を gh のトークンから入れる。
-# トークンは変わりうるためファイルに置かず、gh auth token はシェル起動を遅くしないよう claude の起動時に呼ぶ (fish は functions/claude.fish)
+# gh のアカウントの切り替えに追従するよう、ファイルにもこのシェルにも残さず、起動のたびに claude のプロセスにだけ渡す
+# (gh auth token はシェル起動を遅くしないよう、シェルの初期化ではなくここで呼ぶ。fish は functions/claude.fish)
 claude() {
     if [ -z "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] && command -v gh &>/dev/null; then
         local gh_token
         gh_token="$(gh auth token 2>/dev/null)"
         if [ -n "$gh_token" ]; then
-            export GITHUB_PERSONAL_ACCESS_TOKEN="$gh_token"
+            GITHUB_PERSONAL_ACCESS_TOKEN="$gh_token" command claude "$@"
+            return
         fi
     fi
     command claude "$@"

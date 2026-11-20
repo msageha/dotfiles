@@ -43,8 +43,9 @@
 {{- end }}
 
 {{ if ne .chezmoi.os "windows" -}}
-.vim
-.tmux
+{{- /* 旧版が external で置いたテーマだけを消す。親の ~/.vim・~/.tmux を指定すると、利用者が置いたファイルも apply のたびに消える */}}
+.vim/pack/themes/start/dracula
+.tmux/plugins/dracula
 {{- /* 残っていると tmux が ~/.config/tmux/tmux.conf と両方読む */}}
 .tmux.conf
 {{ $fontDir := ".local/share/fonts" }}

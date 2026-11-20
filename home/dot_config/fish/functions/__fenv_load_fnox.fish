@@ -8,44 +8,29 @@ function __fenv_load_fnox
         test -f fnox.toml; or test -f fnox.$selected.toml; or return 0
     end
 
-    set -l temp_dir (mktemp -d)
-    if test -z "$temp_dir"
-        echo "Failed to create temporary directory."
-        return 1
-    end
-
-    set -l profile_args
-    if test -f fnox.toml
-        cp fnox.toml "$temp_dir/fnox.toml"
-        if test "$selected" != default; and test -f fnox.$selected.toml
-            cp fnox.$selected.toml "$temp_dir/fnox.$selected.toml"
-            set profile_args -P "$selected"
-        end
-    else if test "$selected" != default; and test -f fnox.$selected.toml
-        cp fnox.$selected.toml "$temp_dir/fnox.toml"
-    end
-    # fnox は fnox.local.toml もマージするため、存在すればコピーして本来のマージ結果に合わせる
-    if test -f fnox.local.toml
-        cp fnox.local.toml "$temp_dir/fnox.local.toml"
-    end
-
-    # 1Password の signin と失効時の中断は fnox wrapper (config.fish) が担う。
-    # command fnox で迂回すると、失効時に op が secret ごとに認証ダイアログを出す
-    set -l fnox_output (fnox -c "$temp_dir/fnox.toml" $profile_args export -f env 2>/dev/null)
+    # 設定の探索 (親ディレクトリ・fnox.local.toml・fnox.<profile>.toml の merge) は fnox に任せる。-c で設定を渡すと、隣の
+    # fnox.local.toml と profile のファイルを読まない。
+    # 1Password の signin と失効時の中断は fnox wrapper (config.fish) が担う。command fnox で迂回すると、失効時に op が secret ごとに認証ダイアログを出す。
+    # wrapper も選んだ profile の設定を見て signin するよう、profile は -P ではなく FNOX_PROFILE で渡す
+    set -lx FNOX_PROFILE $selected
+    set -l fnox_output (fnox export -f env 2>/dev/null)
     set -l fnox_status $status
-    rm -rf "$temp_dir"
-
     if test $fnox_status -ne 0
         echo "Failed to load fnox environment."
         return $fnox_status
     end
 
+    # env 形式は 1 secret 1 行で、値を quote しない・'…' (中に escape 無し)・"…" (\" \\ \n 等の escape 付き) のどれかで書く。
+    # "…" の中身は fish の unquote した escape と同じ規則で読めるが、そのまま渡すと ' を quote の開始とみなすので、先に \' にする
     for line in $fnox_output
         string match -qr '^[A-Za-z_][A-Za-z0-9_]*=' -- "$line"; or continue
         set -l kv (string split -m1 '=' -- "$line")
-        # KEY="value" / KEY='value' 形式で出力された場合に備えてクォートを除去する
-        set -l val (string trim -c '"' -- $kv[2])
-        set val (string trim -c "'" -- $val)
+        set -l val $kv[2]
+        if string match -qr '^".*"$' -- $val
+            set val (printf %s (string sub -s 2 -e -1 -- $val) | string replace -a "'" "\\'" | string unescape | string collect -N)
+        else if string match -qr "^'.*'\$" -- $val
+            set val (string sub -s 2 -e -1 -- $val)
+        end
         set -gx $kv[1] "$val"
     end
 end

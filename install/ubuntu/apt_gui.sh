@@ -21,12 +21,12 @@ snap_classic_apps=(
 
 function update() {
     log_step "Updating APT package lists..."
-    run_privileged apt -yq update
+    run_privileged apt-get -yq update
 }
 
 function install_apt_apps() {
     log_step "Installing APT GUI packages..."
-    run_privileged apt install -yq "${apt_apps[@]}"
+    run_privileged apt-get install -yq "${apt_apps[@]}"
 }
 
 function install_snap_app() {
@@ -77,13 +77,14 @@ function install_chrome() {
 
     local deb
     deb="$(mktemp --suffix=.deb)"
+    # RETURN の trap は関数を抜けた後も残り、後続の source の終了でも発火するので、発火時に自分を外す。
     # shellcheck disable=SC2064  # $deb を今展開して trap に固定する
-    trap "rm -f '$deb'" RETURN
+    trap "rm -f '$deb'; trap - RETURN" RETURN
     if ! curl -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_${arch}.deb" -o "$deb"; then
         log_warn "Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping."
         return 0
     fi
-    run_privileged apt install -yq "$deb"
+    run_privileged apt-get install -yq "$deb"
 }
 
 function main() {

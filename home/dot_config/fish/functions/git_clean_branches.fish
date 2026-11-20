@@ -30,8 +30,12 @@ function git_clean_branches
     read -l -P "Delete "(count $targets)" branches (including unmerged)? [y/N] " ans
     string match -qi y -- $ans; or return 1
 
+    set -l failed
     for branch in $targets
-        git branch -D $branch
-        echo "Deleted branch: $branch"
+        git branch -D $branch; or set -a failed $branch
+    end
+    if test (count $failed) -gt 0
+        echo "Failed to delete: $failed" >&2
+        return 1
     end
 end
