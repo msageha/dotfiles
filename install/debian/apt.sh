@@ -39,17 +39,17 @@ apt_tools=(
 
 function update() {
     log_step "Updating APT package lists..."
-    run_privileged apt-get -yq update
+    run_privileged apt -yq update
 }
 
 function install_base() {
     log_step "Installing base APT packages..."
-    run_privileged apt-get install -yq "${apt_install_opts[@]}" "${apt_base[@]}"
+    run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_base[@]}"
 }
 
 function install_tools() {
     log_step "Installing APT tool packages..."
-    run_privileged apt-get install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
+    run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
 }
 
 function install_chezmoi() {
@@ -88,8 +88,8 @@ function install_docker() {
     run_privileged chmod a+r /etc/apt/keyrings/docker.asc
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${os_id} ${codename} stable" \
         | run_privileged tee /etc/apt/sources.list.d/docker.list > /dev/null
-    run_privileged apt-get -yq update
-    run_privileged apt-get install -yq "${apt_install_opts[@]}" \
+    run_privileged apt -yq update
+    run_privileged apt install -yq "${apt_install_opts[@]}" \
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     # $USER は cron や一部のコンテナでは未設定で、set -u で落ちるため id -un を使う
     run_privileged usermod -aG docker "$(id -un)"
@@ -102,14 +102,14 @@ function upgrade() {
         return 0
     fi
     log_step "Upgrading APT packages..."
-    run_privileged apt-get -yq upgrade --with-new-pkgs
+    run_privileged apt -yq upgrade
 }
 
-# パッケージ一覧 (/var/lib/apt/lists) は消さない。消すと apt-get update まで apt-get install が失敗する (イメージを小さくする削除は Dockerfile が行う)
+# パッケージ一覧 (/var/lib/apt/lists) は消さない。消すと apt update まで apt install が失敗する (イメージを小さくする削除は Dockerfile が行う)
 function clean() {
     log_step "Cleaning up APT..."
-    run_privileged apt-get -yq autoremove
-    run_privileged apt-get -yq clean
+    run_privileged apt -yq autoremove
+    run_privileged apt -yq clean
 }
 
 function main() {

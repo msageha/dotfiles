@@ -150,15 +150,15 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]
     }
     # 利用者が書いた非 ASCII の文字を壊さないよう、既存のファイルの文字コードで読み、同じ文字コードで書き戻す。
     # 5.1 の Get-Content は BOM の無い UTF-8 を ANSI として読むので使わない。BOM があればそれに従い、無ければ UTF-8 として
-    # 読めるかで UTF-8 と ANSI (5.1 の Set-Content / Add-Content の既定) を見分ける。pwsh では Encoding.Default が UTF-8 なので、
-    # ANSI は current culture の ANSI code page で引く
+    # 読めるかで UTF-8 と ANSI (5.1 の Set-Content / Add-Content の既定) を見分ける。ANSI は、表示言語ではなく system locale の
+    # code page (5.1 の Encoding.Default と同じ。pwsh の Encoding.Default は UTF-8) をレジストリから引く
     $reader = [System.IO.StreamReader]::new($ProfilePath, [System.Text.UTF8Encoding]::new($false, $true), $true)
     try {
         $current = $reader.ReadToEnd()
         $encoding = $reader.CurrentEncoding
     }
     catch [System.Text.DecoderFallbackException] {
-        $encoding = [System.Text.Encoding]::GetEncoding([System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ANSICodePage)
+        $encoding = [System.Text.Encoding]::GetEncoding([int](Get-ItemPropertyValue 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage' 'ACP'))
         $current = [System.IO.File]::ReadAllText($ProfilePath, $encoding)
     }
     finally {

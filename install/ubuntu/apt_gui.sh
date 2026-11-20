@@ -21,12 +21,12 @@ snap_classic_apps=(
 
 function update() {
     log_step "Updating APT package lists..."
-    run_privileged apt-get -yq update
+    run_privileged apt -yq update
 }
 
 function install_apt_apps() {
     log_step "Installing APT GUI packages..."
-    run_privileged apt-get install -yq "${apt_apps[@]}"
+    run_privileged apt install -yq "${apt_apps[@]}"
 }
 
 function install_snap_app() {
@@ -84,7 +84,7 @@ function install_chrome() {
         log_warn "Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping."
         return 0
     fi
-    run_privileged apt-get install -yq "$deb"
+    run_privileged apt install -yq "$deb"
 }
 
 function main() {
