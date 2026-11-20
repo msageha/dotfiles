@@ -8,12 +8,6 @@
     "enabled": true
   },
   "minimumReleaseAge": "7 days",
-  "customDatasources": {
-    "onepassword-cli": {
-      "defaultRegistryUrlTemplate": "https://app-updates.agilebits.com/product_history/CLI2",
-      "format": "html"
-    }
-  },
   "gitIgnoredAuthors": ["github-actions[bot]@users.noreply.github.com"],
   "packageRules": [
     {
@@ -47,18 +41,6 @@
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch",
       "automerge": true
-    },
-    {
-      "description": "1Password CLI の配布ページは公開日を返さず、既定の minimumReleaseAgeBehaviour (timestamp-required) では更新が出ないので、日付なしで更新を出し、minimumReleaseAge の猶予の代わりに人手レビューにする (ほかの non-major の自動マージを止めないよう別の PR にする)",
-      "matchDatasources": [
-        "custom.onepassword-cli"
-      ],
-      "extractVersion": "op_[^/]+_v(?<version>\\d+\\.\\d+\\.\\d+)\\.zip$",
-      "versioning": "semver",
-      "minimumReleaseAgeBehaviour": "timestamp-optional",
-      "automerge": false,
-      "groupName": "1password-cli",
-      "groupSlug": "1password-cli"
     },
     {
       "description": "op / age / fnox は mise.toml の `# renovate:` 注釈 (regex manager) で更新するので、組み込みの mise manager では無効にして重複 PR を防ぐ (op は公開 GitHub リポジトリが無く、組み込み manager では lookup できない)",
