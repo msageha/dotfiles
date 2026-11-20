@@ -28,7 +28,12 @@ function __fenv_load_fnox
 
     # env 形式は値によって quote の規則が変わり、複数行の値は行をまたぐので、JSON から key と value を NUL 区切りで取り出す
     set -l pairs (printf '%s\n' $fnox_json | jq -j '.secrets | to_entries[] | .key, "\u0000", .value, "\u0000"' | string split0)
-    for i in (seq 1 2 (count $pairs))
-        set -gx $pairs[$i] $pairs[(math $i + 1)]
+    if test $pipestatus[2] -ne 0
+        echo "Failed to parse fnox output." >&2
+        return 1
+    end
+    while set -q pairs[2]
+        set -gx $pairs[1] $pairs[2]
+        set -e pairs[1..2]
     end
 end
