@@ -2,7 +2,7 @@ function __fenv_load_fnox
     set -l selected "$argv[1]"
     type -q fnox; or return 0
 
-    test -f fnox.toml; or test -f fnox.$selected.toml; or return 0
+    path is -f fnox.toml fnox.local.toml fnox.$selected.toml; or return 0
     # fenv の候補には mise だけの環境の名前も入るので、fnox に無い profile なら default を読む
     set -l fnox_profile default
     if test -f fnox.$selected.toml; or contains -- $selected (__fenv_fnox_inline_profiles)
@@ -13,15 +13,16 @@ function __fenv_load_fnox
         return 1
     end
 
-    # 設定の探索 (親ディレクトリ・fnox.local.toml・fnox.<profile>.toml の merge) は fnox に任せる。-c で設定を渡すと、隣の
-    # fnox.local.toml と profile のファイルを読まない。
+    # 設定の探索 (親ディレクトリ・fnox.local.toml・fnox.<profile>.toml の merge) は fnox に任せる (-c で設定を渡すと、隣の
+    # fnox.local.toml と profile のファイルを読まない)。
     # 1Password の signin と失効時の中断は fnox wrapper (config.fish) が担う。command fnox で迂回すると、失効時に op が secret ごとに認証ダイアログを出す。
-    # wrapper も選んだ profile の設定を見て signin するよう、profile は -P ではなく FNOX_PROFILE で渡す
-    set -lx FNOX_PROFILE $fnox_profile
-    set -l fnox_json (fnox export -f json)
+    # profile を FNOX_PROFILE で渡すと、wrapper が signin の後に適用する hook-env にも渡り、次の prompt の hook-env がこの shell の
+    # profile へ戻すときに、下で入れる値を消すので、-P で渡す。
+    # 失敗時の stderr は設定ファイルの抜粋 (secret の値を含みうる) を出すので捨てる
+    set -l fnox_json (fnox export -P $fnox_profile -f json 2>/dev/null)
     set -l fnox_status $status
     if test $fnox_status -ne 0
-        echo "fenv: failed to load fnox environment" >&2
+        echo "fenv: failed to load fnox environment (details: fnox check -P $fnox_profile)" >&2
         return $fnox_status
     end
 

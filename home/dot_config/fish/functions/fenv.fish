@@ -4,31 +4,29 @@ function fenv -d "カレントディレクトリの mise / fnox の環境を選�
         return 1
     end
 
+    # mise.<env>.toml・mise.<env>.local.toml は環境 <env> の、fnox.<profile>.toml は profile <profile> の設定
     set -l candidates default
-
-    for env_file in mise.*.toml fnox.*.toml
-        test -f "$env_file"; or continue
-        # mise.local.toml・fnox.local.toml は環境によらず読まれる上書きなので候補にせず、mise.<env>.local.toml は <env> として扱う
-        set -l name (string replace -r '^(mise|fnox)\.(.+)\.toml$' '$2' -- "$env_file" | string replace -r '(^|\.)local$' '')
-        test -n "$name"; or continue
-        contains -- "$name" $candidates; or set -a candidates "$name"
+    for env_file in mise.*.toml
+        test -f "$env_file"; and set -a candidates (string replace -r '^mise\.(.+?)(\.local)?\.toml$' '$1' -- "$env_file")
     end
-    # fnox.toml の中で定義した profile はファイルを持たないので、fnox から名前を取る
+    for env_file in fnox.*.toml
+        test -f "$env_file"; and set -a candidates (string replace -r '^fnox\.(.+)\.toml$' '$1' -- "$env_file")
+    end
+    # fnox の設定の [profiles.<profile>] で定義した profile はファイルを持たないので、fnox から名前を取る
     set -a candidates (__fenv_fnox_inline_profiles)
 
-    set -l selected (printf '%s\n' $candidates | sort -u | fzf --select-1 --prompt='env> ')
+    # mise.local.toml と fnox.local.toml は環境によらず読まれるので、local は候補にしない
+    set -l selected (string match -v local -- $candidates | sort -u | fzf --select-1 --prompt='env> ')
     if test -z "$selected"
         return 1
     end
 
-    if type -q mise; and test -f mise.toml
+    if type -q mise; and path is -f mise.toml mise.local.toml mise.$selected.toml mise.$selected.local.toml
         if test "$selected" = default
             mise env -s fish | source
         else
             mise -E "$selected" env -s fish | source
         end
-    else if type -q mise; and test -f mise.$selected.toml
-        mise -E "$selected" env -s fish | source
     end
 
     __fenv_load_fnox "$selected"
