@@ -201,8 +201,7 @@ end
 if test "$human_shell" = true; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
 
-    # 引数は fnox に渡す引数。fnox が読む設定ファイル (隠しファイルと .config/ の下を含む) を、その -P / --profile
-    # (無ければ FNOX_PROFILE、それも無ければ default) の profile のものまで見る
+    # 引数は fnox に渡す引数。その -P / --profile (無ければ FNOX_PROFILE、それも無ければ default) の profile の設定まで見る
     function __fnox_find_1password_config
         set -l profiles default
         set -q FNOX_PROFILE; and set profiles (string split , -- $FNOX_PROFILE)
@@ -211,7 +210,7 @@ if test "$human_shell" = true; and type -q fnox
         end
         set -l dir $PWD
         while test "$dir" != /
-            for fnox_config in $dir/{,.,.config/}fnox{,.local}.toml $dir/{,.,.config/}fnox.$profiles.toml
+            for fnox_config in $dir/fnox.toml $dir/fnox.local.toml $dir/fnox.$profiles.toml
                 if test -f "$fnox_config"; and grep -Eq 'type[[:space:]]*=[[:space:]]*["'\'']1password["'\'']' "$fnox_config"
                     printf '%s\n' "$fnox_config"
                     return 0
