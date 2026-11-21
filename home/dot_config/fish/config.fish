@@ -204,7 +204,7 @@ if test "$human_shell" = true; and type -q fnox
     # 引数は fnox に渡す引数。その -P / --profile (無ければ FNOX_PROFILE、それも無ければ default) の profile の設定まで見る
     function __fnox_find_1password_config
         set -l profiles default
-        set -q FNOX_PROFILE; and set profiles (string split , -- $FNOX_PROFILE)
+        set -q FNOX_PROFILE; and set profiles $FNOX_PROFILE
         if argparse -i 'P/profile=+' -- $argv 2>/dev/null; and set -q _flag_profile
             set profiles (string split , -- $_flag_profile)
         end
