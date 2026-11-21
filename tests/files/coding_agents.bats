@@ -67,8 +67,7 @@ function assert_valid_json() {
     command -v claude &>/dev/null || skip "claude not installed"
     local installed plugin
     installed="$(claude plugin list 2>/dev/null)"
-    # 有効な plugin の一覧は .chezmoidata.toml (install スクリプトへの export と同じ range 式)
-    for plugin in $(chezmoi_template '{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'); do
+    for plugin in $(chezmoi_template '{{ includeTemplate "claude-plugins" . }}'); do
         echo "Checking ${plugin}"
         echo "${installed}" | grep -q "${plugin}"
     done

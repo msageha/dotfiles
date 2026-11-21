@@ -55,7 +55,7 @@
 - AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、範囲が曖昧でも仮定を置いて進める、前のターンの許可を持ち越す、worktree や draft PR を自律的に作る等) を上書きできない。
   これと衝突する少数の契約だけを `.chezmoitemplates/codex/developer-instructions.md` に書き、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れる。
   各項目は共通規約の該当する規範と同じ条件で書き、共通規約を変えたら同じ変更で直す。Codex ではこちらが AGENTS.md より優先されるので、条件がずれると Codex だけ振る舞いが変わる。
-- Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan --settings '{"disableAllHooks":true}'` を使う (`.chezmoitemplates/codex/instructions.md`)。plan だけでは Stop hook が止まらず、`.claude/verify.sh` が作業ツリーを変えうるので、hook も止める。`disableAllHooks` は user settings の PreToolUse hook (危険なコマンドの遮断) も止め、plan が塞ぐのは編集で、shell コマンドは通常の permission の判定を通るので、この起動は `codex exec -s read-only` と違い capability としての read-only ではない。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
+- Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan` を使う (`.chezmoitemplates/codex/instructions.md`)。plan が塞ぐのは編集で、shell コマンドは通常の permission の判定を通るので、この起動は `codex exec -s read-only` と違い capability としての read-only ではない。hook も止めないので、相談先の checkout の project settings の hook (`-p` は workspace trust を確かめない) と plugin の hook (codex plugin の stop-time review gate を有効にした workspace では、ターンの終わりに Codex のレビューが走る) も動く。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
 - `dot_codex/rules/default.rules` の allow は、共通規約と commit / pr skill が求める git の操作のうち、sandbox の中では `.git` に書けず失敗するものを sandbox の外で通す (git のほかに `xcodebuild` も allow している)。後ろに付けられる引数を理由に載せていない操作があるので (対象と理由は rules のコメント)、pr skill の `--onto` の rebase と `git branch -f` は、承認を求められない session (`approval_policy = "never"`) の Codex では実行できない (`on-request` の session では承認を経て実行できる)。`.git` に書く git 以外のコマンドも載せていないので、improve-pr skill の `gh pr checkout` も同じ。載せた操作も後ろの引数は絞れず (`git fetch origin --upload-pack=<command>`・`git push origin --force`・`git switch -C` も一致する)、allow は sandbox を抜けようとする agent を止める境界にはならない。`approval_policy = "never"` では allow の一覧が Codex の prompt に出ないので、一致する形は `.chezmoitemplates/codex/instructions.md` の「git の実行形」節が列挙する (見出しを共通規約の「git」節と分けているのは、skill の「AGENTS.md の `git` 節」という参照の先を 1 つにするため)。rules を変えたら同じ変更で直す。`codex execpolicy check` は argv を直接照合するので、実行時に shell の書き方で一致しなくなる条件 (同節にある、quote していない `~` `^` `*` 等・環境変数の前置き・redirect) は確かめられない。allow は read-only の session にも効き、Claude Code の codex plugin と top-level の `codex review` は `--ignore-rules` を渡せないので、これらの read-only の review でも allow のコマンドは sandbox の外で動く。
 - `dot_codex/modify_private_config.toml` の本体は `.chezmoitemplates/codex/config.toml.modify` にあり、`private_dot_codex-private/modify_private_config.toml` も同じ本体を include する。
 - `codex-private` (`claude-private` と同じ場所に定義する) は、`CODEX_HOME=~/.codex-private` で Codex を個人アカウント用に起動する。ログイン (`auth.json`) は `CODEX_HOME` ごとに分かれる。
@@ -74,7 +74,7 @@
   前半は `dot_gemini/config/AGENTS.md.tmpl` → `~/.gemini/config/AGENTS.md`、後半と `.chezmoitemplates/gemini/instructions.md` は `dot_gemini/config/GEMINI.md.tmpl` → `~/.gemini/config/GEMINI.md`。
   どちらも frontmatter 無しの常時有効な global rule で、この 2 つのパスを読むのは App と CLI (IDE / extensions の global rule は `~/.gemini/AGENTS.md`・`~/.gemini/GEMINI.md`・`~/.gemini/config/rules/*.md`)。
 - 分割と上限の検査は `.chezmoitemplates/gemini/agents-md-part` が行う。
-  見出しが見つからないときと、生成物が 24,000 bytes を超えたときは、テンプレートが fail して描画を止める。
+  見出しが見つからないとき、生成物か repo 直下の `AGENTS.md` が 24,000 bytes を超えたとき、3 ファイルの合計が下記「サイズ予算」の 20,000 tokens 相当を超えたときは、テンプレートが fail して描画を止める (push 時の `chezmoi-dry-run` hook で検出される)。
   共通規約の `## git` 見出しを変えるときは、分割位置も合わせて直す。
 - Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。
   project 直下の CLAUDE.md は、補足 (`.chezmoitemplates/gemini/instructions.md`) が着手前に読ませる。
@@ -98,7 +98,7 @@
 - 他のツールと共有する skill は、本体を include する wrapper で配る。
   Codex と Grok は `dot_agents/skills/<name>/SKILL.md.tmpl` → `~/.agents/skills`、Antigravity は `dot_gemini/config/skills/<name>/SKILL.md.tmpl`。
   共有 skill の本文は他のツールからも読まれ、Grok は `compat.claude.skills = true` で `~/.claude/skills` の全件も読む。
-  そのため、どの skill も Claude 固有の機構 (`$ARGUMENTS` の置換・Claude Code の tool 名・bundled skill・Stop hook) に依存させず、使うときは「使える環境では」と条件を付ける。
+  そのため、どの skill も Claude 固有の機構 (`$ARGUMENTS` の置換・Claude Code の tool 名・bundled skill) に依存させず、使うときは「使える環境では」と条件を付ける。
 - commit / pr には `disable-model-invocation` を付けず、自然文の依頼でも起動する。
   skill を読み込んだことは git 操作の許可ではなく、操作してよいかは共通規約の「git」節 (ユーザーの明示指示か、前文の常設の手順) で決まる。
   skill と各ツールの補足には、この条件を写さず「AGENTS.md の `git` 節が認めるとき」と参照で書く。写しは条件の一部 (出所の除外等) を落とし、前文より広く読まれる。「git」節に無い操作 (PR への返信・thread の resolve・review の submit) は常設の手順の対象ではないので、この参照に置き換えず「ユーザーが頼んだときだけ」と書く。
@@ -119,12 +119,11 @@
 - Antigravity は rule ファイル 1 つを、include 展開後に 24,000 bytes で切り詰める ([公式 rules](https://antigravity.google/docs/rules))。
   対象は分割した 2 ファイルと、workspace の常時有効な rule として読まれる repo 直下の `AGENTS.md`。
 - Antigravity の global と always_on の rule は、全体で 20,000 tokens の予算を共有する。超過すると、大きいファイルから順に path と description だけの pointer に格下げされ、共通規約が本文として読まれなくなる。
-  上の 3 ファイルの合計 bytes も見る。token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、合計 bytes の 1/3 が 20,000 を下回るようにする。
+  token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、上の 3 ファイルの合計 bytes の 1/3 が 20,000 を下回るようにする。
 - Antigravity は skill の本文にも 24 KB の上限を持つ (agy 同梱の changelog。`agy plugin validate` が超過を警告する。公式 docs には記載が無く、超過分の扱いは不明)。Antigravity に配る共有 skill (`dot_gemini/config/skills/`) はこれに収める。
 - Codex は project doc (repo root から作業ディレクトリまでの AGENTS.md の連結) を `project_doc_max_bytes` (既定 32 KiB) で切り詰める。`~/.codex/AGENTS.md` は切り詰めの対象外。ただし Codex (0.169) は、global を含む指示文の合計がこの値を超えると warning (`Combined user instructions use <N> bytes ...`) を出す。共通規約と Codex の補足の合計は既定値を超えるので、`codex exec` の出力を含めて session ごとに出るが、切り詰めを示すものではない。
 - Grok は指示文のファイルを全文読み込み、上限も切り詰めも無い ([公式 project rules](https://docs.x.ai/build/features/project-rules))。同梱の `~/.grok/README.md` にある 1 ファイル 10,000 文字の上限は、公式 docs と同梱の user guide に合わないので根拠にしない。
-- 共通規約・`.chezmoitemplates/gemini/instructions.md`・repo 直下の `AGENTS.md` を増やしたときと、rule を足すか rule の見出し・`paths` を変えたとき (rule の一覧が後半のファイルに入る) は、bytes を計測する。
-  `wc -c` は LANG に依らず bytes を数える (`wc -m` は locale 依存)。
+- 残りの余裕は描画した bytes で測る (`wc -c` は LANG に依らず bytes を数え、`wc -m` は locale 依存)。後半のファイルには rule の一覧も入るので、rule の追加と見出し・`paths` の変更でも増える。
 
   ```sh
   chezmoi execute-template --source . < home/dot_gemini/config/AGENTS.md.tmpl | wc -c

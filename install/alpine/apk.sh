@@ -30,11 +30,6 @@ function upgrade() {
     run_privileged apk upgrade
 }
 
-function clean() {
-    log_step "Cleaning up APK cache..."
-    run_privileged rm -rf /var/cache/apk/*
-}
-
 function main() {
     if ! has_privilege; then
         log_warn "root/sudo 権限が無いため APK 関連の操作をすべてスキップします。"
@@ -44,7 +39,6 @@ function main() {
     update
     install_base
     upgrade
-    clean
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

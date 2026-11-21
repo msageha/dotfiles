@@ -7,6 +7,8 @@
 # chezmoi テンプレートが include で参照する
 !install
 !install/**
+# Antigravity の rule の予算の検査 (.chezmoitemplates/gemini/agents-md-part) が include で読む
+!AGENTS.md
 
 !settings
 !settings/common

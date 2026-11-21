@@ -18,11 +18,7 @@ function __repo_search_with_chezmoi -d 'ghq 管理下のリポジトリと chezm
     end
     switch "$selector"
         case fzf fzf-tmux peco percol fzy sk
-            # ghq root の外にある chezmoi のソースディレクトリを一覧に足す
-            begin
-                ghq list --full-path
-                test -d $HOME/.local/share/chezmoi; and echo $HOME/.local/share/chezmoi
-            end | "$selector" $selector_options $flags | read select
+            __git_all_repos | "$selector" $selector_options $flags | read select
         case \*
             printf "\nERROR: selector '$selector' is not supported.\n"
     end

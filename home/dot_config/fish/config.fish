@@ -72,8 +72,6 @@ end
 set -l brew_bin (command -v brew 2>/dev/null)
 if test -z "$brew_bin"; and test -x /opt/homebrew/bin/brew
     set brew_bin /opt/homebrew/bin/brew
-else if test -z "$brew_bin"; and test -x /usr/local/bin/brew
-    set brew_bin /usr/local/bin/brew
 end
 if test -n "$brew_bin"
     __source_cached_init brew-shellenv "$brew_bin" shellenv fish
@@ -203,14 +201,16 @@ end
 if test "$human_shell" = true; and type -q fnox
     fnox activate fish | string replace --regex '^__fnox_env_eval$' '' | source
 
+    # 引数は fnox に渡す引数。その -P / --profile (無ければ FNOX_PROFILE、それも無ければ default) の profile の設定まで見る
     function __fnox_find_1password_config
+        set -l profiles default
+        set -q FNOX_PROFILE; and set profiles $FNOX_PROFILE
+        if argparse -i 'P/profile=+' -- $argv 2>/dev/null; and set -q _flag_profile
+            set profiles (string split , -- $_flag_profile)
+        end
         set -l dir $PWD
         while test "$dir" != /
-            set -l fnox_profile default
-            if set -q FNOX_PROFILE
-                set fnox_profile $FNOX_PROFILE
-            end
-            for fnox_config in $dir/fnox.toml $dir/fnox.local.toml $dir/fnox.$fnox_profile.toml
+            for fnox_config in $dir/fnox.toml $dir/fnox.local.toml $dir/fnox.$profiles.toml
                 if test -f "$fnox_config"; and grep -Eq 'type[[:space:]]*=[[:space:]]*["'\'']1password["'\'']' "$fnox_config"
                     printf '%s\n' "$fnox_config"
                     return 0
@@ -282,7 +282,7 @@ if test "$human_shell" = true; and type -q fnox
     # (そのまま実行すると op が secret ごとに認証ダイアログを出す)。deactivate / shell の扱いは activate 版と同じ
     functions -e fnox
     function fnox
-        if type -q op; and __fnox_find_1password_config >/dev/null; and not __fnox_op_session_ok
+        if type -q op; and __fnox_find_1password_config $argv >/dev/null; and not __fnox_op_session_ok
             if op signin >/dev/null 2>&1
                 set -g __fnox_op_session_status 0
                 set -g __fnox_op_session_expires (math (date +%s) + 300)

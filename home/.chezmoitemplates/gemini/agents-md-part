@@ -16,4 +16,18 @@
 {{- if gt (len $body) 24000 -}}
 {{-   fail (printf "%s would be %d bytes; Antigravity truncates rule files at 24000 bytes" .target (len $body)) -}}
 {{- end -}}
+{{- /* この repo で作業するときは repo 直下の AGENTS.md も always_on の rule になるので、後半の描画で一緒に検査する。
+       global と always_on の rule は合わせて 20,000 tokens の予算を共有し、超えると大きいファイルから pointer に格下げされる。
+       token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置いて 3 ファイルの合計 bytes で見る */ -}}
+{{- if eq .part "1" -}}
+{{-   $repo := replace "\r\n" "\n" (include "../AGENTS.md") -}}
+{{-   if gt (len $repo) 24000 -}}
+{{-     fail (printf "AGENTS.md at the repository root is %d bytes; Antigravity truncates rule files at 24000 bytes" (len $repo)) -}}
+{{-   end -}}
+{{-   $first := includeTemplate "gemini/agents-md-part" (dict "part" "0" "target" "~/.gemini/config/AGENTS.md") -}}
+{{-   $total := add (len $first) (len $body) (len $repo) -}}
+{{-   if gt $total 60000 -}}
+{{-     fail (printf "Antigravity rule files would total %d bytes (about %d tokens); the global and always_on rules share a 20000-token budget" $total (div $total 3)) -}}
+{{-   end -}}
+{{- end -}}
 {{- $body -}}

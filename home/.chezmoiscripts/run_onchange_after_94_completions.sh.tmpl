@@ -2,6 +2,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# 補完の対象の多くは mise で入るので、mise の global config が変わったとき (ツールの追加・版の更新) も作り直す。
+# config hash: {{ includeTemplate "dot_config/mise/config.toml.tmpl" . | sha256sum }}
+
 {{ include "../install/lib.sh" }}
 activate_tool_paths
 

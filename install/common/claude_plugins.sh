@@ -4,7 +4,7 @@ declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/..
 
 function main() {
     # CLAUDE_MARKETPLACES (name=owner/repo の空白区切り) と CLAUDE_PLUGINS (有効な plugin id の空白区切り) は
-    # run_once_before テンプレートが .chezmoidata.toml の claude.* から export する。
+    # chezmoi の各テンプレートが .chezmoidata.toml の claude.* から (.chezmoitemplates/claude-marketplaces・claude-plugins で) 作って export する。
     # CLAUDE_PLUGINS の未設定と空文字はどちらも 0 件とする (PowerShell は空文字を代入した環境変数を削除して両者を区別できないので、Windows 版とそろえる)
     if [ -z "${CLAUDE_MARKETPLACES+x}" ]; then
         log_error "CLAUDE_MARKETPLACES is not set; it must be exported by the caller."

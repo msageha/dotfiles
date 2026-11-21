@@ -27,13 +27,13 @@ include = ["*/Terminus/PCF/*.pcf.gz"]
 
 ["{{ $fontDir }}/sauce-code-pro-nerd-font"]
 type = "archive"
-url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/SourceCodePro.zip"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ .fonts.nerdFonts }}/SourceCodePro.zip"
 exact = true
 include = ["*.ttf"]
 
 ["{{ $fontDir }}/nerd-fonts-symbols"]
 type = "archive"
-url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/NerdFontsSymbolsOnly.zip"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ .fonts.nerdFonts }}/NerdFontsSymbolsOnly.zip"
 exact = true
 include = ["*.ttf"]
 

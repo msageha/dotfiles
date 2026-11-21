@@ -1,0 +1,3 @@
+{{- /* .chezmoidata.toml の claude.marketplaces を、install/common/claude_plugins.sh (Windows は claude_plugins.ps1) が
+      CLAUDE_MARKETPLACES で受け取る形式 (name=owner/repo の空白区切り) にする */ -}}
+{{- range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end -}}

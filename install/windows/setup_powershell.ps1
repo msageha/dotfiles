@@ -1,8 +1,9 @@
 #!/usr/bin/env pwsh
-# Starship・SauceCodePro Nerd Font・PowerShell プロファイル・Windows Terminal の設定。
+# Starship と SauceCodePro Nerd Font の導入、PowerShell プロファイルと Windows Terminal の設定 (starship.toml は chezmoi が配る)。
 # Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
-# このファイルは BOM 無しの UTF-8 で、5.1 は日本語を ANSI として読み構文が壊れるため、単体で実行するときは pwsh を使う
-# (`pwsh -File install/windows/setup_powershell.ps1`)。chezmoi 経由ではテンプレートが BOM を付ける。
+# このファイルは BOM 無しの UTF-8 で、5.1 は日本語を ANSI として読み構文が壊れるため、単体で実行するときは pwsh を使い、
+# chezmoi のテンプレートが渡す NERD_FONTS_VERSION も設定する
+# (`$env:NERD_FONTS_VERSION = '<.chezmoidata.toml の fonts.nerdFonts>'; pwsh -File install/windows/setup_powershell.ps1`)。chezmoi 経由ではテンプレートが BOM を付ける。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
@@ -17,19 +18,8 @@ function Update-SessionPath {
     $env:Path = ($current + $added) -join ';'
 }
 
-# home/.chezmoitemplates/external-fonts.toml の nerd-fonts と同じ版にする (renovate が両方を更新する)
-$NerdFontsVersion = 'v3.5.1'
 $WindowsTerminalFont = 'SauceCodePro NF'
 $WindowsTerminalColorScheme = 'Dracula'
-
-# chezmoi 経由では一時ファイルから実行され $PSScriptRoot がリポジトリ外を指すため、
-# chezmoi が渡す CHEZMOI_SOURCE_DIR (= <repo>/home) を優先する。
-$RepoRoot = if ($env:CHEZMOI_SOURCE_DIR) {
-    (Resolve-Path (Join-Path $env:CHEZMOI_SOURCE_DIR '..')).Path
-} else {
-    (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-}
-$StarshipSource = Join-Path $RepoRoot 'home\dot_config\starship.toml'
 
 function Install-Starship {
     if (Get-Command starship -ErrorAction SilentlyContinue) {
@@ -56,11 +46,15 @@ function Install-NerdFont {
         Write-Step 'SauceCodePro Nerd Font already installed.'
         return
     }
+    # NERD_FONTS_VERSION は run_once_before テンプレートが .chezmoidata.toml の fonts.nerdFonts から渡す
+    if (-not $env:NERD_FONTS_VERSION) {
+        throw 'NERD_FONTS_VERSION is not set; it must be set by the caller.'
+    }
     Write-Step 'Installing SauceCodePro Nerd Font (per-user)...'
 
     $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("scp-nerd-" + [System.Guid]::NewGuid().ToString('N'))
     $zip = "$tmp.zip"
-    $url = "https://github.com/ryanoasis/nerd-fonts/releases/download/$NerdFontsVersion/SourceCodePro.zip"
+    $url = "https://github.com/ryanoasis/nerd-fonts/releases/download/$env:NERD_FONTS_VERSION/SourceCodePro.zip"
     try {
         Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
         Expand-Archive -Path $zip -DestinationPath $tmp -Force
@@ -76,19 +70,6 @@ function Install-NerdFont {
     finally {
         Remove-Item -Path $zip, $tmp -Recurse -Force -ErrorAction SilentlyContinue
     }
-}
-
-function Install-StarshipConfig {
-    if (-not (Test-Path $StarshipSource)) {
-        Write-Warn "starship.toml が見つかりません: $StarshipSource"
-        return
-    }
-    $destDir = Join-Path $env:USERPROFILE '.config'
-    $dest    = Join-Path $destDir 'starship.toml'
-    New-Item -ItemType Directory -Force -Path $destDir | Out-Null
-    # Nerd Font グリフを壊さないよう、変換せずバイト忠実にコピーする
-    Copy-Item -Path $StarshipSource -Destination $dest -Force
-    Write-Step "Installed starship.toml -> $dest"
 }
 
 # PowerShell プロファイルへ書き込む管理ブロック (キーがマーカー名になる)
@@ -167,8 +148,22 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]
     if (-not (Test-Path $ProfilePath)) {
         New-Item -ItemType File -Path $ProfilePath -Force | Out-Null
     }
-    $current = Get-Content -Path $ProfilePath -Raw -ErrorAction SilentlyContinue
-    if ($null -eq $current) { $current = '' }
+    # 利用者が書いた非 ASCII の文字を壊さないよう、既存のファイルの文字コードで読み、同じ文字コードで書き戻す。
+    # 5.1 の Get-Content は BOM の無い UTF-8 を ANSI として読むので使わない。BOM があればそれに従い、無ければ UTF-8 として
+    # 読めるかで UTF-8 と ANSI (5.1 の Set-Content / Add-Content の既定) を見分ける。ANSI は、表示言語ではなく system locale の
+    # code page (5.1 の Encoding.Default と同じ。pwsh の Encoding.Default は UTF-8) をレジストリから引く
+    $reader = [System.IO.StreamReader]::new($ProfilePath, [System.Text.UTF8Encoding]::new($false, $true), $true)
+    try {
+        $current = $reader.ReadToEnd()
+        $encoding = $reader.CurrentEncoding
+    }
+    catch [System.Text.DecoderFallbackException] {
+        $encoding = [System.Text.Encoding]::GetEncoding([int](Get-ItemPropertyValue 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage' 'ACP'))
+        $current = [System.IO.File]::ReadAllText($ProfilePath, $encoding)
+    }
+    finally {
+        $reader.Dispose()
+    }
 
     $pattern = [regex]::Escape($begin) + '[\s\S]*?' + [regex]::Escape($end)
     if ($current -match $pattern) {
@@ -179,8 +174,7 @@ function Set-ProfileManagedBlock([string]$ProfilePath, [string]$Name, [string[]]
         $sep = if ($current.TrimEnd().Length -gt 0) { "`n`n" } else { '' }
         $updated = $current.TrimEnd() + $sep + $block + "`n"
     }
-    # 5.1 の -Encoding utf8 は BOM を付けるため、.NET API で BOM 無し UTF-8 を書く。
-    [System.IO.File]::WriteAllText($ProfilePath, $updated, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($ProfilePath, $updated, $encoding)
     Write-Step "Configured PowerShell profile -> $ProfilePath"
 }
 
@@ -247,7 +241,8 @@ function Set-WindowsTerminalDefaults {
         return
     }
     try {
-        $raw   = Get-Content -Path $path -Raw
+        # 5.1 の Get-Content は BOM の無い UTF-8 を ANSI として読み、書き戻すと非 ASCII の文字が化けるので、UTF-8 で読む
+        $raw   = [System.IO.File]::ReadAllText($path)
         # 5.1 の ConvertFrom-Json は JSONC の行コメントと末尾カンマを読めないため、除いてから解析する
         $clean = ($raw -split "`n" | Where-Object { $_ -notmatch '^\s*//' }) -join "`n"
         $clean = $clean -replace ',(\s*[}\]])', '$1'
@@ -295,7 +290,6 @@ function Set-WindowsTerminalDefaults {
 function Main {
     Install-Starship
     Install-NerdFont
-    Install-StarshipConfig
     Set-PowerShellProfile
     Set-WindowsTerminalDraculaFragment
     Set-WindowsTerminalDefaults

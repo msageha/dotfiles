@@ -8,12 +8,6 @@
     "enabled": true
   },
   "minimumReleaseAge": "7 days",
-  "customDatasources": {
-    "onepassword-cli": {
-      "defaultRegistryUrlTemplate": "https://app-updates.agilebits.com/product_history/CLI2",
-      "format": "html"
-    }
-  },
   "gitIgnoredAuthors": ["github-actions[bot]@users.noreply.github.com"],
   "packageRules": [
     {
@@ -47,13 +41,6 @@
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch",
       "automerge": true
-    },
-    {
-      "matchDatasources": [
-        "custom.onepassword-cli"
-      ],
-      "extractVersion": "op_[^/]+_v(?<version>\\d+\\.\\d+\\.\\d+)\\.zip$",
-      "versioning": "semver"
     },
     {
       "description": "op / age / fnox は mise.toml の `# renovate:` 注釈 (regex manager) で更新するので、組み込みの mise manager では無効にして重複 PR を防ぐ (op は公開 GitHub リポジトリが無く、組み込み manager では lookup できない)",
@@ -167,29 +154,6 @@
         "ARG BASE_IMAGE=(?<depName>[a-z0-9./_-]+):(?<currentValue>[\\w.-]+)\\n"
       ],
       "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "description": "chezmoi external の Nerd Fonts の release zip (SourceCodePro / NerdFontsSymbolsOnly) を同じバージョンで一括更新する",
-      "managerFilePatterns": [
-        "/^home/\\.chezmoitemplates/external-fonts\\.toml$/"
-      ],
-      "matchStrings": [
-        "nerd-fonts/releases/download/(?<currentValue>v[\\d.]+)/"
-      ],
-      "depNameTemplate": "ryanoasis/nerd-fonts",
-      "datasourceTemplate": "github-releases"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^install/windows/setup_powershell\\.ps1$/"
-      ],
-      "matchStrings": [
-        "\\$NerdFontsVersion = '(?<currentValue>v[\\d.]+)'\\n"
-      ],
-      "depNameTemplate": "ryanoasis/nerd-fonts",
-      "datasourceTemplate": "github-releases"
     },
     {
       "customType": "regex",
@@ -337,7 +301,8 @@
       "customType": "regex",
       "managerFilePatterns": [
         "/^install/macos/system_settings\\.sh$/",
-        "/^install/ubuntu/system_settings\\.sh$/"
+        "/^install/ubuntu/system_settings\\.sh$/",
+        "/^install/windows/system_settings\\.ps1$/"
       ],
       "matchStrings": [
         "raw\\.githubusercontent\\.com/dracula/wallpaper/(?<currentDigest>[a-f0-9]{40})/"

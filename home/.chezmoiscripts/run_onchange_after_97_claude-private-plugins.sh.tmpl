@@ -11,7 +11,7 @@ activate_tool_paths
 # 混ざり、Claude Code は installed_plugins.json 等を rename で書き換えるので、ファイル単位の symlink でも共有を保てないため。
 # marketplace と plugin の一覧を埋め込んでいるので、.chezmoidata.toml の claude.* を変えると再実行される
 export CLAUDE_CONFIG_DIR="$HOME/.claude-private"
-export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
-export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
+export CLAUDE_MARKETPLACES='{{ includeTemplate "claude-marketplaces" . }}'
+export CLAUDE_PLUGINS='{{ includeTemplate "claude-plugins" . }}'
 {{ include "../install/common/claude_plugins.sh" }}
 {{ end -}}

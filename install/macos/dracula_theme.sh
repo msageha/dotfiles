@@ -20,11 +20,12 @@ function terminal_app_dracula() {
 
     local tmp_dir
     tmp_dir="$(mktemp -d)"
-    # shellcheck disable=SC2064  # $tmp_dir を今展開して trap に固定する
-    trap "rm -rf '$tmp_dir'" RETURN
+    # RETURN の trap は関数を抜けた後も残り、後続の source の終了でも発火するので、発火時に自分を外す。
+    # 発火時も関数の local の変数を読めるので、パスは trap の文字列に埋め込まず発火時に展開する
+    trap 'rm -rf "$tmp_dir"; trap - RETURN' RETURN
 
     if ! git clone --depth 1 https://github.com/dracula/terminal-app.git "$tmp_dir" 2>/dev/null; then
-        log_step "  リポジトリのクローンに失敗しました。スキップ"
+        log_warn "  リポジトリのクローンに失敗しました。スキップ"
         return 0
     fi
 
@@ -40,7 +41,7 @@ function terminal_app_dracula() {
     if [ -n "$font_data" ]; then
         plutil -replace Font -data "$font_data" "$tmp_dir/Dracula.terminal"
     else
-        log_step "  警告: SauceCodePro Nerd Font が見つかりません。フォント設定をスキップ"
+        log_warn "  SauceCodePro Nerd Font が見つかりません。フォント設定をスキップ"
     fi
 
     # open は非同期のため、固定 sleep ではなくプロファイルが実際に登録されるまでポーリングで待つ
@@ -48,7 +49,7 @@ function terminal_app_dracula() {
     local waited=0
     until terminal_app_has_dracula; do
         if [ "$waited" -ge 30 ]; then
-            log_step "  Dracula プロファイルの登録を確認できませんでした。スキップ"
+            log_warn "  Dracula プロファイルの登録を確認できませんでした。スキップ"
             return 0
         fi
         sleep 1
@@ -60,7 +61,7 @@ function terminal_app_dracula() {
         set default settings to settings set "Dracula"
         set startup settings to settings set "Dracula"
     end tell' >/dev/null; then
-        log_step "  警告: Dracula をデフォルトに設定できませんでした。Terminal の設定で手動で選んでください"
+        log_warn "  Dracula をデフォルトに設定できませんでした。Terminal の設定で手動で選んでください"
         return 0
     fi
 

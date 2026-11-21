@@ -1,0 +1,3 @@
+{{- /* .chezmoidata.toml の claude.plugins のうち有効な plugin の id を、install/common/claude_plugins.sh (Windows は claude_plugins.ps1) が
+      CLAUDE_PLUGINS で受け取る形式 (空白区切り) にする */ -}}
+{{- range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end -}}

@@ -39,7 +39,7 @@
 {{- if ne .chezmoi.os "windows" }}
   "statusLine": {
     "type": "command",
-    "command": "bash '{{ .chezmoi.homeDir }}/.claude/statusline-command.sh'"
+    "command": "bash \"$HOME/.claude/statusline-command.sh\""
   },
 {{- end }}
   "sandbox": {
@@ -295,11 +295,6 @@
       "Bash(PYTHONPATH=src .venv/bin/*)",
       "Bash(PYTHONPATH=src:. uv *)",
       "Bash(PYTHONPATH=src:. .venv/bin/*)",
-      "Bash(bash .claude/verify.sh *)",
-      "Bash(bash ./.claude/verify.sh *)",
-      "Bash(.claude/verify.sh *)",
-      "Bash(./.claude/verify.sh *)",
-      "Edit(**/.claude/verify.sh)",
       "Edit(.env.template)",
 {{- /* `>` リダイレクトの書き先は Edit として判定されるため、Read と対称に一時領域 (/tmp と、macOS の $TMPDIR の展開先の
        /var/folders) への書き込みを許可する */}}
@@ -419,6 +414,8 @@
         ]
       }
     ],
+{{- /* PreToolUse の遮断はスクリプトのファイルへ分けずここに書く。ファイルは許可している rm で消せ、hook のコマンドが
+       exit 2 以外で失敗しても tool の実行は止まらないので、消えると遮断が黙って外れるため */}}
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -445,19 +442,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
-            "async": true,
-            "timeout": 5
-          }
-        ]
-      }
-    ],
 {{- /* osascript は macOS 専用 */}}
 {{- if eq .chezmoi.os "darwin" }}
     "Notification": [
@@ -472,29 +456,15 @@
       }
     ],
 {{- end }}
-{{- /* Claude が作業しているディレクトリから checkout の root (git の toplevel。作業ツリーの外ならそのディレクトリ) まで遡り、最初に見つかった
-       verify.sh を、それがあるディレクトリで実行する。起点は入力の cwd (Claude の `cd` と worktree への移動に追従する)。hook のプロセスの cwd と
-       CLAUDE_PROJECT_DIR は起動元の checkout を指しうるので、起点には使わない。
-       実行するのは、cwd が session を起動したディレクトリ (CLAUDE_PROJECT_DIR) の配下か、起動したリポジトリの `git worktree list` に toplevel が
-       載る checkout (配下の外に作った worktree を含む) にあるときだけ。hook は sandbox の外で確認なしに動くので、`cd` した先の別のリポジトリ
-       (clone した第三者のもの等) の verify.sh を実行しないため。起動したディレクトリの配下にある別のリポジトリや依存物の verify.sh は、
-       この条件では止まらない。git の common dir の一致で判定しないのは、起動したリポジトリの .git を gitdir / commondir で指す `.git` を置いた
-       ディレクトリも一致するため。照合を awk の完全一致にするのは、grep -F だと改行を含む path が複数のパターンになるため。
-       起動したディレクトリの名前・起動したリポジトリに登録された worktree の path・hook が継承する環境変数 (GIT_DIR 等) は、`cd` した先の
-       中身からは変えられないので信頼し、改行で終わる名前や改行を含む登録 path は扱わない。
-       toplevel を使うのを cwd が作業ツリーの中にあるときに限るのは、その外 (submodule の git dir の中・core.worktree が別の場所を指すリポジトリ)
-       では toplevel が cwd の祖先でなく、遡ると checkout の外の verify.sh に行き着き、core.worktree で起動したリポジトリを指すディレクトリも
-       上の照合を通るため。toplevel で止めるのは、checkout の中に作った worktree から親の checkout の verify.sh へ遡らないため。
-       `cd -P` で物理パスへ移るのは、symlink 経由の cwd からでも `cd ..` で toplevel に行き着くため。`$PWD != /` の条件は、toplevel の名前が
-       改行で終わり `$(…)` がそれを落とすときにも止まるため。失敗時に stdout へ 1 行出すのは、stdout が空で stderr に no such file 等を含む
-       exit 2 が、hook のスクリプトが無い場合として扱われて Claude に返らないため (Claude Code 2.1.325 の実装。公式 docs に記載は無い) */}}
-    "Stop": [
+    "PostToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if printf '%s' \"$INPUT\" | jq -e '.stop_hook_active == true' >/dev/null 2>&1; then exit 0; fi; cd -P \"$(printf '%s' \"$INPUT\" | jq -r '.cwd')\" || exit 1; [ -n \"${CLAUDE_PROJECT_DIR:-}\" ] || exit 0; PROJ=$(cd -P \"$CLAUDE_PROJECT_DIR\" 2>/dev/null && pwd -P) || exit 0; TOP=$([ \"$(git rev-parse --is-inside-work-tree 2>/dev/null)\" = true ] && git rev-parse --show-toplevel || pwd -P); case \"$PWD/\" in \"$PROJ\"/*) ;; *) git -C \"$PROJ\" worktree list --porcelain 2>/dev/null | T=\"worktree $TOP\" awk '$0 == ENVIRON[\"T\"] { f = 1 } END { exit !f }' || exit 0 ;; esac; while [ ! -x .claude/verify.sh ] && [ ! . -ef \"$TOP\" ] && [ \"$PWD\" != / ]; do cd .. || exit 1; done; if [ -x .claude/verify.sh ]; then bash .claude/verify.sh >&2 || { echo 'verify.sh failed'; exit 2; }; fi",
-            "timeout": 600
+            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
+            "async": true,
+            "timeout": 5
           }
         ]
       }

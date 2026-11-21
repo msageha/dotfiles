@@ -12,8 +12,8 @@ export SKIP_GUI_TOOLS={{ dig "skip_gui_tools" false . }}
 # 初回は brew.sh が入れた直後の Homebrew が PATH に無いので、後続で claude / dockutil を探す前に通す
 activate_tool_paths
 {{ if not (dig "skip_cli_tools" false .) -}}
-export CLAUDE_MARKETPLACES='{{ range $name, $repo := .claude.marketplaces }}{{ $name }}={{ $repo }} {{ end }}'
-export CLAUDE_PLUGINS='{{ range $id, $enabled := .claude.plugins }}{{ if $enabled }}{{ $id }} {{ end }}{{ end }}'
+export CLAUDE_MARKETPLACES='{{ includeTemplate "claude-marketplaces" . }}'
+export CLAUDE_PLUGINS='{{ includeTemplate "claude-plugins" . }}'
 {{   include "../install/common/claude_plugins.sh" }}
 {{ end -}}
 

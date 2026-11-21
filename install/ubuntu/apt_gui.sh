@@ -77,8 +77,9 @@ function install_chrome() {
 
     local deb
     deb="$(mktemp --suffix=.deb)"
-    # shellcheck disable=SC2064  # $deb を今展開して trap に固定する
-    trap "rm -f '$deb'" RETURN
+    # RETURN の trap は関数を抜けた後も残り、後続の source の終了でも発火するので、発火時に自分を外す。
+    # 発火時も関数の local の変数を読めるので、パスは trap の文字列に埋め込まず発火時に展開する
+    trap 'rm -f "$deb"; trap - RETURN' RETURN
     if ! curl -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_${arch}.deb" -o "$deb"; then
         log_warn "Failed to download Google Chrome for ${arch} (build may not be published yet). Skipping."
         return 0

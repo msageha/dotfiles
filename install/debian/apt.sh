@@ -105,12 +105,11 @@ function upgrade() {
     run_privileged apt -yq upgrade
 }
 
+# パッケージ一覧 (/var/lib/apt/lists) は消さない。消すと apt update まで apt install が失敗する (イメージを小さくする削除は Dockerfile が行う)
 function clean() {
     log_step "Cleaning up APT..."
     run_privileged apt -yq autoremove
-    run_privileged apt -yq autoclean
     run_privileged apt -yq clean
-    run_privileged rm -rf /var/lib/apt/lists/*
 }
 
 function main() {

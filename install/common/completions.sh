@@ -44,6 +44,17 @@ function write_completion() {
     fi
 }
 
+# mise の shim は、config から外したツールでも版が入っている間は PATH に残る。shim は PATH のほかの場所の実体へ
+# 実行を回すが、mise で有効でなく実体もほかに無いと "No version is set for shim" で失敗するので、使えないツールとして扱う
+function has_tool() {
+    local path
+    path="$(command -v "$1")" || return 1
+    # grep -q は一致した時点で抜けるので、書き込み中の type が SIGPIPE で落ち、pipefail で偽になりうる
+    case "$path" in
+        */mise/shims/*) mise which "$1" &>/dev/null || type -aP "$1" | grep -v '/mise/shims/' >/dev/null ;;
+    esac
+}
+
 function generate_completions() {
     local shell="$1" comp_dir="$2"
     log_step "Setting up ${shell} completions in parallel..."
@@ -51,7 +62,7 @@ function generate_completions() {
 
     local pids=() names=() tool out
     for tool in "${completion_tools[@]}"; do
-        command -v "$tool" &>/dev/null || continue
+        has_tool "$tool" || continue
         [[ "$tool" == ngrok && "$shell" == fish ]] && continue
         case "$shell" in
             fish) out="$comp_dir/$tool.fish" ;;

@@ -17,6 +17,12 @@ drawio = "1.12.0"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
 nanobanana = "v1.0.12"
 
+# Nerd Fonts の release の版 (`# renovate:` 注釈で renovate が更新する)。
+# .chezmoitemplates/external-fonts.toml と、Windows でフォントを入れる install/windows/setup_powershell.ps1 (環境変数で渡す) が読む
+[fonts]
+# renovate: datasource=github-releases depName=ryanoasis/nerd-fonts
+nerdFonts = "v3.5.1"
+
 # Claude Code の plugin marketplace (name = GitHub repo) と plugin (id = 既定で有効にするか)。
 # install/common/claude_plugins.sh (Windows は claude_plugins.ps1) が marketplace を登録して有効な plugin だけ導入し、
 # dot_claude/private_settings.json.tmpl が extraKnownMarketplaces / enabledPlugins を描画する
