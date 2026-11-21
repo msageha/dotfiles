@@ -57,7 +57,7 @@ fnox = "1.48.0"
      Docker Hub の公式イメージのタグで版を追う */ -}}
 {{ if or (ne .chezmoi.os "darwin") (dig "skip_gui_tools" true .) -}}
 # renovate: datasource=docker depName=1password/op
-op = "2.34.1"
+op = "2.42.0"
 {{ end -}}
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v?(?<version>.+)
 gh = "2.104.0"
