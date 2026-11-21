@@ -241,7 +241,8 @@ function Set-WindowsTerminalDefaults {
         return
     }
     try {
-        $raw   = Get-Content -Path $path -Raw
+        # 5.1 の Get-Content は BOM の無い UTF-8 を ANSI として読み、書き戻すと非 ASCII の文字が化けるので、UTF-8 で読む
+        $raw   = [System.IO.File]::ReadAllText($path)
         # 5.1 の ConvertFrom-Json は JSONC の行コメントと末尾カンマを読めないため、除いてから解析する
         $clean = ($raw -split "`n" | Where-Object { $_ -notmatch '^\s*//' }) -join "`n"
         $clean = $clean -replace ',(\s*[}\]])', '$1'

@@ -8,7 +8,9 @@ function fenv -d "カレントディレクトリの mise / fnox の環境を選�
 
     for env_file in mise.*.toml fnox.*.toml
         test -f "$env_file"; or continue
-        set -l name (string replace -r '^(mise|fnox)\.' '' -- "$env_file" | string replace -r '\.toml$' '')
+        # mise.local.toml・fnox.local.toml は環境によらず読まれる上書きなので候補にせず、mise.<env>.local.toml は <env> として扱う
+        set -l name (string replace -r '^(mise|fnox)\.(.+)\.toml$' '$2' -- "$env_file" | string replace -r '(^|\.)local$' '')
+        test -n "$name"; or continue
         contains -- "$name" $candidates; or set -a candidates "$name"
     end
     # fnox.toml の中で定義した profile はファイルを持たないので、fnox から名前を取る

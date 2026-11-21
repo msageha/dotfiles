@@ -18,17 +18,17 @@ function __fenv_load_fnox
     # 1Password の signin と失効時の中断は fnox wrapper (config.fish) が担う。command fnox で迂回すると、失効時に op が secret ごとに認証ダイアログを出す。
     # wrapper も選んだ profile の設定を見て signin するよう、profile は -P ではなく FNOX_PROFILE で渡す
     set -lx FNOX_PROFILE $fnox_profile
-    set -l fnox_json (fnox export -f json 2>/dev/null)
+    set -l fnox_json (fnox export -f json)
     set -l fnox_status $status
     if test $fnox_status -ne 0
-        echo "Failed to load fnox environment."
+        echo "fenv: failed to load fnox environment" >&2
         return $fnox_status
     end
 
     # env 形式は値によって quote の規則が変わり、複数行の値は行をまたぐので、JSON から key と value を NUL 区切りで取り出す
     set -l pairs (printf '%s\n' $fnox_json | jq -j '.secrets | to_entries[] | .key, "\u0000", .value, "\u0000"' | string split0)
     if test $pipestatus[2] -ne 0
-        echo "Failed to parse fnox output." >&2
+        echo "fenv: failed to parse fnox output" >&2
         return 1
     end
     while set -q pairs[2]

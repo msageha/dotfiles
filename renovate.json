@@ -23,7 +23,7 @@
       "groupSlug": "all-minor-patch"
     },
     {
-      "description": "patch / minor は minimumReleaseAge の経過後、CI green なら自動マージする。major は猶予期間だけでは supply chain 攻撃に備えきれないので人手レビューにする (ほかの non-major の自動マージを止めないよう別の PR にする)",
+      "description": "patch / minor は minimumReleaseAge の経過後、CI green なら自動マージする。major は猶予期間だけでは supply chain 攻撃に備えきれないので人手レビューにする",
       "matchUpdateTypes": [
         "patch",
         "minor"
