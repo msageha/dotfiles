@@ -295,11 +295,6 @@
       "Bash(PYTHONPATH=src .venv/bin/*)",
       "Bash(PYTHONPATH=src:. uv *)",
       "Bash(PYTHONPATH=src:. .venv/bin/*)",
-      "Bash(bash .claude/verify.sh *)",
-      "Bash(bash ./.claude/verify.sh *)",
-      "Bash(.claude/verify.sh *)",
-      "Bash(./.claude/verify.sh *)",
-      "Edit(**/.claude/verify.sh)",
       "Edit(.env.template)",
 {{- /* `>` リダイレクトの書き先は Edit として判定されるため、Read と対称に一時領域 (/tmp と、macOS の $TMPDIR の展開先の
        /var/folders) への書き込みを許可する */}}
@@ -419,8 +414,8 @@
         ]
       }
     ],
-{{- /* PreToolUse の遮断は、Stop hook のようにスクリプトのファイルへ分けずここに書く。ファイルは許可している rm で消せ、
-       hook のコマンドが exit 2 以外で失敗しても tool の実行は止まらないので、消えると遮断が黙って外れるため */}}
+{{- /* PreToolUse の遮断はスクリプトのファイルへ分けずここに書く。ファイルは許可している rm で消せ、hook のコマンドが
+       exit 2 以外で失敗しても tool の実行は止まらないので、消えると遮断が黙って外れるため */}}
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -447,19 +442,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
-            "async": true,
-            "timeout": 5
-          }
-        ]
-      }
-    ],
 {{- /* osascript は macOS 専用 */}}
 {{- if eq .chezmoi.os "darwin" }}
     "Notification": [
@@ -474,13 +456,15 @@
       }
     ],
 {{- end }}
-    "Stop": [
+    "PostToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/run-verify.sh\"",
-            "timeout": 600
+            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
+            "async": true,
+            "timeout": 5
           }
         ]
       }

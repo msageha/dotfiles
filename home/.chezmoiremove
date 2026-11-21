@@ -30,6 +30,8 @@
 .claude/skills/gws-gmail-triage/SKILL.md
 .claude/skills/gws-sheets-append/SKILL.md
 .claude/skills/gws-sheets-read/SKILL.md
+{{- /* `.claude/verify.sh` を実行する hook を置かないので、残っていると、どこからも実行されない verify.sh を作る。上と同じ理由で SKILL.md だけを指定する */}}
+.claude/skills/create-verify/SKILL.md
 {{- /* Codex は custom agent の mcp_servers を無視し、browser_debugger がブラウザ MCP を使えない */}}
 .codex/agents/browser-debugger.toml
 {{- /* OpenRouter の fusion / pareto-code 用の設定。settings.fusion.json は OpenRouter の API key を含む */}}

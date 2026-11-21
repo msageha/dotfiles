@@ -94,7 +94,6 @@
 !.claude/CLAUDE.md
 !.claude/settings.json
 !.claude/statusline-command.sh
-!.claude/hooks
 !.claude/agents
 !.claude/skills
 !.claude/rules
