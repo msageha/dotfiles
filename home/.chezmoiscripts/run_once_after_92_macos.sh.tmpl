@@ -10,12 +10,4 @@ if [ -z "${CI:-}" ]; then
     mo optimize
     mo clean
 fi
-
-{{ if not (dig "skip_gui_tools" false .) -}}
-# GUI アプリの設定なので CI ではスキップする。
-# Terminal のプロファイルに埋め込むフォントは chezmoi external が配置するので、before ではなく after で実行する
-if [ -z "${CI:-}" ]; then
-{{   include "../install/macos/dracula_theme.sh" }}
-fi
-{{ end -}}
 {{ end -}}

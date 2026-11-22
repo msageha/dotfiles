@@ -5,15 +5,12 @@ description: mise 本体と mise.toml のツールを導入する (ツール導�
 inputs:
   install:
     description: "mise.toml のツールを導入するか (false なら mise 本体のみ)"
-    required: false
     default: "true"
   cache:
     description: "mise のデータディレクトリ (mise 本体と導入したツール) を Actions cache に保存・復元するか (install が true のときだけ効く)"
-    required: false
     default: "true"
   version:
     description: "導入する mise のバージョン"
-    required: false
     # "latest" は上流の release 直後に asset が未アップロードで 404 になりうるので、固定して Renovate で更新する。
     default: "2026.11.8"
 

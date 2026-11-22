@@ -103,11 +103,6 @@ set -gx GOBIN "$HOME/.local/bin"
 # proxy を迂回できてしまうため URL だけを指定する。認証 token は ~/.netrc (modify_private_dot_netrc)
 set -gx GOPROXY "https://golang.flatt.tech"
 
-if test -f /opt/homebrew/opt/openjdk/bin/java
-    fish_add_path /opt/homebrew/opt/openjdk/bin
-    set -gx CPPFLAGS "-I/opt/homebrew/opt/openjdk/include"
-end
-
 set -gx CLOUDSDK_PYTHON (type -p python3)
 
 if test -e /.dockerenv && test -z "$DOCKER_MACHINE_NAME"

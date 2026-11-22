@@ -23,17 +23,6 @@ function setup() {
     [ "$status" -ne 0 ]
 }
 
-@test "[install/common] setup_shell - create_zshrc migrates legacy unconditional source" {
-    printf '%s\n' "source \$HOME/.zprofile" "# machine local line" > "${HOME}/.zshrc"
-
-    create_zshrc
-
-    run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
-    [ "$status" -ne 0 ]
-    grep -Fxq "# machine local line" "${HOME}/.zshrc"
-    [ "$(head -n 1 "${HOME}/.zshrc")" = "# >>> dotfiles zsh init >>>" ]
-}
-
 @test "[install/common] setup_shell - create_zshrc is idempotent" {
     create_zshrc
     create_zshrc

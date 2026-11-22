@@ -52,7 +52,7 @@ USER ${USERNAME}
 # DL3004: sudo は USER 切替後の strip 用 binutils の出し入れにだけ使う
 # hadolint ignore=DL3004
 RUN --mount=type=bind,target=/tmp/dotfiles \
-  --mount=type=secret,id=github_token,mode=0444,required=false \
+  --mount=type=secret,id=github_token,mode=0444 \
   if [ -f /run/secrets/github_token ]; then MISE_GITHUB_TOKEN="$(cat /run/secrets/github_token)" && export MISE_GITHUB_TOKEN; fi && \
   sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" -t v2.74.1 && \
   export PATH="$HOME/.local/bin:$PATH" && \

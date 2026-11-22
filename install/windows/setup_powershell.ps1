@@ -1,6 +1,5 @@
 #!/usr/bin/env pwsh
 # Starship と SauceCodePro Nerd Font の導入、PowerShell プロファイルと Windows Terminal の設定 (starship.toml は chezmoi が配る)。
-# Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 # このファイルは BOM 無しの UTF-8 で、5.1 は日本語を ANSI として読み構文が壊れるため、単体で実行するときは pwsh を使い、
 # chezmoi のテンプレートが渡す NERD_FONTS_VERSION も設定する
 # (`$env:NERD_FONTS_VERSION = '<.chezmoidata.toml の fonts.nerdFonts>'; pwsh -File install/windows/setup_powershell.ps1`)。chezmoi 経由ではテンプレートが BOM を付ける。

@@ -13,6 +13,7 @@ $directory\
 $git_branch\
 $git_status\
 [](bg:graphite2 fg:graphite)\
+${env_var.DOCKER_MACHINE_NAME}\
 $c\
 $cpp\
 $dart\
@@ -97,6 +98,13 @@ format = "[$symbol $branch ](bg:graphite fg:on_graphite bold)"
 
 [git_status]
 format = "[$all_status$ahead_behind](bg:graphite fg:attention_graphite)"
+
+# コンテナの中にいることを示す。DOCKER_MACHINE_NAME はイメージの ENV と env.sh / config.fish がコンテナの中でだけ設定する。
+# docker_context は Docker 関連ファイルのあるディレクトリでしか出ず、常に出すとホストの Docker context (Docker Desktop・OrbStack 等) も出るので使わない
+[env_var.DOCKER_MACHINE_NAME]
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 bold"
+format = "[$symbol$env_value ]($style)"
 
 [c]
 symbol = "󰙱 "

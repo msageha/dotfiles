@@ -12,7 +12,7 @@
     local tools=()
     while IFS= read -r tool; do
         tools+=("$tool")
-    # クォート付きキー ("ubi:owner/repo" 等の backend 指定) も拾う
+    # クォート付きキー ("github:owner/repo" 等の backend 指定) も拾う
     done < <(sed -n '/^\[tools\]/,/^\[/p' "$config" | sed -n 's|^"\{0,1\}\([A-Za-z0-9_.:/-]\{1,\}\)"\{0,1\} *=.*|\1|p')
     [ "${#tools[@]}" -gt 0 ]
 

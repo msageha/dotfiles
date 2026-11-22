@@ -119,11 +119,6 @@ export GOBIN="$HOME/.local/bin"
 # 認証 token は ~/.netrc (modify_private_dot_netrc)
 export GOPROXY="https://golang.flatt.tech"
 
-if [ -f /opt/homebrew/opt/openjdk/bin/java ]; then
-    export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-    export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
-fi
-
 # DEVELOPER_DIR は xcrun / ビルドツールが参照する。Homebrew の git / python3 を優先しつつ
 # simctl 等の Xcode 専用ツールも引けるように usr/bin は末尾に追加する
 if xcode-select -p &>/dev/null; then

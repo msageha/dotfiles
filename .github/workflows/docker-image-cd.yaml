@@ -3,6 +3,17 @@ on:
   # main へは required checks (ci.yaml) を通った PR しか merge できないので、push 時点で CI は通過済み。
   push:
     branches: [main]
+    # イメージの内容に効くファイル (.dockerignore がビルドコンテキストに通すものと Dockerfile) が変わったときだけ作り直す。
+    # .dockerignore で通すファイルを増やしたら、ここにも足す
+    paths:
+      - .chezmoiroot
+      - home/**
+      - install/**
+      - AGENTS.md
+      - settings/common/**
+      - docker/**
+      - .dockerignore
+      - .github/workflows/docker-image-cd.yaml
   workflow_dispatch:
 env:
   IMAGE: msageha/dotfiles

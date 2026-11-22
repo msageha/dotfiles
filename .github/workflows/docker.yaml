@@ -39,7 +39,6 @@ jobs:
           context: .
           file: ${{ matrix.variant.file }}
           platforms: linux/amd64
-          push: false
           load: true
           tags: dotfiles:${{ matrix.variant.tag }}-ci
           build-args: |

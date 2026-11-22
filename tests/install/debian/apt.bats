@@ -17,7 +17,7 @@ function setup() {
     [ "$status" -eq 1 ]
 }
 
-@test "[install/debian] apt - SKIP_CLI_TOOLS=true skips tools and chezmoi/docker" {
+@test "[install/debian] apt - SKIP_CLI_TOOLS=true skips tools and docker" {
     # base のみ実行し、追加ツール群はスキップする (sudo/curl はスタブで無害化)。
     # root で bats を実行すると run_privileged が sudo を介さず実 apt を叩いてしまうため、
     # id もスタブして非 root 扱いにし、必ず sudo スタブを経由させる。

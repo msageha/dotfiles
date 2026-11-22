@@ -10,7 +10,7 @@ macOS / Ubuntu / Debian / Windows の開発環境を [chezmoi](https://www.chezm
 
 公開リポジトリなので、非公開の設定 (SSH ホスト定義・業務用 Git 設定・IME 辞書など) は [age](https://age-encryption.org/) で暗号化して置き、age 秘密鍵・SSH 秘密鍵・API キーは 1Password から取得する。
 
-## Setup
+## セットアップ
 
 ### 1. 事前準備
 
@@ -30,7 +30,8 @@ sudo apt update && sudo apt install -y curl git
 winget install --id Git.Git --exact --source winget
 ```
 
-winget が無い Windows (Windows Server・Windows Sandbox 等) では、[Git for Windows](https://gitforwindows.org/) を入れる。
+Windows で winget を使えないとき (初回サインイン直後で App Installer の登録が済んでいない等) は、[Git for Windows](https://gitforwindows.org/) を入れる (App Installer の登録は適用時に行う)。
+App Installer 自体が入っていない Windows では、適用の前に Microsoft Store から App Installer を入れる (Microsoft Store の無い Windows Server・Windows Sandbox は対象外)。
 
 ### 2. 適用
 
@@ -123,6 +124,19 @@ mise run encrypt-google-ime
 
 ## secret の扱い
 
+secret はどれも 1Password を起点に、次の経路で置かれる (`secrets.sh` は 3 つとも行う)。
+
+```mermaid
+flowchart LR
+    op[1Password]
+    op -- age 秘密鍵 --> key["~/.config/chezmoi/key.txt"]
+    key -- chezmoi apply が復号 --> enc["暗号化した設定 (SSH ホスト定義・業務用 Git 設定等)"]
+    op -- age 秘密鍵 --> fnox["fnox (fnox.toml の API キーを復号)"]
+    fnox -- "環境変数 (chezmoi apply --init)" --> data["chezmoi.toml の data.apiKeys"]
+    data --> tools[各ツールの設定ファイル]
+    op -- "SSH Key item (apply-ssh-keys)" --> ssh["~/.ssh (key.txt を置いた後に限る。Windows を除く)"]
+```
+
 ### API キー
 
 API キーは `fnox.toml` に暗号化して置き、`chezmoi.toml` と、キーを使う各ツールの設定ファイルに展開する。
@@ -193,31 +207,14 @@ mise -C ~/.local/share/chezmoi run apply-ssh-keys
 ## Docker
 
 この dotfiles を適用したイメージを、リポジトリのディレクトリでビルドできる (Docker と、ログイン済みの `gh` が要る)。
+バリアントごとに `build-<tag>` タスクがあり、`mise tasks` で一覧できる (`-min` と `alpine` は CLI ツールも省く最小構成)。
 
 ```sh
 mise run build-ubuntu
 docker container run -it msageha/dotfiles:ubuntu
 ```
 
-| タスク                           | 構成                                        |
-| -------------------------------- | ------------------------------------------- |
-| `mise run build-ubuntu-min`      | Ubuntu / 最小 (CLI ツールも省く)            |
-| `mise run build-ubuntu`          | Ubuntu / CLI ツール入り                     |
-| `mise run build-debian-min`      | Debian / 最小                               |
-| `mise run build-debian`          | Debian / CLI ツール入り                     |
-| `mise run build-debian-slim-min` | Debian slim / 最小                          |
-| `mise run build-alpine`          | Alpine / 最小                               |
-| `mise run build-ubuntu-gpu`      | Ubuntu + CUDA / CLI ツール入り (amd64 のみ) |
-
-amd64 / arm64 のイメージを registry へ push するときは、次を実行する。
-GPU のイメージは対象外で、イメージ名は `DOCKER_REPOSITORY` で変えられる (既定は `msageha/dotfiles`)。
-
-```sh
-docker login
-mise run buildx-setup
-mise run build-<tag> --push    # 1 つのバリアント
-mise run build-multi-platform  # 全バリアント
-```
+Docker Hub の `msageha/dotfiles` へは、イメージの内容に効く変更が main に merge されると、CD が全バリアントを amd64 / arm64 (GPU は amd64 のみ) で公開する。
 
 ## 開発
 
@@ -232,7 +229,7 @@ mise run test        # 全テスト (適用後の $HOME の検査を含む)
 LLM エージェントの指示文を編集するときは、先に `docs/agent-instructions.md` を読む。
 AI coding agent から起動されたシェルでは、editor・pager・対話 prompt を止める (`docs/agent-shell.md`)。
 
-## Structure
+## 構成
 
 ```
 .
