@@ -6,6 +6,12 @@ $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
 
 function Install-WinGet {
+    # winget.exe の実行エイリアスは %LOCALAPPDATA%\Microsoft\WindowsApps に置かれるが、
+    # App Installer の登録直後や、このディレクトリを含まない PATH で起動されたセッションでは PATH に無いので追記する
+    $windowsApps = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
+    if (@($env:Path -split ';') -notcontains $windowsApps) {
+        $env:Path = "$env:Path;$windowsApps"
+    }
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Step 'winget is already installed.'
         return
@@ -18,12 +24,6 @@ function Install-WinGet {
     }
     catch {
         throw "winget を使えません。Microsoft Store から App Installer を入れてから chezmoi apply を再実行してください: $($_.Exception.Message)"
-    }
-    # winget.exe の実行エイリアスは %LOCALAPPDATA%\Microsoft\WindowsApps に置かれるが、
-    # 登録直後だと現在セッションの PATH に反映されていないことがあるため追記する
-    $windowsApps = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
-    if (@($env:Path -split ';') -notcontains $windowsApps) {
-        $env:Path = "$env:Path;$windowsApps"
     }
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         throw 'App Installer を登録しましたが winget が見つかりません。設定の「アプリ実行エイリアス」で winget を有効にしてから chezmoi apply を再実行してください。'

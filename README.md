@@ -30,7 +30,8 @@ sudo apt update && sudo apt install -y curl git
 winget install --id Git.Git --exact --source winget
 ```
 
-Windows で winget を使えないとき (初回サインイン直後で App Installer の登録が済んでいない等) は、[Git for Windows](https://gitforwindows.org/) を入れる。
+Windows で winget を使えないとき (初回サインイン直後で App Installer の登録が済んでいない等) は、[Git for Windows](https://gitforwindows.org/) を入れる (App Installer の登録は適用時に行う)。
+App Installer 自体が入っていない Windows では、適用の前に Microsoft Store から App Installer を入れる (Microsoft Store の無い Windows Server・Windows Sandbox は対象外)。
 
 ### 2. 適用
 
