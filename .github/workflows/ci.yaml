@@ -4,7 +4,6 @@ on:
   # push トリガーは置かない。main へ入る変更は PR で検証済みで、main 全履歴の secret scan は
   # gitleaks.yaml の週次 schedule が行う。
   pull_request:
-    types: [opened, synchronize, reopened]
   # mise-lock.yaml が GITHUB_TOKEN で push・作成した PR では pull_request の run が承認待ちになるため、mise-lock.yaml がそのブランチで承認なしに起動する
   workflow_dispatch:
 

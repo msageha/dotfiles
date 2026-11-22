@@ -23,14 +23,6 @@ postinstall = "prek install --hook-type pre-commit --hook-type pre-push"
 [settings]
 lockfile = true
 
-[tasks.apply]
-description = "dotfiles を適用する"
-run = "chezmoi apply --verbose"
-
-[tasks.dry-run]
-description = "適用せずに差分を確かめる"
-run = "chezmoi apply --dry-run --verbose --force"
-
 # --all-files が無いと prek は stage 済みの内容だけを検証するので、作業ツリーをそのまま検証するために付ける
 [tasks.pre-commit]
 description = "commit 時の lint / format を全ファイルに回す"
@@ -59,10 +51,8 @@ run = "chezmoi encrypt settings/common/google.ime.txt > settings/common/encrypte
 description = "IME 辞書を平文 (gitignore 済み) に復号する"
 run = "chezmoi decrypt settings/common/encrypted_google.ime.txt.age > settings/common/google.ime.txt"
 
-# 使い方: mise run docker-build <tag> <base-image> <skip_cli_tools> <dockerfile> [--push]
+# 使い方: mise run docker-build <tag> <base-image> <skip_cli_tools> <dockerfile>
 # gh の token は GitHub API のレート制限を避けるために渡す。
-# --push は amd64 / arm64 の manifest list を push する (manifest list はローカルに load できない)。
-# 事前に docker login と buildx-setup が要る。
 [tasks.docker-build]
 description = "Docker イメージを 1 バリアントだけビルドする (build-<tag> から呼ぶ)"
 run = '''
@@ -72,34 +62,20 @@ tag="$1"
 base_image="$2"
 skip_cli_tools="$3"
 dockerfile="$4"
-image="${DOCKER_REPOSITORY:-msageha/dotfiles}:$tag"
 GITHUB_TOKEN="$(gh auth token -h github.com)"
 export GITHUB_TOKEN
-build_args=(
-    -f "$dockerfile"
-    --secret id=github_token,env=GITHUB_TOKEN
-    --build-arg "BASE_IMAGE=$base_image"
-    --build-arg "SKIP_CLI_TOOLS=$skip_cli_tools"
-    --build-arg "SKIP_GUI_TOOLS=true"
-    -t "$image"
-)
-if [ "${5:-}" = "--push" ]; then
-    if [ "$tag" = ubuntu-gpu ]; then
-        echo "$tag is amd64 only and cannot be built multi-arch" >&2
-        exit 1
-    fi
-    docker buildx build "${build_args[@]}" \
-        --builder mybuilder \
-        --platform linux/amd64,linux/arm64 \
-        --provenance=false \
-        --push .
-else
-    DOCKER_BUILDKIT=1 docker build "${build_args[@]}" .
-fi
+DOCKER_BUILDKIT=1 docker build \
+    -f "$dockerfile" \
+    --secret id=github_token,env=GITHUB_TOKEN \
+    --build-arg "BASE_IMAGE=$base_image" \
+    --build-arg "SKIP_CLI_TOOLS=$skip_cli_tools" \
+    --build-arg "SKIP_GUI_TOOLS=true" \
+    -t "msageha/dotfiles:$tag" \
+    .
 '''
 
 # バリアント表 (tag / base image / skip_cli_tools / Dockerfile) の単一ソース。
-# docker-image-cd.yaml / docker.yaml の matrix はこれを写す。-min は CLI ツールも省く最小構成、無印は CLI ツール入り。
+# docker-image-cd.yaml / docker.yaml の matrix はこれを写す。-min と alpine は CLI ツールも省く最小構成、ほかは CLI ツール入り。
 [tasks.build-ubuntu-min]
 description = "Ubuntu の最小構成のイメージをビルドする"
 run = "mise run docker-build ubuntu-min ubuntu:26.04 true docker/Dockerfile.debian"
@@ -128,36 +104,3 @@ run = "mise run docker-build alpine alpine:3.24 true docker/Dockerfile.alpine"
 [tasks.build-ubuntu-gpu]
 description = "Ubuntu + CUDA の CLI ツール入りのイメージをビルドする (amd64 のみ)"
 run = "mise run docker-build ubuntu-gpu nvidia/cuda:13.5.0-base-ubuntu26.04 false docker/Dockerfile.debian"
-
-[tasks.buildx-setup]
-description = "multi-platform ビルド用の buildx ビルダー mybuilder を用意する"
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-if ! docker buildx inspect mybuilder >/dev/null 2>&1; then
-    docker buildx create --name mybuilder --use --bootstrap
-else
-    docker buildx use mybuilder
-fi
-'''
-
-[tasks.build-multi-platform]
-description = "GPU 以外の全バリアントを amd64 / arm64 でビルドして push する"
-depends = ["buildx-setup"]
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-for tag in ubuntu-min ubuntu debian-min debian debian-slim-min alpine; do
-    mise run "build-$tag" --push
-done
-'''
-
-[tasks.push]
-description = "ローカルでビルドした全タグを push する"
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-for tag in ubuntu-min ubuntu debian-min debian debian-slim-min alpine ubuntu-gpu; do
-    docker push "${DOCKER_REPOSITORY:-msageha/dotfiles}:$tag"
-done
-'''

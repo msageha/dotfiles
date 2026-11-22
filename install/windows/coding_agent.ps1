@@ -1,7 +1,6 @@
 #!/usr/bin/env pwsh
 # Windows 向けコーディングエージェント CLI のインストール。
 # mac (install/macos/brew.sh) / debian (install/debian/coding_agent.sh) に相当する。
-# Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }

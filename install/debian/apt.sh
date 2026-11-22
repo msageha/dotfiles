@@ -52,16 +52,6 @@ function install_tools() {
     run_privileged apt install -yq "${apt_install_opts[@]}" "${apt_tools[@]}"
 }
 
-function install_chezmoi() {
-    log_step "Installing chezmoi..."
-    if command -v chezmoi &>/dev/null; then
-        log_step "chezmoi is already installed."
-        return 0
-    fi
-    # -b を省くとカレントディレクトリの ./bin に入る
-    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-}
-
 # get.docker.com の curl | sh は検証していないスクリプトを root で実行することになるため、
 # 公式の apt リポジトリから GPG 署名を検証して入れる (https://docs.docker.com/engine/install/debian/#install-using-the-repository)
 function install_docker() {
@@ -127,10 +117,9 @@ function main() {
     update
     install_base
     if [ "$SKIP_CLI_TOOLS" = "true" ]; then
-        log_step "Skipping apt tools and chezmoi/docker (SKIP_CLI_TOOLS=true)."
+        log_step "Skipping apt tools and docker (SKIP_CLI_TOOLS=true)."
     else
         install_tools
-        install_chezmoi
         install_docker
     fi
     upgrade

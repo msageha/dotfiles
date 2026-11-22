@@ -1,12 +1,4 @@
 {
-  "json": {
-  },
-  "markdown": {
-  },
-  "toml": {
-  },
-  "yaml": {
-  },
   "excludes": [
     "CLAUDE.md",
     "home/dot_claude/**/*.md",

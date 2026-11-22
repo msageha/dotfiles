@@ -10,7 +10,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 - `.chezmoiroot` = `home` のため、chezmoi の source root は `home/`。
 - 共通規約の「git」節に従って worktree で source を編集したときは、反映と `tests/files` の検査を、その worktree を source にして自分の変更が及ぶ target に絞って行う。
   `chezmoi status --source <worktree> --path-style absolute` で target を見て、`chezmoi apply --source <worktree> <target>…` で反映し、その target を検査する `tests/files/<name>.bats` を `bats` で回す。`$PWD` を source とみなすテストがあるので、`bats` は worktree の root で実行する。
-  `mise run apply` などのタスクと、`--source` を付けない chezmoi コマンドは、この checkout (既定の source) を使う。
+  `mise run apply-ssh-keys` などのタスクと、`--source` を付けない chezmoi コマンドは、この checkout (既定の source) を使う。
 - source はファイルを直接編集する。
   chezmoi の設定が `[git] autoCommit = true / autoPush = true` (`home/.chezmoi.toml.tmpl`) なので、`chezmoi add` / `chezmoi edit` など chezmoi コマンド経由で source を変えると commit + push まで自動で走る。
 
@@ -63,11 +63,11 @@ secret の扱いは共通規約の「安全」節に従う。
 - `chezmoi data` / `chezmoi cat-config` / `chezmoi dump-config`: config に書かれた `data.apiKeys` を平文で出す。フラグの値は `chezmoi execute-template '{{ dig "skip_cli_tools" false . }}'` のようにキーを指定して読む。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env`: secret を復号した値を返す。
 - `pip config list` / `pip config debug`: `~/.config/pip/pip.conf` の token 入り index-url をそのまま出す。
-- `chezmoi apply --verbose` / `chezmoi diff` と、それを使う `mise run apply` / `mise run dry-run`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る (`mise run dry-run` を使うなら、出力を捨てて exit code だけを見る)。
+- `chezmoi apply --verbose` / `chezmoi diff`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る。
   secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml` と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.claude-private/.claude.json`・`~/.gemini/settings.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
   secret ファイルが対象範囲に入るときは `chezmoi apply` に `--verbose` を付けず、`chezmoi diff` は target を絞るか出力をマスクする。
 - `cat` / `git diff` で secret ファイルを直接読む。
-- `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。検証コマンド (pre-push / test / dry-run) には渡さない。
+- `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。検証コマンド (pre-push / test) には渡さない。
 
 共通規約の `sed` によるマスクは、JSON・`.netrc`・鍵・値だけの出力 (`printenv <KEY>` 等) には効かないので、これらは出力を捨てるか、キー名だけを grep するか、有無・長さだけを確かめる。
 

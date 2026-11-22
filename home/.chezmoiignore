@@ -47,7 +47,7 @@
 # GitHub-hosted runner も実行ユーザーが runner なので、GitHub Actions の job 内 (GITHUB_ACTIONS が立つ) は除く。
 {{ if and (eq .chezmoi.username "runner") (not (env "GITHUB_ACTIONS")) }}
 .config/mise
-.chezmoiscripts/91_mise.sh
+.chezmoiscripts/90_mise.sh
 .config/git
 {{ end }}
 

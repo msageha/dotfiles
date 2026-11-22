@@ -1,13 +1,4 @@
 # 過去に配布していたが廃止・移動したファイルを適用先から削除する。
-.config/fish/functions/faws.fish
-.config/fish/functions/fzf_load_env.fish
-.config/fish/functions/rm_cache.fish
-{{- /* 残っていると fish が git / docker 等の呼び出し時に autoload し、同名関数を古い定義で上書きする */}}
-.config/fish/functions/clean.fish
-.config/fish/functions/docker.fish
-.config/fish/functions/fzf_environ.fish
-.config/fish/functions/gcloud.fish
-.config/fish/functions/git.fish
 {{- /* 以下はコーディングエージェント設定を配布していた環境だけで消す (.chezmoiignore の $skipCodingAgent と同じ条件)。
        .chezmoiignore で親ディレクトリを ignore しても、その配下は .chezmoiremove で消えるため、ここで条件を付ける */}}
 {{- if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) }}
@@ -43,29 +34,3 @@
 {{- /* GEMINI_API_KEY を含む。Antigravity はログインで使うので置かない */}}
 .gemini/.env
 {{- end }}
-
-{{ if ne .chezmoi.os "windows" -}}
-{{- /* 旧版が external で置いたテーマだけを消す。親の ~/.vim・~/.tmux を指定すると、利用者が置いたファイルも apply のたびに消える */}}
-.vim/pack/themes/start/dracula
-.tmux/plugins/dracula
-{{- /* 残っていると tmux が ~/.config/tmux/tmux.conf と両方読む */}}
-.tmux.conf
-{{ $fontDir := ".local/share/fonts" }}
-{{- if eq .chezmoi.os "darwin" }}{{ $fontDir = "Library/Fonts" }}{{ end }}
-{{ $fontDir }}/SauceCodeProNerdFont*.ttf
-{{ $fontDir }}/SymbolsNerdFont*.ttf
-{{ $fontDir }}/SourceHanCodeJP-*.otf
-{{ $fontDir }}/* for Powerline.ttf
-{{ $fontDir }}/* for Powerline.otf
-{{ $fontDir }}/* For Powerline.ttf
-{{ $fontDir }}/* For Powerline.otf
-{{ $fontDir }}/PowerlineSymbols.otf
-{{ $fontDir }}/PowerlineExtraSymbols.otf
-{{- /* Application Support にはアプリの状態も置かれうるため、ghostty の設定とテーマはファイル単位で消す */}}
-{{- if eq .chezmoi.os "darwin" }}
-Library/Application Support/com.mitchellh.ghostty/config.ghostty
-Library/Application Support/com.mitchellh.ghostty/themes/dracula
-{{- else }}
-.config/ghostty/config.ghostty
-{{- end }}
-{{ end -}}

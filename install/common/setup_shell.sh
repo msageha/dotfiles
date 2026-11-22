@@ -20,7 +20,7 @@ function create_zshrc() {
         return 0
     fi
     # 管理ブロックはマシン固有の追記 (installer が足すブロック等) より先に実行されるよう先頭に置く。
-    # 既存の管理ブロックと、login shell で初期化を二重に実行させる無条件の source 行は取り除いて書き直す
+    # 既存の管理ブロックは取り除いて書き直す
     {
         printf '%s\n' "$block_begin"
         cat <<'EOF'
@@ -36,8 +36,8 @@ HISTSIZE=10000
 SAVEHIST=10000
 EOF
         printf '%s\n' "$block_end"
-        awk -v begin="$block_begin" -v end="$block_end" -v legacy='source $HOME/.zprofile' \
-            '$0 == begin {skip=1} $0 == legacy {next} !skip {print} $0 == end {skip=0}' \
+        awk -v begin="$block_begin" -v end="$block_end" \
+            '$0 == begin {skip=1} !skip {print} $0 == end {skip=0}' \
             "$HOME/.zshrc"
     } > "$HOME/.zshrc.tmp"
     mv "$HOME/.zshrc.tmp" "$HOME/.zshrc"

@@ -2,12 +2,7 @@
 set -euo pipefail
 declare -F log_step >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
-function install_tools() {
-    log_step "Installing mise tools..."
-    mise install --yes
-    log_step "All mise tools installed successfully."
-}
-
+# ツールの導入は、mise の global config が変わるたびに、この prune より先に走る run_onchange_after_90_mise が行う
 function prune() {
     log_step "Pruning unused tool versions..."
     mise prune --yes
@@ -17,7 +12,6 @@ function prune() {
 
 function main() {
     require_command mise
-    install_tools
     prune
 }
 

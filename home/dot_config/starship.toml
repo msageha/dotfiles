@@ -13,6 +13,7 @@ $directory\
 $git_branch\
 $git_status\
 [](bg:graphite2 fg:graphite)\
+$docker_context\
 $c\
 $cpp\
 $dart\
@@ -97,6 +98,14 @@ format = "[$symbol $branch ](bg:graphite fg:on_graphite bold)"
 
 [git_status]
 format = "[$all_status$ahead_behind](bg:graphite fg:attention_graphite)"
+
+[docker_context]
+# 作業ディレクトリによらず出す。コンテナの中では DOCKER_MACHINE_NAME (イメージの ENV と env.sh / config.fish が設定する) を、
+# ホストでは default 以外の Docker context (OrbStack 等) を表示する
+only_with_files = false
+symbol = " "
+style = "bg:graphite2 fg:on_graphite2 bold"
+format = "[$symbol$context ]($style)"
 
 [c]
 symbol = "󰙱 "

@@ -1,6 +1,5 @@
 #!/usr/bin/env pwsh
 # Claude Code plugin のインストール。install/common/claude_plugins.sh の Windows 版。
-# Windows PowerShell 5.1 互換の構文のみを使うこと (pwsh は前提にしない)。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if (-not (Get-Variable DotfilesLibLoaded -Scope Script -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'lib.ps1') }
