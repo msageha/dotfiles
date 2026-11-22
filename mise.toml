@@ -12,7 +12,7 @@ hadolint = "2.15.1"
 # 1Password の配布ページは公開日を返さず minimumReleaseAge の猶予が効かないので、同じ版を公開日付きで出す
 # Docker Hub の公式イメージのタグで版を追う
 # renovate: datasource=docker depName=1password/op
-op = "2.34.1"
+op = "2.42.0"
 powershell = "7.7.0"
 prek = "0.5.10"
 shellcheck = "0.11.0"
