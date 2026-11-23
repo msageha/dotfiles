@@ -14,7 +14,7 @@ hadolint = "2.15.1"
 # renovate: datasource=docker depName=1password/op
 op = "2.42.0"
 powershell = "7.7.0"
-prek = "0.5.10"
+prek = "0.5.11"
 shellcheck = "0.11.0"
 
 [hooks]
