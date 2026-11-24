@@ -65,7 +65,7 @@ gh = "2.104.0"
 glab = "1.130.0"
 # fnox が補完の生成 (fnox completion) で usage を呼ぶ
 # renovate: datasource=github-releases depName=jdx/usage extractVersion=^v?(?<version>.+)
-usage = "7.3.0"
+usage = "7.4.0"
 {{ end -}}
 {{/* 言語ランタイム / LSP サーバーは重いため、skip_cli_tools=false を明示した環境でだけ入れる (dig の既定 true) */ -}}
 {{ if not (dig "skip_cli_tools" true .) -}}
