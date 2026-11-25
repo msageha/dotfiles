@@ -5,7 +5,7 @@ source "$HOME/.config/shell/env.sh"
 
 # completions.sh が生成した _<cmd> 形式の補完を compinit より前に fpath へ追加する。
 # brew shellenv も site-functions を fpath へ足すため env.sh の後、zoxide 等の compdef より前に初期化する。
-# zcompdump はキャッシュのため $HOME/.cache/zsh へ置く (ディレクトリは setup_directory.sh が作成する)。
+# zcompdump はキャッシュのため ~/.cache/zsh へ置く (ディレクトリは setup_directory.sh が作成する)。
 # bashcompinit は aws_completer の complete -C (bash 形式) 用
 if $_dotfiles_human_shell; then
     fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
