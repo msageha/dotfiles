@@ -7,7 +7,7 @@
     (その場合は install/common/setup_shell.sh が警告する)
   - ~/.config/zsh に .zprofile (chezmoi が配置) と .zshrc (run_once_before_03_shell が ~/.zshrc を移して作る) が
     揃ったときだけ切り替えるのは、揃う前 (対象を絞った apply・スクリプトの失敗等) に $HOME 直下の設定を読まなくなるのを避けるため
-  - export しないのは、HOME を差し替えて起動した子の zsh が親の ZDOTDIR を引き継がず、自身の ~/.zshenv で決めるため
+  - export しないのは、export すると子の zsh が ~/.zshenv ではなく $ZDOTDIR/.zshenv を読み、この行より後の行が効かなくなるため
 */ -}}
 {{- $line := `if [[ -r "$HOME/.config/zsh/.zprofile" && -r "$HOME/.config/zsh/.zshrc" ]]; then ZDOTDIR="$HOME/.config/zsh"; fi` -}}
 {{- $lines := list $line -}}
