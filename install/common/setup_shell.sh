@@ -67,25 +67,23 @@ function replace_zshrc_block() {
         log_error "${file} の管理ブロック終了マーカー (${block_end}) が見つかりません。巻き込み削除を避けるため更新をスキップします。手動で修復してください。"
         return 0
     fi
+    # symlink はリンクを残してリンク先を置き換える (mv はリンク自体を通常のファイルに置き換える)
+    local target mode
+    target="$(realpath "$file")"
     # 既存のファイルの権限 (マシン固有の設定を 0600 にしている等) を、置き換えた後のファイルに引き継ぐ (GNU / BSD の stat)
-    local mode
-    mode="$(stat -c %a "$file" 2>/dev/null || stat -f %Lp "$file")"
+    mode="$(stat -c %a "$target" 2>/dev/null || stat -f %Lp "$target")"
+    local tmp
+    tmp="$(mktemp "${target}.XXXXXX")"
     {
         if [ -n "$block" ]; then
             printf '%s\n' "$block_begin" "$block" "$block_end"
         fi
         awk -v begin="$block_begin" -v end="$block_end" \
             '$0 == begin {skip=1} !skip {print} $0 == end {skip=0}' \
-            "$file"
-    } > "${file}.tmp"
-    # symlink はリンク先に書き込んで残す (mv はリンク自体を通常のファイルに置き換える)
-    if [ -L "$file" ]; then
-        cat "${file}.tmp" > "$file"
-        rm "${file}.tmp"
-    else
-        chmod "$mode" "${file}.tmp"
-        mv "${file}.tmp" "$file"
-    fi
+            "$target"
+    } > "$tmp"
+    chmod "$mode" "$tmp"
+    mv "$tmp" "$target"
 }
 
 function create_zshrc() {
