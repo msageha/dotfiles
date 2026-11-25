@@ -1,6 +1,6 @@
 # 環境変数・PATH とツールのシェル統合は bash (~/.bash_profile) と共有する。
 # zsh 自身の HISTFILE は macOS の /etc/zshrc による上書きを避けるため
-# ~/.zshrc (install/common/setup_shell.sh が管理するブロック) で設定する
+# $ZDOTDIR/.zshrc (install/common/setup_shell.sh が管理するブロック) で設定する
 source "$HOME/.config/shell/env.sh"
 
 # completions.sh が生成した _<cmd> 形式の補完を compinit より前に fpath へ追加する。
@@ -8,7 +8,7 @@ source "$HOME/.config/shell/env.sh"
 # zcompdump はキャッシュのため ~/.cache/zsh へ置く (ディレクトリは setup_directory.sh が作成する)。
 # bashcompinit は aws_completer の complete -C (bash 形式) 用
 if $_dotfiles_human_shell; then
-    fpath=("$HOME/.config/zsh/completions" $fpath)
+    fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
     autoload -Uz compinit && compinit -d "$HOME/.cache/zsh/zcompdump"
     autoload -Uz bashcompinit && bashcompinit
 fi

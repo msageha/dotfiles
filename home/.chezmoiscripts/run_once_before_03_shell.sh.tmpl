@@ -1,0 +1,9 @@
+{{ if ne .chezmoi.os "windows" -}}
+#!/bin/bash
+set -euo pipefail
+
+{{ include "../install/lib.sh" }}
+{{- /* ファイルの配置より前に ~/.config/zsh/.zshrc を作る。.chezmoiremove が ~/.zprofile を消すのと同じ apply で
+       ~/.zshenv が ZDOTDIR を切り替えられるように (02 が zsh を入れた後に走る) */}}
+{{   include "../install/common/setup_shell.sh" }}
+{{ end -}}

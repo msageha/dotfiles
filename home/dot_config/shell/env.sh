@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# bash (~/.bash_profile) と zsh (~/.zprofile) が共有する環境変数と PATH。両シェルで解釈できる構文のみ使う。
+# bash (~/.bash_profile) と zsh ($ZDOTDIR/.zprofile) が共有する環境変数と PATH。両シェルで解釈できる構文のみ使う。
 # ツールのシェル統合 (prompt / hook / completion) はこの後に source する integrations.sh にある
 
 if [ -n "${ZSH_VERSION:-}" ]; then
@@ -34,8 +34,8 @@ esac
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
 source "$HOME/.config/shell/agent-env.sh"
 
-if $_dotfiles_human_shell && [ -f "$HOME/.alias" ]; then
-    source "$HOME/.alias"
+if $_dotfiles_human_shell && [ -f "$HOME/.config/shell/alias.sh" ]; then
+    source "$HOME/.config/shell/alias.sh"
 fi
 
 export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
@@ -44,6 +44,15 @@ export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
 export PSQL_HISTFILE="$HOME/.local/state/psql_history"
 export PYTHON_HISTORY="$HOME/.local/state/python_history"
 export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+# IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
+export IPYTHONDIR="$HOME/.config/ipython"
+export JUPYTER_CONFIG_DIR="$HOME/.config/jupyter"
+# matplotlib は Linux では XDG に従うが、macOS では未設定なら ~/.matplotlib を使う
+if [[ "$(uname)" == "Darwin" ]]; then
+    export MPLCONFIGDIR="$HOME/.config/matplotlib"
+fi
+# Python のバイトコード (__pycache__) をソースの横ではなくキャッシュの下にまとめる
+export PYTHONPYCACHEPREFIX="$HOME/.cache/python"
 
 # Dracula テーマの配色 (https://github.com/dracula/ の fzf / eza / grep / man-pages)
 if $_dotfiles_human_shell; then
@@ -110,14 +119,6 @@ if $_dotfiles_human_shell; then
         alias grep='grep --color=auto'
     fi
 fi
-
-export GOPATH="$HOME/Works"
-# go install のバイナリは ~/.local/bin (PATH 設定済み) に置く。mise activate 環境では
-# mise が GOBIN を自身の管理ディレクトリへ上書きするため、これは mise 不在時のフォールバック
-export GOBIN="$HOME/.local/bin"
-# Takumi Guard (悪性パッケージを遮断する proxy)。`,direct` を付けると未収載・ブロック済みの module で proxy を迂回できてしまうため URL だけを指定する。
-# 認証 token は ~/.netrc (modify_private_dot_netrc)
-export GOPROXY="https://golang.flatt.tech"
 
 # DEVELOPER_DIR は xcrun / ビルドツールが参照する。Homebrew の git / python3 を優先しつつ
 # simctl 等の Xcode 専用ツールも引けるように usr/bin は末尾に追加する

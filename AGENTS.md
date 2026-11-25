@@ -16,13 +16,14 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 
 ## コードから読み取れない契約
 
-- 対象は macOS の arm64 (Homebrew の installer が Intel Mac を受け付けない) と、Ubuntu / Debian / Windows の amd64 と arm64。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
+- 対象は macOS の arm64 (Homebrew の installer が Intel Mac を受け付けない) と、Ubuntu (26.04 以降) / Debian (trixie 以降) / Windows の amd64 と arm64 (macOS と Linux は、OS が入れる vim が XDG の場所の vimrc を読む 9.1.0327 以降である版)。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
 - `install/` の OS 別スクリプトは、`.chezmoiscripts` の各テンプレートが include して 1 つのプロセス (POSIX は bash、Windows は PowerShell) に順に連結する。
   共通 helper の `install/lib.sh` (Windows は `install/windows/lib.ps1`) は各テンプレートが先頭で 1 回 include し (変更すると、include する `run_once_*` / `run_onchange_*` が次の apply で全て再実行される)、各スクリプトは単体実行時だけ冒頭のガードで読み込む。
   - 各スクリプトは関数を定義し、末尾で自分の entry を呼んで終える (POSIX は `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから `main` 等を、Windows はガード無しで `Main` 等を呼ぶ)。
     同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無いので、prefix で rename しない。
   - 後続スクリプトに波及するため、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は書かない (後続へ引き渡すための変更は除く。例: `winget.ps1` は、後続が `winget` を見つけられるよう `$env:Path` に足す)。
   - テンプレートからスクリプトへは環境変数で値を渡す。
+  - パスは `XDG_*` を使わず `$HOME` 基準で書く (`$HOME/.config` 等)。chezmoi は `XDG_*` によらず固定のパスに配置し、`tests/install` は `HOME` だけを一時ディレクトリに差し替えるため。
 - `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。各キーの用途と読み手は同ファイルのコメントにある。
 - bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書く。
   Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (`docs/agent-shell.md`)。

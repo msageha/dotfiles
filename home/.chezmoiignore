@@ -27,12 +27,12 @@
 # Windows では unix 向けの dotfiles (シェル設定・vim・unix ツールの .config) を展開しない
 # (git / ssh / starship / コーディングエージェント設定は Windows でも使う)
 {{ if eq .chezmoi.os "windows" }}
-.alias
 .bash_profile
-.zprofile
+.zshenv
+.config/zsh
 .config/shell
 .config/tmux
-.vimrc
+.config/vim
 .config/fastfetch
 .config/fish
 .config/gh
@@ -64,6 +64,15 @@
 .config/uv
 {{ else if not (dig "apiKeys" "takumiGuard" "" .) }}
 .netrc
+{{ end }}
+
+# go コマンドの設定ファイル (GOPROXY 等) は OS ごとの場所 (Go の os.UserConfigDir) に置く。Windows には置かない。
+# chezmoi は親ディレクトリの権限も管理するので、macOS の ~/Library は既定どおり 0700 にする (source の private_Library)
+{{ if ne .chezmoi.os "darwin" }}
+Library
+{{ end }}
+{{ if ne .chezmoi.os "linux" }}
+.config/go
 {{ end }}
 
 # ghostty は GUI アプリのため、GUI を導入しない環境では設定・テーマ (external) を展開しない。

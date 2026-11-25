@@ -5,11 +5,12 @@ load ../test_helper
 @test "[files] dotfiles" {
     files_exists=(
         "${HOME}/.config/git/config"
-        "${HOME}/.vimrc"
+        "${HOME}/.config/vim/vimrc"
         "${HOME}/.config/tmux/tmux.conf"
-        "${HOME}/.alias"
+        "${HOME}/.config/shell/alias.sh"
         "${HOME}/.bash_profile"
-        "${HOME}/.zprofile"
+        "${HOME}/.zshenv"
+        "${HOME}/.config/zsh/.zprofile"
         "${HOME}/.config/shell/env.sh"
         "${HOME}/.config/shell/integrations.sh"
         "${HOME}/.ssh/config"
