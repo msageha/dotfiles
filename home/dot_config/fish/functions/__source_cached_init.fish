@@ -5,7 +5,7 @@ function __source_cached_init
     # 作り直すため、<cmd> は絶対パスで渡す (コマンド名だと判定が常に偽になる)。
     # 空出力は失敗扱いにする (brew shellenv は brew が PATH 先頭にあると何も出さず、
     # 空のキャッシュが残ると以後 HOMEBREW_* が設定されない)
-    set -l cache_dir $HOME/.cache/fish/init
+    set -l cache_dir $XDG_CACHE_HOME/fish/init
     set -l cache $cache_dir/$argv[1].fish
     set -l bin $argv[2]
     if not test -f $cache; or test $bin -nt $cache

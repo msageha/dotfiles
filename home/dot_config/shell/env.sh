@@ -41,10 +41,10 @@ case "$-" in
 esac
 
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
-source "$HOME/.config/shell/agent-env.sh"
+source "$XDG_CONFIG_HOME/shell/agent-env.sh"
 
-if $_dotfiles_human_shell && [ -f "$HOME/.config/shell/alias.sh" ]; then
-    source "$HOME/.config/shell/alias.sh"
+if $_dotfiles_human_shell && [ -f "$XDG_CONFIG_HOME/shell/alias.sh" ]; then
+    source "$XDG_CONFIG_HOME/shell/alias.sh"
 fi
 
 export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_repl_history"
@@ -52,7 +52,7 @@ export SQL_HISTORY="$XDG_STATE_HOME/sql_history"
 export MYSQL_HISTFILE="$XDG_STATE_HOME/mysql_history"
 export PSQL_HISTFILE="$XDG_STATE_HOME/psql_history"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python_history"
-export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/config"
 # IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
 export IPYTHONDIR="$XDG_CONFIG_HOME/ipython"
 export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME/jupyter"
@@ -112,8 +112,8 @@ if $_dotfiles_human_shell; then
     # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)。
     # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
     _dircolors_bin="$(command -v dircolors || command -v gdircolors || true)"
-    if [ -n "$_dircolors_bin" ] && [ -f "$HOME/.config/dircolors/dracula/.dircolors" ]; then
-        eval "$("$_dircolors_bin" -b "$HOME/.config/dircolors/dracula/.dircolors")"
+    if [ -n "$_dircolors_bin" ] && [ -f "$XDG_CONFIG_HOME/dircolors/dracula/.dircolors" ]; then
+        eval "$("$_dircolors_bin" -b "$XDG_CONFIG_HOME/dircolors/dracula/.dircolors")"
     fi
     unset _dircolors_bin
 

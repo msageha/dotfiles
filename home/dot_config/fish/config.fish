@@ -21,14 +21,14 @@ set -gx XDG_STATE_HOME $HOME/.local/state
 set -gx XDG_CACHE_HOME $HOME/.cache
 
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
-source $HOME/.config/fish/agent-env.fish
+source $__fish_config_dir/agent-env.fish
 
 set -gx NODE_REPL_HISTORY $XDG_STATE_HOME/node_repl_history
 set -gx SQL_HISTORY $XDG_STATE_HOME/sql_history
 set -gx MYSQL_HISTFILE $XDG_STATE_HOME/mysql_history
 set -gx PSQL_HISTFILE $XDG_STATE_HOME/psql_history
 set -gx PYTHON_HISTORY $XDG_STATE_HOME/python_history
-set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
+set -gx RIPGREP_CONFIG_PATH $XDG_CONFIG_HOME/ripgrep/config
 # IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
 set -gx IPYTHONDIR $XDG_CONFIG_HOME/ipython
 set -gx JUPYTER_CONFIG_DIR $XDG_CONFIG_HOME/jupyter
@@ -40,8 +40,8 @@ end
 set -gx PYTHONPYCACHEPREFIX $XDG_CACHE_HOME/python
 
 if test "$human_shell" = true
-    if test -f $HOME/.config/shell/alias.sh
-        source $HOME/.config/shell/alias.sh
+    if test -f $XDG_CONFIG_HOME/shell/alias.sh
+        source $XDG_CONFIG_HOME/shell/alias.sh
     end
 
     # fzf / eza / grep の配色は Dracula テーマ (https://github.com/dracula)
@@ -106,8 +106,8 @@ if test "$human_shell" = true
     # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml が取得)。
     # dircolors は GNU coreutils にしか無く、macOS 標準には無い
     set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
-    if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
-        eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
+    if test -n "$dircolors_bin"; and test -f $XDG_CONFIG_HOME/dircolors/dracula/.dircolors
+        eval ($dircolors_bin -c $XDG_CONFIG_HOME/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
     end
 end
 
@@ -162,7 +162,7 @@ set -gx OP_ACCOUNT my.1password.com
 if test "$human_shell" = true
     # Dracula テーマ (https://github.com/dracula/fish) は fisher が themes/ に置く。
     # fish >= 3.4 は導入だけでは適用されないため明示的に choose する
-    if test -f $HOME/.config/fish/themes/"Dracula Official.theme"
+    if test -f $__fish_config_dir/themes/"Dracula Official.theme"
         fish_config theme choose "Dracula Official"
     end
 

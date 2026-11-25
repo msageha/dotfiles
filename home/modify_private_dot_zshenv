@@ -7,6 +7,7 @@
     (その場合は install/common/setup_shell.sh が警告する)
   - ~/.config/zsh/.zshrc (install/common/setup_shell.sh が作る) があるときだけ切り替えるのは、
     対象を絞った apply などで移行処理が走る前に、$HOME 直下の設定を読まなくなるのを避けるため
+  - $HOME 基準で書くのは、.zshenv が XDG_* を設定する env.sh より前に読まれるため
   - export しないのは、HOME を差し替えて起動した子の zsh が親の ZDOTDIR を引き継がず、自身の ~/.zshenv で決めるため
 */ -}}
 {{- $line := `if [[ -r "$HOME/.config/zsh/.zshrc" ]]; then ZDOTDIR="$HOME/.config/zsh"; fi` -}}
