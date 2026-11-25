@@ -29,17 +29,29 @@ function move_to_xdg() {
     mv "$from" "$to"
 }
 
+# XDG_CONFIG_HOME の有無で設定の場所が変わるツール用。shell の環境変数を持たないプロセス (GUI アプリ・定期ジョブ等) も
+# 同じ設定を読むよう、移した後の元の場所に symlink を置く
+function move_to_xdg_keeping_link() {
+    local from="$1" to="$2"
+    [ -L "$from" ] && return 0
+    move_to_xdg "$from" "$to"
+    if [ -d "$to" ] && [ ! -e "$from" ]; then
+        mkdir -p "$(dirname "$from")"
+        ln -s "$to" "$from"
+    fi
+}
+
 function move_data_to_xdg() {
     log_step "Moving data to XDG base directories..."
     move_to_xdg "$HOME/.ipython" "$HOME/.config/ipython"
     move_to_xdg "$HOME/.jupyter" "$HOME/.config/jupyter"
-    # XDG_CONFIG_HOME が設定されていると、Homebrew は ~/.homebrew の代わりに $XDG_CONFIG_HOME/homebrew を使う
-    move_to_xdg "$HOME/.homebrew" "$HOME/.config/homebrew"
     move_to_xdg "$HOME/Works/pkg/mod" "$HOME/.cache/go/mod"
+    # Homebrew は XDG_CONFIG_HOME があるときだけ ~/.homebrew ではなく $XDG_CONFIG_HOME/homebrew を読む
+    move_to_xdg_keeping_link "$HOME/.homebrew" "$HOME/.config/homebrew"
     if [[ "$(uname)" == "Darwin" ]]; then
         move_to_xdg "$HOME/.matplotlib" "$HOME/.config/matplotlib"
-        # XDG_CONFIG_HOME が設定されていると、glab は macOS でも ~/Library ではなく $XDG_CONFIG_HOME/glab-cli を使う
-        move_to_xdg "$HOME/Library/Application Support/glab-cli" "$HOME/.config/glab-cli"
+        # glab は XDG_CONFIG_HOME があるときだけ、macOS でも ~/Library ではなく $XDG_CONFIG_HOME/glab-cli を読む
+        move_to_xdg_keeping_link "$HOME/Library/Application Support/glab-cli" "$HOME/.config/glab-cli"
     fi
 }
 

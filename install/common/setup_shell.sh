@@ -36,10 +36,12 @@ function move_zsh_files_to_zdotdir() {
     [[ "$(uname)" == "Darwin" ]] || return 0
     # Terminal.app は保存したセッションを ${ZDOTDIR:-$HOME}/.zsh_sessions から復元する。起動中のセッションは終了時に
     # 起動時のディレクトリへ書き込むので、Terminal.app の実行中は移さない
-    if [ -d "$HOME/.zsh_sessions" ]; then
+    if [ -e "$HOME/.zsh_sessions" ] || [ -L "$HOME/.zsh_sessions" ]; then
         if pgrep -xq Terminal; then
             log_warn "Terminal.app の実行中は ${HOME}/.zsh_sessions を移しません。Terminal.app を終了してから ${zdotdir}/.zsh_sessions へ移してください。"
-        elif [ -e "$zdotdir/.zsh_sessions" ]; then
+        elif [ -L "$HOME/.zsh_sessions" ]; then
+            log_warn "${HOME}/.zsh_sessions は symlink なので移しません。${zdotdir}/.zsh_sessions から参照できるようにしてください。"
+        elif [ -e "$zdotdir/.zsh_sessions" ] || [ -L "$zdotdir/.zsh_sessions" ]; then
             log_warn "${HOME}/.zsh_sessions と ${zdotdir}/.zsh_sessions の両方があります。${HOME}/.zsh_sessions は読まれないので、必要なら移してから削除してください。"
         else
             mv "$HOME/.zsh_sessions" "$zdotdir/.zsh_sessions"
@@ -63,6 +65,9 @@ function create_zshrc() {
         log_error "${zshrc} の管理ブロック終了マーカー (${block_end}) が見つかりません。巻き込み削除を避けるため更新をスキップします。手動で修復してください。"
         return 0
     fi
+    # 既存の .zshrc の権限 (マシン固有の設定を 0600 にしている等) を、置き換えた後のファイルに引き継ぐ (GNU / BSD の stat)
+    local mode
+    mode="$(stat -c %a "$zshrc" 2>/dev/null || stat -f %Lp "$zshrc")"
     # 管理ブロックはマシン固有の追記 (installer が足すブロック等) より先に実行されるよう先頭に置く。
     # 既存の管理ブロックは取り除いて書き直す
     {
@@ -94,6 +99,7 @@ EOF
         cat "${zshrc}.tmp" > "$zshrc"
         rm "${zshrc}.tmp"
     else
+        chmod "$mode" "${zshrc}.tmp"
         mv "${zshrc}.tmp" "$zshrc"
     fi
 }
