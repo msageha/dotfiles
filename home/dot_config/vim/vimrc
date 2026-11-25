@@ -1,4 +1,4 @@
-" vim -u ~/.vimrc で読ませたときは -N が無いと compatible のままになるため明示する
+" vim -u ~/.config/vim/vimrc で読ませたときは -N が無いと compatible のままになるため明示する
 set nocompatible
 set clipboard=unnamed
 set wildmenu

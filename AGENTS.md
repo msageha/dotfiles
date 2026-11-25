@@ -16,7 +16,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 
 ## コードから読み取れない契約
 
-- 対象は macOS の arm64 (Homebrew の installer が Intel Mac を受け付けない) と、Ubuntu / Debian / Windows の amd64 と arm64。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
+- 対象は macOS の arm64 (Homebrew の installer が Intel Mac を受け付けない) と、Ubuntu (26.04 以降) / Debian (trixie 以降) / Windows の amd64 と arm64 (macOS と Linux は、OS が入れる vim が XDG の場所の vimrc を読む 9.1.0327 以降である版)。POSIX 側 (`install/{common,macos,debian,ubuntu,alpine}/`・bash / zsh / fish の設定) と Windows 側 (`install/windows/`・PowerShell の設定) は対になる実装なので、片方に入れた対策は他方にも入れる。
 - `install/` の OS 別スクリプトは、`.chezmoiscripts` の各テンプレートが include して 1 つのプロセス (POSIX は bash、Windows は PowerShell) に順に連結する。
   共通 helper の `install/lib.sh` (Windows は `install/windows/lib.ps1`) は各テンプレートが先頭で 1 回 include し (変更すると、include する `run_once_*` / `run_onchange_*` が次の apply で全て再実行される)、各スクリプトは単体実行時だけ冒頭のガードで読み込む。
   - 各スクリプトは関数を定義し、末尾で自分の entry を呼んで終える (POSIX は `[[ ${BASH_SOURCE[0]} == $0 ]]` ガードから `main` 等を、Windows はガード無しで `Main` 等を呼ぶ)。
@@ -52,7 +52,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。
   この hook は diff を出さないので、差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
-- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (macOS は `~/Library/Caches/`。Codex では `~/.cache/` も) への書き込みが "Operation not permitted" で落ちる (コード起因ではない)。
+- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (`~/.cache/` と macOS の `~/Library/Caches/`) への書き込みが "Operation not permitted" で落ちる (コード起因ではない)。
 
 ### secret を出力しうるコマンド
 

@@ -378,6 +378,13 @@
       "Read(~/.gemini/config/mcp_config.json)",
       "Read(~/.bash_history)",
       "Read(~/.zsh_history)",
+      "Read(~/.local/state/bash_history)",
+      "Read(~/.local/state/zsh_history)",
+{{- /* .zshrc が HISTFILE を設定する前に macOS の /etc/zshrc が使う ${ZDOTDIR:-$HOME}/.zsh_history */}}
+      "Read(~/.config/zsh/.zsh_history)",
+{{- /* macOS の Terminal.app が zsh の履歴をセッションごとに写す場所 (/etc/zshrc_Apple_Terminal の ${ZDOTDIR:-$HOME}/.zsh_sessions) */}}
+      "Read(~/.zsh_sessions/**)",
+      "Read(~/.config/zsh/.zsh_sessions/**)",
       "Read(~/.claude/.credentials.json)",
 {{- /* claude-private (CLAUDE_CONFIG_DIR=~/.claude-private) の同じ役割のファイル。settings.json は ~/.claude/settings.json への symlink */}}
       "Read(~/.claude-private/settings.json)",

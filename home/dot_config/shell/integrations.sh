@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# bash (~/.bash_profile) と zsh (~/.zprofile) が共有するツールのシェル統合 (prompt / hook / completion)。
+# bash (~/.bash_profile) と zsh ($ZDOTDIR/.zprofile) が共有するツールのシェル統合 (prompt / hook / completion)。
 # env.sh の後に source する。human の zsh は compinit (と aws_completer 用の bashcompinit) を済ませておく。
 # _dotfiles_human_shell と _dotfiles_shell は env.sh が設定する。_fnox_hook でも参照するため unset しない
 # shellcheck disable=SC2154

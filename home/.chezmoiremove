@@ -1,4 +1,12 @@
 # 過去に配布していたが廃止・移動したファイルを適用先から削除する。
+{{- /* XDG の配置 (~/.config/vim/vimrc・~/.config/shell/alias.sh・~/.config/zsh/.zprofile) へ移した。
+       vim は ~/.vimrc があるとそちらを優先して ~/.config/vim/vimrc を読まない。
+       Windows にはこれらを配布していないので、利用者のファイルを消さないよう対象から外す */}}
+{{- if ne .chezmoi.os "windows" }}
+.vimrc
+.alias
+.zprofile
+{{- end }}
 {{- /* 以下はコーディングエージェント設定を配布していた環境だけで消す (.chezmoiignore の $skipCodingAgent と同じ条件)。
        .chezmoiignore で親ディレクトリを ignore しても、その配下は .chezmoiremove で消えるため、ここで条件を付ける */}}
 {{- if not (or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .)) }}

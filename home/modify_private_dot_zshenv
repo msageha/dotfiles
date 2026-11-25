@@ -1,0 +1,22 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.zshenv の先頭に ZDOTDIR の設定を置き、ほかの行 (installer が足す環境変数等) は温存する。
+  ZDOTDIR は zsh の設定 (.zprofile / .zshrc) と、macOS の /etc/zshrc が ${ZDOTDIR:-$HOME} の下に作る履歴ファイル・
+  Terminal.app のセッション (.zsh_sessions) を $HOME 直下ではなく ~/.config/zsh に置くために設定する。
+  - 先頭に置くのは、既存の行の早期 return で飛ばされないようにするため。既存の行が ZDOTDIR を設定していればそちらが効く
+    (その場合は install/common/setup_shell.sh が警告する)
+  - ~/.config/zsh/.zshrc (install/common/setup_shell.sh が作る) があるときだけ切り替えるのは、
+    対象を絞った apply などで移行処理が走る前に、$HOME 直下の設定を読まなくなるのを避けるため
+  - export しないのは、HOME を差し替えて起動した子の zsh が親の ZDOTDIR を引き継がず、自身の ~/.zshenv で決めるため
+*/ -}}
+{{- $line := `if [[ -r "$HOME/.config/zsh/.zshrc" ]]; then ZDOTDIR="$HOME/.config/zsh"; fi` -}}
+{{- $lines := list $line -}}
+{{- $stdin := trimSuffix "\n" (dig "stdin" "" .chezmoi) -}}
+{{- if $stdin -}}
+{{-   range splitList "\n" $stdin -}}
+{{-     if ne . $line -}}
+{{-       $lines = append $lines . -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+{{ join "\n" $lines }}

@@ -1,13 +1,14 @@
-export HISTFILE="$HOME/.local/state/bash_history"
+# 環境変数・PATH とツールのシェル統合は zsh ($ZDOTDIR/.zprofile) と共有する
+source "$HOME/.config/shell/env.sh"
+source "$HOME/.config/shell/integrations.sh"
+
+# bash は startup file を読み終えてから履歴を読み込むので、XDG_STATE_HOME を決める env.sh の後で設定してよい
+export HISTFILE="$XDG_STATE_HOME/bash_history"
 # 既定 HISTSIZE=500 は小さく、複数端末を使うと古い履歴から消えてしまうため拡張し、
 # histappend で終了時の上書きではなく追記にする
 export HISTSIZE=10000
 export HISTFILESIZE=10000
 shopt -s histappend
-
-# 環境変数・PATH とツールのシェル統合は zsh (~/.zprofile) と共有する
-source "$HOME/.config/shell/env.sh"
-source "$HOME/.config/shell/integrations.sh"
 
 # completions.sh が生成した補完ファイルを source する
 _bash_completions_dir="$HOME/.local/share/bash-completion/completions"

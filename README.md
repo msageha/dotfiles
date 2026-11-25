@@ -153,7 +153,7 @@ API キーは `fnox.toml` に暗号化して置き、`chezmoi.toml` と、キー
 
 macOS / Linux では、パッケージを悪性パッケージを遮断する [Takumi Guard](https://shisho.dev/docs/ja/t/guard/quickstart/npm/) 経由で取得する。
 Go (`GOPROXY`) はどの構成でも、npm / pip / uv は `skip_cli_tools=false` のときだけ設定する。
-Go は Takumi Guard から取得できないものを直接取りに行かないので、private module は `GOPRIVATE` に入れる。
+Go は Takumi Guard から取得できないものを直接取りに行かないので、private module は `go env -w GOPRIVATE=<pattern>` で設定する (apply は `go env -w` で足した設定を残す)。
 
 ### SSH 秘密鍵
 

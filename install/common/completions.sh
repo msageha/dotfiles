@@ -85,18 +85,36 @@ function generate_completions() {
     log_step "All ${shell} completions set up successfully."
 }
 
+# 補完の生成先から外れた ~/.config の補完を知らせる。利用者が置いたものかもしれないので消さない。
+# fish は ~/.config/fish/completions の補完を生成した同名の補完より優先して読み、zsh は ~/.config/zsh/completions を fpath に入れない
+function warn_completions_in_config() {
+    local tool comp
+    for tool in "${completion_tools[@]}"; do
+        if [ -e "$HOME/.config/fish/completions/$tool.fish" ] && [ -e "$HOME/.local/share/fish/vendor_completions.d/$tool.fish" ]; then
+            log_warn "${HOME}/.config/fish/completions/${tool}.fish が生成した補完より優先されます。不要なら削除してください。"
+        fi
+    done
+    for comp in "$HOME/.config/zsh/completions"/*; do
+        [ -e "$comp" ] || continue
+        log_warn "${comp} は zsh の fpath に入らないので読まれません。要るなら ${HOME}/.local/share/zsh/site-functions へ移してください。"
+    done
+}
+
 function main() {
+    # 補完は生成物なので、手で書く設定を置く ~/.config ではなく XDG の data 側 (~/.local/share) に書く。
+    # fish は vendor_completions.d を補完の検索先に含める
     if command -v fish &>/dev/null; then
-        generate_completions fish "$HOME/.config/fish/completions"
+        generate_completions fish "$HOME/.local/share/fish/vendor_completions.d"
     fi
     # zsh は fpath 上の _<cmd> を autoload する (このディレクトリは dot_zprofile が fpath に足す)
     if command -v zsh &>/dev/null; then
-        generate_completions zsh "$HOME/.config/zsh/completions"
+        generate_completions zsh "$HOME/.local/share/zsh/site-functions"
     fi
     # bash は dot_bash_profile が起動時にこのディレクトリ配下を source する
     if command -v bash &>/dev/null; then
         generate_completions bash "$HOME/.local/share/bash-completion/completions"
     fi
+    warn_completions_in_config
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

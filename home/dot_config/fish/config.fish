@@ -14,19 +14,34 @@ if test "$agent_shell" = false; and status is-interactive; and isatty stdin; and
     set human_shell true
 end
 
+# XDG Base Directory (既定値に揃える理由は ~/.config/shell/env.sh のコメント)
+set -gx XDG_CONFIG_HOME $HOME/.config
+set -gx XDG_DATA_HOME $HOME/.local/share
+set -gx XDG_STATE_HOME $HOME/.local/state
+set -gx XDG_CACHE_HOME $HOME/.cache
+
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
 source $HOME/.config/fish/agent-env.fish
 
-set -gx NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
-set -gx SQL_HISTORY $HOME/.local/state/sql_history
-set -gx MYSQL_HISTFILE $HOME/.local/state/mysql_history
-set -gx PSQL_HISTFILE $HOME/.local/state/psql_history
-set -gx PYTHON_HISTORY $HOME/.local/state/python_history
+set -gx NODE_REPL_HISTORY $XDG_STATE_HOME/node_repl_history
+set -gx SQL_HISTORY $XDG_STATE_HOME/sql_history
+set -gx MYSQL_HISTFILE $XDG_STATE_HOME/mysql_history
+set -gx PSQL_HISTFILE $XDG_STATE_HOME/psql_history
+set -gx PYTHON_HISTORY $XDG_STATE_HOME/python_history
 set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
+# IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
+set -gx IPYTHONDIR $XDG_CONFIG_HOME/ipython
+set -gx JUPYTER_CONFIG_DIR $XDG_CONFIG_HOME/jupyter
+# matplotlib は Linux では XDG に従うが、macOS では未設定なら ~/.matplotlib を使う
+if test (uname) = Darwin
+    set -gx MPLCONFIGDIR $XDG_CONFIG_HOME/matplotlib
+end
+# Python のバイトコード (__pycache__) をソースの横ではなくキャッシュの下にまとめる
+set -gx PYTHONPYCACHEPREFIX $XDG_CACHE_HOME/python
 
 if test "$human_shell" = true
-    if test -f $HOME/.alias
-        source $HOME/.alias
+    if test -f $HOME/.config/shell/alias.sh
+        source $HOME/.config/shell/alias.sh
     end
 
     # fzf / eza / grep の配色は Dracula テーマ (https://github.com/dracula)
@@ -95,13 +110,6 @@ if test "$human_shell" = true
         eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
     end
 end
-
-set -gx GOPATH "$HOME/Works"
-# mise activate 環境では mise が GOBIN を上書きするため、これは mise が無いときの値
-set -gx GOBIN "$HOME/.local/bin"
-# Takumi Guard (悪性パッケージを遮断する proxy)。`,direct` を付けると未収載・ブロック済みの module で
-# proxy を迂回できてしまうため URL だけを指定する。認証 token は ~/.netrc (modify_private_dot_netrc)
-set -gx GOPROXY "https://golang.flatt.tech"
 
 set -gx CLOUDSDK_PYTHON (type -p python3)
 

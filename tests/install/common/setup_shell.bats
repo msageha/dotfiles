@@ -12,14 +12,14 @@ function setup() {
 @test "[install/common] setup_shell - create_zshrc creates guarded block on fresh home" {
     create_zshrc
 
-    grep -Fxq "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc"
-    grep -Fxq "# <<< dotfiles zsh init <<<" "${HOME}/.zshrc"
-    grep -Fq 'if [[ ! -o login ]]; then' "${HOME}/.zshrc"
-    grep -Fq 'HISTFILE="$HOME/.local/state/zsh_history"' "${HOME}/.zshrc"
-    grep -Fxq 'SAVEHIST=10000' "${HOME}/.zshrc"
-    grep -Fxq 'HISTSIZE=10000' "${HOME}/.zshrc"
+    grep -Fxq "# >>> dotfiles zsh init >>>" "${HOME}/.config/zsh/.zshrc"
+    grep -Fxq "# <<< dotfiles zsh init <<<" "${HOME}/.config/zsh/.zshrc"
+    grep -Fq 'if [[ ! -o login ]]; then' "${HOME}/.config/zsh/.zshrc"
+    grep -Fq 'HISTFILE="$XDG_STATE_HOME/zsh_history"' "${HOME}/.config/zsh/.zshrc"
+    grep -Fxq 'SAVEHIST=10000' "${HOME}/.config/zsh/.zshrc"
+    grep -Fxq 'HISTSIZE=10000' "${HOME}/.config/zsh/.zshrc"
     # login shell で初期化を二重実行させる無条件 source が含まれないこと
-    run grep -Fxq "source \$HOME/.zprofile" "${HOME}/.zshrc"
+    run grep -Fxq "source \"\$ZDOTDIR/.zprofile\"" "${HOME}/.config/zsh/.zshrc"
     [ "$status" -ne 0 ]
 }
 
@@ -27,18 +27,19 @@ function setup() {
     create_zshrc
     create_zshrc
 
-    [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc")" -eq 1 ]
-    [ "$(grep -Fxc "# <<< dotfiles zsh init <<<" "${HOME}/.zshrc")" -eq 1 ]
+    [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.config/zsh/.zshrc")" -eq 1 ]
+    [ "$(grep -Fxc "# <<< dotfiles zsh init <<<" "${HOME}/.config/zsh/.zshrc")" -eq 1 ]
 }
 
 @test "[install/common] setup_shell - create_zshrc keeps file intact when end marker is missing" {
-    printf '%s\n' "# >>> dotfiles zsh init >>>" "# stale managed line" "# user line" > "${HOME}/.zshrc"
+    mkdir -p "${HOME}/.config/zsh"
+    printf '%s\n' "# >>> dotfiles zsh init >>>" "# stale managed line" "# user line" > "${HOME}/.config/zsh/.zshrc"
 
     run create_zshrc
     [ "$status" -eq 0 ]
     [[ "$output" == *"終了マーカー"* ]]
-    grep -Fxq "# user line" "${HOME}/.zshrc"
-    [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.zshrc")" -eq 1 ]
+    grep -Fxq "# user line" "${HOME}/.config/zsh/.zshrc"
+    [ "$(grep -Fxc "# >>> dotfiles zsh init >>>" "${HOME}/.config/zsh/.zshrc")" -eq 1 ]
 }
 
 @test "[install/common] setup_shell - create_bashrc appends source line once" {
