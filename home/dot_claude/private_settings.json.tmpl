@@ -376,10 +376,11 @@
       "Read(~/.gemini/.env)",
       "Read(~/.gemini/settings.json)",
       "Read(~/.gemini/config/mcp_config.json)",
-      "Read(~/.bash_history)",
-      "Read(~/.zsh_history)",
-      "Read(~/.local/state/bash_history)",
-      "Read(~/.local/state/zsh_history)",
+{{- /* shell・REPL・DB クライアントの履歴 (入力したパスワードや token が残りうる)。shell を経ずに起動したツールは $HOME 直下の既定の場所に書き、
+       shell (dot_config/shell/env.sh・dot_config/fish/config.fish) から起動したものは ~/.local/state に書く */}}
+      "Read(~/.*_history)",
+      "Read(~/.local/state/*_history)",
+      "Read(~/.local/share/fish/fish_history)",
 {{- /* .zshrc が HISTFILE を設定する前に macOS の /etc/zshrc が使う ${ZDOTDIR:-$HOME}/.zsh_history */}}
       "Read(~/.config/zsh/.zsh_history)",
 {{- /* macOS の Terminal.app が zsh の履歴をセッションごとに写す場所 (/etc/zshrc_Apple_Terminal の ${ZDOTDIR:-$HOME}/.zsh_sessions) */}}
