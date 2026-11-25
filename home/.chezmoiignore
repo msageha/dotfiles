@@ -66,7 +66,8 @@
 .netrc
 {{ end }}
 
-# go コマンドの設定ファイル (GOPROXY 等) は OS ごとの場所 (Go の os.UserConfigDir) に置く。Windows には置かない
+# go コマンドの設定ファイル (GOPROXY 等) は OS ごとの場所 (Go の os.UserConfigDir) に置く。Windows には置かない。
+# chezmoi は親ディレクトリの権限も管理するので、macOS の ~/Library は既定どおり 0700 にする (source の private_Library)
 {{ if ne .chezmoi.os "darwin" }}
 Library
 {{ end }}
