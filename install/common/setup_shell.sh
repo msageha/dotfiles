@@ -80,7 +80,7 @@ fi
 # macOS の /etc/zshrc (.zprofile の後・.zshrc の前に読まれる) が HISTFILE を
 # $ZDOTDIR/.zsh_history へ上書きするため、zsh の履歴ファイルは .zshrc 側で設定する。
 # SAVEHIST > 0 でないと HISTFILE へ書き込まれない。サイズは bash (.bash_profile) と揃える
-HISTFILE="$XDG_STATE_HOME/zsh_history"
+HISTFILE="$HOME/.local/state/zsh_history"
 HISTSIZE=10000
 SAVEHIST=10000
 # Terminal.app の /etc/zshrc_Apple_Terminal は、終了時に追記する共有の履歴ファイルを .zshrc より前に

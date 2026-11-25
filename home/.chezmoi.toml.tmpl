@@ -11,17 +11,6 @@ useBuiltinAge = true
 autoCommit = true
 autoPush = true
 
-{{ if ne .chezmoi.os "windows" -}}
-# chezmoi が実行するスクリプト (install/) のツールが、shell (dot_config/shell/env.sh) と同じ XDG の場所を使うようにする。
-# apply を shell 以外から起動しても、移したデータ (install/common/setup_directory.sh) を後続の brew 等が読めるように。
-# Windows では git 等が XDG_CONFIG_HOME を読んで設定の場所が変わるので渡さない
-[env]
-XDG_CONFIG_HOME = {{ joinPath .chezmoi.homeDir ".config" | quote }}
-XDG_DATA_HOME = {{ joinPath .chezmoi.homeDir ".local" "share" | quote }}
-XDG_STATE_HOME = {{ joinPath .chezmoi.homeDir ".local" "state" | quote }}
-XDG_CACHE_HOME = {{ joinPath .chezmoi.homeDir ".cache" | quote }}
-
-{{ end -}}
 {{ if eq .chezmoi.os "windows" -}}
 # chezmoi の既定は pwsh 優先のため、pwsh の有無で .ps1 の実行ホストが変わらないよう標準の Windows PowerShell 5.1 に固定する。
 # -NoProfile はプロファイル (starship 初期化等) を毎回読ませないため、-ExecutionPolicy Bypass は既定が Restricted のマシンでも apply を通すため

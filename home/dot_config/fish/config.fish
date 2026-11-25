@@ -14,34 +14,28 @@ if test "$agent_shell" = false; and status is-interactive; and isatty stdin; and
     set human_shell true
 end
 
-# XDG Base Directory (既定値に揃える理由は ~/.config/shell/env.sh のコメント)
-set -gx XDG_CONFIG_HOME $HOME/.config
-set -gx XDG_DATA_HOME $HOME/.local/share
-set -gx XDG_STATE_HOME $HOME/.local/state
-set -gx XDG_CACHE_HOME $HOME/.cache
-
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
-source $__fish_config_dir/agent-env.fish
+source $HOME/.config/fish/agent-env.fish
 
-set -gx NODE_REPL_HISTORY $XDG_STATE_HOME/node_repl_history
-set -gx SQL_HISTORY $XDG_STATE_HOME/sql_history
-set -gx MYSQL_HISTFILE $XDG_STATE_HOME/mysql_history
-set -gx PSQL_HISTFILE $XDG_STATE_HOME/psql_history
-set -gx PYTHON_HISTORY $XDG_STATE_HOME/python_history
-set -gx RIPGREP_CONFIG_PATH $XDG_CONFIG_HOME/ripgrep/config
+set -gx NODE_REPL_HISTORY $HOME/.local/state/node_repl_history
+set -gx SQL_HISTORY $HOME/.local/state/sql_history
+set -gx MYSQL_HISTFILE $HOME/.local/state/mysql_history
+set -gx PSQL_HISTFILE $HOME/.local/state/psql_history
+set -gx PYTHON_HISTORY $HOME/.local/state/python_history
+set -gx RIPGREP_CONFIG_PATH $HOME/.config/ripgrep/config
 # IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
-set -gx IPYTHONDIR $XDG_CONFIG_HOME/ipython
-set -gx JUPYTER_CONFIG_DIR $XDG_CONFIG_HOME/jupyter
+set -gx IPYTHONDIR $HOME/.config/ipython
+set -gx JUPYTER_CONFIG_DIR $HOME/.config/jupyter
 # matplotlib は Linux では XDG に従うが、macOS では未設定なら ~/.matplotlib を使う
 if test (uname) = Darwin
-    set -gx MPLCONFIGDIR $XDG_CONFIG_HOME/matplotlib
+    set -gx MPLCONFIGDIR $HOME/.config/matplotlib
 end
 # Python のバイトコード (__pycache__) をソースの横ではなくキャッシュの下にまとめる
-set -gx PYTHONPYCACHEPREFIX $XDG_CACHE_HOME/python
+set -gx PYTHONPYCACHEPREFIX $HOME/.cache/python
 
 if test "$human_shell" = true
-    if test -f $XDG_CONFIG_HOME/shell/alias.sh
-        source $XDG_CONFIG_HOME/shell/alias.sh
+    if test -f $HOME/.config/shell/alias.sh
+        source $HOME/.config/shell/alias.sh
     end
 
     # fzf / eza / grep の配色は Dracula テーマ (https://github.com/dracula)
@@ -106,8 +100,8 @@ if test "$human_shell" = true
     # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml が取得)。
     # dircolors は GNU coreutils にしか無く、macOS 標準には無い
     set -l dircolors_bin (command -v dircolors; or command -v gdircolors)
-    if test -n "$dircolors_bin"; and test -f $XDG_CONFIG_HOME/dircolors/dracula/.dircolors
-        eval ($dircolors_bin -c $XDG_CONFIG_HOME/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
+    if test -n "$dircolors_bin"; and test -f $HOME/.config/dircolors/dracula/.dircolors
+        eval ($dircolors_bin -c $HOME/.config/dircolors/dracula/.dircolors | string replace 'setenv LS_COLORS' 'set -gx LS_COLORS')
     end
 end
 
@@ -162,7 +156,7 @@ set -gx OP_ACCOUNT my.1password.com
 if test "$human_shell" = true
     # Dracula テーマ (https://github.com/dracula/fish) は fisher が themes/ に置く。
     # fish >= 3.4 は導入だけでは適用されないため明示的に choose する
-    if test -f $__fish_config_dir/themes/"Dracula Official.theme"
+    if test -f $HOME/.config/fish/themes/"Dracula Official.theme"
         fish_config theme choose "Dracula Official"
     end
 

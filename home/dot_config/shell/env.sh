@@ -2,15 +2,6 @@
 # bash (~/.bash_profile) と zsh ($ZDOTDIR/.zprofile) が共有する環境変数と PATH。両シェルで解釈できる構文のみ使う。
 # ツールのシェル統合 (prompt / hook / completion) はこの後に source する integrations.sh にある
 
-# XDG Base Directory。macOS には未設定なら ~/Library や $HOME 直下を使い、設定されているときだけ XDG に従うツール
-# (glab・Homebrew・mise のキャッシュ等) があるため明示する。chezmoi は設定とデータを既定の場所 (~/.config 等) に置くので、
-# 呼び出し元が別の値を渡しても既定値に揃える (vim の vimrc・fish の補完・go の設定ファイルの検索先が配置先とずれないように)。
-# chezmoi が実行するスクリプトには .chezmoi.toml.tmpl の [env] が同じ値を渡す
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_STATE_HOME="$HOME/.local/state"
-export XDG_CACHE_HOME="$HOME/.cache"
-
 if [ -n "${ZSH_VERSION:-}" ]; then
     _dotfiles_shell=zsh
 else
@@ -41,27 +32,27 @@ case "$-" in
 esac
 
 # editor / pager / prompt を止める Agent 用の値 (.chezmoidata.toml の agent_env から生成)
-source "$XDG_CONFIG_HOME/shell/agent-env.sh"
+source "$HOME/.config/shell/agent-env.sh"
 
-if $_dotfiles_human_shell && [ -f "$XDG_CONFIG_HOME/shell/alias.sh" ]; then
-    source "$XDG_CONFIG_HOME/shell/alias.sh"
+if $_dotfiles_human_shell && [ -f "$HOME/.config/shell/alias.sh" ]; then
+    source "$HOME/.config/shell/alias.sh"
 fi
 
-export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_repl_history"
-export SQL_HISTORY="$XDG_STATE_HOME/sql_history"
-export MYSQL_HISTFILE="$XDG_STATE_HOME/mysql_history"
-export PSQL_HISTFILE="$XDG_STATE_HOME/psql_history"
-export PYTHON_HISTORY="$XDG_STATE_HOME/python_history"
-export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/config"
+export NODE_REPL_HISTORY="$HOME/.local/state/node_repl_history"
+export SQL_HISTORY="$HOME/.local/state/sql_history"
+export MYSQL_HISTFILE="$HOME/.local/state/mysql_history"
+export PSQL_HISTFILE="$HOME/.local/state/psql_history"
+export PYTHON_HISTORY="$HOME/.local/state/python_history"
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 # IPython / Jupyter は XDG に従わず、未設定なら ~/.ipython / ~/.jupyter を使う
-export IPYTHONDIR="$XDG_CONFIG_HOME/ipython"
-export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME/jupyter"
+export IPYTHONDIR="$HOME/.config/ipython"
+export JUPYTER_CONFIG_DIR="$HOME/.config/jupyter"
 # matplotlib は Linux では XDG に従うが、macOS では未設定なら ~/.matplotlib を使う
 if [[ "$(uname)" == "Darwin" ]]; then
-    export MPLCONFIGDIR="$XDG_CONFIG_HOME/matplotlib"
+    export MPLCONFIGDIR="$HOME/.config/matplotlib"
 fi
 # Python のバイトコード (__pycache__) をソースの横ではなくキャッシュの下にまとめる
-export PYTHONPYCACHEPREFIX="$XDG_CACHE_HOME/python"
+export PYTHONPYCACHEPREFIX="$HOME/.cache/python"
 
 # Dracula テーマの配色 (https://github.com/dracula/ の fzf / eza / grep / man-pages)
 if $_dotfiles_human_shell; then
@@ -112,8 +103,8 @@ if $_dotfiles_human_shell; then
     # LS_COLORS の Dracula テーマ (https://github.com/dracula/dircolors。.chezmoiexternal.toml で取得)。
     # GNU dircolors があるときのみ有効 (Linux / brew coreutils)。macOS 標準環境には無い
     _dircolors_bin="$(command -v dircolors || command -v gdircolors || true)"
-    if [ -n "$_dircolors_bin" ] && [ -f "$XDG_CONFIG_HOME/dircolors/dracula/.dircolors" ]; then
-        eval "$("$_dircolors_bin" -b "$XDG_CONFIG_HOME/dircolors/dracula/.dircolors")"
+    if [ -n "$_dircolors_bin" ] && [ -f "$HOME/.config/dircolors/dracula/.dircolors" ]; then
+        eval "$("$_dircolors_bin" -b "$HOME/.config/dircolors/dracula/.dircolors")"
     fi
     unset _dircolors_bin
 

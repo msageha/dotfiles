@@ -15,7 +15,7 @@ function setup() {
     grep -Fxq "# >>> dotfiles zsh init >>>" "${HOME}/.config/zsh/.zshrc"
     grep -Fxq "# <<< dotfiles zsh init <<<" "${HOME}/.config/zsh/.zshrc"
     grep -Fq 'if [[ ! -o login ]]; then' "${HOME}/.config/zsh/.zshrc"
-    grep -Fq 'HISTFILE="$XDG_STATE_HOME/zsh_history"' "${HOME}/.config/zsh/.zshrc"
+    grep -Fq 'HISTFILE="$HOME/.local/state/zsh_history"' "${HOME}/.config/zsh/.zshrc"
     grep -Fxq 'SAVEHIST=10000' "${HOME}/.config/zsh/.zshrc"
     grep -Fxq 'HISTSIZE=10000' "${HOME}/.config/zsh/.zshrc"
     # login shell で初期化を二重実行させる無条件 source が含まれないこと

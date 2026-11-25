@@ -32,17 +32,8 @@ function move_data_to_xdg() {
     move_to_xdg "$HOME/.ipython" "$HOME/.config/ipython"
     move_to_xdg "$HOME/.jupyter" "$HOME/.config/jupyter"
     move_to_xdg "$HOME/Works/pkg/mod" "$HOME/.cache/go/mod"
-    [[ "$(uname)" == "Darwin" ]] || return 0
-    move_to_xdg "$HOME/.matplotlib" "$HOME/.config/matplotlib"
-    # glab は ~/.config/glab-cli/config.yml があれば、XDG_CONFIG_HOME の有無によらずそちらを読む
-    move_to_xdg "$HOME/Library/Application Support/glab-cli" "$HOME/.config/glab-cli"
-    # Homebrew は XDG_CONFIG_HOME があるときだけ ~/.homebrew ではなく $XDG_CONFIG_HOME/homebrew を読む。
-    # shell の環境変数を持たないプロセス (GUI アプリ・定期ジョブ等) も同じ設定を読むよう、元の場所に symlink を置く
-    if [ ! -L "$HOME/.homebrew" ]; then
-        move_to_xdg "$HOME/.homebrew" "$HOME/.config/homebrew"
-        if [ -d "$HOME/.config/homebrew" ] && [ ! -e "$HOME/.homebrew" ]; then
-            ln -s "$HOME/.config/homebrew" "$HOME/.homebrew"
-        fi
+    if [[ "$(uname)" == "Darwin" ]]; then
+        move_to_xdg "$HOME/.matplotlib" "$HOME/.config/matplotlib"
     fi
 }
 

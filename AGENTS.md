@@ -23,7 +23,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
     同名関数 (`main` / `update` 等) は後続スクリプトが再定義するだけで害は無いので、prefix で rename しない。
   - 後続スクリプトに波及するため、`lib.sh` の helper の再定義、他スクリプトの関数・top-level 変数への依存、`exit 0` による早期終了、`cd` / `export` / `set` の変更は書かない (後続へ引き渡すための変更は除く。例: `winget.ps1` は、後続が `winget` を見つけられるよう `$env:Path` に足す)。
   - テンプレートからスクリプトへは環境変数で値を渡す。
-  - パスは `XDG_*` を使わず `$HOME` 基準で書く (`$HOME/.config` 等)。chezmoi は `XDG_*` によらず固定のパスに配置し、apply の環境に `XDG_*` があるとは限らず (`.chezmoi.toml.tmpl` の `[env]` は config を作り直すまで効かない)、`tests/install` は `HOME` だけを一時ディレクトリに差し替えるため。
+  - パスは `XDG_*` を使わず `$HOME` 基準で書く (`$HOME/.config` 等)。chezmoi は `XDG_*` によらず固定のパスに配置し、`tests/install` は `HOME` だけを一時ディレクトリに差し替えるため。
 - `home/.chezmoidata.toml` はテンプレート共有データの単一ソースで、値を他のファイルに複製しない。各キーの用途と読み手は同ファイルのコメントにある。
 - bash / zsh で共有する環境変数・PATH・ツール統合は `dot_config/shell/` (`env.sh`・`integrations.sh`) に書く。
   Agent 用の環境変数を出す `dot_config/shell/agent-env.sh.tmpl` は、Claude Code の SessionStart hook も読む (`docs/agent-shell.md`)。
@@ -53,7 +53,7 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。
   この hook は diff を出さないので、差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
-- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (`~/.cache/` と macOS の `~/Library/Caches/`) への書き込みが "Operation not permitted" で落ちる (コード起因ではない)。
+- sandbox が作業ディレクトリの外への書き込みを拒否する環境 (Claude Code の sandbox・Codex の `workspace-write`) では、mise・dprint 等のキャッシュ (macOS は `~/Library/Caches/`。Codex では `~/.cache/` も) への書き込みが "Operation not permitted" で落ちる (コード起因ではない)。
 
 ### secret を出力しうるコマンド
 
