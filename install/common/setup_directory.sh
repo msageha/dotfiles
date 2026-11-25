@@ -18,27 +18,13 @@ function move_to_xdg() {
         log_warn "${from} と ${to} の両方があります。${from} は読まれないので、必要なデータを ${to} へ移してから削除してください。"
         return 0
     fi
-    # 移すと参照先が変わる symlink (それ自体・配下の `..` を含む相対パス・移行元の配下を指す絶対パス) があれば移さない。
-    # 配下を調べきれないときも移さない
-    local links
-    if [ -L "$from" ] || ! links="$(find "$from" -type l \( \( ! -lname '/*' -lname '*..*' \) -o -lname "$from/*" \) -print -quit)" || [ -n "$links" ]; then
-        log_warn "${from} は移すと参照先が変わる symlink を含むか、配下を調べられないので移しません。${to} から参照できるようにしてください。"
+    # symlink は移すと相対パスのリンク先が変わる
+    if [ -L "$from" ]; then
+        log_warn "${from} は symlink なので移しません。${to} から参照できるようにしてください。"
         return 0
     fi
     mkdir -p "$(dirname "$to")"
     mv "$from" "$to"
-}
-
-# XDG_CONFIG_HOME の有無で設定の場所が変わるツール用。shell の環境変数を持たないプロセス (GUI アプリ・定期ジョブ等) も
-# 同じ設定を読むよう、移した後の元の場所に symlink を置く
-function move_to_xdg_keeping_link() {
-    local from="$1" to="$2"
-    [ -L "$from" ] && return 0
-    move_to_xdg "$from" "$to"
-    if [ -d "$to" ] && [ ! -e "$from" ]; then
-        mkdir -p "$(dirname "$from")"
-        ln -s "$to" "$from"
-    fi
 }
 
 function move_data_to_xdg() {
@@ -46,12 +32,17 @@ function move_data_to_xdg() {
     move_to_xdg "$HOME/.ipython" "$HOME/.config/ipython"
     move_to_xdg "$HOME/.jupyter" "$HOME/.config/jupyter"
     move_to_xdg "$HOME/Works/pkg/mod" "$HOME/.cache/go/mod"
-    # Homebrew は XDG_CONFIG_HOME があるときだけ ~/.homebrew ではなく $XDG_CONFIG_HOME/homebrew を読む
-    move_to_xdg_keeping_link "$HOME/.homebrew" "$HOME/.config/homebrew"
-    if [[ "$(uname)" == "Darwin" ]]; then
-        move_to_xdg "$HOME/.matplotlib" "$HOME/.config/matplotlib"
-        # glab は XDG_CONFIG_HOME があるときだけ、macOS でも ~/Library ではなく $XDG_CONFIG_HOME/glab-cli を読む
-        move_to_xdg_keeping_link "$HOME/Library/Application Support/glab-cli" "$HOME/.config/glab-cli"
+    [[ "$(uname)" == "Darwin" ]] || return 0
+    move_to_xdg "$HOME/.matplotlib" "$HOME/.config/matplotlib"
+    # glab は ~/.config/glab-cli/config.yml があれば、XDG_CONFIG_HOME の有無によらずそちらを読む
+    move_to_xdg "$HOME/Library/Application Support/glab-cli" "$HOME/.config/glab-cli"
+    # Homebrew は XDG_CONFIG_HOME があるときだけ ~/.homebrew ではなく $XDG_CONFIG_HOME/homebrew を読む。
+    # shell の環境変数を持たないプロセス (GUI アプリ・定期ジョブ等) も同じ設定を読むよう、元の場所に symlink を置く
+    if [ ! -L "$HOME/.homebrew" ]; then
+        move_to_xdg "$HOME/.homebrew" "$HOME/.config/homebrew"
+        if [ -d "$HOME/.config/homebrew" ] && [ ! -e "$HOME/.homebrew" ]; then
+            ln -s "$HOME/.config/homebrew" "$HOME/.homebrew"
+        fi
     fi
 }
 
