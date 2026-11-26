@@ -9,7 +9,7 @@ context7 = "4.7.3"
 # renovate: datasource=npm depName=chrome-devtools-mcp
 chromeDevtools = "1.13.0"
 # renovate: datasource=npm depName=@playwright/mcp
-playwright = "0.0.85"
+playwright = "0.0.86"
 # renovate: datasource=npm depName=@ask-llm/antigravity-mcp
 antigravity = "0.8.1"
 # renovate: datasource=npm depName=@drawio/mcp
