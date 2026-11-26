@@ -128,14 +128,6 @@ if test -d $HOME/.orbstack/shell
     source $HOME/.orbstack/shell/init2.fish
 end
 
-# usr/bin は末尾に追加して Homebrew の git/python3 を優先しつつ simctl 等も引けるようにする。
-# -P で PATH に直接足す。fish_user_paths 経由だと /usr/bin より前に入って xcode-select を
-# 見る /usr/bin/xcodebuild を隠し、universal 変数に残って切り替え前の Xcode も引き続ける
-if type -q xcode-select; and xcode-select -p >/dev/null 2>&1
-    set -gx DEVELOPER_DIR (xcode-select -p)
-    fish_add_path -P -a $DEVELOPER_DIR/usr/bin
-end
-
 if test "$human_shell" = true
     set -l direnv_bin (__tool_path direnv)
     if test -n "$direnv_bin"
