@@ -119,14 +119,6 @@ export GOBIN="$HOME/.local/bin"
 # 認証 token は ~/.netrc (modify_private_dot_netrc)
 export GOPROXY="https://golang.flatt.tech"
 
-# DEVELOPER_DIR は xcrun / ビルドツールが参照する。Homebrew の git / python3 を優先しつつ
-# simctl 等の Xcode 専用ツールも引けるように usr/bin は末尾に追加する
-if xcode-select -p &>/dev/null; then
-    DEVELOPER_DIR="$(xcode-select -p)"
-    export DEVELOPER_DIR
-    export PATH="$PATH:$DEVELOPER_DIR/usr/bin"
-fi
-
 CLOUDSDK_PYTHON="$(command -v python3)"
 export CLOUDSDK_PYTHON
 
