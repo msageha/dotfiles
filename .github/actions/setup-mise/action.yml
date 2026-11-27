@@ -12,7 +12,7 @@ inputs:
   version:
     description: "導入する mise のバージョン"
     # "latest" は上流の release 直後に asset が未アップロードで 404 になりうるので、固定して Renovate で更新する。
-    default: "2026.11.10"
+    default: "2026.11.11"
 
 runs:
   using: composite
