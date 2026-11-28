@@ -3,7 +3,7 @@
 bash / zsh / fish / PowerShell は、起動時に AI coding agent から起動されたか人間が使っているかを判定し、初期化の内容を切り替える。
 agent の実行が editor・pager・対話 prompt の入力待ちで止まらないようにするためのもので、権限や secret を隔離するものではない。
 
-- agent: 各 agent が子プロセスに付ける `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `GEMINI_CLI` / `CURSOR_AGENT` / `ANTIGRAVITY_AGENT` のいずれかがあるか、`GROK_AGENT=1` のとき。
+- agent: 各 agent が子プロセスに付ける `AI_AGENT` / `CLAUDECODE` / `CODEX_CI` / `CODEX_SANDBOX` / `CURSOR_AGENT` / `ANTIGRAVITY_AGENT` のいずれかがあるか、`GROK_AGENT=1` のとき。
   `.chezmoidata.toml` の `agent_env` を export して、editor・pager・各 CLI の対話 prompt を止める。
   `GIT_EDITOR` だけは `true` にして、`git rebase --continue` などが既定のメッセージで進むようにする。
 - 人間: agent ではなく、stdin と stdout が TTY の対話 shell のとき (PowerShell は `-NonInteractive` とスクリプト実行を除く)。

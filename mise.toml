@@ -29,7 +29,7 @@ description = "commit 時の lint / format を全ファイルに回す"
 run = "prek run --all-files"
 
 [tasks.pre-push]
-description = "push 時の検査 (全テンプレートの描画、tests/install と tests/docker の bats) を回す"
+description = "push 時の検査 (管理対象のテンプレートの描画、tests/install と tests/docker の bats) を回す"
 run = "prek run --all-files --hook-stage pre-push"
 
 [tasks.test]

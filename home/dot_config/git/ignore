@@ -20,6 +20,8 @@ bitbucket_token*
 *_password
 
 .claude
+# Claude Code は settings.local.json を無視していない repo で初めて書くとき、この行を global の excludes に足すので、apply で消えないよう source にも置く
+**/.claude/settings.local.json
 CLAUDE.md
 .maestro/*
 .playwright-mcp/

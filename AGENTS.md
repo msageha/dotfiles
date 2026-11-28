@@ -48,7 +48,8 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 ## 検証
 
 - 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。worktree で編集したときは、`mise run test` の代わりに「source の編集」の手順で対象の `tests/files` を回す。
-- prek の git hook は、commit 時に lint / format を、push 時にテンプレート全体の描画 (`chezmoi-dry-run` hook) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
+  commit / push を頼まれていて、対応する git hook (次項) が入っている checkout (`git rev-parse --git-path hooks` の下にある) では、`mise run pre-commit` / `mise run pre-push` を事前に重ねず hook に任せる。push の hook は push する commit ではなく作業ツリーを検査するので、push で任せるのは作業ツリーが push する commit と同じときだけで、違うときは push する commit を checkout した作業ツリーで `mise run pre-push` を回す。`tests/files` を回す hook は無いので、その検査 (`mise run test`。worktree では上の手順) は事前に済ませる。
+- prek の git hook は、commit 時に lint / format を、push 時に管理対象のテンプレートの描画 (`chezmoi-dry-run` hook。`.chezmoiignore` で外れる target は描画しない) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。
   この hook は diff を出さないので、差分の範囲は `chezmoi status` (内容を出さず、status と path だけを出す) で確かめる。
@@ -64,7 +65,7 @@ secret の扱いは共通規約の「安全」節に従う。
 - `fnox exec -- printenv <KEY>` / `fnox exec -- env`: secret を復号した値を返す。
 - `pip config list` / `pip config debug`: `~/.config/pip/pip.conf` の token 入り index-url をそのまま出す。
 - `chezmoi apply --verbose` / `chezmoi diff`: 対象範囲に secret ファイルが入ると、unified diff に実値がそのまま出る。
-  secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml` と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.claude-private/.claude.json`・`~/.gemini/settings.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
+  secret ファイルは `~/.codex/.env`・`~/.config/chezmoi/chezmoi.toml`・`.chezmoiremove` で消す `~/.gemini/settings.json`・`~/.claude/settings.fusion.json` (消す差分にも中身が出る) と、`data.apiKeys` を埋め込む template の適用先 (`~/.claude/settings.json`・`~/.claude.json`・`~/.claude-private/.claude.json`・`~/.gemini/config/mcp_config.json`・`~/.npmrc`・`~/.netrc`・`~/.config/pip/pip.conf`・`~/.config/uv/uv.toml`) 等。
   secret ファイルが対象範囲に入るときは `chezmoi apply` に `--verbose` を付けず、`chezmoi diff` は target を絞るか出力をマスクする。
 - `cat` / `git diff` で secret ファイルを直接読む。
 - `--override-data '{"apply_ssh_keys": true}'` を付けた `chezmoi diff` / `chezmoi apply --verbose`: `.chezmoiignore` の除外が外れ、1Password から取得した SSH 秘密鍵が平文で出る。検証コマンド (pre-push / test) には渡さない。

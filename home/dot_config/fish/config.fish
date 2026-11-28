@@ -5,7 +5,7 @@ switch "$DOTFILES_SHELL_MODE"
         set agent_shell true
     case human
     case '*'
-        if test -n "$AI_AGENT$CLAUDECODE$CODEX_CI$CODEX_SANDBOX$GEMINI_CLI$CURSOR_AGENT$ANTIGRAVITY_AGENT"; or test "$GROK_AGENT" = 1
+        if test -n "$AI_AGENT$CLAUDECODE$CODEX_CI$CODEX_SANDBOX$CURSOR_AGENT$ANTIGRAVITY_AGENT"; or test "$GROK_AGENT" = 1
             set agent_shell true
         end
 end

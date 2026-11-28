@@ -222,7 +222,7 @@ Docker Hub の `msageha/dotfiles` へは、イメージの内容に効く変更�
 mise trust
 mise install         # 開発ツールの導入と git hook の登録
 mise run pre-commit  # lint / format
-mise run pre-push    # 全テンプレートの描画と、apply に依存しないテスト
+mise run pre-push    # 管理対象のテンプレートの描画と、apply に依存しないテスト
 mise run test        # 全テスト (適用後の $HOME の検査を含む)
 ```
 

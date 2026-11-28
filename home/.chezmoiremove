@@ -33,4 +33,6 @@
 .codex/pareto-code.json
 {{- /* GEMINI_API_KEY を含む。Antigravity はログインで使うので置かない */}}
 .gemini/.env
+{{- /* Gemini CLI の設定 (Maps の API key を含む)。Antigravity CLI は ~/.gemini/antigravity-cli/settings.json を読み、このファイルは読まない */}}
+.gemini/settings.json
 {{- end }}

@@ -6,7 +6,7 @@
 
 - Codex の中から `codex exec` は起動しない (sandbox が二重にかかって失敗しうる)。
 - 独立レビュー (code_reviewer / security_reviewer) は `fork_turns="none"` で spawn し、必要な事実は message で渡す。既定の全履歴の fork は生成側の推論を引き継ぐので、独立にならない。
-- 別モデルへの相談・独立レビュー (AGENTS.md「事実と判断」「検証と完了」) には、shell から `claude -p --permission-mode plan < <prompt-file>` で Claude Code を使う。PROMPT はファイルに書いて標準入力から渡し、冒頭に、ほかのエージェントからの相談・レビューだけの依頼で、結果を呼び出し元へ返せばよいことを書く。
+- 別モデルへの相談・独立レビュー (AGENTS.md「事実と判断」「検証と完了」) には、shell から `claude -p --permission-mode plan < <prompt-file>` で Claude Code を使う。PROMPT はファイルに書いて標準入力から渡し (PowerShell では `$OutputEncoding = [Text.UTF8Encoding]::new($false); Get-Content -Raw -Encoding UTF8 <prompt-file> | claude -p --permission-mode plan`。Windows PowerShell 5.1 は既定で、ファイルを ANSI として読み、native command へ ASCII で渡すので、両方を UTF-8 にする)、冒頭に、ほかのエージェントからの相談・レビューだけの依頼で、結果を呼び出し元へ返せばよいことを書く。plan が塞ぐのは編集だけで、起動したディレクトリの project settings の hook も動くので、信頼できない checkout (外部の contributor の fork PR 等) の相談・レビューでは、その checkout の外 (一時ディレクトリ) から起動し、要る内容は PROMPT に入れて渡す。
 - 組み込みの agent (explorer / worker / default) に探索を任せるときは低めの reasoning effort を、レビュー・セキュリティなど誤りが高くつく作業には {{ .codex.subagent_model }} と xhigh を指定する。
 
 ## git の実行形 (sandbox と allow)

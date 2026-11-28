@@ -82,7 +82,7 @@ $ProfileBlocks = [ordered]@{
         '    "agent" { $true }'
         '    "human" { $false }'
         '    default {'
-        '        @("AI_AGENT", "CLAUDECODE", "CODEX_CI", "CODEX_SANDBOX", "GEMINI_CLI", "CURSOR_AGENT", "ANTIGRAVITY_AGENT" |'
+        '        @("AI_AGENT", "CLAUDECODE", "CODEX_CI", "CODEX_SANDBOX", "CURSOR_AGENT", "ANTIGRAVITY_AGENT" |'
         '            Where-Object { [Environment]::GetEnvironmentVariable($_) }).Count -gt 0 -or $env:GROK_AGENT -eq "1"'
         '    }'
         '}'
@@ -119,6 +119,24 @@ $ProfileBlocks = [ordered]@{
         '}'
         'if ($dotfilesHumanInteractive -and (Get-Command starship -ErrorAction SilentlyContinue)) {'
         '    Invoke-Expression (&starship init powershell)'
+        '}'
+    )
+    # Claude Code の github plugin (GitHub MCP server) が読む GITHUB_PERSONAL_ACCESS_TOKEN を gh のトークンから入れる
+    # (~/.config/shell/integrations.sh の claude と同じ)。gh のアカウントの切り替えに追従するよう、起動のたびに取得し、終わったら消す
+    claude = @(
+        'function claude {'
+        '    $claudeApp = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1'
+        '    if (-not $claudeApp) { throw "claude: command not found" }'
+        '    $addedToken = $false'
+        '    if (-not $env:GITHUB_PERSONAL_ACCESS_TOKEN -and (Get-Command gh -ErrorAction SilentlyContinue)) {'
+        '        try { $ghToken = gh auth token 2>$null; $ghOk = $LASTEXITCODE -eq 0 } catch { $ghOk = $false }'
+        '        if ($ghOk -and $ghToken) { $env:GITHUB_PERSONAL_ACCESS_TOKEN = $ghToken; $addedToken = $true }'
+        '    }'
+        '    try {'
+        '        if ($MyInvocation.ExpectingInput) { $input | & $claudeApp.Source @args } else { & $claudeApp.Source @args }'
+        '    } finally {'
+        '        if ($addedToken) { Remove-Item Env:GITHUB_PERSONAL_ACCESS_TOKEN -ErrorAction SilentlyContinue }'
+        '    }'
         '}'
     )
     # PSReadLine の Dracula 配色 (https://github.com/dracula/powershell の theme/dracula-prompt-configuration.ps1 の

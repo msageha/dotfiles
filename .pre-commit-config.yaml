@@ -1,27 +1,33 @@
 # Claude Code にそのまま渡すファイルなので formatter に書き換えさせない
 exclude: ^home/dot_claude/CLAUDE\.md$
-# stages を指定しない hook は既定で全 stage (push 時を含む) で走るので、commit 時に限る
+# stages を指定しない hook は既定で全 stage (push 時を含む) で走るので、commit 時に限る。
+# hook の manifest が stages を宣言していると default_stages は効かないので、その hook には stages を個別に付ける
 default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       - id: trailing-whitespace
+        stages: [pre-commit]
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
+        stages: [pre-commit]
       - id: check-yaml
       - id: check-json
         # Go テンプレート構文を含み JSON として不正なため除外する
-        exclude: ^home/(\.chezmoitemplates/|(private_dot_claude-private/)?modify_)
+        exclude: ^home/(\.chezmoitemplates/|(.+/)?modify_)
       - id: check-toml
         exclude: ^home/((dot_codex|private_dot_codex-private|dot_grok)/modify_private_config\.toml|\.chezmoiexternal\.toml|\.chezmoitemplates/)
       - id: check-added-large-files
+        stages: [pre-commit]
         args: [--maxkb=1000]
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
       - id: destroyed-symlinks
+        stages: [pre-commit]
       - id: check-executables-have-shebangs
+        stages: [pre-commit]
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: detect-private-key
@@ -55,7 +61,7 @@ repos:
         require_serial: true
         types: [powershell]
       - id: chezmoi-dry-run
-        name: Render every chezmoi template (chezmoi apply --dry-run --force)
+        name: Render managed chezmoi templates (chezmoi apply --dry-run --force)
         language: system
         # 既定の source (~/.local/share/chezmoi) ではなく、push しようとしている checkout を描画する
         entry: mise exec -- chezmoi apply --dry-run --force --source .
@@ -73,6 +79,7 @@ repos:
     rev: 276087d9a4f06398b3e04825487805e2d7375888 # frozen: v1.52.2
     hooks:
       - id: typos
+        stages: [pre-commit]
   - repo: https://github.com/rhysd/actionlint
     rev: 914e7df21a07ef503a81201c76d2b11c789d3fca # frozen: v1.7.12
     hooks:

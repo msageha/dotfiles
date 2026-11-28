@@ -11,9 +11,9 @@ paths:
   - "**/.chezmoitemplates/codex/config.toml.modify"
   - "**/dot_codex/rules/**"
   - "**/dot_grok/*config.toml"
-  - "**/dot_gemini/**/*settings.json.tmpl"
+  - "**/dot_gemini/**/modify_*settings.json"
 ---
-# Agent Harness Settings and Permissions (Claude settings.json / Codex config.toml and rules / Grok config.toml / Gemini settings.json)
+# Agent Harness Settings and Permissions (Claude settings.json / Codex config.toml and rules / Grok config.toml / Antigravity settings.json)
 
 - Claude `permissions.allow`: List one `Bash(<tool>:*)` entry per tool instead of individual subcommand entries.
 - Codex rules: A `decision = "allow"` prefix rule in a user or project `.rules` file runs the matching command outside the sandbox without approval, even in a session started with `-s read-only`; read-only delegations therefore pass `--ignore-rules` (`codex exec` and `codex exec review` accept it; top-level `codex review` and the Claude Code codex plugin cannot pass it, so their read-only runs execute allowed commands outside the sandbox). A pattern matches a prefix of the command's tokens and cannot restrict the arguments after it. Before adding an allow rule, check what the command accepts after the prefix (options that run a command, such as `--exec` or `--upload-pack`, and destructive ones such as `--force`), choose a prefix that leaves out the forms that must not pass, state the remaining exposure when proposing the rule, and check that every read-only `codex exec` invocation in skills and instruction files passes `--ignore-rules`.

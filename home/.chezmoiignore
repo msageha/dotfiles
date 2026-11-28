@@ -75,8 +75,8 @@
 
 # コーディングエージェント設定 (.claude / .codex / .gemini / .grok / .agents / .claude.json / .config/agents) は
 # unix は skip_cli_tools、Windows は skip_windows_extras で管理対象外にする (片方しか定義されないため or で拾う)。
-# 管理するときも各ディレクトリを X/* で ignore し、管理する直下の項目だけを ! で戻す (chezmoi add がランタイムファイルを
-# source に取り込んで autoPush するのを防ぎ、source に残った不要ファイルも展開しない)。X/* は直下にしか効かないので、戻した項目の配下は戻さなくてよい
+# 管理するときも各ディレクトリを X/* で ignore し、管理する直下の項目だけを ! で戻す (直下の chezmoi add がランタイムファイルを
+# source に取り込んで autoPush するのを防ぎ、source に残った不要ファイルも展開しない。戻したディレクトリの配下は防がない)。X/* は直下にしか効かないので、戻した項目の配下は戻さなくてよい
 {{- $skipCodingAgent := or (dig "skip_cli_tools" false .) (dig "skip_windows_extras" false .) }}
 {{ if $skipCodingAgent }}
 .claude
@@ -145,11 +145,11 @@
 
 .gemini/*
 {{ if not $skipCodingAgent }}
-!.gemini/settings.json
-{{- /* .chezmoiremove で消すファイル */}}
-!.gemini/.env
 !.gemini/antigravity-cli
 !.gemini/config
+{{- /* .chezmoiremove で消すファイル */}}
+!.gemini/settings.json
+!.gemini/.env
 {{ end }}
 
 .grok/*

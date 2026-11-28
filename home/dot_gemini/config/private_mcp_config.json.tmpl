@@ -13,7 +13,7 @@
       "args": ["-y", "@playwright/mcp@{{ .mcp.playwright }}", "--headless"]
     },
     "maps-grounding-lite": {
-      "httpUrl": "https://mapstools.googleapis.com/mcp",
+      "serverUrl": "https://mapstools.googleapis.com/mcp",
       "headers": {
         "X-Goog-Api-Key": "{{ dig "apiKeys" "googleMaps" "" . }}"
       }
