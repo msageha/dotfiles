@@ -41,7 +41,7 @@ query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
 }'
 ```
 
-For a thread whose `comments.pageInfo.hasNextPage` is true, take the full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate`), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
+For a thread whose `comments.pageInfo.hasNextPage` is true, take the full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate --jq '.[] | {id, in_reply_to_id, author: .user.login, author_association, path, line, body, created_at, html_url}'`; leave out `diff_hunk`, which carries the diff of the commented file even when it is a secret file), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
 
 Review summaries and general PR comments:
 
@@ -85,5 +85,5 @@ Re-fetch the comments and match every one, resolved threads included, against th
 
 ## Constraints
 
-- Resolve review threads or post replies only when the user asks. Reply to a thread with `gh api repos/{owner}/{repo}/pulls/<pr>/comments/<first-comment-id>/replies -F body=@<reply-file>` (the `fullDatabaseId` of the thread's first comment), and resolve it with the GraphQL mutation `resolveReviewThread` and the thread's `id` from Step 2; re-fetch afterwards and record the result in the ledger.
+- Resolve review threads or post replies only when the user asks. Reply to a thread with `gh api repos/{owner}/{repo}/pulls/<pr>/comments/<first-comment-id>/replies -F body=@<reply-file> --jq '{id, html_url}'` (the `fullDatabaseId` of the thread's first comment; the response also carries `diff_hunk`, so print only the fields you need), and resolve it with the GraphQL mutation `resolveReviewThread` and the thread's `id` from Step 2; re-fetch afterwards and record the result in the ledger.
 - Start a reply with the outcome in a sentence or two: what was changed and in which commit on this PR's head (or that the change is not in this PR yet), or why not, and anything left unverified that bears on the reviewer's judgment, so the reader gets the outcome first. When the supporting detail runs longer than a few lines, fold it into `<details>` with a `<summary>` that names it, and leave a blank line after `</summary>` and before and after `</details>`; without them, GitHub does not render the Markdown inside or after the fold.
