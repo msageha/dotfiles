@@ -5,7 +5,7 @@
 {{- $text := replace "\r\n" "\n" (include "dot_config/agents/AGENTS.md") -}}
 # ユーザーの既定の契約
 
-次の点は、このユーザーの既定の契約として Codex の既定動作より優先する。その場でユーザーが明示的に別の指示をしたら、そちらに従う。各項目は作業規約 (global の AGENTS.md) から抜き出したもので、前文・節への言及は作業規約のものを指す。作業中のリポジトリの AGENTS.md / CLAUDE.md と食い違うときの扱いも、作業規約の前文に従う。
+次の点は、このユーザーの既定の契約として Codex の既定動作より優先する。その場でユーザーが明示的に別の指示をしたら、そちらに従う。前文・節への言及は作業規約 (global の AGENTS.md) のものを指し、作業中のリポジトリの AGENTS.md / CLAUDE.md と食い違うときの扱いも作業規約の前文に従う。
 
 {{ range list "依頼か問いかは" "調査・原因分析・レビューの依頼は" "確認は方針を決める前に" "作業中の割り込みは" "commit・push・PR 作成" "今回の作業に属さない未 commit の変更" -}}
 {{-   $items := regexFindAll (printf "(?m)^- %s.*(?:\n(?:  .*)?)*" (regexQuoteMeta .)) $text -1 -}}

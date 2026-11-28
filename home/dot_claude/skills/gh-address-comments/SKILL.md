@@ -22,6 +22,8 @@ Find the PR, collect its review comments with `gh`, address them with the review
 
 ### Step 2: Fetch all comments
 
+A comment on a secret file (AGENTS.md「安全」) can carry the file's values in a quote or a suggestion, so judge the commented paths before printing any body. Run each command in this skill that prints inline review comments (they carry a `path`) first with `--jq '[.. | .path? | strings] | unique'` in place of its own filter. If any path is a secret file, write those paths as JSON strings, one per line, to a file outside the working tree, and pipe the command's output, with its `--jq` filter moved into the pipe, through `jq --slurpfile secret <secret-paths-file> '<filter> | walk(if type == "object" and (.path? | IN($secret[])) then del(.. | .body?) else . end)'`, with `set -o pipefail` so that a page `gh` fails to fetch fails the command (the GraphQL query has no filter, so start from `walk`). The PR author chooses the paths, so pass them as data and do not write them into the filter or the command line. Leave the comments whose body was dropped out of Steps 3–6, and record them in the ledger by id, author and path as not read because they are on a secret file.
+
 Review threads, with their resolved / outdated state (REST does not return it):
 
 ```bash
@@ -33,7 +35,7 @@ query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
         pageInfo { hasNextPage endCursor }
         nodes {
           id isResolved isOutdated path line startLine originalLine originalStartLine
-          comments(first: 50) { pageInfo { hasNextPage } nodes { fullDatabaseId author { login } authorAssociation body createdAt url } }
+          comments(first: 50) { pageInfo { hasNextPage } nodes { fullDatabaseId author { login } body createdAt url } }
         }
       }
     }
@@ -41,7 +43,7 @@ query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
 }'
 ```
 
-For a thread whose `comments.pageInfo.hasNextPage` is true, take the full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate --jq '.[] | {id, in_reply_to_id, author: .user.login, author_association, path, line, body, created_at, html_url}'`; leave out `diff_hunk`, which carries the diff of the commented file even when it is a secret file), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
+For a thread whose `comments.pageInfo.hasNextPage` is true, take the full list from the REST review comments (`gh api repos/{owner}/{repo}/pulls/<pr>/comments --paginate --jq '.[] | {id, in_reply_to_id, author: .user.login, path, line, body, created_at, html_url}'`; leave out `diff_hunk`, which carries the diff of the commented file even when it is a secret file), matching replies to the thread's first comment by `in_reply_to_id`, so later corrections in a long thread are not missed.
 
 Review summaries and general PR comments:
 

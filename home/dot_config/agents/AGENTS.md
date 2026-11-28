@@ -87,7 +87,7 @@ LLM エージェント (Claude Code / Codex / Antigravity / Grok) 共通のユ�
 
 - commit・push・PR 作成・merge・tag・issue の起票や close は、ユーザーが依頼ごとに明示したとき (前文の常設の手順を含む) だけ、指示された段階まで行う。ファイルの変更の依頼は commit の許可ではなく、前の依頼の git の許可は次へ持ち越さない。定型句 (「commit して」「PR に積んで」「main に積んで」等) が指す範囲と手順は commit / pr skill に従う。「<PR> が failed しているから修正して」は根本原因の修正とローカルの lint / test までで、push は「PR に積んで」等を伴うときに行う。「issue に起票して」は、範囲の指定が無ければ未対応の項目を全件、1 件 1 issue で起票する。
 - base ブランチへの直接の push と force push (`--force-with-lease` だけ) は、ユーザーが指示したときと pr skill の手順が求めるときだけ行う。
-- 今回の作業に属さない未 commit の変更 (別のセッションと checkout を共有しているとき等) には、stash / checkout / reset で触れない。変更を始めるときの作業場所は、上から順に最初に当てはまるもので決め、worktree は確認を挟まずに作る。
+- 今回の作業に属さない未 commit の変更 (別のセッションと checkout を共有しているとき等) には、stash / checkout / reset で触れない。変更を始めるときの作業場所は、次の上から順に最初に当てはまるもので決め、worktree はそれで選ばれたときだけ、確認を挟まずに作る。
   1. 今回の作業に属さない未 commit の変更がある: worktree (今回の作業の変更が既にあれば、その hunk だけを写し、元の変更は消さずに報告する)
   2. base か merge 済みのブランチ (squash merge は PR の状態で判定) にいる: base を最新にしてから、依頼に合うブランチを checkout する (今回の作業の未 commit の変更は持ち越す)
   3. 今回の作業のブランチにいるか、今回の作業の未 commit の変更がある: 今の checkout で続ける
