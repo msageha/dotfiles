@@ -52,7 +52,7 @@
 
 ## Codex
 
-- `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。共通規約のうち developer instructions (下記) に置く項目は、同じ位置に参照の 1 行を残して抜く。同じ文を 2 回読ませないためで、項目を消さずに残すのは、「前項」などの項目どうしの参照と skill が参照する節を保つため。参照の行は、developer instructions に契約が無いとき (リポジトリの `.codex/agents/` の custom agent) に `~/.config/agents/AGENTS.md` の同じ項目を読ませる。
+- `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。共通規約のうち developer instructions (下記) に置く項目は、同じ位置に参照の 1 行を残して抜く。同じ文を 2 回読ませないためで、項目を消さずに残すのは、「前項」などの項目どうしの参照と skill が参照する節を保つため。参照の行は、`developer_instructions` を置き換える設定 (リポジトリの `.codex/agents/` の custom agent・project の `.codex/config.toml`・`-c`) で契約が届かないときに `~/.config/agents/AGENTS.md` の同じ項目を読ませる。
 - project の指示文は `AGENTS.md` を読み、それが無いディレクトリでは `CLAUDE.md` を読む (`dot_codex/modify_private_config.toml` の `project_doc_fallback_filenames`)。
 - AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、範囲が曖昧でも仮定を置いて進める、前のターンの許可を持ち越す、worktree や draft PR を自律的に作る等) を上書きできない。
   これと衝突する少数の項目だけを、`.chezmoitemplates/codex/contract-items` が共通規約から先頭の文言で抜き出し、`.chezmoitemplates/codex/developer-instructions.md` が developer instructions にまとめる。Codex ではこちらが AGENTS.md より優先されるので、写しにすると、共通規約を変えたときに Codex だけ古い条件で振る舞う。
