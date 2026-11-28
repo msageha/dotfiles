@@ -3,5 +3,6 @@ description = {{ .agents.source_grounded_researcher | quote }}
 model = {{ .codex.subagent_model | quote }}
 model_reasoning_effort = "high"
 developer_instructions = '''
-{{ includeTemplate "agents/source-grounded-researcher.md" . -}}
+{{ includeTemplate "agents/source-grounded-researcher.md" . }}
+{{ includeTemplate "codex/developer-instructions.md" . -}}
 '''

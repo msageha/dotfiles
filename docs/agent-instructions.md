@@ -52,11 +52,12 @@
 
 ## Codex
 
-- `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。
+- `dot_codex/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/codex/instructions.md` を連結する。共通規約のうち developer instructions (下記) に置く項目は、同じ位置に参照の 1 行を残して抜く。同じ文を 2 回読ませないためで、項目を消さずに残すのは、「前項」などの項目どうしの参照と skill が参照する節を保つため。参照の行は、developer instructions に契約が無いとき (リポジトリの `.codex/agents/` の custom agent) に `~/.config/agents/AGENTS.md` の同じ項目を読ませる。
 - project の指示文は `AGENTS.md` を読み、それが無いディレクトリでは `CLAUDE.md` を読む (`dot_codex/modify_private_config.toml` の `project_doc_fallback_filenames`)。
 - AGENTS.md は user role で注入されるため、Codex の base prompt (developer role) の既定動作 (質問形を実行の依頼とみなす、範囲が曖昧でも仮定を置いて進める、前のターンの許可を持ち越す、worktree や draft PR を自律的に作る等) を上書きできない。
-  これと衝突する少数の項目だけを、`.chezmoitemplates/codex/developer-instructions.md` が共通規約から先頭の文言で抜き出し、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れる。Codex ではこちらが AGENTS.md より優先されるので、写しにすると、共通規約を変えたときに Codex だけ古い条件で振る舞う。
-  抜き出す項目の先頭の文言を共通規約で変えたら、同じ変更でテンプレートの一覧も直す (ちょうど 1 つ見つからなければ描画が fail で止まる)。共通規約に対応する項目が無い Codex 固有の契約 (draft PR を作らない) だけは、テンプレートに直接書く。
+  これと衝突する少数の項目だけを、`.chezmoitemplates/codex/contract-items` が共通規約から先頭の文言で抜き出し、`.chezmoitemplates/codex/developer-instructions.md` が developer instructions にまとめる。Codex ではこちらが AGENTS.md より優先されるので、写しにすると、共通規約を変えたときに Codex だけ古い条件で振る舞う。
+  抜き出す項目の先頭の文言を共通規約で変えたら、同じ変更で `contract-items` の一覧も直す (ちょうど 1 つ見つからなければ描画が fail で止まる)。共通規約に対応する項目が無い Codex 固有の契約 (draft PR を作らない) だけは、`developer-instructions.md` に直接書く。
+  developer instructions は、`dot_codex/modify_private_config.toml` が top-level の `developer_instructions` に入れ、custom agent (`dot_codex/agents/*.toml.tmpl`) も自分の `developer_instructions` の末尾に入れる。custom agent の `developer_instructions` は top-level の値を置き換え、AGENTS.md はそのまま引き継ぐ (Codex 0.170.0 の `codex-rs/core/src/agent/role.rs` と `codex-rs/core/src/thread_manager.rs`) ので、入れないと subagent には抜いた項目が届かない。役割の指示と同じ developer role に並ぶので、食い違えば役割の指示に従うと契約の冒頭に書いている。
 - Codex から別モデル (Claude Code) へ相談するときは、shell から `claude -p --permission-mode plan` を使う (`.chezmoitemplates/codex/instructions.md`)。plan が塞ぐのは編集で、shell コマンドは通常の permission の判定を通るので、この起動は `codex exec -s read-only` と違い capability としての read-only ではない。hook も止めないので、相談先の checkout の project settings の hook (`-p` は workspace trust を確かめない) と plugin の hook (codex plugin の stop-time review gate を有効にした workspace では、ターンの終わりに Codex のレビューが走る) も動く。`claude` は、この設定の Codex の sandbox (workspace-write、`network_access = true`) の中でも動く。
 - `dot_codex/rules/default.rules` の allow は、共通規約と commit / pr skill が求める git の操作のうち、sandbox の中では `.git` に書けず失敗するものを sandbox の外で通す (git のほかに `xcodebuild` も allow している)。後ろに付けられる引数を理由に載せていない操作があるので (対象と理由は rules のコメント)、pr skill の `--onto` の rebase と `git branch -f` は、承認を求められない session (`approval_policy = "never"`) の Codex では実行できない (`on-request` の session では承認を経て実行できる)。`.git` に書く git 以外のコマンドも載せていないので、improve-pr skill の `gh pr checkout` も同じ。載せた操作も後ろの引数は絞れず (`git fetch origin --upload-pack=<command>`・`git push origin --force`・`git switch -C` も一致する)、allow は sandbox を抜けようとする agent を止める境界にはならない。`approval_policy = "never"` では allow の一覧が Codex の prompt に出ないので、一致する形は `.chezmoitemplates/codex/instructions.md` の「git の実行形」節が列挙する (見出しを共通規約の「git」節と分けているのは、skill の「AGENTS.md の `git` 節」という参照の先を 1 つにするため)。rules を変えたら同じ変更で直す。`codex execpolicy check` は argv を直接照合するので、実行時に shell の書き方で一致しなくなる条件 (同節にある、quote していない `~` `^` `*` 等・環境変数の前置き・redirect) は確かめられない。allow は read-only の session にも効き、Claude Code の codex plugin と top-level の `codex review` は `--ignore-rules` を渡せないので、これらの read-only の review でも allow のコマンドは sandbox の外で動く。
 - `dot_codex/modify_private_config.toml` の本体は `.chezmoitemplates/codex/config.toml.modify` にあり、`private_dot_codex-private/modify_private_config.toml` も同じ本体を include する。
@@ -115,7 +116,7 @@
   どちらの server も既定は headed で、agent は実行中に切り替えられないので、共通規約「検証と完了」の headless の規範を MCP 経由の確認に効かせるには、起動の設定で指定するしかない。同じ規範が、MCP が headless で起動する設定であることを受け手に伝えている (受け手は、headed が要るときにウィンドウでの操作を頼まず報告する)。
   MCP のブラウザの画面を見るか手動で操作する (ログイン等) には、設定から `--headless` を外して apply し、ツールを起動し直す。
 - Codex / Antigravity の code-reviewer・security-reviewer は、review / security skill の本文を frontmatter を剥いで追記する (`regexReplaceAll` は明示引数形で書く。パイプ形は空文字になる)。
-  skill 本文に `'''` を含めると Codex の TOML が壊れる。
+  skill 本文と、Codex の developer instructions に入る共通規約の項目に `'''` を含めると、Codex の TOML が壊れる。
 
 ## サイズ予算
 

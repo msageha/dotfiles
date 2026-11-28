@@ -3,5 +3,6 @@ description = {{ .agents.debugger | quote }}
 model = {{ .codex.subagent_model | quote }}
 model_reasoning_effort = "xhigh"
 developer_instructions = '''
-{{ includeTemplate "agents/debugger.md" . -}}
+{{ includeTemplate "agents/debugger.md" . }}
+{{ includeTemplate "codex/developer-instructions.md" . -}}
 '''

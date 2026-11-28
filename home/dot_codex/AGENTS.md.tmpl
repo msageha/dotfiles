@@ -1,2 +1,9 @@
-{{ include "dot_config/agents/AGENTS.md" }}
+{{- /* developer_instructions に置く項目は、同じ位置に参照の 1 行を残して本文から抜く (同じ文を 2 回読ませないため)。
+      消さずに残すのは、「前項」などの項目どうしの参照と、skill が参照する節の中身を保つため。
+      リポジトリの .codex/agents/ の custom agent は developer_instructions を置き換えて契約を持たないので、共通規約の原本を読ませる */ -}}
+{{- $text := replace "\r\n" "\n" (include "dot_config/agents/AGENTS.md") -}}
+{{- range includeTemplate "codex/contract-items" . | fromJson -}}
+{{-   $text = replace .text (printf "- %s… (全文は developer instructions の「ユーザーの既定の契約」にある。そこに無ければ `~/.config/agents/AGENTS.md` の同じ項目を読む)" .prefix) $text -}}
+{{- end -}}
+{{ $text }}
 {{ includeTemplate "codex/instructions.md" . -}}
