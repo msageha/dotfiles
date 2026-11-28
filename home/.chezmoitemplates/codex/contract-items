@@ -1,0 +1,15 @@
+{{- /* 共通規約 (dot_config/agents/AGENTS.md) のうち Codex の既定動作と衝突する項目を、先頭の文言で探して {prefix, text} の
+      JSON 配列で返す。codex/developer-instructions.md が配る項目と、dot_codex/AGENTS.md.tmpl が抜く項目を同じ文字列にするため、
+      抜き出しはここだけで行う。項目は続きの行 (2 文字の字下げ) とその間の空行まで取り、後ろの空行は含めない (抜いた後も段落の
+      区切りを残すため)。ちょうど 1 つ見つからなければ描画を止める (2 つあると、どちらを配るかが共通規約の並びで黙って変わるため)。
+      Windows の checkout は CRLF になるので LF にそろえて探す。text を本文に当てる呼び出し側も、同じ正規化をした本文に当てる */ -}}
+{{- $text := replace "\r\n" "\n" (include "dot_config/agents/AGENTS.md") -}}
+{{- $items := list -}}
+{{- range list "依頼か問いかは" "調査・原因分析・レビューの依頼は" "確認は方針を決める前に" "作業中の割り込みは" "commit・push・PR 作成" "今回の作業に属さない未 commit の変更" -}}
+{{-   $found := regexFindAll (printf "(?m)^- %s.*(?:\n+  .*)*" (regexQuoteMeta .)) $text -1 -}}
+{{-   if ne (len $found) 1 -}}
+{{-     fail (printf "dot_config/agents/AGENTS.md: %d items start with %q; the Codex developer instructions take exactly one" (len $found) .) -}}
+{{-   end -}}
+{{-   $items = append $items (dict "prefix" . "text" (index $found 0)) -}}
+{{- end -}}
+{{- toJson $items -}}

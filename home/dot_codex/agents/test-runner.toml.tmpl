@@ -3,5 +3,6 @@ description = {{ .agents.test_runner | quote }}
 model = {{ .codex.subagent_model | quote }}
 model_reasoning_effort = "medium"
 developer_instructions = '''
-{{ includeTemplate "agents/test-runner.md" . -}}
+{{ includeTemplate "agents/test-runner.md" . }}
+{{ includeTemplate "codex/developer-instructions.md" . -}}
 '''
