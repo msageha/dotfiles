@@ -47,7 +47,8 @@ dotfiles を [chezmoi](https://www.chezmoi.io/) で管理するリポジトリ�
 
 ## 検証
 
-- 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。commit を頼まれていれば `mise run pre-commit` を、push まで頼まれていれば `mise run pre-push` も、対応する git hook (次項) が入っている checkout (`git rev-parse --git-path hooks` の下にある) では hook に任せて重ねない (push の hook は push する commit ではなく作業ツリーを検査するので、push では両者が同じときに限る) (`tests/files` を回す hook は無いので、`mise run test` は事前に回す)。worktree で編集したときは、`mise run test` の代わりに「source の編集」の手順で対象の `tests/files` を回す。
+- 変更後は `mise run pre-commit` → `mise run pre-push` → `mise run test` を通す。worktree で編集したときは、`mise run test` の代わりに「source の編集」の手順で対象の `tests/files` を回す。
+  commit / push を頼まれていて、対応する git hook (次項) が入っている checkout (`git rev-parse --git-path hooks` の下にある) では、`mise run pre-commit` / `mise run pre-push` を事前に重ねず hook に任せる。push の hook は push する commit ではなく作業ツリーを検査するので、push で任せるのは作業ツリーが push する commit と同じときだけで、違うときは push する commit を checkout した作業ツリーで `mise run pre-push` を回す。`tests/files` を回す hook は無いので、その検査 (`mise run test`。worktree では上の手順) は事前に済ませる。
 - prek の git hook は、commit 時に lint / format を、push 時に管理対象のテンプレートの描画 (`chezmoi-dry-run` hook。`.chezmoiignore` で外れる target は描画しない) と `tests/install` / `tests/docker` の bats を回す (`.pre-commit-config.yaml` の `default_stages` と `stages`)。
   `mise run pre-push` は同じ hook を作業ツリーに対して回す。
 - テンプレートの描画確認は `chezmoi-dry-run` hook (既定の source ではなく、push しようとしている checkout を描画する) で行う。

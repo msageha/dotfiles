@@ -1,4 +1,4 @@
-{{- /* 共通 AGENTS.md を「## 成果物と報告」と「## 安全」の見出しの前で 3 つに分け、.part ("0"・"1"・"2") の部分を返す (part "2" は末尾に suffix を連結する。合計の検査が suffix を含むよう、どの part の呼び出しも suffix を渡す)。
+{{- /* 共通 AGENTS.md を「## 成果物と報告」と「## 安全」の見出しの前で 3 つに分け、.part (0・1・2) の部分を返す (part 2 の末尾には Antigravity 固有の補足 gemini/instructions.md を連結する)。
       Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で切り詰めるため、frontmatter 無しの常時有効な global rule の
       ~/.gemini/config/AGENTS.md・~/.gemini/config/GEMINI.md と、trigger: always_on の ~/.gemini/config/rules/agents-md-part3.md に分けて配り、
       上限を超える描画は fail で止める */ -}}
@@ -19,7 +19,7 @@
 {{- $bodies := list
       (printf "%s\n%s\n" $first._0 $where)
       (printf "# AGENTS.md — 作業規約 (続き)\n\n%s\n\n## 成果物と報告\n%s\n" $where $rest._0)
-      (printf "---\ntrigger: always_on\n---\n\n# AGENTS.md — 作業規約 (続き)\n\n%s\n\n## 安全\n%s\n%s" $where $rest._1 (replace "\r\n" "\n" (dig "suffix" "" .))) -}}
+      (printf "---\ntrigger: always_on\n---\n\n# AGENTS.md — 作業規約 (続き)\n\n%s\n\n## 安全\n%s\n%s" $where $rest._1 (replace "\r\n" "\n" (includeTemplate "gemini/instructions.md" .))) -}}
 {{- $total := 0 -}}
 {{- range $i, $b := $bodies -}}
 {{-   if gt (len $b) 24000 -}}
@@ -30,7 +30,8 @@
 {{- /* この repo で作業するときは repo 直下の AGENTS.md も always_on の rule になるので、合わせて検査する。
        global と always_on の rule は合わせて 20,000 tokens の予算を共有し、超えると大きいファイルから pointer に格下げされる。
        token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置いて合計 bytes で見る */ -}}
-{{- $repo := replace "\r\n" "\n" (include "../AGENTS.md") -}}
+{{- /* repo 直下の AGENTS.md は chezmoi を通さず Antigravity がそのまま読むので、改行を揃えず checkout のバイト数で数える */ -}}
+{{- $repo := include "../AGENTS.md" -}}
 {{- if gt (len $repo) 24000 -}}
 {{-   fail (printf "AGENTS.md at the repository root is %d bytes; Antigravity truncates rule files at 24000 bytes" (len $repo)) -}}
 {{- end -}}
@@ -38,4 +39,4 @@
 {{- if gt $total 60000 -}}
 {{-   fail (printf "Antigravity rule files would total %d bytes (about %d tokens); the global and always_on rules share a 20000-token budget" $total (div $total 3)) -}}
 {{- end -}}
-{{- index $bodies (atoi .part) -}}
+{{- index $bodies .part -}}
