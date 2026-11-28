@@ -17,7 +17,7 @@ case "${DOTFILES_SHELL_MODE:-}" in
     human) _dotfiles_agent_shell=false ;;
     *)
         _dotfiles_agent_shell=false
-        if [ -n "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_CI:-}${CODEX_SANDBOX:-}${GEMINI_CLI:-}${CURSOR_AGENT:-}${ANTIGRAVITY_AGENT:-}" ] || [ "${GROK_AGENT:-}" = 1 ]; then
+        if [ -n "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_CI:-}${CODEX_SANDBOX:-}${CURSOR_AGENT:-}${ANTIGRAVITY_AGENT:-}" ] || [ "${GROK_AGENT:-}" = 1 ]; then
             _dotfiles_agent_shell=true
         fi
         ;;

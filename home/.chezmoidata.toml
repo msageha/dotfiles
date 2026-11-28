@@ -10,8 +10,6 @@ context7 = "4.7.3"
 chromeDevtools = "1.13.0"
 # renovate: datasource=npm depName=@playwright/mcp
 playwright = "0.0.86"
-# renovate: datasource=npm depName=@ask-llm/antigravity-mcp
-antigravity = "0.8.1"
 # renovate: datasource=npm depName=@drawio/mcp
 drawio = "1.13.0"
 # renovate: datasource=github-releases depName=gemini-cli-extensions/nanobanana
@@ -46,7 +44,7 @@ openai-codex = "openai/codex-plugin-cc"
 "typescript-lsp@claude-plugins-official" = true
 
 # サブエージェントの description。本文は .chezmoitemplates/agents/<name>.md、
-# Claude / Codex / Gemini の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
+# Claude / Codex / Antigravity の各 wrapper template が .agents.<name> で読む (キーは underscore。無いキーは描画時に fail する)
 [agents]
 browser_debugger = "Verifies frontend changes in a real browser and investigates console, network, and performance issues through the Playwright and Chrome DevTools MCP servers. Delegate to it so that snapshots, console logs, and traces stay out of the caller's context."
 code_reviewer = "Code reviewer that reports findings and leaves fixes to the caller. Use when the user asks for a code review, or to check your own changes in an independent context mid-task. For the other-model review that AGENTS.md requires, use that model's CLI; use this agent for it only when no other model is available."

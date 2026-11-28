@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # apply 後のコーディングエージェント設定が well-formed か検証するスモークテスト。
-# 特に chezmoi:modify-template (~/.codex/config.toml, ~/.grok/config.toml, ~/.claude.json)
+# 特に chezmoi:modify-template (~/.codex/config.toml, ~/.grok/config.toml, ~/.claude.json, ~/.gemini/antigravity-cli/settings.json)
 # はテンプレート側の構文回帰が rendered 側の破損として現れるため、ここで検出する。
 
 load ../test_helper
@@ -57,8 +57,7 @@ function assert_valid_json() {
     assert_valid_json "${HOME}/.claude/settings.json"
 }
 
-@test "[files] coding agents - gemini settings are valid JSON" {
-    assert_valid_json "${HOME}/.gemini/settings.json"
+@test "[files] coding agents - antigravity settings are valid JSON" {
     assert_valid_json "${HOME}/.gemini/config/mcp_config.json"
     assert_valid_json "${HOME}/.gemini/antigravity-cli/settings.json"
 }

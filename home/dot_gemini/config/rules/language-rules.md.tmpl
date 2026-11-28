@@ -1,0 +1,6 @@
+---
+trigger: model_decision
+description: 言語・ファイル種別の rule (~/.claude/rules/*.md) の一覧。コード・設定・テスト・文書を編集・レビューする前に、対象に当たる rule を選ぶために読む
+---
+
+{{ includeTemplate "agents/rules-index" . -}}

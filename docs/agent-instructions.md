@@ -1,14 +1,14 @@
 # LLM エージェント指示文の構成
 
 このリポジトリが配る LLM エージェント (Claude Code / Codex / Antigravity / Grok) 向けの指示文・skill・サブエージェントの配置と、コードから読み取れない契約をまとめる。
-指示文の編集の規範は `home/dot_claude/rules/agent-config.md`、各ツールの設定 (Claude の settings*.json、Codex の config.toml / rules、Grok の config.toml、Gemini の settings.json) の規範は `home/dot_claude/rules/claude-settings.md` にある (Claude Code では path-scoped rule として自動で読まれる)。
+指示文の編集の規範は `home/dot_claude/rules/agent-config.md`、各ツールの設定 (Claude の settings*.json、Codex の config.toml / rules、Grok の config.toml、Antigravity の settings.json) の規範は `home/dot_claude/rules/claude-settings.md` にある (Claude Code では path-scoped rule として自動で読まれる)。
 以下のパスは `home/` を省いて書く。
 
 ## 原則
 
 - 共通規約は `dot_config/agents/AGENTS.md` の 1 箇所に書き、各ツールの adapter (下記) には、そのツール固有の機構 (独立レビュー・別モデルへの相談の手段等) だけを書く。
 - この repo の rules を path に応じて自動で読むのは Claude Code だけで、Codex / Antigravity / Grok にはその形で配っていない (Antigravity の glob で読ませる rule には未対応)。
-  `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、各ツールの補足 (`.chezmoitemplates/{codex,gemini,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。
+  `.chezmoitemplates/agents/rules-index` が `dot_claude/rules/*.md` の見出しと frontmatter の `paths` から rule の一覧を生成し、Codex と Grok の補足 (`.chezmoitemplates/{codex,grok}/instructions.md`) が include して、着手前にそこから選んで読ませる。Antigravity には `dot_gemini/config/rules/language-rules.md.tmpl` (`trigger: model_decision`) として配る。この形式は path と description だけを常に読み込み、本文は作業が description に当たるときに読むので、常時有効な rule の予算 (下記「サイズ予算」) を使わない。
   rule の追加・削除・`paths` の変更は一覧に自動で反映される。一覧は `paths` の先頭 6 件だけを出すので、代表的な pattern を先頭に置く。rule が 1 つも見つからないときは描画を fail で止める。
 - 委譲するときだけ要る手順 (依頼の書き方・外部のエージェント CLI の起動・質問できない受け手への渡し方) は `dot_config/agents/delegation.md` (適用先 `~/.config/agents/delegation.md`) に分け、共通規約の「委譲」節から、依頼を出す前に読ませる。
   委譲しないセッションと、共通規約を読むサブエージェントの起動のたびに、その分の context を使わないため。
@@ -42,6 +42,8 @@
 - `~/.claude/settings.json` は通常テンプレート (`dot_claude/private_settings.json.tmpl`) で全量管理する。
   外部ツール (ローカルデーモン等) が実行時に注入する hooks は apply のたびに消える。
   hooks 配列の部分マージは脆いため、意図して全量管理にしている。
+- user settings は sandbox を無効にしている。会社アカウント (`~/.claude`) では server-managed settings が sandbox を有効にし、user settings より優先される。`claude-private` には managed settings が無く、この user settings の既定のまま無効で動く。
+  sandbox が無効だと、`permissions.deny` の `Read` は Claude Code 自身が判定する読み取り (file tool・解析できる Bash のファイル操作 (`cat` 等)・redirect 等) にだけ効き、ファイルを自分で開く python / node 等の子プロセスには効かない ([公式 permissions](https://code.claude.com/docs/en/permissions#what-read-and-edit-rules-cover))。
 - 共通規約が定める worktree の置き場所 (`.worktrees/<name>`) に合わせるため、user settings の PreToolUse hook (Windows 以外) が、`path` の無い `EnterWorktree` (`.claude/worktrees/` に新しく作る形) を止める (置き場所の設定や `WorktreeCreate` hook を使わない理由と、tool ごと deny にしない理由は、hook のコメントにある)。
   Claude は `git worktree add` で `.worktrees/<name>` に作り、`EnterWorktree` に `path` を渡して入る。入った worktree は session 自身のものになり、sandbox の中から commit できる。`path` で入った worktree は `ExitWorktree` の `remove` では消えないので、`keep` で戻ってから `git worktree remove` で消す。
   `.claude/worktrees/` の外の path へ入るときは、Claude Code (2.1.206 以降) が毎回ユーザーに承認を求める。permission の allow でも auto mode でも省けず、省くのは `bypassPermissions` だけ ([公式 worktrees](https://code.claude.com/docs/en/worktrees))。承認に答える人がいない `claude -p` では入れず、入れる先も起動したリポジトリ (とその中に nest したリポジトリ) の worktree に限られるので、`dot_claude/CLAUDE.md` が、入れないときは入らずに worktree の中で作業させる。
@@ -68,14 +70,15 @@
 - Codex には playwright / chrome-devtools MCP を置かない。custom agent の `mcp_servers` は無視され、main config に置くと Claude から呼ぶ `codex exec` の起動のたびに MCP が立ち上がるため。
   Codex のブラウザ確認は、実行環境が提供するブラウザ・画面操作の tool か、プロジェクトの E2E で行う (`codex/instructions.md`)。
 
-## Antigravity (Gemini)
+## Antigravity
 
-- 1 ファイルの上限 (下記「サイズ予算」) に収めるため、共通規約を `## git` 見出しの前後で分けて配る。
-  前半は `dot_gemini/config/AGENTS.md.tmpl` → `~/.gemini/config/AGENTS.md`、後半と `.chezmoitemplates/gemini/instructions.md` は `dot_gemini/config/GEMINI.md.tmpl` → `~/.gemini/config/GEMINI.md`。
-  どちらも frontmatter 無しの常時有効な global rule で、この 2 つのパスを読むのは App と CLI (IDE / extensions の global rule は `~/.gemini/AGENTS.md`・`~/.gemini/GEMINI.md`・`~/.gemini/config/rules/*.md`)。
+- 1 ファイルの上限 (下記「サイズ予算」) に収めるため、共通規約を `## 成果物と報告` と `## 安全` の見出しの前で 3 つに分けて配る。
+  「検証と完了」節までは `dot_gemini/config/AGENTS.md.tmpl` → `~/.gemini/config/AGENTS.md`、「成果物と報告」節から「コード」節までは `dot_gemini/config/GEMINI.md.tmpl` → `~/.gemini/config/GEMINI.md`、「安全」節以降と `.chezmoitemplates/gemini/instructions.md` は `dot_gemini/config/rules/agents-md-part3.md.tmpl` → `~/.gemini/config/rules/agents-md-part3.md`。
+  前の 2 つは frontmatter 無しの常時有効な global rule で、この 2 つのパスを読むのは App と CLI (IDE / extensions は `rules/*.md` だけを読むので、共通規約は「安全」節以降しか届かない)。`rules/*.md` は frontmatter の `trigger` が無いか不正だと黙って捨てられるので、3 つ目には `trigger: always_on` を付ける ([公式 rules](https://antigravity.google/docs/rules))。
 - 分割と上限の検査は `.chezmoitemplates/gemini/agents-md-part` が行う。
-  見出しが見つからないとき、生成物か repo 直下の `AGENTS.md` が 24,000 bytes を超えたとき、3 ファイルの合計が下記「サイズ予算」の 20,000 tokens 相当を超えたときは、テンプレートが fail して描画を止める (push 時の `chezmoi-dry-run` hook で検出される)。
-  共通規約の `## git` 見出しを変えるときは、分割位置も合わせて直す。
+  見出しが見つからないとき、生成物か repo 直下の `AGENTS.md` が 24,000 bytes を超えたとき、4 ファイルの合計が下記「サイズ予算」の 20,000 tokens 相当を超えたときは、テンプレートが fail して描画を止める (Antigravity の設定を配る構成 (`skip_cli_tools` / `skip_windows_extras` が true でない) では、push 時の `chezmoi-dry-run` hook で検出される)。
+  共通規約の `## 成果物と報告`・`## 安全` 見出しを変えるときは、分割位置も合わせて直す。
+- `dot_gemini/antigravity-cli/modify_private_settings.json` は、管理する key だけを上書きする chezmoi:modify-template。CLI は `/permissions` で足した規則や、起動時に承認した `trustedWorkspaces` を同じファイルに書くので、全量で置き換えると apply のたびに消える。
 - Antigravity は `~/.claude/`・`~/.agents/`・CLAUDE.md を自動では読まない。
   project 直下の CLAUDE.md は、補足 (`.chezmoitemplates/gemini/instructions.md`) が着手前に読ませる。
 - Antigravity は rule ファイルの中の `@<file>` を file への参照として扱う。
@@ -86,8 +89,8 @@
 ## Grok
 
 - `dot_grok/AGENTS.md.tmpl` が、共通規約と `.chezmoitemplates/grok/instructions.md` を連結する。
-- `compat.claude` (`dot_grok/modify_private_config.toml`) は、`agents = false` (`~/.claude/CLAUDE.md` と project の `.claude/CLAUDE*.md`)・`rules = false` (`~/.claude/rules` と project の `.claude/rules`。有効だと `paths` を無視して全件を常時読む)・`skills = true` にしている。
-  `~/.claude/agents` と Claude Code の plugin の agent・hook は、この設定にかかわらず読まれる (plugin の skill・command は `skills = true` で読まれる)。project 直下の `CLAUDE.md` も、同梱の user guide では設定にかかわらず読まれるが、`AGENTS.md` と並ぶ `@AGENTS.md` だけの `CLAUDE.md` は `grok inspect --json` の `projectInstructions` に出ない (grok 1.0.77)。
+- `compat.claude` (`dot_grok/modify_private_config.toml`) は、`agents = false` (`~/.claude/CLAUDE.md` と project の `.claude/CLAUDE*.md`)・`rules = false` (`~/.claude/rules` と project の `.claude/rules`。有効だと `paths` を無視して全件を常時読む)・`mcps = false` (Claude Code の MCP 設定)・`skills = true`・`hooks = false` (Claude Code の hook) にしている。
+  `~/.claude/agents` と Claude Code の plugin の agent は、この設定にかかわらず読まれる (plugin の skill・command は `skills = true` で読まれる)。plugin の hook が `hooks = false` で止まるかは公式 docs に記載が無い。project 直下の `CLAUDE.md` も、同梱の user guide では設定にかかわらず読まれるが、`AGENTS.md` と並ぶ `@AGENTS.md` だけの `CLAUDE.md` は `grok inspect --json` の `projectInstructions` に出ない (grok 1.0.77)。
 - project の AGENTS.md / CLAUDE.md は、folder trust (`grok --trust` か対話での許可。`--trust` は `grok --help` に出ない) があるときだけ起動時に読まれる。`grok inspect --json` の `projectTrusted` で確かめる。
 - `~/.grok/skills` には配らない。
   Grok は `~/.agents/skills` も読み、`~/.claude/skills` と同名の skill は `~/.agents/skills` 側を採る (中身は同じ include)。bundled と同名の skill は、`~/.agents/skills` にあればそちらが採られ (review)、`~/.claude/skills` にしか無ければ bundled 側が採られる (pdf)。
@@ -106,28 +109,29 @@
 ## サブエージェント
 
 - 本文は `.chezmoitemplates/agents/<name>.md`、description は `.chezmoidata.toml` の `[agents]` が単一ソース。
-  Claude (`dot_claude/agents/*.md.tmpl`)・Codex (`dot_codex/agents/*.toml.tmpl`。`'''` リテラル内に展開)・Gemini (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が、include と `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
+  Claude (`dot_claude/agents/*.md.tmpl`)・Codex (`dot_codex/agents/*.toml.tmpl`。`'''` リテラル内に展開)・Antigravity (`dot_gemini/config/agents/*/agent.md.tmpl`) の各 wrapper が、include と `.agents.<name>` (キーは underscore。無いキーは描画時に fail する) で参照する。
 - browser-debugger の定義は Claude 用 (`dot_claude/agents/`) だけに置き、Codex と Antigravity には置かない。Grok は `~/.claude/agents` を読むので、Grok の設定にある playwright / chrome-devtools MCP と合わせて使える。
 - playwright / chrome-devtools MCP は、Claude (`.chezmoitemplates/claude.json`)・Grok (`dot_grok/modify_private_config.toml`)・Antigravity (`dot_gemini/config/private_mcp_config.json.tmpl`) のどれでも `--headless` を付けて起動する。
   どちらの server も既定は headed で、agent は実行中に切り替えられないので、共通規約「検証と完了」の headless の規範を MCP 経由の確認に効かせるには、起動の設定で指定するしかない。同じ規範が、MCP が headless で起動する設定であることを受け手に伝えている (受け手は、headed が要るときにウィンドウでの操作を頼まず報告する)。
   MCP のブラウザの画面を見るか手動で操作する (ログイン等) には、設定から `--headless` を外して apply し、ツールを起動し直す。
-- Codex / Gemini の code-reviewer・security-reviewer は、review / security skill の本文を frontmatter を剥いで追記する (`regexReplaceAll` は明示引数形で書く。パイプ形は空文字になる)。
+- Codex / Antigravity の code-reviewer・security-reviewer は、review / security skill の本文を frontmatter を剥いで追記する (`regexReplaceAll` は明示引数形で書く。パイプ形は空文字になる)。
   skill 本文に `'''` を含めると Codex の TOML が壊れる。
 
 ## サイズ予算
 
 - Antigravity は rule ファイル 1 つを、include 展開後に 24,000 bytes で切り詰める ([公式 rules](https://antigravity.google/docs/rules))。
-  対象は分割した 2 ファイルと、workspace の常時有効な rule として読まれる repo 直下の `AGENTS.md`。
+  対象は分割した 3 ファイルと、workspace の常時有効な rule として読まれる repo 直下の `AGENTS.md`。
 - Antigravity の global と always_on の rule は、全体で 20,000 tokens の予算を共有する。超過すると、大きいファイルから順に path と description だけの pointer に格下げされ、共通規約が本文として読まれなくなる。
-  token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、上の 3 ファイルの合計 bytes の 1/3 が 20,000 を下回るようにする。
+  token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置き、上の 4 ファイルの合計 bytes の 1/3 が 20,000 以下になるようにする。
 - Antigravity は skill の本文にも 24 KB の上限を持つ (agy 同梱の changelog。`agy plugin validate` が超過を警告する。公式 docs には記載が無く、超過分の扱いは不明)。Antigravity に配る共有 skill (`dot_gemini/config/skills/`) はこれに収める。
 - Codex は project doc (repo root から作業ディレクトリまでの AGENTS.md の連結) を `project_doc_max_bytes` (既定 32 KiB) で切り詰める。`~/.codex/AGENTS.md` は切り詰めの対象外。ただし Codex (0.169) は、global を含む指示文の合計がこの値を超えると warning (`Combined user instructions use <N> bytes ...`) を出す。共通規約と Codex の補足の合計は既定値を超えるので、`codex exec` の出力を含めて session ごとに出るが、切り詰めを示すものではない。
-- Grok は指示文のファイルを全文読み込み、上限も切り詰めも無い ([公式 project rules](https://docs.x.ai/build/features/project-rules))。同梱の `~/.grok/README.md` にある 1 ファイル 10,000 文字の上限は、公式 docs と同梱の user guide に合わないので根拠にしない。
-- 残りの余裕は描画した bytes で測る (`wc -c` は LANG に依らず bytes を数え、`wc -m` は locale 依存)。後半のファイルには rule の一覧も入るので、rule の追加と見出し・`paths` の変更でも増える。
+- Grok は指示文のファイルを全文読み込み、上限も切り詰めも無い (同梱の user guide `~/.grok/docs/user-guide/12-project-rules.md` の「File Size」。[公式 project rules](https://docs.x.ai/build/features/project-rules) は上限に触れていない)。同梱の `~/.grok/README.md` にある 1 ファイル 10,000 文字の上限は、公式 docs と同梱の user guide に合わないので根拠にしない。
+- 残りの余裕は描画した bytes で測る (`wc -c` は LANG に依らず bytes を数え、`wc -m` は locale 依存)。
 
   ```sh
   chezmoi execute-template --source . < home/dot_gemini/config/AGENTS.md.tmpl | wc -c
   chezmoi execute-template --source . < home/dot_gemini/config/GEMINI.md.tmpl | wc -c
+  chezmoi execute-template --source . < home/dot_gemini/config/rules/agents-md-part3.md.tmpl | wc -c
   wc -c AGENTS.md
   ```
 
@@ -138,4 +142,4 @@
 - 適用先と source の差分: `chezmoi status` (内容を出さない)。
 - Codex: この repo で `codex debug prompt-input "ping"` を実行し、AGENTS.md の連結 (共通規約 → Codex の補足 → repo の AGENTS.md) が末尾まで入っていることと、skill の一覧を見る。
 - Grok: `grok inspect --json` の `projectInstructions` (有効な指示文と disabled の一覧)・`skills`・`agents`。
-- Antigravity: `agy agents` で agent の一覧を見る。rule の読み込みはモデルを呼ばないと確かめられない。
+- Antigravity: `agy agents` で agent の一覧を見る。rule の読み込みは、対話の CLI の `/context` で読み込んだ rule のパスを見る (print mode の `agy -p` では使えない)。

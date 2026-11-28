@@ -8,7 +8,7 @@
 - Read ツールが「変更なし」として再読を断ったのに、内容が手元に無いとき (長いセッションで早い Read の結果が追い出された等) は、`cat` などの Bash で読み直す。
 - 自前の sandbox を持つ子プロセス (codex CLI の `--sandbox` 等) を Claude の sandbox 内で起動すると、二重にかかって `Operation not permitted` になり、Claude 側の拒否としては報告されない。
 - Bash のコマンドは permission の許可ルールに一致する単純な形で書き、コメント行・不要な pipe・複合コマンドで確認プロンプトを増やさない。同じ種類の操作が確認プロンプトで止まり続けるなら、user settings (chezmoi の source) に絞った allow を足すことを提案する。
-- github MCP (plugin) の認証は、bash / zsh / fish の `claude` ラッパー関数が起動時に `gh auth token` を `GITHUB_PERSONAL_ACCESS_TOKEN` へ入れて行う。接続に失敗したら、`gh auth status` と、Claude Code の環境にその変数があるかを確かめる。
+- github MCP (plugin) の認証は、bash / zsh / fish / PowerShell の `claude` ラッパー関数が起動時に `gh auth token` を `GITHUB_PERSONAL_ACCESS_TOKEN` へ入れて行う。接続に失敗したら、`gh auth status` と、Claude Code の環境にその変数があるかを確かめる。
 
 ## サブエージェント
 

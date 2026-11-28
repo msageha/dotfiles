@@ -1,33 +1,41 @@
-{{- /* 共通 AGENTS.md を「## git」見出しの前 (part "0") と以降 (part "1"。末尾に suffix を連結) に分けて返す。
-      Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で切り詰めるため、
-      ~/.gemini/config/AGENTS.md と ~/.gemini/config/GEMINI.md (どちらも frontmatter 無しの常時有効な global rule) に分けて配り、
+{{- /* 共通 AGENTS.md を「## 成果物と報告」と「## 安全」の見出しの前で 3 つに分け、.part ("0"・"1"・"2") の部分を返す (part "2" は末尾に suffix を連結する。合計の検査が suffix を含むよう、どの part の呼び出しも suffix を渡す)。
+      Antigravity は rule ファイル 1 つを 24,000 bytes (include 展開後) で切り詰めるため、frontmatter 無しの常時有効な global rule の
+      ~/.gemini/config/AGENTS.md・~/.gemini/config/GEMINI.md と、trigger: always_on の ~/.gemini/config/rules/agents-md-part3.md に分けて配り、
       上限を超える描画は fail で止める */ -}}
 {{- /* Windows の checkout は CRLF になるので、分割と連結の前に改行を LF にそろえる */ -}}
-{{- $parts := splitn "\n## git\n" 2 (replace "\r\n" "\n" (include "dot_config/agents/AGENTS.md")) -}}
-{{- if ne (len $parts) 2 -}}
-{{-   fail "dot_config/agents/AGENTS.md: no \"## git\" heading to split the Antigravity rule files at" -}}
+{{- $text := replace "\r\n" "\n" (include "dot_config/agents/AGENTS.md") -}}
+{{- $first := splitn "\n## 成果物と報告\n" 2 $text -}}
+{{- if ne (len $first) 2 -}}
+{{-   fail "dot_config/agents/AGENTS.md: no \"## 成果物と報告\" heading to split the Antigravity rule files at" -}}
 {{- end -}}
-{{- /* rule 全体が token の予算を超えると、大きいファイルから path だけの pointer に格下げされるので、もう一方を読みに行けるよう、
-       前半の末尾に後半の所在を、後半の見出しに前半の所在を書く (後半は前半の前文を参照する) */ -}}
-{{- $body := printf "%s\n「git」節以降と Antigravity 固有の補足は `~/.gemini/config/GEMINI.md` にある。本文が読み込まれていなければ、着手前に読む。\n" $parts._0 -}}
-{{- if eq .part "1" -}}
-{{-   $body = printf "# AGENTS.md — 作業規約 (続き: git 節以降。前文と前半は `~/.gemini/config/AGENTS.md`。読み込まれていなければ着手前に読む)\n\n## git\n%s\n%s" $parts._1 (replace "\r\n" "\n" .suffix) -}}
+{{- $rest := splitn "\n## 安全\n" 2 $first._1 -}}
+{{- if ne (len $rest) 2 -}}
+{{-   fail "dot_config/agents/AGENTS.md: no \"## 安全\" heading to split the Antigravity rule files at" -}}
 {{- end -}}
-{{- if gt (len $body) 24000 -}}
-{{-   fail (printf "%s would be %d bytes; Antigravity truncates rule files at 24000 bytes" .target (len $body)) -}}
+{{- /* rule 全体が token の予算を超えると、大きいファイルから path だけの pointer に格下げされるので、ほかの部分を読みに行けるよう、
+       各部分に 3 つの所在を書く */ -}}
+{{- $targets := list "~/.gemini/config/AGENTS.md" "~/.gemini/config/GEMINI.md" "~/.gemini/config/rules/agents-md-part3.md" -}}
+{{- $where := printf "作業規約は `%s` の 3 つに分けてある。読み込まれていない部分は着手前に読む。" (join "`・`" $targets) -}}
+{{- $bodies := list
+      (printf "%s\n%s\n" $first._0 $where)
+      (printf "# AGENTS.md — 作業規約 (続き)\n\n%s\n\n## 成果物と報告\n%s\n" $where $rest._0)
+      (printf "---\ntrigger: always_on\n---\n\n# AGENTS.md — 作業規約 (続き)\n\n%s\n\n## 安全\n%s\n%s" $where $rest._1 (replace "\r\n" "\n" (dig "suffix" "" .))) -}}
+{{- $total := 0 -}}
+{{- range $i, $b := $bodies -}}
+{{-   if gt (len $b) 24000 -}}
+{{-     fail (printf "%s would be %d bytes; Antigravity truncates rule files at 24000 bytes" (index $targets $i) (len $b)) -}}
+{{-   end -}}
+{{-   $total = add $total (len $b) -}}
 {{- end -}}
-{{- /* この repo で作業するときは repo 直下の AGENTS.md も always_on の rule になるので、後半の描画で一緒に検査する。
+{{- /* この repo で作業するときは repo 直下の AGENTS.md も always_on の rule になるので、合わせて検査する。
        global と always_on の rule は合わせて 20,000 tokens の予算を共有し、超えると大きいファイルから pointer に格下げされる。
-       token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置いて 3 ファイルの合計 bytes で見る */ -}}
-{{- if eq .part "1" -}}
-{{-   $repo := replace "\r\n" "\n" (include "../AGENTS.md") -}}
-{{-   if gt (len $repo) 24000 -}}
-{{-     fail (printf "AGENTS.md at the repository root is %d bytes; Antigravity truncates rule files at 24000 bytes" (len $repo)) -}}
-{{-   end -}}
-{{-   $first := includeTemplate "gemini/agents-md-part" (dict "part" "0" "target" "~/.gemini/config/AGENTS.md") -}}
-{{-   $total := add (len $first) (len $body) (len $repo) -}}
-{{-   if gt $total 60000 -}}
-{{-     fail (printf "Antigravity rule files would total %d bytes (about %d tokens); the global and always_on rules share a 20000-token budget" $total (div $total 3)) -}}
-{{-   end -}}
+       token の数え方は公式 docs に無いので、日本語 1 文字 (3 bytes) を 1 token と置いて合計 bytes で見る */ -}}
+{{- $repo := replace "\r\n" "\n" (include "../AGENTS.md") -}}
+{{- if gt (len $repo) 24000 -}}
+{{-   fail (printf "AGENTS.md at the repository root is %d bytes; Antigravity truncates rule files at 24000 bytes" (len $repo)) -}}
 {{- end -}}
-{{- $body -}}
+{{- $total = add $total (len $repo) -}}
+{{- if gt $total 60000 -}}
+{{-   fail (printf "Antigravity rule files would total %d bytes (about %d tokens); the global and always_on rules share a 20000-token budget" $total (div $total 3)) -}}
+{{- end -}}
+{{- index $bodies (atoi .part) -}}

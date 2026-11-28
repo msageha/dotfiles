@@ -26,14 +26,6 @@
         "--headless"
       ]
     },
-    "antigravity": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@ask-llm/antigravity-mcp@{{ .mcp.antigravity }}"
-      ]
-    },
     "playwright": {
       "type": "stdio",
       "command": "npx",

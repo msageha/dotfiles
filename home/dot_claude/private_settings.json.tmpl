@@ -42,6 +42,8 @@
     "command": "bash \"$HOME/.claude/statusline-command.sh\""
   },
 {{- end }}
+{{- /* 会社アカウント (~/.claude) では server-managed settings が sandbox を有効にし、この値より優先される。
+       無効のときに permissions.deny の Read が効く範囲は docs/agent-instructions.md の Claude Code 節にある */}}
   "sandbox": {
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
@@ -64,13 +66,12 @@
       ],
 {{- /* permissions.deny の Read は sandbox の read の deny にも入る。入ったままだと、sandbox の中の chezmoi は設定を開けずに失敗し、
        uv / pip は開けない設定を黙って飛ばして既定の index を使い、claude は自分の設定を読めない。
-       各ツールが自分の設定として読むファイルは、file tool からだけ隠すため、同じパスを sandbox の中のコマンドに開け直す
-       (開け直したパスは、sandbox の中の `cat` 等からも読める)。
+       各ツールが自分の設定として読むファイルは、permission の判定 (file tool と、Claude Code が解析できる Bash のファイル操作) からは隠したまま、同じパスを sandbox の中のコマンドに開け直す。
        同じパスの allowRead が deny に勝つことは公式 docs に記載が無く、Claude Code 2.1.325 (macOS) の実装で確かめた挙動に依る。
        sandbox の中で chezmoi が設定を開けなくなったら (uv / pip は失敗せず既定の index に落ちる)、この対を見直す。
        chezmoi の age 鍵 (`~/.config/chezmoi/key.txt`) は開け直さない。鍵は暗号化した target の復号に使い、`.chezmoiignore` と一部の template が
        有無を `stat` で見る。`.chezmoiignore` を通る `chezmoi apply` / `diff` / `status` は、開け直しても sandbox の中では動かない (deny した
-       `~/.codex/.env`・`~/.gemini/.env` を lstat できない)。開け直さないので、鍵を `stat` する template の `chezmoi execute-template` は
+       `~/.codex/.env`・`~/.gemini/.env`・`~/.gemini/settings.json`・`~/.claude/settings.fusion.json` を lstat できない)。開け直さないので、鍵を `stat` する template の `chezmoi execute-template` は
        sandbox の中で失敗する */}}
       "allowRead": [
         "~/.config/pip/pip.conf",
@@ -79,14 +80,13 @@
         "~/.claude/settings.json",
         "~/.claude.json",
         "~/.claude-private/.claude.json",
-        "~/.gemini/settings.json",
         "~/.gemini/config/mcp_config.json"
       ]
     }
   },
   "permissions": {
 {{- /* python / node / xargs / timeout / env / source / rm / curl は許可プロンプトの大半を占めるため、危険度より効率を優先して許可する
-       (rm は、最初の対象が / ~ $HOME * . .. の再帰削除を PreToolUse hook が止める前提)。sh / bash / zsh / fish は `bash -c '…'` で hook を
+       (rm は、最初の対象が / ~ $HOME * で始まるもの (絶対パスと home 配下を含む) と、. .. とその配下 (./<path>) の再帰削除を PreToolUse hook が止める前提)。sh / bash / zsh / fish は `bash -c '…'` で hook を
        素通りさせるため、secret に触る fnox / security / gpg / aws-vault とともに許可しない。
        auto mode では wildcard 付きの interpreter の allow は無視され classifier が判定する (default / acceptEdits では効く)。
        パスや環境変数の値の違いは `*` でまとめる (`*` は空白を含む任意の文字列に一致し、`VAR=* cmd` は `VAR=x PATH=/evil cmd` も通すが許容する)。
@@ -325,7 +325,6 @@
       "WebFetch",
       "mcp__context7__*",
       "mcp__plugin_github_github__*",
-      "mcp__antigravity__*",
       "mcp__chrome-devtools__*",
       "mcp__playwright__*",
       "mcp__dart__*",
@@ -368,14 +367,17 @@
       "Read(~/.config/chezmoi/chezmoi.toml)",
       "Read(~/.config/chezmoi/key.txt)",
       "Read(~/.claude/settings.json)",
+{{- /* .chezmoiremove で消す OpenRouter 用の設定 (API key を含む)。`Read(~/.claude/**)` の allow に入るので、消す前の適用先で読ませない */}}
+      "Read(~/.claude/settings.fusion.json)",
       "Read(~/.claude.json)",
 {{- /* Claude Code が ~/.claude.json の写しを置く場所。`~/.claude/backups/` は `Read(~/.claude/**)` の allow に入るので、deny しないと同じ中身を確認なしで読める */}}
       "Read(~/.claude.json.backup)",
       "Read(~/.claude/backups/**)",
       "Read(~/.codex/.env)",
       "Read(~/.gemini/.env)",
-      "Read(~/.gemini/settings.json)",
       "Read(~/.gemini/config/mcp_config.json)",
+{{- /* .chezmoiremove で消す Gemini CLI の設定 (Maps の API key を含む)。消す前の適用先と、apply が途中で止まった適用先で読ませない */}}
+      "Read(~/.gemini/settings.json)",
       "Read(~/.bash_history)",
       "Read(~/.zsh_history)",
       "Read(~/.claude/.credentials.json)",
@@ -462,7 +464,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOG=~/.claude/command-audit.log; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
+            "command": "LOG=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/command-audit.log\"; if [ -f \"$LOG\" ] && [ \"$(wc -c < \"$LOG\")\" -gt 10485760 ]; then mv -f \"$LOG\" \"$LOG.1\"; fi; cat | jq -c '{timestamp: (now | todate), command: .tool_input.command}' >> \"$LOG\"; chmod 600 \"$LOG\"",
             "async": true,
             "timeout": 5
           }

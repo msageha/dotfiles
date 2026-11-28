@@ -104,19 +104,6 @@ startup_timeout_ms = 20_000
 {{-   $_ := unset (get $current "mcp_servers") "dart" -}}
 {{-   $_ := unset (get $current "mcp_servers") "xcode" -}}
 {{- end -}}
-{{- /* この template が以前書いていて、今は効果が無いか改名された key を適用先から消す */ -}}
-{{- $_ := unset $current "personality" -}}
-{{- $_ := unset $current "approvals_reviewer" -}}
-{{- if hasKey $current "model_providers" -}}
-{{-   $_ := unset (get $current "model_providers") "openrouter" -}}
-{{- end -}}
-{{- if hasKey $current "agents" -}}
-{{-   $_ := unset (get $current "agents") "max_threads" -}}
-{{-   $_ := unset (get $current "agents") "max_depth" -}}
-{{- end -}}
-{{- if hasKey $current "notice" -}}
-{{-   $_ := unset (get $current "notice") "hide_gpt-5.1-codex-max_migration_prompt" -}}
-{{- end -}}
 {{- /* macOS の ls は CLICOLOR の値でなく有無で色を付けるため、人間の shell から継承した値を外す。既存の exclude は残す */ -}}
 {{- $_ := set (get $desired "shell_environment_policy") "exclude" (concat (dig "shell_environment_policy" "exclude" (list) $current) (list "CLICOLOR") | uniq) -}}
 {{- /* shell_environment_policy.set は全量を管理し、desired から外した key が適用済みの config に残らないよう置き換える */ -}}

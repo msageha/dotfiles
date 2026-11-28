@@ -1,0 +1,14 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Antigravity CLI の settings.json は CLI 自身も書く (/permissions の規則・起動時に承認した trustedWorkspaces 等)。
+      下の desired の key だけを上書きし、ほかの key と trustedWorkspaces の既存の項目は残す */ -}}
+{{- /* always-proceed は、permissions の ask / deny に当たらないコマンド・web・MCP の tool を承認プロンプトなしで実行する (自律実行を優先。ファイルの編集は agentMode が決める)。
+      ほかの値は request-review (既定) / proceed-in-sandbox / strict */ -}}
+{{- $desired := dict "model" "Gemini 4 Neon (High)" "editorMode" "vim" "toolPermission" "always-proceed" "showFeedbackSurvey" false -}}
+{{- $current := dict -}}
+{{- $stdin := trim (dig "stdin" "" .chezmoi) -}}
+{{- if $stdin -}}
+{{-   $current = fromJson $stdin -}}
+{{- end -}}
+{{- $trusted := concat (dig "trustedWorkspaces" (list) $current) (list (printf "%s/.local/share/chezmoi" .chezmoi.homeDir)) | uniq -}}
+{{- $_ := set $desired "trustedWorkspaces" $trusted -}}
+{{- mergeOverwrite $current $desired | toPrettyJson -}}

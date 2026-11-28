@@ -5,6 +5,6 @@
 ## 動作確認
 
 - [ ] `mise run pre-commit` が通った
-- [ ] `mise run pre-push` が通った (全テンプレートの描画を含む)
+- [ ] `mise run pre-push` が通った (管理対象のテンプレートの描画を含む)
 - [ ] `mise run test` が通った
 - [ ] `chezmoi status` で意図した target だけが差分になっていることを確認した
